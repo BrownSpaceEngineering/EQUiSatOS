@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "WDT_Callback_Example", "WDT_Callback_Example\WDT_Callback_Example.cproj", "{4FC8F90E-0744-461D-AE06-9DEBC8FB5A84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FC8F90E-0744-461D-AE06-9DEBC8FB5A84}.Debug|ARM.ActiveCfg = Debug|ARM
+		{4FC8F90E-0744-461D-AE06-9DEBC8FB5A84}.Debug|ARM.Build.0 = Debug|ARM
+		{4FC8F90E-0744-461D-AE06-9DEBC8FB5A84}.Release|ARM.ActiveCfg = Release|ARM
+		{4FC8F90E-0744-461D-AE06-9DEBC8FB5A84}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
