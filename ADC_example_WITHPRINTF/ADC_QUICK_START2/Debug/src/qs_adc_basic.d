@@ -120,7 +120,8 @@ src/qs_adc_basic.d src/qs_adc_basic.o: ../src/qs_adc_basic.c ../src/asf.h \
  ../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam0_usart/usart_serial.h \
- ../src/conf_uart_serial.h
+ ../src/conf_uart_serial.h \
+ d:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1437\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h
 
 ../src/asf.h:
 
@@ -373,3 +374,5 @@ d:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1437\arm-gnu
 ../src/ASF/common/services/serial/sam0_usart/usart_serial.h:
 
 ../src/conf_uart_serial.h:
+
+d:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1437\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h:

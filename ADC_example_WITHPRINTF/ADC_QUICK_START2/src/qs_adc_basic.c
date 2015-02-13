@@ -45,6 +45,7 @@
  */
 #include <asf.h>
 #include "conf_uart_serial.h"
+#include <inttypes.h>
 
 static struct usart_module cdc_uart_module;
 
@@ -83,6 +84,12 @@ void configure_adc(void)
 	adc_get_config_defaults(&config_adc);
 //! [setup_config_defaults]
 
+config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
+config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
+config_adc.reference = ADC_REFERENCE_INT1V;
+config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8;
+config_adc.resolution = ADC_RESOLUTION_12BIT;
+
 //! [setup_set_config]
 	adc_init(&adc_instance, ADC, &config_adc);
 //! [setup_set_config]
@@ -91,14 +98,14 @@ void configure_adc(void)
 	adc_enable(&adc_instance);
 //! [setup_enable]
 
-struct system_pinmux_config config;
+/*struct system_pinmux_config config;
 system_pinmux_get_config_defaults(&config);
 
 //Analog functions are all on MUX setting B
-config.input_pull   = SYSTEM_PINMUX_PIN_PULL_NONE;
-config.mux_position = 1;
-
-system_pinmux_pin_set_config(PIN_PB00, &config);
+config.input_pull   = SYSTEM_PINMUX_PIN_PULL_UP; 
+config.mux_position = SYSTEM_PINMUX_GPIO;;
+config.direction = SYSTEM_PINMUX_PIN_DIR_INPUT;
+system_pinmux_pin_set_config(PIN_PB04, &config);*/
 }
 //! [setup]
 
@@ -117,12 +124,19 @@ int main(void)
 //! [start_conv]
 
 //! [get_res]
-	uint16_t result;	
-	do {
-		/* Wait for conversion to be done and read out result */
-		//printf("%d\n", result);
-	} while (adc_read(&adc_instance, &result) == STATUS_BUSY);
-	printf("%d\n", result);
+	uint16_t result = 0;;		
+	int i;
+	int a;
+	//for (i = 0; i < 20; i++) {
+		printf("Start\n");
+		do {
+			// Wait for conversion to be done and read out result 
+			//printf("%d\n", result);			
+			 a = adc_read(&adc_instance, &result);
+		} while (a == STATUS_BUSY);
+			//printf("%d\n", result);
+			printf("%" PRIu16 "\n", result);			
+//	}
 //! [get_res]
 
 //! [inf_loop]
