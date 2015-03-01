@@ -46,14 +46,20 @@
 #include <asf.h>
 #include "conf_uart_serial.h"
 #include <inttypes.h>
+#include <delay.h>
+
+/* Function Declarations */
+float readVoltage(struct adc_module adc_instance);
+float resultToVoltage(float result);
+float voltageToTemp(float voltage);
+
 
 static struct usart_module cdc_uart_module;
 
 /**
  *  Configure UART console.
  */
-static void configure_console(void)
-{
+static void configure_console(void) {
 	struct usart_config usart_conf;
 
 	usart_get_config_defaults(&usart_conf);
@@ -70,76 +76,61 @@ static void configure_console(void)
 
 void configure_adc(void);
 
-//! [module_inst]
+//init adc_instant
 struct adc_module adc_instance;
-//! [module_inst]
 
 //! [setup]
-void configure_adc(void)
-{
-//! [setup_config]
+void configure_adc(void) {
 	struct adc_config config_adc;
-//! [setup_config]
-//! [setup_config_defaults]
+	// setup_config_defaults
 	adc_get_config_defaults(&config_adc);
-//! [setup_config_defaults]
 
-config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
-config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
-config_adc.reference = ADC_REFERENCE_INT1V;
-config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8;
-config_adc.resolution = ADC_RESOLUTION_12BIT;
+	config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
+	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
+	config_adc.reference = ADC_REFERENCE_INT1V;
+	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8; //PB00
+	config_adc.resolution = ADC_RESOLUTION_12BIT;
 
-//! [setup_set_config]
+	//setup_set_config
 	adc_init(&adc_instance, ADC, &config_adc);
-//! [setup_set_config]
-
-//! [setup_enable]
 	adc_enable(&adc_instance);
-//! [setup_enable]
-
-/*struct system_pinmux_config config;
-system_pinmux_get_config_defaults(&config);
-
-//Analog functions are all on MUX setting B
-config.input_pull   = SYSTEM_PINMUX_PIN_PULL_UP; 
-config.mux_position = SYSTEM_PINMUX_GPIO;;
-config.direction = SYSTEM_PINMUX_PIN_DIR_INPUT;
-system_pinmux_pin_set_config(PIN_PB04, &config);*/
 }
-//! [setup]
 
-int main(void)
-{
-	system_init();
+float readVoltage(struct adc_module adc_instance) {
+	if (!&adc_instance || !adc_instance.hw) {
+		//You must configure the adc_instance and set it as a global variable.
+		return -1;
+	}
 	
-	configure_console();	
-//! [setup_init]
-	configure_adc();
-//! [setup_init]
-
-//! [main]
-//! [start_conv]
+	uint16_t result = 0;
+	int status;
+	
+	//start conversion
 	adc_start_conversion(&adc_instance);
-//! [start_conv]
-
-//! [get_res]
-	uint16_t result = 0;;		
-	int i;
-	int a;
-	//for (i = 0; i < 20; i++) {
-		printf("Start\n");
-		do {
-			// Wait for conversion to be done and read out result 
-			//printf("%d\n", result);			
-			 a = adc_read(&adc_instance, &result);
-		} while (a == STATUS_BUSY);
-			//printf("%d\n", result);
-			printf("%" PRIu16 "\n", result);			
-//	}
-//! [get_res]
-
-//! [inf_loop]
-//! [inf_loop]
-//! [main]
+	
+	do {
+		// Wait for conversion to be done and read out result
+		status = adc_read(&adc_instance, &result);
+	} while (status == STATUS_BUSY);
+	float resFloat = result;
+	return resultToVoltage(resFloat);
 }
+	
+float resultToVoltage(float result) {
+	return 5.599744685 + 0.4909903275 * result;
+}
+
+float voltageToTemp(float voltage) {
+	return 0.1*voltage - 50;
+}
+
+int main(void) {
+	system_init();
+	configure_console();
+	configure_adc();
+	
+	for(int i = 0; i < 100; i++) {
+		printf("%f ", readVoltage(adc_instance));
+	}
+}
+
