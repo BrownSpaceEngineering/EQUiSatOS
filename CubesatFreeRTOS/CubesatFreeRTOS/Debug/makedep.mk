@@ -4,9 +4,15 @@
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
+src\ASF\sam0\drivers\adc\adc.c
+
 src\ASF\sam0\drivers\sercom\sercom.c
 
 src\ASF\sam0\drivers\sercom\sercom_interrupt.c
+
+src\ASF\sam0\drivers\sercom\spi\spi.c
+
+src\ASF\sam0\drivers\sercom\spi\spi_interrupt.c
 
 src\ASF\sam0\drivers\sercom\usart\usart.c
 

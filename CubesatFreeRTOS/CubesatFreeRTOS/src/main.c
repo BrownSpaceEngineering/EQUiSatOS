@@ -91,20 +91,119 @@
 
 #include <asf.h>
 #include "conf_board.h"
+#include "conf_uart_serial.h"
+#include "task.h"
+#include <inttypes.h>
+#include "adc.h"
+#include "spi.h"
+#include "spi_interrupt.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
 #define TASK_LED_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
 #define TASK_LED_STACK_PRIORITY            (tskIDLE_PRIORITY)
+#define TASK_ADC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
+#define TASK_ADC_STACK_PRIORITY	           (tskIDLE_PRIORITY)
+
+
+static struct usart_module cdc_uart_module;
 
 extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 		signed char *pcTaskName);
 extern void vApplicationIdleHook(void);
 extern void vApplicationTickHook(void);
 
-extern void xPortSysTickHandler(void);
+//extern void xPortSysTickHandler(void);
 
+static void configure_console(void) {
+	struct usart_config usart_conf;
 
+	usart_get_config_defaults(&usart_conf);
+	usart_conf.mux_setting = CONF_STDIO_MUX_SETTING;
+	usart_conf.pinmux_pad0 = CONF_STDIO_PINMUX_PAD0;
+	usart_conf.pinmux_pad1 = CONF_STDIO_PINMUX_PAD1;
+	usart_conf.pinmux_pad2 = CONF_STDIO_PINMUX_PAD2;
+	usart_conf.pinmux_pad3 = CONF_STDIO_PINMUX_PAD3;
+	usart_conf.baudrate    = CONF_STDIO_BAUDRATE;
+
+	stdio_serial_init(&cdc_uart_module, CONF_STDIO_USART_MODULE,
+	&usart_conf);
+	usart_enable(&cdc_uart_module);
+}
+
+static struct adc_module adc_instance;
+
+void configure_adc(void) {
+	struct adc_config config_adc;
+	// setup_config_defaults
+	adc_get_config_defaults(&config_adc);
+
+	config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
+	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
+	config_adc.reference = ADC_REFERENCE_INT1V;
+	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8; //PB00
+	config_adc.resolution = ADC_RESOLUTION_12BIT;
+
+	//setup_set_config
+	adc_init(&adc_instance, ADC, &config_adc);
+	adc_enable(&adc_instance);
+}
+
+struct spi_module spi_master_instance;
+struct spi_slave_inst slave;
+
+#define SLAVE_SELECT_PIN EXT1_PIN_SPI_SS_0
+
+void configure_spi_master(void)
+{
+	//! [config]
+	struct spi_config config_spi_master;
+	//! [config]
+	//! [slave_config]
+	struct spi_slave_inst_config slave_dev_config;
+	//! [slave_config]
+	/* Configure and initialize software device instance of peripheral slave */
+	//! [slave_conf_defaults]
+	spi_slave_inst_get_config_defaults(&slave_dev_config);
+	//! [slave_conf_defaults]
+	//! [ss_pin]
+	slave_dev_config.ss_pin = SLAVE_SELECT_PIN;
+	//! [ss_pin]
+	//! [slave_init]
+	spi_attach_slave(&slave, &slave_dev_config);
+	//! [slave_init]
+	/* Configure, initialize and enable SERCOM SPI module */
+	//! [conf_defaults]
+	spi_get_config_defaults(&config_spi_master);
+	//! [conf_defaults]
+	//! [mux_setting]
+	config_spi_master.mux_setting = EXT1_SPI_SERCOM_MUX_SETTING;
+	//! [mux_setting]
+	/* Configure pad 0 for data in */
+	//! [di]
+	config_spi_master.pinmux_pad0 = EXT1_SPI_SERCOM_PINMUX_PAD0;
+	//! [di]
+	/* Configure pad 1 as unused */
+	//! [ss]
+	config_spi_master.pinmux_pad1 = PINMUX_UNUSED;
+	//! [ss]
+	/* Configure pad 2 for data out */
+	//! [do]
+	config_spi_master.pinmux_pad2 = EXT1_SPI_SERCOM_PINMUX_PAD2;
+	//! [do]
+	/* Configure pad 3 for SCK */
+	//! [sck]
+	config_spi_master.pinmux_pad3 = EXT1_SPI_SERCOM_PINMUX_PAD3;
+	//! [sck]
+	//! [init]
+	spi_init(&spi_master_instance, EXT1_SPI_MODULE, &config_spi_master);
+	//! [init]
+
+	//! [enable]
+	spi_enable(&spi_master_instance);
+	//! [enable]
+
+}
 
 /**
  * \brief Called if stack overflow during execution
@@ -140,13 +239,11 @@ extern void vApplicationTickHook(void)
  */
 static void task_monitor(void *pvParameters)
 {
-	static portCHAR szList[256];
 	UNUSED(pvParameters);
 
+    configure_console();
 	for (;;) {
-		//printf("--- task ## %u", (unsigned int)uxTaskGetNumberOfTasks());
-		//vTaskList((signed portCHAR *)szList);
-		//printf(szList);
+		printf("hi");
 		vTaskDelay(1000);
 	}
 }
@@ -168,7 +265,20 @@ static void task_led(void *pvParameters)
 	}
 }
 
-/**
+static void task_adc_read(void *pvParameters) {
+	UNUSED(pvParameters);
+	for (;;) {
+		
+	}
+}
+
+static void task_spi_read(void *pvParameters) {
+	UNUSED(pvParameters);
+	for (;;) {
+		
+	}
+}
+/**s
  * \brief Configure the console UART.
  */
 /**
@@ -230,6 +340,12 @@ int main(void)
 	/* Create task to make led blink */
 	if (xTaskCreate(task_led, "Led", TASK_LED_STACK_SIZE, NULL,
 			TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
+		//printf("Failed to create test led task\r\n");
+	}
+	
+	/* Create task to make led blink */
+	if (xTaskCreate(task_adc_read, "ADC", TASK_ADC_STACK_SIZE, NULL,
+	TASK_ADC_STACK_PRIORITY, NULL) != pdPASS) {
 		//printf("Failed to create test led task\r\n");
 	}
 
