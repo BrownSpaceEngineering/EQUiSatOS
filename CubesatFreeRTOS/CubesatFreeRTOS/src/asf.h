@@ -52,6 +52,9 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// From module: ADC - Analog-to-Digital Converter (Polled APIs)
+#include <adc.h>
+
 // From module: Common SAM0 compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -86,8 +89,11 @@
 #include <sercom.h>
 #include <sercom_interrupt.h>
 
+// From module: SERCOM SPI - Serial Peripheral Interface (Callback APIs)
+#include <spi.h>
+#include <spi_interrupt.h>
+
 // From module: SERCOM USART - Serial Communications (Callback APIs)
-//#include "serial/uart_serial.h"
 #include <usart.h>
 #include <usart_interrupt.h>
 

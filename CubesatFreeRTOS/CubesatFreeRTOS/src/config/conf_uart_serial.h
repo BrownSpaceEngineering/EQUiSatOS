@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief Serial USART service configuration.
+ * \brief SAMD21 USART configuration.
  *
- * Copyright (C) 2013 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2014 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,19 +40,21 @@
  * \asf_license_stop
  *
  */
+ /**
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
-#ifndef CONF_USART_SERIAL_H
-#define CONF_USART_SERIAL_H
+#ifndef CONF_UART_SERIAL_H
+#define CONF_UART_SERIAL_H
 
-/** USART Interface */
-#define CONF_UART              USART1
-/** Baudrate setting */
-#define CONF_UART_BAUDRATE     115200
-/** Character length setting */
-#define CONF_UART_CHAR_LENGTH  US_MR_CHRL_8_BIT
-/** Parity setting */
-#define CONF_UART_PARITY       US_MR_PAR_NO
-/** Stop bits setting */
-#define CONF_UART_STOP_BITS    US_MR_NBSTOP_1_BIT
+#include <board.h>
 
-#endif/* CONF_USART_SERIAL_H_INCLUDED */
+#define CONF_STDIO_USART_MODULE  EDBG_CDC_MODULE
+#define CONF_STDIO_MUX_SETTING   EDBG_CDC_SERCOM_MUX_SETTING
+#define CONF_STDIO_PINMUX_PAD0   EDBG_CDC_SERCOM_PINMUX_PAD0
+#define CONF_STDIO_PINMUX_PAD1   EDBG_CDC_SERCOM_PINMUX_PAD1
+#define CONF_STDIO_PINMUX_PAD2   EDBG_CDC_SERCOM_PINMUX_PAD2
+#define CONF_STDIO_PINMUX_PAD3   EDBG_CDC_SERCOM_PINMUX_PAD3
+#define CONF_STDIO_BAUDRATE      38400
+
+#endif // CONF_UART_SERIAL_H
