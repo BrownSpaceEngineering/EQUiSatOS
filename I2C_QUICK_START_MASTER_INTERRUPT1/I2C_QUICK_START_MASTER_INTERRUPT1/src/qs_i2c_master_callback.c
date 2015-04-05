@@ -243,3 +243,24 @@ int main(void)
 
 	//! [while]
 }
+
+void write_command(struct i2c_master_packet* packet_address){
+	uint16_t timeout = 0;
+	while (i2c_master_write_packet_wait(&i2c_master_instance, packet_address) !=
+	STATUS_OK) {
+		/* Increment timeout counter and check if timed out. */
+		if (timeout++ == TIMEOUT) {
+			break;
+		}
+	}
+}
+
+void read_command(struct i2c_master_packet* packet_address){
+	uint16_t timeout = 0;
+	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) !=
+	STATUS_OK) {
+		if (timeout++ == TIMEOUT) {
+			break;
+		}
+	}
+}
