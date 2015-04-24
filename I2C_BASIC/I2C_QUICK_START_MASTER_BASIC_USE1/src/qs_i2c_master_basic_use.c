@@ -48,6 +48,7 @@
 #include <conf_uart_serial.h>
 
 #define HMC5883L_ADDRESS 0x1E
+#define MOTOR_CONTROLLER_ADDRESS 0x0F
 #define TIMEOUT 1000
 
 
@@ -73,11 +74,11 @@ int main(void){
 	printf("I2C Configured\n\r");
 	
 	//initialize HMC5883L magnetometer with standard settings
-	HMC5883L_init();
-	printf("HMC5883L (magnetometer) initialized\n\r");	
+	//HMC5883L_init();
+	//printf("HMC5883L (magnetometer) initialized\n\r");	
 	
 	//Establish buffer to read from
-	static uint8_t HMC5883L_read_buffer[7] = {
+	/*static uint8_t HMC5883L_read_buffer[7] = {
 		'a','a','a','a','a','a',0x0
 	};
 	
@@ -88,12 +89,43 @@ int main(void){
 		printf("measurement\r\n");
 		printf("%x%x%x%x%x%x\r\n",(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0]);
 		i++;
-	}
-
+	}*/
+	
+	// write to the motor controller
+	/*static uint8_t mc_move_buffer[3] = {
+		0x82, 0xff, 0xff
+	};*/
+	
+	static uint8_t mc_dir_buffer[3] = {
+		0xaa, 0x06, 0x00
+	};
+	
+	/*struct i2c_master_packet mc_move_packet = {
+		.address     = MOTOR_CONTROLLER_ADDRESS,
+		.data_length = 3,
+		.data        = mc_move_buffer,
+		.ten_bit_address = false,
+		.high_speed      = false,
+		.hs_master_code  = 0x0,
+	};*/
+	struct i2c_master_packet mc_dir_packet = {
+		.address     = MOTOR_CONTROLLER_ADDRESS,
+		.data_length = 3,
+		.data        = mc_dir_buffer,
+		.ten_bit_address = false,
+		.high_speed      = false,
+		.hs_master_code  = 0x0,
+	};
+	printf("going to write dir command\r\n");
+	
+	i2c_write_command(&mc_dir_packet);
+	printf("wrote dir command\r\n");
+	//i2c_write_command(&mc_move_packet);
+	//printf("wrote move command\r\n");
 }
 
 /*
-	Configure UART console. (Terminal accessable through PUTTY)
+	Configure UART console. (Terminal accessible through PUTTY)
  */
 static void configure_console(void) {
 	struct usart_config usart_conf;
@@ -129,7 +161,7 @@ void configure_i2c_master(void)
 
 	/* Initialize and enable device with config. */
 	//! [init_module]
-	i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+	i2c_master_init(&i2c_master_instance, SERCOM0, &config_i2c_master);
 	//! [init_module]
 
 	//! [enable_module]
@@ -143,10 +175,10 @@ void configure_i2c_master(void)
 */
 void i2c_write_command(struct i2c_master_packet* packet_address){
 	uint16_t timeout = 0;
-	while (i2c_master_write_packet_wait(&i2c_master_instance, packet_address) !=
-	STATUS_OK) {
+	while (i2c_master_write_packet_wait(&i2c_master_instance, packet_address) != STATUS_OK) {
 		/* Increment timeout counter and check if timed out. */
 		if (timeout++ == TIMEOUT) {
+			printf("I2C write timed out.\r\n");
 			break;
 		}
 	}
