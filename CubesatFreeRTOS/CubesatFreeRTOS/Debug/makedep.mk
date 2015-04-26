@@ -6,6 +6,8 @@ src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\drivers\adc\adc.c
 
+src\ASF\sam0\drivers\sercom\i2c\i2c_samd21_r21_d10_d11\i2c_master.c
+
 src\ASF\sam0\drivers\sercom\sercom.c
 
 src\ASF\sam0\drivers\sercom\sercom_interrupt.c
@@ -57,6 +59,10 @@ src\ASF\sam0\utils\cmsis\samd21\source\gcc\startup_samd21.c
 src\ASF\sam0\utils\cmsis\samd21\source\system_samd21.c
 
 src\ASF\sam0\utils\syscalls\gcc\syscalls.c
+
+src\HMC5883L_Magnetometer_Commands.c
+
+src\I2C_Commands.c
 
 src\main.c
 

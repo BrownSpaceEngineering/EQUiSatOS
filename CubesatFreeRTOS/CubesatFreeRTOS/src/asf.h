@@ -89,6 +89,13 @@
 #include <sercom.h>
 #include <sercom_interrupt.h>
 
+// From module: SERCOM I2C - Master Mode I2C (Polled APIs)
+#include <i2c_common.h>
+#include <i2c_master.h>
+
+// From module: SERCOM Polled API
+#include <sercom.h>
+
 // From module: SERCOM SPI - Serial Peripheral Interface (Callback APIs)
 #include <spi.h>
 #include <spi_interrupt.h>
