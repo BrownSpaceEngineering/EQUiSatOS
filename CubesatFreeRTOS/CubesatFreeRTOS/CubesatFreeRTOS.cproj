@@ -31,12 +31,13 @@
     <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.drivers.adc" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
+    <option id="sam0.drivers.sercom.i2c.master" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.sercom.spi" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.drivers.system.clock" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
     <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
-    <option id="sam0.drivers.sercom.i2c.master" value="Add" config="polled" content-id="Atmel.ASF" />
+    <option id="sam0.drivers.sercom.usart" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -340,11 +341,6 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
-  <armgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11</Value>
-    </ListValues>
-  </armgcc.assembler.general.IncludePaths>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -D__FREERTOS__ -DUSART_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false -DSPI_CALLBACK_MODE=true -DI2C_MASTER_CALLBACK_MODE=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>
   <armgcc.preprocessingassembler.general.IncludePaths>
@@ -463,11 +459,6 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
-  <armgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11</Value>
-    </ListValues>
-  </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -D__FREERTOS__ -DUSART_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false -DSPI_CALLBACK_MODE=true -DI2C_MASTER_CALLBACK_MODE=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>
@@ -590,6 +581,18 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\console.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\console.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SPI_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SPI_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\ASF\sam0\utils\stdio\stdio_serial\stdio_serial.h">
       <SubType>compile</SubType>
     </None>
@@ -599,6 +602,12 @@
     <None Include="src\ASF\common\services\serial\serial.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\ADC_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ADC_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\common\services\serial\sam_uart\uart_serial.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1176,6 +1185,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HMC5883L_Magnetometer_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\main.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\main.c">

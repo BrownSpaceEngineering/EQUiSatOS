@@ -89,29 +89,7 @@
  *
  */
 
-#include <asf.h>
-#include "conf_board.h"
-#include "conf_uart_serial.h"
-#include "task.h"
-#include <inttypes.h>
-#include "adc.h"
-#include "spi.h"
-#include "spi_interrupt.h"
-
-#define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
-#define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
-#define TASK_LED_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
-#define TASK_LED_STACK_PRIORITY            (tskIDLE_PRIORITY)
-#define TASK_ADC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
-#define TASK_ADC_STACK_PRIORITY	           (tskIDLE_PRIORITY)
-
-
-static struct usart_module cdc_uart_module;
-
-extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
-		signed char *pcTaskName);
-extern void vApplicationIdleHook(void);
-extern void vApplicationTickHook(void);
+#include "main.h"
 
 //extern void xPortSysTickHandler(void);
 
@@ -131,79 +109,8 @@ static void configure_console(void) {
 	usart_enable(&cdc_uart_module);
 }
 
-static struct adc_module adc_instance;
 
-void configure_adc(void) {
-	struct adc_config config_adc;
-	// setup_config_defaults
-	adc_get_config_defaults(&config_adc);
 
-	config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
-	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
-	config_adc.reference = ADC_REFERENCE_INT1V;
-	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8; //PB00
-	config_adc.resolution = ADC_RESOLUTION_12BIT;
-
-	//setup_set_config
-	adc_init(&adc_instance, ADC, &config_adc);
-	adc_enable(&adc_instance);
-}
-
-struct spi_module spi_master_instance;
-struct spi_slave_inst slave;
-
-#define SLAVE_SELECT_PIN EXT1_PIN_SPI_SS_0
-
-void configure_spi_master(void)
-{
-	//! [config]
-	struct spi_config config_spi_master;
-	//! [config]
-	//! [slave_config]
-	struct spi_slave_inst_config slave_dev_config;
-	//! [slave_config]
-	/* Configure and initialize software device instance of peripheral slave */
-	//! [slave_conf_defaults]
-	spi_slave_inst_get_config_defaults(&slave_dev_config);
-	//! [slave_conf_defaults]
-	//! [ss_pin]
-	slave_dev_config.ss_pin = SLAVE_SELECT_PIN;
-	//! [ss_pin]
-	//! [slave_init]
-	spi_attach_slave(&slave, &slave_dev_config);
-	//! [slave_init]
-	/* Configure, initialize and enable SERCOM SPI module */
-	//! [conf_defaults]
-	spi_get_config_defaults(&config_spi_master);
-	//! [conf_defaults]
-	//! [mux_setting]
-	config_spi_master.mux_setting = EXT1_SPI_SERCOM_MUX_SETTING;
-	//! [mux_setting]
-	/* Configure pad 0 for data in */
-	//! [di]
-	config_spi_master.pinmux_pad0 = EXT1_SPI_SERCOM_PINMUX_PAD0;
-	//! [di]
-	/* Configure pad 1 as unused */
-	//! [ss]
-	config_spi_master.pinmux_pad1 = PINMUX_UNUSED;
-	//! [ss]
-	/* Configure pad 2 for data out */
-	//! [do]
-	config_spi_master.pinmux_pad2 = EXT1_SPI_SERCOM_PINMUX_PAD2;
-	//! [do]
-	/* Configure pad 3 for SCK */
-	//! [sck]
-	config_spi_master.pinmux_pad3 = EXT1_SPI_SERCOM_PINMUX_PAD3;
-	//! [sck]
-	//! [init]
-	spi_init(&spi_master_instance, EXT1_SPI_MODULE, &config_spi_master);
-	//! [init]
-
-	//! [enable]
-	spi_enable(&spi_master_instance);
-	//! [enable]
-
-}
 
 /**
  * \brief Called if stack overflow during execution
@@ -278,37 +185,6 @@ static void task_spi_read(void *pvParameters) {
 		
 	}
 }
-/**s
- * \brief Configure the console UART.
- */
-/**
-* \brief Configure the console UART.
-*/
-/*static void configure_console(void)
-{
-	const usart_serial_options_t uart_serial_options = {
-		.baudrate = CONF_UART_BAUDRATE,
-		#if (defined CONF_UART_CHAR_LENGTH)
-		.charlength = CONF_UART_CHAR_LENGTH,
-		#endif
-		.paritytype = CONF_UART_PARITY,
-		#if (defined CONF_UART_STOP_BITS)
-		.stopbits = CONF_UART_STOP_BITS,
-		#endif
-	};
-
-	/* Configure console UART. */
-	//stdio_serial_init(CONF_UART, &uart_serial_options);
-
-	/* Specify that stdout should not be buffered. */
-	//#if defined(__GNUC__)
-	//setbuf(stdout, NULL);
-	//#else
-	/* Already the case in IAR's Normal DLIB default configuration: printf()
-	* emits one character at a time.
-	*/
-	//#endif
-//}
 
 /**
  *  \brief FreeRTOS Real Time Kernel example entry point.
