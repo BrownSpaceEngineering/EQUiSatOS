@@ -9,6 +9,9 @@
 #ifndef SPI_COMMANDS_H
 #define SPI_COMMANDS_H
 
+#include "spi.h"
+#include <board.h>
+
 struct spi_module spi_master_instance;
 struct spi_slave_inst slave;
 

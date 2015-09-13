@@ -1,5 +1,6 @@
-src/main.d src/main.o: ../src/main.c ../src/main.h ../src/asf.h \
- ../src/ASF/sam0/drivers/adc/adc.h ../src/ASF/sam0/utils/compiler.h \
+src/ADC_Commands.d src/ADC_Commands.o: ../src/ADC_Commands.c \
+ ../src/ADC_Commands.h ../src/asf.h ../src/ASF/sam0/drivers/adc/adc.h \
+ ../src/ASF/sam0/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stddef.h \
  ../src/ASF/common/utils/parts.h ../src/ASF/sam0/utils/status_codes.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stdint.h \
@@ -146,12 +147,9 @@ src/main.d src/main.o: ../src/main.c ../src/main.h ../src/asf.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam0_usart/usart_serial.h \
  ../src/config/conf_uart_serial.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h \
- ../src/console.h ../src/I2C_Commands.h ../src/SPI_Commands.h \
- ../src/ADC_Commands.h ../src/HMC5883L_Magnetometer_Commands.h \
- ../src/I2C_Commands.h
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h
 
-../src/main.h:
+../src/ADC_Commands.h:
 
 ../src/asf.h:
 
@@ -456,15 +454,3 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/config/conf_uart_serial.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h:
-
-../src/console.h:
-
-../src/I2C_Commands.h:
-
-../src/SPI_Commands.h:
-
-../src/ADC_Commands.h:
-
-../src/HMC5883L_Magnetometer_Commands.h:
-
-../src/I2C_Commands.h:

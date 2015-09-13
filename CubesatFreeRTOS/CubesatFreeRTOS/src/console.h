@@ -10,6 +10,8 @@
 #define CONSOLE_H
 
 #include <board.h>
+#include "usart.h"
+#include "stdio_serial.h"
 
 #define CONF_STDIO_USART_MODULE  EDBG_CDC_MODULE
 #define CONF_STDIO_MUX_SETTING   EDBG_CDC_SERCOM_MUX_SETTING

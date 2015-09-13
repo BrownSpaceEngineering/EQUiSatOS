@@ -12,7 +12,6 @@
 #include <asf.h>
 #include "conf_uart_serial.h"
 #include <inttypes.h>
-#include <delay.h>
 
 float readVoltagemV(struct adc_module adc_instance);
 float readVoltageV(struct adc_module adc_instance);
