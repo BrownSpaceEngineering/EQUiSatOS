@@ -1,3 +1,12 @@
+#include "radio.h"
+
+/*
+
+http://www.atmel.com/images/Atmel-42118-SAM-D20-D21-Serial-USART-Driver-SERCOM-USART_Application-Note_AT03256.pdf
+
+*/
+Radio r;
+
 int main(int argc, const char * argv[]) {
 	configure_usart();
 
@@ -19,10 +28,16 @@ void configure_usart(void) {
 	config_usart.pinmux_pad2 = EDBG_CDC_SERCOM_PINMUX_PAD2;
 	config_usart.pinmux_pad3 = EDBG_CDC_SERCOM_PINMUX_PAD3;
 
-	while (usart_init(&usart_instance, EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
+	while (usart_init(r.in, EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
 		//uhhhh
 	}
 
-	usart_enable(&usart_instance);
+	while (usart_init(r.out, EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
+		//uhhhh
+	}
+
+
+	usart_enable(r.in);
+	usart_enable(r.out);
 }
 
