@@ -9,11 +9,22 @@
 #include <stdio.h>
 #include <stdint.h>
 
+
+typedef struct {
+    usart_module* out;
+    usart_module* in; 
+} Radio;
+
+
+Radio r;
+
+
 uint8_t computeCheckSum(uint8_t cmd[], int dataLength);
 int simpleCommand(uint8_t controlChar, uint8_t dataByte);
 int setChannel(uint8_t channelNo);
 void printByte(uint8_t byte);
 int setTxFrequencyByChannel(uint8_t channelNo, uint32_t freq);
+int setRxFrequencyByChannel(uint8_t channelNo, uint32_t freq);
 
 
 int main(int argc, const char * argv[]) {
@@ -59,16 +70,20 @@ int simpleCommand(uint8_t controlChar, uint8_t dataByte) {
     padCmd(cmd, dataLength);
     
     //Send to Radio
-    //    usart_write_buffer_wait(&usart_instance, cmd, sizeof(cmd));
+    sendToRadio(cmd, sizeof(cmd));
     
-    
-    printByte(cmd[0]);
-    printByte(cmd[1]);
-    printByte(cmd[2]);
-    printByte(cmd[3]);
     
     return 0;
     
+}
+
+int sendToRadio(uint8_t[] cmd, int size) {
+    for (int i = 0; i < size; i++) {
+        printByte(cmd[i]);
+    }
+    return 0;
+
+    // return usart_write_buffer_wait(r.in, cmd, size);
 }
 
 //<><><<>><><>Commands<><><<>><><>\\
@@ -91,51 +106,66 @@ int setModulationFormat() {
     return simpleCommand(0x02, 0x00);
 }
 
+/*
+ * Note: after this command, you need to do a WARM RESET in order to
+ * apply the change.
+ */
 int setTxFrequencyByChannel(uint8_t channelNo, uint32_t freq) {
     //TODO: is this actually the max no. of channels?
     if (channelNo > 15) {
         return 1;
     }
     
-    int dataLength = 5;
+    int dataLength = 6;
 
     uint8_t cmd[dataLength + 2]; //extra two for checksum and SoH
-    cmd[1] = channelNo;
-    cmd[2] = (freq >> 24);
-    cmd[3] = (freq >> 16);
-    cmd[4] = (freq >> 8);
-    cmd[5] = freq;
+    cmd[1] = 0x37;
+    cmd[2] = channelNo;
+    cmd[3] = (freq >> 24);
+    cmd[4] = (freq >> 16);
+    cmd[5] = (freq >> 8);
+    cmd[6] = freq;
     
     
     padCmd(cmd, dataLength);
     
-    //Send to Radio
-    //    usart_write_buffer_wait(&usart_instance, cmd, sizeof(cmd));
-    
-    
-    printByte(cmd[0]);
-    printByte(cmd[1]);
-    printByte(cmd[2]);
-    printByte(cmd[3]);
-    printByte(cmd[4]);
-    printByte(cmd[5]);
-    printByte(cmd[6]);
-    
-    return 0;
-    
+    sendToRadio(cmd, sizeof(cmd));
+        
+    return 0;    
 }
 
-//
-//int setRxFrequencyByChannel() {
-//
-//}
-//
+/*
+ * Note: after this command, you need to do a WARM RESET in order to
+ * apply the change.
+ */
+int setRxFrequencyByChannel(uint8_t channelNo, uint32_t freq) {
+    //TODO: is this actually the max no. of channels?
+    if (channelNo > 15) {
+        return 1;
+    }
+    
+    int dataLength = 6;
+
+    uint8_t cmd[dataLength + 2]; //extra two for checksum and SoH
+    cmd[1] = 0x39;
+    cmd[2] = channelNo;
+    cmd[3] = (freq >> 24);
+    cmd[4] = (freq >> 16);
+    cmd[5] = (freq >> 8);
+    cmd[6] = freq;
+    
+    
+    padCmd(cmd, dataLength);
+    
+    sendToRadio(cmd, sizeof(cmd));
+    
+    return 0;    
+}
+
 
 int program() {
     uint8_t cmd[] = {0x01, 0x1e, 0xe1};
-    printByte(cmd[0]);
-    printByte(cmd[1]);
-    printByte(cmd[2]);
+    sendToRadio(cmd, 3);
     return 1;
 }
 
