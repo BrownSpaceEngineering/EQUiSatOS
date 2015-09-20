@@ -129,6 +129,14 @@ int setTxFrequencyByChannel(uint8_t channelNo, uint32_t freq) {
 //}
 //
 
+int program() {
+    uint8_t cmd[] = {0x01, 0x1e, 0xe1};
+    printByte(cmd[0]);
+    printByte(cmd[1]);
+    printByte(cmd[2]);
+    return 1;
+}
+
 /*
  * resetType can be one of three:
  * 0x00 - cold reset, aka use saved config
