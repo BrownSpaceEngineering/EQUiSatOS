@@ -7,6 +7,8 @@
 //
 
 #include <stdio.h>
+#include <stdint.h>
+
 uint8_t computeCheckSum(uint8_t cmd[], int dataLength);
 int simpleCommand(uint8_t controlChar, uint8_t dataByte);
 int setChannel(uint8_t channelNo);
