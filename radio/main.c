@@ -14,9 +14,9 @@ int main(int argc, const char * argv[]) {
     setTxFrequencyByChannel(15, 4800);
     return 0;
 }
+
 //<><><<>><><>Helpers<><><<>><><>\\
 
-//We use chars because 1 char = 1 byte
 uint8_t computeCheckSum(uint8_t cmd[], int dataLength) {
     uint8_t sum = 0;
     for(int i = 0; i < dataLength; i ++) {
@@ -60,6 +60,25 @@ int simpleCommand(uint8_t controlChar, uint8_t dataByte, Radio* r) {
     
 }
 
+int simpleResponse(int responseType, int responseCode, Radio *r) {
+    //+ 3 for SoH, Status, Checksum
+    int responseLength = 1 + 3;
+    uint8_t response[responseLength];
+
+    if  (receiveFromRadio(response, responseLength, r)) {
+        //error
+        return 1;
+    }
+
+    if (computeCheckSum(&response[1], 2) != response[3]) {
+        //bad checksum, data is corrupted.
+        return 1;
+    }
+
+    return !(response[1] == responseType && response[2] == responseCode);
+}
+
+
 int sendToRadio(uint8_t[] cmd, int size, Radio* r) {
     for (int i = 0; i < size; i++) {
         printByte(cmd[i]);
@@ -79,18 +98,32 @@ int receiveFromRadio(uint8_t* rx_data, uint16_t length, Radio* r) {
  * 0x02 = 4.8 kbps
  */
 int setLinkSpeed(Radio* r) {
-    return simpleCommand(0x05, 0x02, r);
+    if (simpleCommand(0x05, 0x02, r)) {
+        //error
+    }
+
+    return simpleResponse(0x85, 0x00);
 }
 
 int setProtocol(Radio* r) {
-    return simpleCommand(0x07, 0x02, r);
+    if (simpleCommand(0x07, 0x02, r)) {
+
+    }
+
+    return simpleResponse(0x87, 0x00);
 }
 
 /*
  * 0x00 = GMSK
+ * Note: after this command, you need to do a WARM RESET in order to
+ * apply the change.
  */
 int setModulationFormat(Radio* r) {
-    return simpleCommand(0x02, 0x00, r);
+    if (simpleCommand(0x2B, 0x00, r)) {
+
+    }
+
+    return simpleResponse(0xAB, 0x00);
 }
 
 /*
@@ -116,9 +149,11 @@ int setTxFrequencyByChannel(uint8_t channelNo, uint32_t freq, Radio* r) {
     
     padCmd(cmd, dataLength);
     
-    sendToRadio(cmd, sizeof(cmd), r);
-        
-    return 0;    
+    if (sendToRadio(cmd, sizeof(cmd), r)) {
+        //error
+    }
+
+    return simpleResponse(0xb7, 0x00, r);
 }
 
 /*
@@ -144,16 +179,21 @@ int setRxFrequencyByChannel(uint8_t channelNo, uint32_t freq, Radio* r) {
     
     padCmd(cmd, dataLength);
     
-    sendToRadio(cmd, sizeof(cmd), r);
-    
-    return 0;    
+    if (sendToRadio(cmd, sizeof(cmd), r)) {
+        //handle error
+    }
+
+    return simpleResponse(0xb9, 0x00, r);
 }
 
 
 int program(Radio* r) {
     uint8_t cmd[] = {0x01, 0x1e, 0xe1};
-    sendToRadio(cmd, 3, r);
-    return 1;
+    if (sendToRadio(cmd, 3, r)) {
+        //error
+    }
+
+    return simpleResponse(0x9E, 0x00);
 }
 
 /*
@@ -168,7 +208,11 @@ int reset(uint8_t resetType, Radio* r) {
         return 1;
     }
     
-    return simpleCommand(0x1d, resetType, r);
+    if (simpleCommand(0x1d, resetType, r)) {
+
+    }
+
+    return simpleResponse(0x9D, 0x00);
 }
 
 /*
@@ -176,7 +220,11 @@ int reset(uint8_t resetType, Radio* r) {
  * NOTE: 0x09, 0x00 turns off FEC.
  */
 int setForwardErrorConnection(Radio* r) {
-    return simpleCommand(0x09, 0x01, r);
+    if (simpleCommand(0x09, 0x01, r)) {
+        //error
+    }
+
+    return simpleResponse(0x81, 0x00);
 }
 
 /*
@@ -189,5 +237,9 @@ int setSquelch(uint8_t sensitivity, Radio* r) {
         return 1;
     }
     
-    return simpleCommand(0x29, sensitivity, r);
+    if (simpleCommand(0x29, sensitivity, r)) {
+        //error
+    }
+
+    return simpleResponse(0xA9, 0x00);
 }
