@@ -7,9 +7,7 @@
 
 #include "ADC_Commands.h"
 
-struct adc_module adc_instance;
-
-void configure_adc(void) {
+void configure_adc(struct adc_module *adc_instance) {
 	struct adc_config config_adc;
 	// setup_config_defaults
 	adc_get_config_defaults(&config_adc);
@@ -21,8 +19,8 @@ void configure_adc(void) {
 	config_adc.resolution = ADC_RESOLUTION_12BIT;
 
 	//setup_set_config
-	adc_init(&adc_instance, ADC, &config_adc);
-	adc_enable(&adc_instance);
+	adc_init(adc_instance, ADC, &config_adc);
+	adc_enable(adc_instance);
 }
 
 //reads the current voltage from the ADC connection
@@ -42,8 +40,8 @@ float readVoltagemV(struct adc_module adc_instance) {
 		// Wait for conversion to be done and read out result
 		status = adc_read(&adc_instance, &result);
 	} while (status == STATUS_BUSY);
-	float resFloat = result;
-	return resultToVoltage(resFloat);
+	//float resFloat = result;
+	return resultToVoltage(result);
 }
 
 float readVoltageV(struct adc_module adc_instance){

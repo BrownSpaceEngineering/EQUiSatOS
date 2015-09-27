@@ -200,12 +200,25 @@ int main(void)
 	system_init();
 
 	/* Initialize the console uart */
-	//configure_console();
+	configure_console();
 
 	/* Output demo infomation. */
-	//printf("-- Freertos Example --\n\r");
-	//printf("-- %s\n\r", BOARD_NAME);
-	//printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+	printf("-- Freertos Example --\n\r");
+	printf("-- %s\n\r", BOARD_NAME);
+	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+	
+	struct adc_module temp_instance;
+	configure_adc(&temp_instance);
+	int i = 0;
+	while(i<10){
+		int x = readVoltagemV(temp_instance);
+		printf("%d\n\r",x);
+		i++;
+	}
+	
+	printf("pause point");
+	
+	
 
 	/* Create task to monitor processor activity */
 	if (xTaskCreate(task_monitor, "Monitor", TASK_MONITOR_STACK_SIZE, NULL,
