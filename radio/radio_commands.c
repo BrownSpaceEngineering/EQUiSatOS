@@ -8,14 +8,26 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "radio.h"
+#include <asf.h>
 
-int main(int argc, const char * argv[]) {
-    setTxFrequencyByChannel(15, 4800);
-    return 0;
-}
+uint8_t computeCheckSum(uint8_t cmd[], int dataLength);
+int padCmd(uint8_t cmd[], int dataLength);
+void printByte(uint8_t byte);
+int simpleCommand(uint8_t controlChar, uint8_t dataByte, Radio* r);
+int simpleResponse(int responseType, int responseCode, Radio *r);
+int sendToRadio(uint8_t cmd[], int size, Radio* r);
+int receiveFromRadio(uint8_t* rx_data, uint16_t length, Radio* r);
+int setLinkSpeed(Radio* r);
+int setProtocol(Radio* r);
+int setModulationFormat(Radio* r);
+int setTxFrequencyByChannel(uint8_t channelNo, uint32_t freq, Radio* r);
+int setRxFrequencyByChannel(uint8_t channelNo, uint32_t freq, Radio* r);
+int program(Radio* r);
+int reset(uint8_t resetType, Radio* r);
+int setForwardErrorConnection(Radio* r);
+int setSquelch(uint8_t sensitivity, Radio* r);
 
-//<><><<>><><>Helpers<><><<>><><>\\
+//<><><<>><><>Helpers<><><<>><><>
 
 uint8_t computeCheckSum(uint8_t cmd[], int dataLength) {
     uint8_t sum = 0;
@@ -79,7 +91,7 @@ int simpleResponse(int responseType, int responseCode, Radio *r) {
 }
 
 
-int sendToRadio(uint8_t[] cmd, int size, Radio* r) {
+int sendToRadio(uint8_t cmd[], int size, Radio* r) {
     for (int i = 0; i < size; i++) {
         printByte(cmd[i]);
     }
@@ -92,7 +104,7 @@ int receiveFromRadio(uint8_t* rx_data, uint16_t length, Radio* r) {
     return usart_read_buffer_wait(r->out, rx_data, length);
 }
 
-//<><><<>><><>Commands<><><<>><><>\\
+//<><><<>><><>Commands<><><<>><><>
 
 /*
  * 0x02 = 4.8 kbps
@@ -102,7 +114,7 @@ int setLinkSpeed(Radio* r) {
         //error
     }
 
-    return simpleResponse(0x85, 0x00);
+    return simpleResponse(0x85, 0x00, r);
 }
 
 int setProtocol(Radio* r) {
@@ -110,7 +122,7 @@ int setProtocol(Radio* r) {
 
     }
 
-    return simpleResponse(0x87, 0x00);
+    return simpleResponse(0x87, 0x00, r);
 }
 
 /*
@@ -123,7 +135,7 @@ int setModulationFormat(Radio* r) {
 
     }
 
-    return simpleResponse(0xAB, 0x00);
+    return simpleResponse(0xAB, 0x00, r);
 }
 
 /*
@@ -193,7 +205,7 @@ int program(Radio* r) {
         //error
     }
 
-    return simpleResponse(0x9E, 0x00);
+    return simpleResponse(0x9E, 0x00, r);
 }
 
 /*
@@ -212,7 +224,7 @@ int reset(uint8_t resetType, Radio* r) {
 
     }
 
-    return simpleResponse(0x9D, 0x00);
+    return simpleResponse(0x9D, 0x00, r);
 }
 
 /*
@@ -224,7 +236,7 @@ int setForwardErrorConnection(Radio* r) {
         //error
     }
 
-    return simpleResponse(0x81, 0x00);
+    return simpleResponse(0x81, 0x00, r);
 }
 
 /*
@@ -241,5 +253,5 @@ int setSquelch(uint8_t sensitivity, Radio* r) {
         //error
     }
 
-    return simpleResponse(0xA9, 0x00);
+    return simpleResponse(0xA9, 0x00, r);
 }

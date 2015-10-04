@@ -2,8 +2,8 @@
 #define radio_h
 
 typedef struct {
-    usart_module* out;
-    usart_module* in; 
+    struct usart_module* out;
+    struct usart_module* in; 
 } Radio;
 
 #endif
