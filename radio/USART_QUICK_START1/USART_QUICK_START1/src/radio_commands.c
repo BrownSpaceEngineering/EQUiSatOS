@@ -237,3 +237,30 @@ int setSquelch(uint8_t sensitivity, Radio* r) {
 
     return simpleResponse(0xA9, 0x00, r);
 }
+
+//<><><<>><><>DATA<><><<>><><>
+int sendDataPacket(uint8_t destOrSource, uint8_t data[], uint8_t size, Radio* r) {
+    //data packet command + dest/src + MSB(size) + LSB(size) + size 
+    int dataLength = 1 +  1 + 1 + 1 + size;
+    uint8_t cmd[dataLength + 2]; //+ SoH + Checksum.
+
+
+    cmd[1] = 0x00;
+    cmd[2] = destOrSource;
+    cmd[3] = size;
+    cmd[4] = size;
+
+    for(int i = 0; i < size; i++) {
+        cmd[4 + i] = data[i];
+    }
+
+    padCmd(cmd, dataLength);
+
+    if (sendToRadio(cmd, sizeof(cmd), r)) {
+        //handle error
+    }
+            //ACK packet.
+    return simpleResponse(0x80, 0x00, r);
+}
+
+

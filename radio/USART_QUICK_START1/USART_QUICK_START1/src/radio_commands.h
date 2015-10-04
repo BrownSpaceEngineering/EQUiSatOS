@@ -1,6 +1,7 @@
 #ifndef radio_commands_h
 #define radio_commands_h
 #include "radio.h"
+
 uint8_t computeCheckSum(uint8_t cmd[], int dataLength);
 int padCmd(uint8_t cmd[], int dataLength);
 void printByte(uint8_t byte);
@@ -17,5 +18,6 @@ int program(Radio* r);
 int reset(uint8_t resetType, Radio* r);
 int setForwardErrorConnection(Radio* r);
 int setSquelch(uint8_t sensitivity, Radio* r);
+int sendDataPacket(uint8_t destOrSource, uint8_t data[], uint8_t size, Radio* r);
 
 #endif
