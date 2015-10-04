@@ -55,7 +55,7 @@ int simpleCommand(uint8_t controlChar, uint8_t dataByte, Radio* r) {
 }
 
 int simpleResponse(int responseType, int responseCode, Radio *r) {
-    //+ 3 for SoH, Status, Checksum
+    //SoH, Status, Status Code, Checksum
     int responseLength = 1 + 3;
     uint8_t response[responseLength];
 
@@ -63,7 +63,7 @@ int simpleResponse(int responseType, int responseCode, Radio *r) {
         //error
         return 1;
     }
-
+                                    //Status Code, Checksum
     if (computeCheckSum(&response[1], 2) != response[3]) {
         //bad checksum, data is corrupted.
         return 1;
