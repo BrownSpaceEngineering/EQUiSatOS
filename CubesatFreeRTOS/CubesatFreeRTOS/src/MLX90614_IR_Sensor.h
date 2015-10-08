@@ -17,7 +17,7 @@
 #define TOBJ1_ADDR 0x007
 #define TOBJ2_ADDR 0x008
 
-void MLX90614_read(uint8_t* buf);
+void MLX90614_read(uint8_t* buf, uint8_t addr);
 void MLX90614_write(uint8_t* buf);
 
 #endif

@@ -24,7 +24,7 @@ void MLX90614_read(uint8_t* buf, uint8_t addr) {
 		.hs_master_code  = 0x0,
 	};
 	
-	static uint8_t write_buffer[2] = {
+	uint8_t write_buffer[2] = {
 		0x00, addr
 	};
 	
