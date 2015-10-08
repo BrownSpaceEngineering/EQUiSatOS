@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectVersion>6.2</ProjectVersion>
+    <ProjectVersion>7.0</ProjectVersion>
     <ToolchainName>com.Atmel.ARMGCC.C</ToolchainName>
     <ProjectGuid>{2e22f41e-7644-48f9-8bde-ac1f749f14fe}</ProjectGuid>
     <avrdevice>ATSAMD21J18A</avrdevice>
@@ -263,6 +263,7 @@
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
+    <ExternalProgrammingToolCommand />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -581,6 +582,12 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\config\MLX90614_IR_Sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\MLX90614_IR_Sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\console.c">
       <SubType>compile</SubType>
     </Compile>
