@@ -77,9 +77,9 @@ int sendToRadio(uint8_t cmd[], int size, Radio* r) {
     for (int i = 0; i < size; i++) {
         printByte(cmd[i]);
     }
-    return 0;
+    //return 0;
 
-    // return usart_write_buffer_wait(r->in, cmd, size);
+    return usart_write_buffer_wait(r->in, cmd, size);
 }
 
 int receiveFromRadio(uint8_t* rx_data, uint16_t length, Radio* r) {

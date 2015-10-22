@@ -50,6 +50,7 @@
 static struct usart_module cdc_uart_module;
 
 void configure_usart(void);
+void enablePacketMode(void);
 
 Radio r;
 
@@ -90,25 +91,34 @@ void configure_usart(void) {
 	while (usart_init(&usart_instance,
 			EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
 	} */
+	usart_init(r.in, EDBG_CDC_MODULE, &config_usart);
 	
-	while (usart_init(r.in,
-		EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
-	}
-	
-	while (usart_init(r.out,
-		EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
-	}
+	usart_init(r.out, EDBG_CDC_MODULE, &config_usart);
 	usart_enable(r.in);
 	usart_enable(r.out);
 
 }
 
+void enablePacketMode(void) {	
+	delay_ms(1000);	
+	unsigned char msg[3];
+	msg[0] = '+';
+	msg[1] = '+';
+	msg[2] = '+';
+	int status = sendToRadio(msg, 3, &r);
+	printf("STATUS: %d", status);
+	delay_ms(1000);		
+}
+
 int main(void)
 {
 	system_init();
+	configure_console();		
 	configure_usart();
-	configure_console();	
-	program(&r);
+	delay_init();
+	enablePacketMode();
+	
+	//program(&r);
 	
 //	uint8_t string[] = "Hello World!\r\n";
 	
