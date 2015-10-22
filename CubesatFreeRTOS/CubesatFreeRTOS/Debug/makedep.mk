@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\config\MLX90614_IR_Sensor.c
+
 src\console.c
 
 src\SPI_Commands.c

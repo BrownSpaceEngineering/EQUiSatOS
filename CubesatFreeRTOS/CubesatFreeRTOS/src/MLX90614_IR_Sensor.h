@@ -13,11 +13,13 @@
 #define MLX90614_WRITE_ADDR 0x5A
 #define MLX90614_READ_ADDR 0x5B
 
+#define RAW_DATA_IR_CHAN1 0x004
+#define RAW_DATA_IR_CHAN2 0x005
 #define TA_ADDR 0x006
 #define TOBJ1_ADDR 0x007
 #define TOBJ2_ADDR 0x008
 
-void MLX90614_read(uint8_t* buf);
+void MLX90614_read(uint8_t* buf, uint8_t addr);
 void MLX90614_write(uint8_t* buf);
 
 #endif

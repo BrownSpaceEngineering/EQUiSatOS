@@ -215,6 +215,12 @@ int main(void)
 		printf("%d\n\r",x);
 		i++;
 	}
+
+  uint8_t MLXbuf = 0;
+  // RAM access: 000x 0000
+  uint8_t addr = RAW_DATA_IR_CHAN1;
+  MLX90614_read(&MLXbuf, addr);
+  printf("MLX: %4x\n", MLXbuf);
 	
 	printf("pause point");
 	

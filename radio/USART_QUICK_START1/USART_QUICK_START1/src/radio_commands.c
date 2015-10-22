@@ -55,7 +55,7 @@ int simpleCommand(uint8_t controlChar, uint8_t dataByte, Radio* r) {
 }
 
 int simpleResponse(int responseType, int responseCode, Radio *r) {
-    //+ 3 for SoH, Status, Checksum
+    //SoH, Status, Status Code, Checksum
     int responseLength = 1 + 3;
     uint8_t response[responseLength];
 
@@ -63,7 +63,7 @@ int simpleResponse(int responseType, int responseCode, Radio *r) {
         //error
         return 1;
     }
-
+                                    //Status Code, Checksum
     if (computeCheckSum(&response[1], 2) != response[3]) {
         //bad checksum, data is corrupted.
         return 1;
@@ -237,3 +237,30 @@ int setSquelch(uint8_t sensitivity, Radio* r) {
 
     return simpleResponse(0xA9, 0x00, r);
 }
+
+//<><><<>><><>DATA<><><<>><><>
+int sendDataPacket(uint8_t destOrSource, uint8_t data[], uint8_t size, Radio* r) {
+    //data packet command + dest/src + MSB(size) + LSB(size) + size 
+    int dataLength = 1 +  1 + 1 + 1 + size;
+    uint8_t cmd[dataLength + 2]; //+ SoH + Checksum.
+
+
+    cmd[1] = 0x00;
+    cmd[2] = destOrSource;
+    cmd[3] = size;
+    cmd[4] = size;
+
+    for(int i = 0; i < size; i++) {
+        cmd[4 + i] = data[i];
+    }
+
+    padCmd(cmd, dataLength);
+
+    if (sendToRadio(cmd, sizeof(cmd), r)) {
+        //handle error
+    }
+            //ACK packet.
+    return simpleResponse(0x80, 0x00, r);
+}
+
+
