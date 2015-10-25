@@ -588,6 +588,12 @@
     <Compile Include="src\console.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\MLX90614_IR_Sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\MLX90614_IR_Sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\SPI_Commands.c">
       <SubType>compile</SubType>
     </Compile>
