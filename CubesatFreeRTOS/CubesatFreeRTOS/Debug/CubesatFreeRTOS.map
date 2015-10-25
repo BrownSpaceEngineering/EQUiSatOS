@@ -104,7 +104,7 @@ ptr_put             0x4               src/ASF/sam0/utils/stdio/write.o
 dummy_write         0x2               src/ASF/sam0/drivers/sercom/spi/spi_interrupt.o
 _sercom_instances   0x18              src/ASF/sam0/drivers/sercom/sercom_interrupt.o
 i2c_master_instance
-                    0xc               src/config/MLX90614_IR_Sensor.o
+                    0xc               src/HMC5883L_Magnetometer_Commands.o
 stdio_base          0x4               src/ASF/sam0/utils/stdio/write.o
 spi_master_instance
                     0x3c              src/SPI_Commands.o
@@ -123,287 +123,6 @@ Discarded input sections
  .ARM.exidx     0x00000000        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv6-m/crt0.o
  .ARM.attributes
                 0x00000000       0x1b c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv6-m/crt0.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .group         0x00000000        0x8 src/config/MLX90614_IR_Sensor.o
- .text          0x00000000        0x0 src/config/MLX90614_IR_Sensor.o
- .data          0x00000000        0x0 src/config/MLX90614_IR_Sensor.o
- .bss           0x00000000        0x0 src/config/MLX90614_IR_Sensor.o
- .bss.cpu_irq_critical_section_counter
-                0x00000000        0x4 src/config/MLX90614_IR_Sensor.o
- .bss.cpu_irq_prev_interrupt_state
-                0x00000000        0x1 src/config/MLX90614_IR_Sensor.o
- .text.i2c_master_is_syncing
-                0x00000000       0x24 src/config/MLX90614_IR_Sensor.o
- .text._i2c_master_wait_for_sync
-                0x00000000       0x20 src/config/MLX90614_IR_Sensor.o
- .text.MLX90614_read
-                0x00000000       0xa4 src/config/MLX90614_IR_Sensor.o
- .text.MLX90614_write
-                0x00000000       0x10 src/config/MLX90614_IR_Sensor.o
- .debug_info    0x00000000     0x2bc0 src/config/MLX90614_IR_Sensor.o
- .debug_abbrev  0x00000000      0x2bb src/config/MLX90614_IR_Sensor.o
- .debug_loc     0x00000000       0xe0 src/config/MLX90614_IR_Sensor.o
- .debug_aranges
-                0x00000000       0x38 src/config/MLX90614_IR_Sensor.o
- .debug_ranges  0x00000000       0x28 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x6d1 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x862 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x166 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x4b5 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x22 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x44 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x58 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x22 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x1df src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x10 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x76 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x6e2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0xddf src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x22 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x40 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x3a src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x24f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x682 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x8bf src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x235 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0xc67 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x4ce src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x9f8 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x82b src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x24b src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x906 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x225 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x77b src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x5e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x626 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x3b6 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0xc55 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000     0x1092 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0xc4a src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x6bf src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000     0x1873 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000     0x13be src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x34e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x7c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xa0 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x4c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xc4 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x94 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x58 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x364 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x82 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xb8 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xa0 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xb8 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x1c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x1c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x1c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x7c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x161 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xdc src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x11e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xe2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xe2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xe2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xe2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xe2 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x12c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x100 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xf4 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x408 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x40 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x361 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000     0x1fc5 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x51 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x58 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x35 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x9c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x35 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x29d src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x10 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x52 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x43 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x180 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x10 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x22 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xbe src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x197 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x29 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x51 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x3f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x3df src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x11 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x19 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x40 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x136 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xa9 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x12 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x1f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x2ab src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x79 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x43 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x6f src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x91 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x19 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0xb0 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x7e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x237 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000      0x9da src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x18 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x2e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x94 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x10 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x2d src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x16 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x1c src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x2e src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x49 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x34 src/config/MLX90614_IR_Sensor.o
- .debug_macro   0x00000000       0x22 src/config/MLX90614_IR_Sensor.o
- .debug_line    0x00000000      0xdc3 src/config/MLX90614_IR_Sensor.o
- .debug_str     0x00000000    0x843b5 src/config/MLX90614_IR_Sensor.o
- .comment       0x00000000       0x5c src/config/MLX90614_IR_Sensor.o
- .debug_frame   0x00000000       0x90 src/config/MLX90614_IR_Sensor.o
- .ARM.attributes
-                0x00000000       0x32 src/config/MLX90614_IR_Sensor.o
- COMMON         0x00000000        0xc src/config/MLX90614_IR_Sensor.o
  .group         0x00000000        0x8 src/console.o
  .group         0x00000000        0x8 src/console.o
  .group         0x00000000        0x8 src/console.o
@@ -1153,33 +872,13 @@ Discarded input sections
  .debug_macro   0x00000000       0x3f src/ADC_Commands.o
  .debug_macro   0x00000000      0x3df src/ADC_Commands.o
  .debug_macro   0x00000000       0x11 src/ADC_Commands.o
- .debug_macro   0x00000000       0x19 src/ADC_Commands.o
- .debug_macro   0x00000000       0x40 src/ADC_Commands.o
- .debug_macro   0x00000000      0x136 src/ADC_Commands.o
- .debug_macro   0x00000000       0xa9 src/ADC_Commands.o
- .debug_macro   0x00000000       0x12 src/ADC_Commands.o
- .debug_macro   0x00000000       0x1f src/ADC_Commands.o
- .debug_macro   0x00000000      0x2ab src/ADC_Commands.o
- .debug_macro   0x00000000       0x16 src/ADC_Commands.o
- .debug_macro   0x00000000       0x79 src/ADC_Commands.o
- .debug_macro   0x00000000       0x43 src/ADC_Commands.o
- .debug_macro   0x00000000       0x6f src/ADC_Commands.o
- .debug_macro   0x00000000       0x91 src/ADC_Commands.o
- .debug_macro   0x00000000       0x19 src/ADC_Commands.o
- .debug_macro   0x00000000       0xb0 src/ADC_Commands.o
- .debug_macro   0x00000000       0x7e src/ADC_Commands.o
  .debug_macro   0x00000000      0x237 src/ADC_Commands.o
  .debug_macro   0x00000000      0x9da src/ADC_Commands.o
- .debug_macro   0x00000000       0x18 src/ADC_Commands.o
  .debug_macro   0x00000000       0x2e src/ADC_Commands.o
  .debug_macro   0x00000000       0x94 src/ADC_Commands.o
  .debug_macro   0x00000000       0x10 src/ADC_Commands.o
- .debug_macro   0x00000000       0x2d src/ADC_Commands.o
  .debug_macro   0x00000000       0x16 src/ADC_Commands.o
  .debug_macro   0x00000000       0x1c src/ADC_Commands.o
- .debug_macro   0x00000000       0x2e src/ADC_Commands.o
- .debug_macro   0x00000000       0x49 src/ADC_Commands.o
- .debug_macro   0x00000000       0x34 src/ADC_Commands.o
  .group         0x00000000        0x8 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
  .group         0x00000000        0x8 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
  .group         0x00000000        0x8 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
@@ -6367,6 +6066,7 @@ Discarded input sections
  .debug_frame   0x00000000       0x90 src/HMC5883L_Magnetometer_Commands.o
  .ARM.attributes
                 0x00000000       0x32 src/HMC5883L_Magnetometer_Commands.o
+ COMMON         0x00000000        0xc src/HMC5883L_Magnetometer_Commands.o
  .group         0x00000000        0x8 src/I2C_Commands.o
  .group         0x00000000        0x8 src/I2C_Commands.o
  .group         0x00000000        0x8 src/I2C_Commands.o
@@ -7155,7 +6855,6 @@ Linker script and memory map
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/armv6-m/crti.o
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/armv6-m/crtbegin.o
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv6-m/crt0.o
-LOAD src/config/MLX90614_IR_Sensor.o
 LOAD src/console.o
 LOAD src/SPI_Commands.o
 LOAD src/ADC_Commands.o
@@ -8369,49 +8068,69 @@ OUTPUT(CubesatFreeRTOS.elf elf32-littlearm)
  .debug_ranges  0x000007d0       0x50 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
  .debug_ranges  0x00000820       0xc0 src/main.o
 
-.debug_macro    0x00000000     0x68ff
+.debug_macro    0x00000000     0x721c
  .debug_macro   0x00000000      0x6d4 src/ADC_Commands.o
- .debug_macro   0x000006d4       0x10 src/ADC_Commands.o
- .debug_macro   0x000006e4      0x3fa src/ADC_Commands.o
- .debug_macro   0x00000ade      0x481 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_macro   0x00000f5f      0x4c7 src/ASF/sam0/drivers/adc/adc.o
- .debug_macro   0x00001426      0x504 src/ASF/sam0/drivers/sercom/sercom.o
- .debug_macro   0x0000192a      0x501 src/ASF/sam0/drivers/sercom/sercom_interrupt.o
- .debug_macro   0x00001e2b      0x511 src/ASF/sam0/drivers/sercom/usart/usart.o
- .debug_macro   0x0000233c      0x511 src/ASF/sam0/drivers/sercom/usart/usart_interrupt.o
- .debug_macro   0x0000284d      0x481 src/ASF/sam0/utils/stdio/read.o
- .debug_macro   0x00002cce      0x481 src/ASF/sam0/utils/stdio/write.o
- .debug_macro   0x0000314f      0x113 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/port.o
- .debug_macro   0x00003262      0x185 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o
- .debug_macro   0x000033e7      0x164 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/list.o
- .debug_macro   0x0000354b      0x1d6 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/queue.o
- .debug_macro   0x00003721      0x219 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/tasks.o
- .debug_macro   0x0000393a      0x1a1 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/timers.o
- .debug_macro   0x00003adb      0x4bd src/ASF/sam0/boards/samd21_xplained_pro/board_init.o
- .debug_macro   0x00003f98      0x49b src/ASF/sam0/drivers/port/port.o
- .debug_macro   0x00004433      0x4df src/ASF/sam0/drivers/system/clock/clock_samd21_r21/clock.o
- .debug_macro   0x00004912      0x26b src/ASF/sam0/drivers/system/clock/clock_samd21_r21/clock.o
- .debug_macro   0x00004b7d      0x4ad src/ASF/sam0/drivers/system/clock/clock_samd21_r21/gclk.o
- .debug_macro   0x0000502a       0x11 src/ASF/sam0/drivers/system/clock/clock_samd21_r21/gclk.o
- .debug_macro   0x0000503b      0x493 src/ASF/sam0/drivers/system/pinmux/pinmux.o
- .debug_macro   0x000054ce      0x4b0 src/ASF/sam0/drivers/system/system.o
- .debug_macro   0x0000597e      0x2d5 src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
- .debug_macro   0x00005c53       0x3a src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
- .debug_macro   0x00005c8d      0x169 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005df6       0x97 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005e8d       0xef src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005f7c       0x52 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005fce       0x16 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005fe4       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00005ff4       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00006004       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00006014       0x35 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x00006049      0x122 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000616b      0x718 src/main.o
- .debug_macro   0x00006883       0x34 src/main.o
- .debug_macro   0x000068b7       0x10 src/main.o
- .debug_macro   0x000068c7       0x10 src/main.o
- .debug_macro   0x000068d7       0x28 src/main.o
+ .debug_macro   0x000006d4       0x19 src/ADC_Commands.o
+ .debug_macro   0x000006ed       0x40 src/ADC_Commands.o
+ .debug_macro   0x0000072d      0x136 src/ADC_Commands.o
+ .debug_macro   0x00000863       0xa9 src/ADC_Commands.o
+ .debug_macro   0x0000090c       0x12 src/ADC_Commands.o
+ .debug_macro   0x0000091e       0x1f src/ADC_Commands.o
+ .debug_macro   0x0000093d      0x2ab src/ADC_Commands.o
+ .debug_macro   0x00000be8       0x16 src/ADC_Commands.o
+ .debug_macro   0x00000bfe       0x79 src/ADC_Commands.o
+ .debug_macro   0x00000c77       0x43 src/ADC_Commands.o
+ .debug_macro   0x00000cba       0x6f src/ADC_Commands.o
+ .debug_macro   0x00000d29       0x91 src/ADC_Commands.o
+ .debug_macro   0x00000dba       0x19 src/ADC_Commands.o
+ .debug_macro   0x00000dd3       0xb0 src/ADC_Commands.o
+ .debug_macro   0x00000e83       0x7e src/ADC_Commands.o
+ .debug_macro   0x00000f01       0x18 src/ADC_Commands.o
+ .debug_macro   0x00000f19       0x2d src/ADC_Commands.o
+ .debug_macro   0x00000f46       0x2e src/ADC_Commands.o
+ .debug_macro   0x00000f74       0x49 src/ADC_Commands.o
+ .debug_macro   0x00000fbd       0x34 src/ADC_Commands.o
+ .debug_macro   0x00000ff1       0x10 src/ADC_Commands.o
+ .debug_macro   0x00001001      0x3fa src/ADC_Commands.o
+ .debug_macro   0x000013fb      0x481 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_macro   0x0000187c      0x4c7 src/ASF/sam0/drivers/adc/adc.o
+ .debug_macro   0x00001d43      0x504 src/ASF/sam0/drivers/sercom/sercom.o
+ .debug_macro   0x00002247      0x501 src/ASF/sam0/drivers/sercom/sercom_interrupt.o
+ .debug_macro   0x00002748      0x511 src/ASF/sam0/drivers/sercom/usart/usart.o
+ .debug_macro   0x00002c59      0x511 src/ASF/sam0/drivers/sercom/usart/usart_interrupt.o
+ .debug_macro   0x0000316a      0x481 src/ASF/sam0/utils/stdio/read.o
+ .debug_macro   0x000035eb      0x481 src/ASF/sam0/utils/stdio/write.o
+ .debug_macro   0x00003a6c      0x113 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/port.o
+ .debug_macro   0x00003b7f      0x185 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o
+ .debug_macro   0x00003d04      0x164 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/list.o
+ .debug_macro   0x00003e68      0x1d6 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/queue.o
+ .debug_macro   0x0000403e      0x219 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/tasks.o
+ .debug_macro   0x00004257      0x1a1 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/timers.o
+ .debug_macro   0x000043f8      0x4bd src/ASF/sam0/boards/samd21_xplained_pro/board_init.o
+ .debug_macro   0x000048b5      0x49b src/ASF/sam0/drivers/port/port.o
+ .debug_macro   0x00004d50      0x4df src/ASF/sam0/drivers/system/clock/clock_samd21_r21/clock.o
+ .debug_macro   0x0000522f      0x26b src/ASF/sam0/drivers/system/clock/clock_samd21_r21/clock.o
+ .debug_macro   0x0000549a      0x4ad src/ASF/sam0/drivers/system/clock/clock_samd21_r21/gclk.o
+ .debug_macro   0x00005947       0x11 src/ASF/sam0/drivers/system/clock/clock_samd21_r21/gclk.o
+ .debug_macro   0x00005958      0x493 src/ASF/sam0/drivers/system/pinmux/pinmux.o
+ .debug_macro   0x00005deb      0x4b0 src/ASF/sam0/drivers/system/system.o
+ .debug_macro   0x0000629b      0x2d5 src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
+ .debug_macro   0x00006570       0x3a src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
+ .debug_macro   0x000065aa      0x169 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006713       0x97 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x000067aa       0xef src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006899       0x52 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x000068eb       0x16 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006901       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006911       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006921       0x10 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006931       0x35 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006966      0x122 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x00006a88      0x718 src/main.o
+ .debug_macro   0x000071a0       0x34 src/main.o
+ .debug_macro   0x000071d4       0x10 src/main.o
+ .debug_macro   0x000071e4       0x10 src/main.o
+ .debug_macro   0x000071f4       0x28 src/main.o
 
 .debug_line     0x00000000     0xd8de
  .debug_line    0x00000000      0xef9 src/ADC_Commands.o
@@ -8564,8 +8283,6 @@ HMC5883L_init                                     src/HMC5883L_Magnetometer_Comm
 HMC5883L_read                                     src/HMC5883L_Magnetometer_Commands.o
 HardFault_Handler                                 src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
 I2S_Handler                                       src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
-MLX90614_read                                     src/config/MLX90614_IR_Sensor.o
-MLX90614_write                                    src/config/MLX90614_IR_Sensor.o
 NMI_Handler                                       src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
 NVMCTRL_Handler                                   src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
 PM_Handler                                        src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
@@ -8896,7 +8613,6 @@ i2c_master_init                                   src/ASF/sam0/drivers/sercom/i2
 i2c_master_instance                               src/main.o
                                                   src/I2C_Commands.o
                                                   src/HMC5883L_Magnetometer_Commands.o
-                                                  src/config/MLX90614_IR_Sensor.o
 i2c_master_read_packet_wait                       src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_master.o
                                                   src/I2C_Commands.o
 i2c_master_read_packet_wait_no_stop               src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_master.o
@@ -8907,10 +8623,8 @@ i2c_master_write_packet_wait                      src/ASF/sam0/drivers/sercom/i2
 i2c_master_write_packet_wait_no_stop              src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_master.o
 i2c_read_command                                  src/I2C_Commands.o
                                                   src/HMC5883L_Magnetometer_Commands.o
-                                                  src/config/MLX90614_IR_Sensor.o
 i2c_write_command                                 src/I2C_Commands.o
                                                   src/HMC5883L_Magnetometer_Commands.o
-                                                  src/config/MLX90614_IR_Sensor.o
 iprintf                                           c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv6-m\libc_nano.a(lib_a-printf.o)
 link                                              src/ASF/sam0/utils/syscalls/gcc/syscalls.o
 main                                              src/main.o
