@@ -193,19 +193,27 @@ static void task_spi_read(void *pvParameters) {
  */
 int main(void)
 {
-	/* Initilize the SAM system */
+	// Initilize the SAM system
 	system_init();
 
-	/* Initialize the console uart */
+	// Initialize the console uart
 	configure_console();
 	
-	/* Output demo infomation. */
+	// Output demo infomation.
 	printf("-- Freertos Example --\n\r");
 	printf("-- %s\n\r", BOARD_NAME);
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
 	configure_i2c_master();
-
+	//READ FROM MAGNETOMETER
+	/*HMC5883L_init();
+	uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
+	HMC5883L_read(readBuff);
+	int i;
+	for (i = 0; i < 6; i++) {
+		printf("%x ", readBuff[i]);		
+	}*/
+	
 	/*struct adc_module temp_instance;
 	configure_adc(&temp_instance);
 	int i = 0;
@@ -221,7 +229,7 @@ int main(void)
 	
 	
 	// motor controller test that says bad address
-	uint8_t write_buffer[3] = {
+	/*uint8_t write_buffer[3] = {
 		0xaa, 0x0a, 0x00
 	};
 	
@@ -235,27 +243,28 @@ int main(void)
 	};
 	i2c_write_command(&write_packet);
 	
-	/* Create task to monitor processor activity */
+	// Create task to monitor processor activity
 	if (xTaskCreate(task_monitor, "Monitor", TASK_MONITOR_STACK_SIZE, NULL,
 			TASK_MONITOR_STACK_PRIORITY, NULL) != pdPASS) {
 		//printf("Failed to create Monitor task\r\n");
 	}
 
-	/* Create task to make led blink */
+	// Create task to make led blink
 	if (xTaskCreate(task_led, "Led", TASK_LED_STACK_SIZE, NULL,
 			TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
 		//printf("Failed to create test led task\r\n");
 	}
 	
-	/* Create task to make led blink */
+	// Create task to make led blink
 	if (xTaskCreate(task_adc_read, "ADC", TASK_ADC_STACK_SIZE, NULL,
 	TASK_ADC_STACK_PRIORITY, NULL) != pdPASS) {
 		//printf("Failed to create test led task\r\n");
 	}
 
-	/* Start the scheduler. */
+	// Start the scheduler.
 	vTaskStartScheduler();
 
-	/* Will only get here if there was insufficient memory to create the idle task. */
+	// Will only get here if there was insufficient memory to create the idle task.
+	*/
 	return 0;
 }
