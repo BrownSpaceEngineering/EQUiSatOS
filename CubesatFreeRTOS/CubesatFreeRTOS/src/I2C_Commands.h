@@ -17,6 +17,7 @@
 struct i2c_master_module i2c_master_instance;
 void configure_i2c_master(void);
 void i2c_write_command(struct i2c_master_packet* packet_address);
+void i2c_write_command_no_stop(struct i2c_master_packet* packet_address);
 void i2c_read_command(struct i2c_master_packet* packet_address);
 
 #endif /* INCFILE1_H_ */

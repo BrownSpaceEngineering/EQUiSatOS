@@ -40,7 +40,7 @@ void MLX90614_read(uint8_t* buf, uint8_t addr) {
 		.hs_master_code  = 0x0,
 	};
 	
-	i2c_write_command(&write_packet);
+	i2c_write_command_no_stop(&write_packet);
 	i2c_read_command(&read_packet);
 }
 

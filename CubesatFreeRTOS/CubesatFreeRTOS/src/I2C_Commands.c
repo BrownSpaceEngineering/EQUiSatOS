@@ -42,10 +42,13 @@ void configure_i2c_master(void)
 	Given a pointer to a packet, perform a write over I2C following the information
 	detailed in the packet
 */
-void i2c_write_command(struct i2c_master_packet* packet_address){
+void i2c_writer_helper(struct i2c_master_packet* packet_address,
+                       enum status_code (*i2c_write)(struct i2c_master_module *const module,
+                                                     struct i2c_master_packet *const packet))
+{
 	uint16_t timeout = 0;
 	while (true) {
-		int x = i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
+		int x = i2c_write(&i2c_master_instance, packet_address);
 		if (x == STATUS_OK){
 			break;
 		}
@@ -59,6 +62,22 @@ void i2c_write_command(struct i2c_master_packet* packet_address){
 		}
 		printf("i2c_master_write_packet_wait status: %d\r\n",x);
 	}
+}
+
+/*
+	Given a pointer to a packet, perform a write over I2C following the information
+	detailed in the packet
+*/
+void i2c_write_command(struct i2c_master_packet* packet_address){
+  i2c_writer_helper(packet_address, i2c_master_write_packet_wait);
+}
+
+/*
+	Given a pointer to a packet, perform a write over I2C following the information
+	detailed in the packet
+*/
+void i2c_write_command_no_stop(struct i2c_master_packet* packet_address){
+  i2c_writer_helper(packet_address, i2c_master_write_packet_wait_no_stop);
 }
 
 /*
