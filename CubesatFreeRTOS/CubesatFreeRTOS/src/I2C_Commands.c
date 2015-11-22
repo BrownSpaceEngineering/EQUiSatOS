@@ -14,7 +14,6 @@ void configure_i2c_master(void)
 {
 	/* Initialize config structure and software module. */
 	//! [init_conf]
-	struct i2c_master_config config_i2c_master;
 	i2c_master_get_config_defaults(&config_i2c_master);
 	//! [init_conf]
 

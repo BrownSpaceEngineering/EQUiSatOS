@@ -226,8 +226,8 @@ int main(void)
 	};
 	
 	struct i2c_master_packet write_packet = {
-		.address     = 0x0a,
-		.data_length = 1,
+		.address     = 0x0f,
+		.data_length = 3,
 		.data        = write_buffer,
 		.ten_bit_address = false,
 		.high_speed      = false,
