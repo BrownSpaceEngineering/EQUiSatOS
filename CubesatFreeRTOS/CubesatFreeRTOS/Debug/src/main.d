@@ -151,7 +151,7 @@ src/main.d src/main.o: ../src/main.c ../src/main.h ../src/asf.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\inttypes.h \
  ../src/console.h ../src/I2C_Commands.h ../src/SPI_Commands.h \
  ../src/ADC_Commands.h ../src/HMC5883L_Magnetometer_Commands.h \
- ../src/I2C_Commands.h
+ ../src/I2C_Commands.h ../src/MLX90614_IR_Sensor.h
 
 ../src/main.h:
 
@@ -474,3 +474,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/HMC5883L_Magnetometer_Commands.h:
 
 ../src/I2C_Commands.h:
+
+../src/MLX90614_IR_Sensor.h:

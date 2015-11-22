@@ -20,12 +20,17 @@ void configure_i2c_master(void)
 
 	/* Change buffer timeout to something longer. */
 	//! [conf_change]
-	config_i2c_master.buffer_timeout = 10000;
+	config_i2c_master.buffer_timeout = 65535;
 	//! [conf_change]
 
 	/* Initialize and enable device with config. */
 	//! [init_module]
-	i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+	int init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+	printf("I2C master init status: %d\r\n", init_status);
+	while(init_status != STATUS_OK) {
+		init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+		printf("I2C master init error status: %d\r\n", init_status);
+	}
 	//! [init_module]
 
 	//! [enable_module]
@@ -44,12 +49,15 @@ void i2c_write_command(struct i2c_master_packet* packet_address){
 		if (x == STATUS_OK){
 			break;
 		}
-		printf("%d\r\n",x);
-		/* Increment timeout counter and check if timed out. */
+		if(timeout%100 == 0) {
+			printf("i2c_master_write_packet_wait status: %d\r\n",x);
+		}
+		// Increment timeout counter and check if timed out.
 		if (timeout++ == TIMEOUT) {
 			printf("I2C write timed out.\r\n");
 			break;
 		}
+		printf("i2c_master_write_packet_wait status: %d\r\n",x);
 	}
 }
 
@@ -59,8 +67,7 @@ void i2c_write_command(struct i2c_master_packet* packet_address){
 */
 void i2c_read_command(struct i2c_master_packet* packet_address){
 	uint16_t timeout = 0;
-	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) !=
-	STATUS_OK) {
+	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) != STATUS_OK) {
 		if (timeout++ == TIMEOUT) {
 			break;
 			printf("timeout");

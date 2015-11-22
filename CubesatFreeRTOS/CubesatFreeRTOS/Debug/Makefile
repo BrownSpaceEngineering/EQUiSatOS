@@ -115,6 +115,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/console.c \
+../src/MLX90614_IR_Sensor.c \
 ../src/SPI_Commands.c \
 ../src/ADC_Commands.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -159,6 +160,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/console.o \
+src/MLX90614_IR_Sensor.o \
 src/SPI_Commands.o \
 src/ADC_Commands.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -196,6 +198,7 @@ src/main.o
 
 OBJS_AS_ARGS +=  \
 src/console.o \
+src/MLX90614_IR_Sensor.o \
 src/SPI_Commands.o \
 src/ADC_Commands.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -233,6 +236,7 @@ src/main.o
 
 C_DEPS +=  \
 src/console.d \
+src/MLX90614_IR_Sensor.d \
 src/SPI_Commands.d \
 src/ADC_Commands.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -270,6 +274,7 @@ src/main.d
 
 C_DEPS_AS_ARGS +=  \
 src/console.d \
+src/MLX90614_IR_Sensor.d \
 src/SPI_Commands.d \
 src/ADC_Commands.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -320,6 +325,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 

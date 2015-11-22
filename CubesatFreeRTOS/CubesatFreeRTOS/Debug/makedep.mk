@@ -4,6 +4,8 @@
 
 src\console.c
 
+src\MLX90614_IR_Sensor.c
+
 src\SPI_Commands.c
 
 src\ADC_Commands.c

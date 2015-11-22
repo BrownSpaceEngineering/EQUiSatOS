@@ -150,7 +150,7 @@ static void task_monitor(void *pvParameters)
 
     configure_console();
 	for (;;) {
-		printf("hi");
+		//printf("hi");
 		vTaskDelay(1000);
 	}
 }
@@ -192,40 +192,49 @@ static void task_spi_read(void *pvParameters) {
  *  \return Unused (ANSI-C compatibility).
  */
 int main(void)
-{	
-	
-	
-	
+{
 	/* Initilize the SAM system */
 	system_init();
 
 	/* Initialize the console uart */
 	configure_console();
-
+	
 	/* Output demo infomation. */
 	printf("-- Freertos Example --\n\r");
 	printf("-- %s\n\r", BOARD_NAME);
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
-	struct adc_module temp_instance;
+	configure_i2c_master();
+
+	/*struct adc_module temp_instance;
 	configure_adc(&temp_instance);
 	int i = 0;
-	while(i<10){
+	int cum = 0;
+	while(i<50){
 		int x = readVoltagemV(temp_instance);
+		cum += x;
 		printf("%d\n\r",x);
 		i++;
 	}
-
-  uint8_t MLXbuf = 0;
-  // RAM access: 000x 0000
-  uint8_t addr = RAW_DATA_IR_CHAN1;
-  MLX90614_read(&MLXbuf, addr);
-  printf("MLX: %4x\n", MLXbuf);
-	
-	printf("pause point");
+	printf("AVG: %d\n\r", cum/i);*/
+    //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
 	
 	
-
+	// motor controller test that says bad address
+	uint8_t write_buffer[3] = {
+		0xaa, 0x0a, 0x00
+	};
+	
+	struct i2c_master_packet write_packet = {
+		.address     = 0x0a,
+		.data_length = 1,
+		.data        = write_buffer,
+		.ten_bit_address = false,
+		.high_speed      = false,
+		.hs_master_code  = 0x0,
+	};
+	i2c_write_command(&write_packet);
+	
 	/* Create task to monitor processor activity */
 	if (xTaskCreate(task_monitor, "Monitor", TASK_MONITOR_STACK_SIZE, NULL,
 			TASK_MONITOR_STACK_PRIORITY, NULL) != pdPASS) {

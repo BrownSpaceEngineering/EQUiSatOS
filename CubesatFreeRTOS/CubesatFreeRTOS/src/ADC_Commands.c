@@ -40,8 +40,8 @@ float readVoltagemV(struct adc_module adc_instance) {
 		// Wait for conversion to be done and read out result
 		status = adc_read(&adc_instance, &result);
 	} while (status == STATUS_BUSY);
-	//float resFloat = result;
-	return resultToVoltage(result);
+	float resFloat = result;
+	return resFloat;
 }
 
 float readVoltageV(struct adc_module adc_instance){
