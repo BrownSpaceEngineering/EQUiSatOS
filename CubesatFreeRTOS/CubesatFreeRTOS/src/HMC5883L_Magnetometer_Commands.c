@@ -7,6 +7,7 @@
 
 #include <HMC5883L_Magnetometer_Commands.h>
 
+
 /**
 	Example for utilizing magnetometer with I2C
 	DEPRECATED: Former main Used to test magnetometer when this was a separate project
@@ -119,3 +120,32 @@ void HMC5883L_read(uint8_t* read_buffer){
 	i2c_write_command(&write_packet);
 	i2c_read_command(&read_packet);
 }
+
+//Converts the raw data from sensor into xyz coordinates in milligauss.
+//xyzBuffer must be of length 3 and will be populated with xyz.
+void getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
+	uint16_t x = ((uint16_t)readBuffer[0] << 8) | readBuffer[1];
+	uint16_t y = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
+	uint16_t z = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];
+	xyzBuffer[0] = (int16_t) x;
+	xyzBuffer[1] = (int16_t) y;
+	xyzBuffer[2] = (int16_t) z;
+}
+
+float computeCompassDir(int16_t x, int16_t y, int16_t z) {
+	float heading = atan2(y, x);
+	float declinationAngle = 0.244346;
+	heading += declinationAngle;
+	// Correct for when signs are reversed.
+	if(heading < 0) {
+		heading += 2*M_PI;	
+	}	
+
+	// Check for wrap due to addition of declination.
+	if(heading > 2*M_PI) {
+		heading -= 2*M_PI;	
+	}	
+	float headingDegrees = heading * 180/M_PI;	
+	return headingDegrees;
+}
+

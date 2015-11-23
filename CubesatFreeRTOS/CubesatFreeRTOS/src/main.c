@@ -209,10 +209,16 @@ int main(void)
 	/*HMC5883L_init();
 	uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
 	HMC5883L_read(readBuff);
+	int16_t xyzBuff[3] = {0, 0, 0};
+	getXYZ(readBuff, xyzBuff);
 	int i;
-	for (i = 0; i < 6; i++) {
-		printf("%x ", readBuff[i]);		
-	}*/
+	for (i = 0; i < 6; i++) {		
+		printf("%x ", readBuff[i]);					
+	}
+	printf("\n\r");
+	printf("%d %d %d\n\r", xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
+	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);*/	
+	
 	
 	/*struct adc_module temp_instance;
 	configure_adc(&temp_instance);

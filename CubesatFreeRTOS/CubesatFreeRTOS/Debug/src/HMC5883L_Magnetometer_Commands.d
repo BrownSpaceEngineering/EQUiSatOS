@@ -150,7 +150,8 @@ src/HMC5883L_Magnetometer_Commands.d src/HMC5883L_Magnetometer_Commands.o: \
  ../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam0_usart/usart_serial.h \
- ../src/config/conf_uart_serial.h
+ ../src/config/conf_uart_serial.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
 
 ../src/HMC5883L_Magnetometer_Commands.h:
 
@@ -461,3 +462,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/common/services/serial/sam0_usart/usart_serial.h:
 
 ../src/config/conf_uart_serial.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
