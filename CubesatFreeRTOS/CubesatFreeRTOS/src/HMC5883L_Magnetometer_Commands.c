@@ -133,7 +133,7 @@ void getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 }
 
 float computeCompassDir(int16_t x, int16_t y, int16_t z) {
-	float heading = atan2(y, x);
+	float heading = atan2(z, x);
 	float declinationAngle = 0.244346;
 	heading += declinationAngle;
 	// Correct for when signs are reversed.

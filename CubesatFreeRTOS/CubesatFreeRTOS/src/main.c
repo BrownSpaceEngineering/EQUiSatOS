@@ -206,7 +206,8 @@ int main(void)
 	
 	configure_i2c_master();
 	//READ FROM MAGNETOMETER
-	/*HMC5883L_init();
+	HMC5883L_init();
+	for (int j = 0; j < 15; j++) {				
 	uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
 	HMC5883L_read(readBuff);
 	int16_t xyzBuff[3] = {0, 0, 0};
@@ -217,7 +218,9 @@ int main(void)
 	}
 	printf("\n\r");
 	printf("%d %d %d\n\r", xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
-	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);*/	
+	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
+	int a = 0;
+	}
 	
 	
 	/*struct adc_module temp_instance;
