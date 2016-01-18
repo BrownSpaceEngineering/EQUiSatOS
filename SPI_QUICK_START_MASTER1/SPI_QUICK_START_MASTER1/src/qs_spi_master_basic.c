@@ -76,7 +76,7 @@ static uint8_t writeModeReg[WRITE_MO_LEN] = {
 };
 
 static uint8_t rx[5] = {
-	   0xff, 0xff, 0xff, 0xff, 0xff//, 0xff, 0xff, 
+	   0xef, 0xef, 0xef, 0xef, 0xef//, 0xff, 0xff, 
 	   //0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 //! [buffer]
@@ -113,6 +113,8 @@ void configure_spi_master(void)
 	/* Configure, initialize and enable SERCOM SPI module */
 //! [conf_defaults]
 	spi_get_config_defaults(&config_spi_master);
+	spi_set_baudrate(&spi_master_instance.hw->SPI, 2000000);
+
 //! [conf_defaults]
 //! [mux_setting]
 	config_spi_master.mux_setting = EXT1_SPI_SERCOM_MUX_SETTING;
@@ -160,19 +162,41 @@ int main(void)
 	spi_select_slave(&spi_master_instance, &slave, true);
 //! [select_slave]
 //! [write]
-    //spi_write_buffer_wait(&spi_master_instance, write0, WRITE_LEN);
-	spi_transceive_buffer_wait(&spi_master_instance,read0,rx, READ_LEN);
-	//spi_write_buffer_wait(&spi_master_instance, writeModeReg, WRITE_MO_LEN);
-	//spi_transceive_buffer_wait(&spi_master_instance,readModeReg,rx, READ_MO_LEN);
+    //enum status_code code_0 = spi_write_buffer_wait(&spi_master_instance, write0, WRITE_LEN);
+	//enum status_code code_1 = spi_transceive_buffer_wait(&spi_master_instance,read0,rx, READ_LEN);
+	
+	static uint8_t write1[5] = {
+	0x02, 0x00, 0x00, 0x00, 0x01
+	};
+	
+	static uint8_t read1[4] = {
+		0x03, 0x00, 0x00, 0x00
+	};
+	static uint8_t enable = 0x06;
+	static uint8_t status = 0x05;
+	spi_select_slave(&spi_master_instance, &slave, false);
+	spi_select_slave(&spi_master_instance, &slave, true);
+	enum status_code code_1 = spi_write_buffer_wait(&spi_master_instance, &enable, 1);
+	spi_select_slave(&spi_master_instance, &slave, false);
+	spi_select_slave(&spi_master_instance, &slave, true);
+	enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, &status, 1);
+	/*enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, write1, 5);
+	spi_select_slave(&spi_master_instance, &slave, false);
+	spi_select_slave(&spi_master_instance, &slave, true);
+	enum status_code code_3 = spi_write_buffer_wait(&spi_master_instance, read1, 4);
+	//spi_select_slave(&spi_master_instance, &slave, false);
+	//spi_select_slave(&spi_master_instance, &slave, true);*/
+	enum status_code code_4 = spi_read_buffer_wait(&spi_master_instance, rx, 1, 0xee);
+	//enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, writeModeReg, WRITE_MO_LEN);
+	//enum status_code code_3 = spi_transceive_buffer_wait(&spi_master_instance,readModeReg,rx, READ_MO_LEN);
 //! [write]
 //! [deselect_slave]
 	spi_select_slave(&spi_master_instance, &slave, false);
 //! [deselect_slave]
 
 //! [inf_loop]
-	//while (true) {
-		/* Infinite loop */
-	//}
+	while (true) {
+		/* Infinite loop */	}
 //! [inf_loop]
 //! [main_use_case]
 }

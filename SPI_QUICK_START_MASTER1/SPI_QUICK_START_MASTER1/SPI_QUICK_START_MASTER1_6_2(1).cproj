@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectVersion>7.0</ProjectVersion>
+    <ProjectVersion>6.2</ProjectVersion>
     <ToolchainName>com.Atmel.ARMGCC.C</ToolchainName>
     <ProjectGuid>{ff0f88d3-e397-400c-a2a9-0e61d3d1b368}</ProjectGuid>
     <avrdevice>ATSAMD21J18A</avrdevice>
@@ -203,13 +203,9 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009153</ToolNumber>
+      <ToolNumber>ATML2130021800006212</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
-    <ExternalProgrammingToolCommand />
-    <avrtoolserialnumber>ATML2130021800009153</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
-    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
