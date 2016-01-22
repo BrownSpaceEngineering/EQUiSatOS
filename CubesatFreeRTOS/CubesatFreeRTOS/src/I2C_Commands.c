@@ -46,21 +46,7 @@ void i2c_writer_helper(struct i2c_master_packet* packet_address,
                                                      struct i2c_master_packet *const packet))
 {
 	uint16_t timeout = 0;
-	while (true) {
-		int x = i2c_write(&i2c_master_instance, packet_address);
-		if (x == STATUS_OK){
-			break;
-		}
-		if(timeout%100 == 0) {
-			printf("i2c_master_write_packet_wait status: %d\r\n",x);
-		}
-		// Increment timeout counter and check if timed out.
-		if (timeout++ == TIMEOUT) {
-			printf("I2C write timed out.\r\n");
-			break;
-		}
-		printf("i2c_master_write_packet_wait status: %d\r\n",x);
-	}
+	int x = i2c_write(&i2c_master_instance, packet_address);
 }
 
 /*

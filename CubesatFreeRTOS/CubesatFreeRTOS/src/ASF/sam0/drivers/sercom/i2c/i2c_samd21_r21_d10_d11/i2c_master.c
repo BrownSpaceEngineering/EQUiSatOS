@@ -356,6 +356,7 @@ enum status_code _i2c_master_address_response(
 	/* Check that slave responded with ack. */
 	} else if (i2c_module->STATUS.reg & SERCOM_I2CM_STATUS_RXNACK) {
 		/* Slave busy. Issue ack and stop command. */
+		int x = SERCOM_I2CM_STATUS_RXNACK;
 		i2c_module->CTRLB.reg |= SERCOM_I2CM_CTRLB_CMD(3);
 
 		/* Return bad address value. */

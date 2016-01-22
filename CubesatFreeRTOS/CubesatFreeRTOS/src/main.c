@@ -205,6 +205,10 @@ int main(void)
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
 	configure_i2c_master();
+	
+	while(true){
+		float x = MLX90614_readObjectTempC();
+	}
 	//READ FROM MAGNETOMETER
 	HMC5883L_init();
 	for (int j = 0; j < 15; j++) {				
