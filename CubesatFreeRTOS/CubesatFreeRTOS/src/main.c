@@ -208,6 +208,7 @@ int main(void)
 	
 	while(true){
 		float x = MLX90614_readObjectTempC();
+		uint16_t data = MLX90614_readRawIRData(MLX90614_RAWIR1);
 	}
 	//READ FROM MAGNETOMETER
 	HMC5883L_init();

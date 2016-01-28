@@ -11,10 +11,12 @@
 #define MLX90614_TOBJ1 0x07
 #define MLX90614_TOBJ2 0x08
 
-
 void read_MLX90614(uint8_t* buf, uint8_t addr);
+uint16_t MLX90614_readRawIRData(uint8_t addr);
 float readTemp(uint8_t addr);
 float MLX90614_readObjectTempC();
 float MLX90614_readAmbientTempC();
+
+struct mlxRawData {uint16_t IR_chan1; uint16_t IR_chan2;};
 
 #endif
