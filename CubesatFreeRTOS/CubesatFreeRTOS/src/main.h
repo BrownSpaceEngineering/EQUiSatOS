@@ -25,6 +25,7 @@
 
 #include "HMC5883L_Magnetometer_Commands.h"
 #include "MLX90614_IR_Sensor.h"
+#include "TEMD6200.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
