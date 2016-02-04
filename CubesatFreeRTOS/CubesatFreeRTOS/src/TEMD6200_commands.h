@@ -13,7 +13,7 @@
 
 #define TEMD6200_VOLTAGE_LIMIT_MV 3000
 
-int isBright(struct adc_module adc_reader);
+float brightness(struct adc_module adc_reader);
 
 
 

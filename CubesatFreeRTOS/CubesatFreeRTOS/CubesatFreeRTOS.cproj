@@ -264,6 +264,9 @@
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
     <ExternalProgrammingToolCommand />
+    <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>

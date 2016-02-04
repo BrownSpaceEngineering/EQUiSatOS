@@ -241,7 +241,7 @@ int main(void)
 	printf("AVG: %d\n\r", cum/i);*/
     //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
 	while(true){
-		isBright(temp_instance);
+		brightness(temp_instance);
 	}
 	// motor controller test that says bad address
 	/*uint8_t write_buffer[3] = {
