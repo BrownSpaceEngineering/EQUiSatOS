@@ -600,6 +600,12 @@
     <Compile Include="src\SPI_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\TEMD6200_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\TEMD6200_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\ASF\sam0\utils\stdio\stdio_serial\stdio_serial.h">
       <SubType>compile</SubType>
     </None>

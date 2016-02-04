@@ -8,6 +8,8 @@ src\MLX90614_IR_Sensor.c
 
 src\SPI_Commands.c
 
+src\TEMD6200_Commands.c
+
 src\ADC_Commands.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c

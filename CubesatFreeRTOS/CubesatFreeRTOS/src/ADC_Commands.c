@@ -6,8 +6,7 @@
  */ 
 
 #include "ADC_Commands.h"
-
-void configure_adc(struct adc_module *adc_instance) {
+void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
 	struct adc_config config_adc;
 	// setup_config_defaults
 	adc_get_config_defaults(&config_adc);
@@ -15,7 +14,7 @@ void configure_adc(struct adc_module *adc_instance) {
 	config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
 	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
 	config_adc.reference = ADC_REFERENCE_INT1V;
-	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN8; //PB00
+	config_adc.positive_input = pin;
 	config_adc.resolution = ADC_RESOLUTION_12BIT;
 
 	//setup_set_config
