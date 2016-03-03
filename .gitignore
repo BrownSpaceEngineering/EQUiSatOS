@@ -34,4 +34,5 @@ Temporary Items
 *.map
 *.srec
 *.lss
+*.eep
 
