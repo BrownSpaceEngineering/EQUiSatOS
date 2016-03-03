@@ -44,7 +44,7 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 #include <asf.h>
-
+#include <clock.h>
 //! [setup]
 //! [buf_length]
 //! [buf_length]
@@ -75,9 +75,9 @@ static uint8_t writeModeReg[WRITE_MO_LEN] = {
 	0x01, 0x00
 };
 
-static uint8_t rx[5] = {
-	   0xef, 0xef, 0xef, 0xef, 0xef//, 0xff, 0xff, 
-	   //0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+static uint8_t rx[16] = {
+	   0xef, 0xef, 0xef, 0xef, 0xef, 0xff, 0xff, 
+	   0xff, 0xff, 0xff//, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 //! [buffer]
 
@@ -113,7 +113,6 @@ void configure_spi_master(void)
 	/* Configure, initialize and enable SERCOM SPI module */
 //! [conf_defaults]
 	spi_get_config_defaults(&config_spi_master);
-	spi_set_baudrate(&spi_master_instance.hw->SPI, 2000000);
 
 //! [conf_defaults]
 //! [mux_setting]
@@ -140,6 +139,8 @@ void configure_spi_master(void)
 //! [init]
 
 //! [enable]
+	enum status_code code = spi_set_baudrate(&spi_master_instance, 100000);
+
 	spi_enable(&spi_master_instance);
 //! [enable]
 
@@ -159,7 +160,7 @@ int main(void)
 
 //! [main_use_case]
 //! [select_slave]
-	spi_select_slave(&spi_master_instance, &slave, true);
+	//spi_select_slave(&spi_master_instance, &slave, true);
 //! [select_slave]
 //! [write]
     //enum status_code code_0 = spi_write_buffer_wait(&spi_master_instance, write0, WRITE_LEN);
@@ -173,30 +174,60 @@ int main(void)
 		0x03, 0x00, 0x00, 0x00
 	};
 	static uint8_t enable = 0x06;
-	static uint8_t status = 0x05;
+	static uint8_t status[6] = {0x05, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
 	spi_select_slave(&spi_master_instance, &slave, false);
 	spi_select_slave(&spi_master_instance, &slave, true);
 	enum status_code code_1 = spi_write_buffer_wait(&spi_master_instance, &enable, 1);
 	spi_select_slave(&spi_master_instance, &slave, false);
-	spi_select_slave(&spi_master_instance, &slave, true);
-	enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, &status, 1);
+	//spi_select_slave(&spi_master_instance, &slave, true);
+	//enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, &status, 1);
 	/*enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, write1, 5);
 	spi_select_slave(&spi_master_instance, &slave, false);
 	spi_select_slave(&spi_master_instance, &slave, true);
 	enum status_code code_3 = spi_write_buffer_wait(&spi_master_instance, read1, 4);
 	//spi_select_slave(&spi_master_instance, &slave, false);
 	//spi_select_slave(&spi_master_instance, &slave, true);*/
-	enum status_code code_4 = spi_read_buffer_wait(&spi_master_instance, rx, 1, 0xee);
+	//enum status_code code_4 = spi_read_buffer_wait(&spi_master_instance, rx, 1, 0xee);
 	//enum status_code code_2 = spi_write_buffer_wait(&spi_master_instance, writeModeReg, WRITE_MO_LEN);
 	//enum status_code code_3 = spi_transceive_buffer_wait(&spi_master_instance,readModeReg,rx, READ_MO_LEN);
 //! [write]
 //! [deselect_slave]
-	spi_select_slave(&spi_master_instance, &slave, false);
+	//spi_select_slave(&spi_master_instance, &slave, false);
 //! [deselect_slave]
-
+	int temp[2];
 //! [inf_loop]
+	delay_init();
 	while (true) {
-		/* Infinite loop */	}
+		spi_select_slave(&spi_master_instance, &slave, true);
+		enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp, 2);
+		//enum status_code code_4 = spi_read(&spi_master_instance, rx);
+		//enum status_code code_4 = spi_read_buffer_wait(&spi_master_instance, rx, 16, 0x06);
+		//enum status_code code_4 = spi_transceive_buffer_wait(&spi_master_instance, status, rx, 10);
+		/*for (int i = 0; i < 10; ++i){
+			int data;
+			enum status_code code_4 = spi_read(&spi_master_instance, &data);
+			rx[i] = data;	
+		}*/
+		spi_select_slave(&spi_master_instance, &slave, false);
+		/*static uint8_t i = 130;
+		for (; i <= 255; i++) {
+			spi_select_slave(&spi_master_instance, &slave, true);
+			spi_transceive_wait(&spi_master_instance, 0x13, temp);
+			spi_transceive_wait(&spi_master_instance, i, temp);
+			spi_select_slave(&spi_master_instance, &slave, false);
+			delay_ms(1);
+		}    
+		i = 255;
+		for (; i >= 130; i--) {
+			spi_select_slave(&spi_master_instance, &slave, true);
+			spi_transceive_wait(&spi_master_instance, 0x13, temp);
+			spi_transceive_wait(&spi_master_instance, i, temp);
+			spi_select_slave(&spi_master_instance, &slave, false);
+			delay_ms(1);
+		} */
+		//delay_ms(1);
+		int a = 9 ;
+	}
 //! [inf_loop]
 //! [main_use_case]
 }

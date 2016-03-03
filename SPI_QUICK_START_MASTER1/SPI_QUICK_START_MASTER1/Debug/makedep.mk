@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\common2\services\delay\sam0\systick_counter.c
+
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
