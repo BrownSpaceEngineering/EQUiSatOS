@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Script to make the project on linux
+
+sh convert_studio7_linux.sh
+cd Debug/
+make -f Makefile-linux
+
