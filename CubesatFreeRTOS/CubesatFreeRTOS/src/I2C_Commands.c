@@ -24,10 +24,10 @@ void configure_i2c_master(void)
 
 	/* Initialize and enable device with config. */
 	//! [init_module]
-	int init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+	int init_status = i2c_master_init(&i2c_master_instance, SERCOM_I2C_PIN, &config_i2c_master);
 	printf("I2C master init status: %d\r\n", init_status);
 	while(init_status != STATUS_OK) {
-		init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+		init_status = i2c_master_init(&i2c_master_instance, SERCOM_I2C_PIN, &config_i2c_master);
 		printf("I2C master init error status: %d\r\n", init_status);
 	}
 	//! [init_module]
