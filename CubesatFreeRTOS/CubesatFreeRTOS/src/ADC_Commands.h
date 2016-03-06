@@ -17,6 +17,6 @@ float readVoltagemV(struct adc_module adc_instance);
 float readVoltageV(struct adc_module adc_instance);
 float resultToVoltage(float result);
 float voltageToTemp(float voltage);
-void configure_adc(struct adc_module *adc_instance);
+void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin);
 
 #endif /* ADC_COMMANDS_H */

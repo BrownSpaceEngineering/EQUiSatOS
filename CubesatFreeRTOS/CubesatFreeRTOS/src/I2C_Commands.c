@@ -22,12 +22,15 @@ void configure_i2c_master(void)
 	config_i2c_master.buffer_timeout = 65535;
 	//! [conf_change]
 
+	config_i2c_master.pinmux_pad0 = PINMUX_PB12C_SERCOM4_PAD0;
+	config_i2c_master.pinmux_pad1 = PINMUX_PB13C_SERCOM4_PAD1;
+
 	/* Initialize and enable device with config. */
 	//! [init_module]
-	int init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+	int init_status = i2c_master_init(&i2c_master_instance, SERCOM4, &config_i2c_master);
 	printf("I2C master init status: %d\r\n", init_status);
 	while(init_status != STATUS_OK) {
-		init_status = i2c_master_init(&i2c_master_instance, SERCOM2, &config_i2c_master);
+		init_status = i2c_master_init(&i2c_master_instance, SERCOM4, &config_i2c_master);
 		printf("I2C master init error status: %d\r\n", init_status);
 	}
 	//! [init_module]
@@ -46,21 +49,7 @@ void i2c_writer_helper(struct i2c_master_packet* packet_address,
                                                      struct i2c_master_packet *const packet))
 {
 	uint16_t timeout = 0;
-	while (true) {
-		int x = i2c_write(&i2c_master_instance, packet_address);
-		if (x == STATUS_OK){
-			break;
-		}
-		if(timeout%100 == 0) {
-			printf("i2c_master_write_packet_wait status: %d\r\n",x);
-		}
-		// Increment timeout counter and check if timed out.
-		if (timeout++ == TIMEOUT) {
-			printf("I2C write timed out.\r\n");
-			break;
-		}
-		printf("i2c_master_write_packet_wait status: %d\r\n",x);
-	}
+	int x = i2c_write(&i2c_master_instance, packet_address);
 }
 
 /*

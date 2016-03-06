@@ -90,6 +90,7 @@
  */
 
 #include "main.h"
+#include "MLX90614_IR_Sensor.h"
 
 //extern void xPortSysTickHandler(void);
 
@@ -205,6 +206,11 @@ int main(void)
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
 	configure_i2c_master();
+	/*
+	while(true){
+		float x = MLX90614_readObjectTempC();
+		uint16_t data = MLX90614_readRawIRData(MLX90614_RAWIR1);
+	}
 	//READ FROM MAGNETOMETER
 	HMC5883L_init();
 	for (int j = 0; j < 15; j++) {				
@@ -221,11 +227,12 @@ int main(void)
 	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
 	int a = 0;
 	}
-	
-	
-	/*struct adc_module temp_instance;
-	configure_adc(&temp_instance);
-	int i = 0;
+	*/
+	//MLX90614_getSMBusAddr(MLX90614_I2CADDR);
+	MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
+	struct adc_module temp_instance;
+	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+	/*int i = 0;
 	int cum = 0;
 	while(i<50){
 		int x = readVoltagemV(temp_instance);
@@ -235,8 +242,10 @@ int main(void)
 	}
 	printf("AVG: %d\n\r", cum/i);*/
     //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
-	
-	
+	while(true){
+		//brightness(temp_instance);
+		MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
+	}
 	// motor controller test that says bad address
 	/*uint8_t write_buffer[3] = {
 		0xaa, 0x0a, 0x00

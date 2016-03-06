@@ -394,6 +394,7 @@ typedef union {
 #define   ADC_INPUTCTRL_GAIN_8X_Val       0x3u   /**< \brief (ADC_INPUTCTRL) 8x */
 #define   ADC_INPUTCTRL_GAIN_16X_Val      0x4u   /**< \brief (ADC_INPUTCTRL) 16x */
 #define   ADC_INPUTCTRL_GAIN_DIV2_Val     0xFu   /**< \brief (ADC_INPUTCTRL) 1/2x */
+
 #define ADC_INPUTCTRL_GAIN_1X       (ADC_INPUTCTRL_GAIN_1X_Val     << ADC_INPUTCTRL_GAIN_Pos)
 #define ADC_INPUTCTRL_GAIN_2X       (ADC_INPUTCTRL_GAIN_2X_Val     << ADC_INPUTCTRL_GAIN_Pos)
 #define ADC_INPUTCTRL_GAIN_4X       (ADC_INPUTCTRL_GAIN_4X_Val     << ADC_INPUTCTRL_GAIN_Pos)

@@ -24,3 +24,13 @@ Temporary Items
 
 # Temporary files
 *.swp
+
+# Binaries, object files
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.srec
+*.lss
+

@@ -264,6 +264,20 @@
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
     <ExternalProgrammingToolCommand />
+    <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
+    <com_atmel_avrdbg_tool_atmelice>
+      <ToolOptions>
+        <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
+      <ToolNumber>J41800025475</ToolNumber>
+      <ToolName>Atmel-ICE</ToolName>
+    </com_atmel_avrdbg_tool_atmelice>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -598,6 +612,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\SPI_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\TEMD6200_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\TEMD6200_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam0\utils\stdio\stdio_serial\stdio_serial.h">
