@@ -22,8 +22,8 @@ void configure_i2c_master(void)
 	config_i2c_master.buffer_timeout = 65535;
 	//! [conf_change]
 
-	config_i2c_master.pinmux_pad0 = PINMUX_PB12C_SERCOM4_PAD0;
-	config_i2c_master.pinmux_pad1 = PINMUX_PB13C_SERCOM4_PAD1;
+	//config_i2c_master.pinmux_pad0 = PINMUX_PB12C_SERCOM4_PAD0;
+	//config_i2c_master.pinmux_pad1 = PINMUX_PB13C_SERCOM4_PAD1;
 
 	/* Initialize and enable device with config. */
 	//! [init_module]
@@ -46,8 +46,7 @@ void configure_i2c_master(void)
 */
 void i2c_writer_helper(struct i2c_master_packet* packet_address,
                        enum status_code (*i2c_write)(struct i2c_master_module *const module,
-                                                     struct i2c_master_packet *const packet))
-{
+                                                     struct i2c_master_packet *const packet)){
 	uint16_t timeout = 0;
 	int x = i2c_write(&i2c_master_instance, packet_address);
 }

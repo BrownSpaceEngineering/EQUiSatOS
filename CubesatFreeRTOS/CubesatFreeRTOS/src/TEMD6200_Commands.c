@@ -5,7 +5,7 @@
  *  Author: Tyler
  */ 
 
-#include "TEMD6200_commands.h"
+#include "TEMD6200_Commands.h"
 
 float brightness(struct adc_module adc_reader){
 	float voltage = readVoltagemV(adc_reader);

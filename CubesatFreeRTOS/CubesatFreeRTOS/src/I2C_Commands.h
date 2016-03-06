@@ -14,6 +14,11 @@
 
 #define TIMEOUT 1000
 
+
+// NOTE: SERCOM2 is used on the SAMD21 Xplained eval board
+//       SERCOM4 is used on the Equisat Processor test board
+#define SERCOM_I2C_PIN SERCOM4
+
 struct i2c_master_module i2c_master_instance;
 struct i2c_master_config config_i2c_master;
 void configure_i2c_master(void);

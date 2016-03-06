@@ -106,8 +106,8 @@ void configure_spi_master(void)
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
 //! [slave_conf_defaults]
 //! [ss_pin]
-	//slave_dev_config.ss_pin = SLAVE_SELECT_PIN;
-	slave_dev_config.ss_pin = PIN_PA20;
+	slave_dev_config.ss_pin = SLAVE_SELECT_PIN;
+	//slave_dev_config.ss_pin = PIN_PA20;
 //! [ss_pin]
 //! [slave_init]
 	spi_attach_slave(&slave, &slave_dev_config);
@@ -122,7 +122,7 @@ void configure_spi_master(void)
 //! [mux_setting]
 	/* Configure pad 0 for data in */
 //! [di]
-	config_spi_master.pinmux_pad0 = PIN_PA21;//EXT1_SPI_SERCOM_PINMUX_PAD0;
+	config_spi_master.pinmux_pad0 = /*PIN_PA21;*/EXT1_SPI_SERCOM_PINMUX_PAD0;
 //! [di]
 	/* Configure pad 1 as unused */
 //! [ss]
@@ -130,18 +130,18 @@ void configure_spi_master(void)
 //! [ss]
 	/* Configure pad 2 for data out */
 //! [do]
-	config_spi_master.pinmux_pad2 = PIN_PB16;//EXT1_SPI_SERCOM_PINMUX_PAD2;
+	config_spi_master.pinmux_pad2 = /*PIN_PB16;*/EXT1_SPI_SERCOM_PINMUX_PAD2;
 //! [do]
 	/* Configure pad 3 for SCK */
 //! [sck]
-	config_spi_master.pinmux_pad3 = PIN_PB17;//EXT1_SPI_SERCOM_PINMUX_PAD3;
+	config_spi_master.pinmux_pad3 = /*PIN_PB17;*/EXT1_SPI_SERCOM_PINMUX_PAD3;
 //! [sck]
 //! [init]
 	spi_init(&spi_master_instance, EXT1_SPI_MODULE, &config_spi_master);
 //! [init]
 
 //! [enable]
-	enum status_code code = spi_set_baudrate(&spi_master_instance, 100000);
+	enum status_code code = spi_set_baudrate(&spi_master_instance, 1000000);
 
 	spi_enable(&spi_master_instance);
 //! [enable]
@@ -154,6 +154,14 @@ int main(void)
 //! [main_setup]
 //! [system_init]
 	system_init();
+	/*struct port_config conf;
+	port_get_config_defaults(&conf);
+	conf.direction = PORT_PIN_DIR_OUTPUT;
+	port_pin_set_config(PIN_PA18, &conf);
+	port_pin_set_config(PIN_PA19, &conf);
+	port_pin_set_output_level(PIN_PA18, true);
+	port_pin_set_output_level(PIN_PA19, true);*/
+	
 //! [system_init]
 //! [run_config]
 	configure_spi_master();
@@ -167,8 +175,6 @@ int main(void)
 //! [write]
     //enum status_code code_0 = spi_write_buffer_wait(&spi_master_instance, write0, WRITE_LEN);
 	//enum status_code code_1 = spi_transceive_buffer_wait(&spi_master_instance,read0,rx, READ_LEN);
-	port_pin_set_output_level(PIN_PA18, true);
-	port_pin_set_output_level(PIN_PA19, true);
 	static uint8_t write1[5] = {
 	0x02, 0x00, 0x00, 0x00, 0x01
 	};
@@ -177,22 +183,28 @@ int main(void)
 		0x03, 0x00, 0x00, 0x00
 	};
 	static uint8_t enable = 0x06;
-	static uint8_t status[6] = {0x05, 0x06, 0x00, 0x00, 0x01, 0x06, 0x06, 0x06, 0x06, 0x06};
+	static uint8_t status[6] = {0x03, 0x00, 0x00, 0x00, 0x01, 0x06, 0x06, 0x06, 0x06, 0x06};
 	spi_select_slave(&spi_master_instance, &slave, false);
 	spi_select_slave(&spi_master_instance, &slave, true);
 	enum status_code code_1 = spi_write_buffer_wait(&spi_master_instance, &enable, 1);
 	spi_select_slave(&spi_master_instance, &slave, false);
 	
-	int temp[2];
+	uint8_t temp[5];
+	static uint8_t write_8[6] = {0x02, 0x00, 0x00, 0x00, 0x10};
+	spi_select_slave(&spi_master_instance, &slave, true);
+	enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, write_8, &temp, 5);
+	spi_select_slave(&spi_master_instance, &slave, false);	
+	
+	
 //! [inf_loop]
 	delay_init();
 	while (true) {
 		spi_select_slave(&spi_master_instance, &slave, true);
 		//status[0] = (uint8_t)rand();
-		enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp, 2);
-		delay_us(100);
+		enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp, 5);
+		//delay_us(100);
 		spi_select_slave(&spi_master_instance, &slave, false);
-		delay_us(100);
+		//delay_us(100);
 		int a = 9 ;
 	}
 //! [inf_loop]

@@ -27,10 +27,12 @@ Temporary Items
 
 # Binaries, object files
 *.o
+*.d
 *.elf
 *.bin
 *.hex
 *.map
 *.srec
 *.lss
+*.eep
 
