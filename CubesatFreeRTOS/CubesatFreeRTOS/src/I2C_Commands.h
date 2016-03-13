@@ -12,7 +12,7 @@
 #include <asf.h>
 #include <conf_uart_serial.h>
 
-#define TIMEOUT 1000
+#define TIMEOUT 65535
 
 
 // NOTE: SERCOM2 is used on the SAMD21 Xplained eval board

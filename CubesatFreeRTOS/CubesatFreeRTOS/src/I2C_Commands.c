@@ -19,7 +19,7 @@ void configure_i2c_master(void)
 
 	/* Change buffer timeout to something longer. */
 	//! [conf_change]
-	config_i2c_master.buffer_timeout = 65535;
+	config_i2c_master.buffer_timeout = TIMEOUT;
 	//! [conf_change]
 
 	//config_i2c_master.pinmux_pad0 = PINMUX_PB12C_SERCOM4_PAD0;
@@ -75,8 +75,8 @@ void i2c_read_command(struct i2c_master_packet* packet_address){
 	uint16_t timeout = 0;
 	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) != STATUS_OK) {
 		if (timeout++ == TIMEOUT) {
-			break;
 			printf("timeout");
+			break;
 		}
 	}
 }
