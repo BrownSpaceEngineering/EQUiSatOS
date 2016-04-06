@@ -5,12 +5,12 @@
  *  Author: Daniel
  */ 
 
-#include <I2C_Commands.h>
+#include <I2C_Commands_mod.h>
 
 /*
 	Configures I2C connection with standard settings
 */
-void configure_i2c_master(Sercom* sercom)
+void configure_i2c_master(void)
 {
 	/* Initialize config structure and software module. */
 	//! [init_conf]
@@ -22,12 +22,15 @@ void configure_i2c_master(Sercom* sercom)
 	config_i2c_master.buffer_timeout = TIMEOUT;
 	//! [conf_change]
 
+	//config_i2c_master.pinmux_pad0 = PINMUX_PB12C_SERCOM4_PAD0;
+	//config_i2c_master.pinmux_pad1 = PINMUX_PB13C_SERCOM4_PAD1;
+
 	/* Initialize and enable device with config. */
 	//! [init_module]
-	int init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
+	int init_status = i2c_master_init(&i2c_master_instance, SERCOM4, &config_i2c_master);
 	printf("I2C master init status: %d\r\n", init_status);
 	while(init_status != STATUS_OK) {
-		init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
+		init_status = i2c_master_init(&i2c_master_instance, SERCOM4, &config_i2c_master);
 		printf("I2C master init error status: %d\r\n", init_status);
 	}
 	//! [init_module]
@@ -39,24 +42,19 @@ void configure_i2c_master(Sercom* sercom)
 
 /*
 	Given a pointer to a packet, perform a write over I2C following the information
-	detailed in the packet.
-	
-	Modified to take a boolean to determine stop/nostop instead of passing function pointers
+	detailed in the packet
 */
 void i2c_writer_helper(struct i2c_master_packet* packet_address,
-                       bool should_stop)
-{
+                       enum status_code (*i2c_write)(struct i2c_master_module *const module,
+                                                     struct i2c_master_packet *const packet)){
+  /* Write buffer to slave until success. */
 	uint16_t timeout = 0;
-	
-	int x = 0;
-	
-	if(should_stop){
-		x = i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
-	}else{
-		x = i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
-	}
-	
-	int y = 1;
+  while (i2c_write(&i2c_master_instance, packet_address) != STATUS_OK) {
+    /* Increment timeout counter and check if timed out. */
+    if (timeout++ == TIMEOUT) {
+      break;
+    }
+  }
 }
 
 /*
@@ -64,7 +62,7 @@ void i2c_writer_helper(struct i2c_master_packet* packet_address,
 	detailed in the packet
 */
 void i2c_write_command(struct i2c_master_packet* packet_address){
-  i2c_writer_helper(packet_address, true);
+  i2c_writer_helper(packet_address, i2c_master_write_packet_wait);
 }
 
 /*
@@ -72,7 +70,7 @@ void i2c_write_command(struct i2c_master_packet* packet_address){
 	detailed in the packet
 */
 void i2c_write_command_no_stop(struct i2c_master_packet* packet_address){
-  i2c_writer_helper(packet_address, false);
+  i2c_writer_helper(packet_address, i2c_master_write_packet_wait_no_stop);
 }
 
 /*
@@ -83,8 +81,8 @@ void i2c_read_command(struct i2c_master_packet* packet_address){
 	uint16_t timeout = 0;
 	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) != STATUS_OK) {
 		if (timeout++ == TIMEOUT) {
-			break;
 			printf("timeout");
+			break;
 		}
 	}
 }

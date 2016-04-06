@@ -249,28 +249,28 @@
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800007809</ToolNumber>
+      <ToolNumber>ATML2130021800009084</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
     <ExternalProgrammingToolCommand />
-    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
+    <avrtoolserialnumber>ATML2130021800009084</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>2000000</SwdClock>
+          <SwdClock>0</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -602,12 +602,24 @@
     <Compile Include="src\console.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\I2C_Commands_mod.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\I2C_Commands_mod.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\MLX90614_IR_Sensor.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\MLX90614_IR_Sensor_mod.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\MLX90614_IR_Sensor_mod.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\SPI_Commands.c">
       <SubType>compile</SubType>
     </Compile>

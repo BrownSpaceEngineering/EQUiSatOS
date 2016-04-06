@@ -205,7 +205,7 @@ int main(void)
 	printf("-- %s\n\r", BOARD_NAME);
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
-	configure_i2c_master();
+	configure_i2c_master(SERCOM2);
 	/*
 	while(true){
 		float x = MLX90614_readObjectTempC();
@@ -228,8 +228,16 @@ int main(void)
 	int a = 0;
 	}
 	*/
-	//MLX90614_getSMBusAddr(MLX90614_I2CADDR);
-	MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
+	uint8_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR + 1);
+	uint8_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR + 1);
+	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR + 1,MLX90614_DEFAULT_I2CADDR);
+	uint8_t val3 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+	
+	while(true){
+		float x = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
+		int y = 1;
+	}
 	struct adc_module temp_instance;
 	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	/*int i = 0;
@@ -242,10 +250,6 @@ int main(void)
 	}
 	printf("AVG: %d\n\r", cum/i);*/
     //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
-	while(true){
-		//brightness(temp_instance);
-		MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
-	}
 	// motor controller test that says bad address
 	/*uint8_t write_buffer[3] = {
 		0xaa, 0x0a, 0x00
