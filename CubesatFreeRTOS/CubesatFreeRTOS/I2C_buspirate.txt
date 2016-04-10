@@ -1,0 +1,6 @@
+# Sequence of bytes to write new address:
+# assuming default addr of 0x5a (0xb4 write, 0xb5 read)
+
+[0xb4 0x2e [0xb5 r:3] # read current EEPROM SMBUS addr
+[0xb4 0x2e 0xXX 0xXX 0xPEC] # set new EEPROM SMBUS addr
+
