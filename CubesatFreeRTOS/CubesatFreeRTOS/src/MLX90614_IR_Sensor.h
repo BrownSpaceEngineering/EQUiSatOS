@@ -4,6 +4,7 @@
 #include <I2C_Commands.h>
 
 #define MLX90614_DEFAULT_I2CADDR 0x5A
+#define MLX90614_TBOARD_IR2 0x5B // address IR2 on Processor Test Board
 
 //ram addresses
 #define MLX90614_RAWIR1 0x04
