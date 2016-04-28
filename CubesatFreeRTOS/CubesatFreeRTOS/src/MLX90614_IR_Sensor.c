@@ -1,5 +1,10 @@
 #include <MLX90614_IR_Sensor.h>
 
+/* Read 2 bytes over I2C from an MLX device.
+    device_addr: I2C address of the device
+    mem_addr: RAM or EEPROM address to read OR'd with its opcode (see datasheet)
+    buf: 2-byte destination data buffer
+*/
 void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
 	
 	struct i2c_master_packet write_packet = {
@@ -24,6 +29,11 @@ void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
 	i2c_read_command(&read_packet);
 }
 
+/* Write a value to an MLX's EEPROM e.g. to modify its SMBus address.
+    device_addr: I2C address of the device
+    mem_addr: EEPROM address to write to OR'd with its opcode (see datasheet)
+    buf: 2-byte source data buffer
+*/
 void write_MLX90614_eeprom(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
 	
 	uint8_t crc_buf[3] = {

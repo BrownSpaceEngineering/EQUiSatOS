@@ -123,7 +123,7 @@ void HMC5883L_read(uint8_t* read_buffer){
 
 //Converts the raw data from sensor into xyz coordinates in milligauss.
 //xyzBuffer must be of length 3 and will be populated with xyz.
-void getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
+void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 	uint16_t x = ((uint16_t)readBuffer[0] << 8) | readBuffer[1];
 	uint16_t y = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
 	uint16_t z = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];
@@ -132,7 +132,7 @@ void getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 	xyzBuffer[2] = (int16_t) z;
 }
 
-float computeCompassDir(int16_t x, int16_t y, int16_t z) {
+float HMC5883L_computeCompassDir(int16_t x, int16_t y, int16_t z) {
 	float heading = atan2(z, x);
 	float declinationAngle = 0.244346;
 	heading += declinationAngle;
