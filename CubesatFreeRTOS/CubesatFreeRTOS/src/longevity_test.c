@@ -77,6 +77,7 @@ void pollSensors_writeUART(Sercom* logger) {
   float heading = HMC5883L_computeCompassDir(coords_buf[0], coords_buf[1], coords_buf[2]);
 
   sprintf(string_buf, Magnetometer_format, coords_buf[0], coords_buf[1], coords_buf[2], heading);
+  usart_send_string(logger, string_buf);
 
   /* Photodiode data: */
   //TODO (i don't understand our ADC API...)
