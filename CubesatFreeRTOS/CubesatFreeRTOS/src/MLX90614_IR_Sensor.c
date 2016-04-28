@@ -24,28 +24,6 @@ void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
 	i2c_read_command(&read_packet);
 }
 
-void write_MLX90614_eeprom(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
-	
-	uint8_t crc_buf[3] = {
-		mem_addr, buf[0], buf[1]
-	};
-	
-	uint8_t write_buf[4] = {
-		mem_addr, buf[0], buf[1], crc(crc_buf,3)
-	};
-	
-	struct i2c_master_packet write_packet = {
-		.address     = device_addr,
-		.data_length = 4,
-		.data        = write_buf,
-		.ten_bit_address = false,
-		.high_speed      = false,
-		.hs_master_code  = 0x0,
-	};
-	
-	i2c_write_command(&write_packet);
-}
-
 //reads a 2 byte value which is sorted:
 //if lsb_first=true, lsb is the 0 entry
 //if lsb_first=false, lsb is the 1 entry
@@ -101,55 +79,7 @@ float MLX90614_readTempC(uint8_t device_addr, bool is_ambient) {
 }
 
 //recursive check, should always return the same value as device_addr
-uint8_t MLX90614_getAddress(uint8_t device_addr){
+uint16_t MLX90614_getAddress(uint8_t device_addr){
 	uint16_t mem = MLX90614_read2ByteValue(device_addr,MLX90614_SMBUS,false);
-	uint8_t* raws = (uint8_t*) &mem;
-	return raws[1];
+	return mem;
 }
-
-//changes device address from current_addr to new_addr. make sure new_addr doesnt conflict with any networked i2c devices
-void MLX90614_setAddress(uint8_t current_addr, uint8_t new_addr){
-	uint16_t mem = MLX90614_read2ByteValue(current_addr,MLX90614_SMBUS,false);
-	uint8_t* raws = (uint8_t*) &mem;
-	raws[1] = new_addr;
-	write_MLX90614_eeprom(current_addr,MLX90614_SMBUS,raws);
-}
-
-//http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code
-uint8_t crc(uint8_t* message, int nBytes)
-{	
-    uint8_t remainder = 0;	
-    /*
-     * Perform modulo-2 division, a byte at a time.
-     */
-    for (int byte = 0; byte < nBytes; ++byte)
-    {
-        /*
-         * Bring the next byte into the remainder.
-         */
-        remainder ^= (message[byte] << (WIDTH - 8));
-
-        /*
-         * Perform modulo-2 division, a bit at a time.
-         */
-        for (uint8_t bit = 8; bit > 0; --bit)
-        {
-            /*
-             * Try to divide the current data bit.
-             */
-            if (remainder & TOPBIT)
-            {
-                remainder = (remainder << 1) ^ CRC_POLYNOMIAL;
-            }
-            else
-            {
-                remainder = (remainder << 1);
-            }
-        }
-    }
-
-    /*
-     * The final remainder is the CRC result.
-     */
-    return (remainder);
-} 
