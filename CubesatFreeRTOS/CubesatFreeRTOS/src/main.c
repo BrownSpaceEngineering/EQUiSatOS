@@ -238,6 +238,7 @@ int main(void)
 		int y = 1;
 	}
 	*/
+	setup_switching();
  	pick_side(true);
 	bool x =get_input(SIDE_1_ENABLE);
 	pick_input(0x00);
