@@ -249,12 +249,12 @@
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>2000000</SwdClock>
+          <SwdClock>0</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -264,13 +264,13 @@
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
     <ExternalProgrammingToolCommand />
-    <avrtoolserialnumber>ATML2130021800009084</avrtoolserialnumber>
+    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -608,6 +608,12 @@
     <None Include="src\I2C_Commands_mod.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\Direct_Pin_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Direct_Pin_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>
@@ -624,6 +630,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\SPI_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\switching_commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\switching_commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TEMD6200_Commands.c">

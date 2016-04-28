@@ -4,9 +4,13 @@
 
 src\console.c
 
+src\Direct_Pin_Commands.c
+
 src\MLX90614_IR_Sensor.c
 
 src\SPI_Commands.c
+
+src\switching_commands.c
 
 src\TEMD6200_Commands.c
 

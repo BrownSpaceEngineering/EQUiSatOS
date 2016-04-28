@@ -22,12 +22,5 @@ uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2);
 float dataToTemp(uint16_t data);
 float MLX90614_readTempC(uint8_t device_addr, bool is_ambient);
 
-uint8_t MLX90614_getAddress(uint8_t device_addr);
-void MLX90614_setAddress(uint8_t current_addr, uint8_t new_addr);
-
-#define CRC_POLYNOMIAL 0xD8
-#define WIDTH (8 * sizeof(uint8_t))
-#define TOPBIT (1 << (WIDTH - 1))
-uint8_t crc(uint8_t* message, int nBytes);
-
+uint16_t MLX90614_getAddress(uint8_t device_addr);
 #endif

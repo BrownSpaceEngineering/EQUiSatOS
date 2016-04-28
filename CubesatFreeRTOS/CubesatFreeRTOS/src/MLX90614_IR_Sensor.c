@@ -111,10 +111,9 @@ float MLX90614_readTempC(uint8_t device_addr, bool is_ambient) {
 }
 
 //recursive check, should always return the same value as device_addr
-uint8_t MLX90614_getAddress(uint8_t device_addr){
+uint16_t MLX90614_getAddress(uint8_t device_addr){
 	uint16_t mem = MLX90614_read2ByteValue(device_addr,MLX90614_SMBUS,false);
-	uint8_t* raws = (uint8_t*) &mem;
-	return raws[1];
+	return mem;
 }
 
 //changes device address from current_addr to new_addr. make sure new_addr doesnt conflict with any networked i2c devices
@@ -162,4 +161,5 @@ uint8_t crc(uint8_t* message, int nBytes)
      * The final remainder is the CRC result.
      */
     return (remainder);
-} 
+}
+

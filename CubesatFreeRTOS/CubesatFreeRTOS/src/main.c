@@ -228,16 +228,30 @@ int main(void)
 	int a = 0;
 	}
 	*/
-	uint8_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
-	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR + 1);
-	uint8_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR + 1);
-	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR + 1,MLX90614_DEFAULT_I2CADDR);
-	uint8_t val3 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+	/*
+	uint16_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR);
+	uint16_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
 	
 	while(true){
 		float x = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
 		int y = 1;
 	}
+	*/
+	setup_switching();
+ 	pick_side(true);
+	bool x =get_input(SIDE_1_ENABLE);
+	pick_input(0x00);
+	pick_input(0x01);
+	pick_input(0x02);
+	pick_input(0x03);
+	pick_side(false);
+	pick_input(0x00);
+	pick_input(0x01);
+	pick_input(0x02);
+	pick_input(0x03);
+	pick_side(true);
+	
 	struct adc_module temp_instance;
 	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	/*int i = 0;
