@@ -11,6 +11,7 @@
 
 #include <asf.h>
 #include "conf_board.h"
+#include "conf_clocks.h"
 #include "conf_uart_serial.h"
 #include "task.h"
 #include <inttypes.h>

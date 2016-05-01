@@ -90,7 +90,6 @@
  */
 
 #include "main.h"
-#include "MLX90614_IR_Sensor.h"
 
 //extern void xPortSysTickHandler(void);
 
