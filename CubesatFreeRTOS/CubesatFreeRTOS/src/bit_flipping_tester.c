@@ -14,9 +14,9 @@
 
 #include "RTC_Commands.h"
 
-struct rtc_calendar_time schedule_time; // set a time for the RTC cal alarm
+volatile struct rtc_calendar_time schedule_time; // set a time for the RTC cal alarm
 
-uint16_t lfsr; // Global variable for LFSR RNG
+volatile uint16_t lfsr; // Global variable for LFSR RNG
 
 /* Seed the random number generator */
 void srand_LFSR(uint16_t seed) {
@@ -62,15 +62,30 @@ void init_bitFlip_test(void) {
 void bitFlip_callbackFunc(void) {
   uint16_t coin = rand_LFSR();
 
-  // With 0.02 probability, decide to flip a bit:
-  if (coin < 1311u) { 
-    uint32_t addr = (rand_LFSR() << 16) | rand_LFSR(); // generate a random address
+  // With 0.2 probability, decide to *possibly* flip a bit:
+  if (coin < 13108u) {
+    // The random number will be a valid memory address with only 0.5 probability:
+    coin = rand_LFSR();
+    int addr = (coin << 16) >> 16; // generate a random address between 0 and 2^15 - 1
     
-    /* TODO: map this value to the range of valid memory (SRAM)
-     * - there are 32KB SRAM according to the datasheet, so likely valid addresses
-     *   between 0-32000 (? unsure ?). Plus, need to include registers as possible
-     *   places to flip somehow
+    /* If addr is less than 0, we select from a register s.t. the probability of
+     * a bit flip occurring in a register is approx. 0.00625
+     *
+     * If the addr is nonnegative, we treat its value as a randomly-selected byte
+     * of memory in which we flip a bit. This happens with probability 0.1
      */
+    if (addr >= 0) { // select from SRAM (p=0.1)
+      uint8_t *ptr = (uint8_t *)addr; // cast address to a pointer to 8-bit uint
+
+      /* We know that 8 divides 2^15, so (coin % 8) remains uniformly distributed.
+       * This selects a bit to flip uniformly at random */
+      uint8_t flipmask = 1 << (coin % 8);
+
+      *ptr ^= flipmask; // XOR to flip that bit
+
+    } else if (addr > -1024) { // select from a register (p=0.00625)
+
+    }
   }
 }
 
