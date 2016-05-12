@@ -3,32 +3,29 @@
 
 #include <I2C_Commands.h>
 
-/* Opcode bitflags: */
-#define MLX90614_EEPROM_OP 0x20
-#define MLX90614_RAM_OP 0x00
+#define MLX90614_DEFAULT_I2CADDR 0x5A
+#define MLX90614_TBOARD_IR2 0x5B // address IR2 on Processor Test Board
 
-/* MLX90614 address(es): */
-#define MLX90614_I2CADDR 0x5A
+//ram addresses
+#define MLX90614_RAWIR1 0x04
+#define MLX90614_RAWIR2 0x05
+#define MLX90614_TA 0x06
+#define MLX90614_TOBJ1 0x07
+#define MLX90614_TOBJ2 0x08
 
-/* MLX90614 EEPROM addresses: */
-#define MLX90614_EEPROM_SMBUS (0x0E | MLX90614_EEPROM_OP)
+//eeprom addresses
+#define MLX90614_SMBUS 0x2E
 
-/* MLX90614 RAM addresses: */
-#define MLX90614_RAWIR1 (0x04 | MLX90614_RAM_OP)
-#define MLX90614_RAWIR2 (0x05 | MLX90614_RAM_OP)
-#define MLX90614_TA (0x06 | MLX90614_RAM_OP)
-#define MLX90614_TOBJ1 (0x07 | MLX90614_RAM_OP)
-#define MLX90614_TOBJ2 (0x08 | MLX90614_RAM_OP)
+void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf);
+uint16_t MLX90614_read2ByteValue(uint16_t device_addr, uint8_t mem_addr, bool lsb_first);
+uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2);
+float dataToTemp(uint16_t data);
+float MLX90614_readTempC(uint8_t device_addr, bool is_ambient);
 
-void MLX90614_read(uint8_t SMBus_addr, uint8_t ram_addr, uint8_t* buf);
-uint16_t MLX90614_readRawIRData(uint8_t SMBus_addr, uint8_t channel);
-float MLX90614_readTemp(uint8_t SMBus_addr, uint8_t ram_addr);
-float MLX90614_readObjectTempC(uint8_t SMBus_addr);
-float MLX90614_readAmbientTempC(uint8_t SMBus_addr);
-uint16_t MLX90614_getSMBusAddr(uint8_t device);
+uint16_t MLX90614_getAddress(uint8_t device_addr);
 
-/* UNUSED. Could be used to poll both raw IR channels without
-   specifiying. */
-struct mlxRawData {uint16_t IR_chan1; uint16_t IR_chan2;};
+void write_MLX90614_eeprom(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf);
+void MLX90614_setAddress(uint8_t current_addr, uint8_t new_addr);
 
+uint8_t crc(uint8_t* message, int nBytes);
 #endif

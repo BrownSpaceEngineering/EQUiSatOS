@@ -126,8 +126,10 @@ C_SRCS +=  \
 ../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.c \
 ../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.c \
 ../src/console.c \
+../src/Direct_Pin_Commands.c \
 ../src/MLX90614_IR_Sensor.c \
 ../src/SPI_Commands.c \
+../src/switching_commands.c \
 ../src/TEMD6200_Commands.c \
 ../src/ADC_Commands.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -178,8 +180,10 @@ src/tests/i2c_unit_tests.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.o \
 src/console.o \
+src/Direct_Pin_Commands.o \
 src/MLX90614_IR_Sensor.o \
 src/SPI_Commands.o \
+src/switching_commands.o \
 src/TEMD6200_Commands.o \
 src/ADC_Commands.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -223,8 +227,10 @@ src/tests/i2c_unit_tests.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.o \
 src/console.o \
+src/Direct_Pin_Commands.o \
 src/MLX90614_IR_Sensor.o \
 src/SPI_Commands.o \
+src/switching_commands.o \
 src/TEMD6200_Commands.o \
 src/ADC_Commands.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -268,8 +274,10 @@ src/tests/i2c_unit_tests.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.d \
 src/console.d \
+src/Direct_Pin_Commands.d \
 src/MLX90614_IR_Sensor.d \
 src/SPI_Commands.d \
+src/switching_commands.d \
 src/TEMD6200_Commands.d \
 src/ADC_Commands.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -313,8 +321,10 @@ src/tests/i2c_unit_tests.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.d \
 src/console.d \
+src/Direct_Pin_Commands.d \
 src/MLX90614_IR_Sensor.d \
 src/SPI_Commands.d \
+src/switching_commands.d \
 src/TEMD6200_Commands.d \
 src/ADC_Commands.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -365,6 +375,10 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
+
+
 
 
 

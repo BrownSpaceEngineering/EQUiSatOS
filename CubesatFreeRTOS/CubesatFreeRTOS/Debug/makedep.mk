@@ -16,9 +16,13 @@ src\ASF\sam0\drivers\sercom\i2c\i2c_samd21_r21_d10_d11\i2c_slave_interrupt.c
 
 src\console.c
 
+src\Direct_Pin_Commands.c
+
 src\MLX90614_IR_Sensor.c
 
 src\SPI_Commands.c
+
+src\switching_commands.c
 
 src\TEMD6200_Commands.c
 

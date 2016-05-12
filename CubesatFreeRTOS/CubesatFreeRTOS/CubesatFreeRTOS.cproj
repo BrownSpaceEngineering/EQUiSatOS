@@ -270,7 +270,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800007809</ToolNumber>
+      <ToolNumber>ATML2130021800009084</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <preserveEEPROM>true</preserveEEPROM>
@@ -669,16 +669,40 @@
     <Compile Include="src\console.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\I2C_Commands_mod.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\I2C_Commands_mod.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\Direct_Pin_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Direct_Pin_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\MLX90614_IR_Sensor.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\MLX90614_IR_Sensor_mod.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\MLX90614_IR_Sensor_mod.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\SPI_Commands.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\SPI_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\switching_commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\switching_commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TEMD6200_Commands.c">

@@ -11,6 +11,7 @@
 
 #include <asf.h>
 #include "conf_board.h"
+#include "conf_clocks.h"
 #include "conf_uart_serial.h"
 #include "task.h"
 #include <inttypes.h>
@@ -22,10 +23,12 @@
 #include "I2C_Commands.h"
 #include "SPI_Commands.h"
 #include "ADC_Commands.h"
+#include "Direct_Pin_Commands.h"
 
 #include "HMC5883L_Magnetometer_Commands.h"
 #include "MLX90614_IR_Sensor.h"
 #include "TEMD6200_Commands.h"
+#include "switching_commands.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
