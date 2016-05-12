@@ -7,52 +7,6 @@
 
 #include <HMC5883L_Magnetometer_Commands.h>
 
-
-/**
-	Example for utilizing magnetometer with I2C
-	DEPRECATED: Former main Used to test magnetometer when this was a separate project
-*/
-/*
-int Example(void){
-	//initialize SAMD21
-	system_init();
-	
-	//configure PUTTY terminal
-	configure_console();
-	printf("Running...\n\r");
-	
-	//configure i2c master on SAMD21
-	configure_i2c_master();
-	printf("I2C Configured\n\r");
-	
-	//initialize HMC5883L magnetometer with standard settings
-	HMC5883L_init();
-	printf("HMC5883L (magnetometer) initialized\n\r");	
-	
-	Establish buffer to read from
-	static uint8_t HMC5883L_read_buffer[7] = {
-		'a','a','a','a','a','a',0x0
-	};
-	
-	//take 10 measurements
-	int i = 0;
-	while(i < 10){
-		HMC5883L_read(HMC5883L_read_buffer);
-		printf("measurement\r\n");
-		printf("%x%x%x%x%x%x\r\n",(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0],(char)HMC5883L_read_buffer[0]);
-		i++;
-	}
-	
-	
-	printf("going to write dir command\r\n");
-	
-	i2c_write_command(&mc_dir_packet);
-	printf("wrote dir command\r\n");
-	//i2c_write_command(&mc_move_packet);
-	//printf("wrote move command\r\n");
-}
-*/
-
 /*
 	Perform a standard initialization of the HMC5883L Magnetometer
 	CURRENT SETTINGS:
@@ -60,7 +14,10 @@ int Example(void){
 	Gain = 5
 	Single Measurement Mode
 */
-void HMC5883L_init(void){
+void HMC5883L_init(i2c_write_func _i2c_write_func, i2c_read_func _i2c_read_func){
+	HMC5883L_i2c_write_func = _i2c_write_func;
+	HMC5883L_i2c_read_func = _i2c_read_func;
+	
 	static uint8_t write_buffer_1[2] = {
 		0x00, 0x70
 	};
@@ -86,8 +43,8 @@ void HMC5883L_init(void){
 		.hs_master_code  = 0x0,
 	};
 	
-	i2c_write_command(&write_packet_1);
-	i2c_write_command(&write_packet_2);
+	(*HMC5883L_i2c_write_func)(&write_packet_1);
+	(*HMC5883L_i2c_write_func)(&write_packet_2);
 }
 
 /*
@@ -117,8 +74,8 @@ void HMC5883L_read(uint8_t* read_buffer){
 		.hs_master_code  = 0x0,
 	};
 	
-	i2c_write_command(&write_packet);
-	i2c_read_command(&read_packet);
+	(*HMC5883L_i2c_write_func)(&write_packet);
+	(*HMC5883L_i2c_read_func)(&read_packet);
 }
 
 //Converts the raw data from sensor into xyz coordinates in milligauss.
@@ -148,4 +105,3 @@ float computeCompassDir(int16_t x, int16_t y, int16_t z) {
 	float headingDegrees = heading * 180/M_PI;	
 	return headingDegrees;
 }
-

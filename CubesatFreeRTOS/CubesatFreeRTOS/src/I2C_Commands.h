@@ -25,5 +25,9 @@ void configure_i2c_master(void);
 void i2c_write_command(struct i2c_master_packet* packet_address);
 void i2c_write_command_no_stop(struct i2c_master_packet* packet_address);
 void i2c_read_command(struct i2c_master_packet* packet_address);
+void i2c_writer_helper(struct i2c_master_packet* packet_address, enum status_code (*i2c_write)(struct i2c_master_module *const module, struct i2c_master_packet *const packet));
+
+typedef void (*i2c_write_func)(struct i2c_master_packet*);
+typedef void (*i2c_read_func)(struct i2c_master_packet*);
 
 #endif /* INCFILE1_H_ */

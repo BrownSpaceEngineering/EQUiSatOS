@@ -8,13 +8,15 @@
 
 #ifndef HMC5883L_MAGNETOMETER_COMMANDS_H
 #define HMC5883L_MAGNETOMETER_COMMANDS_H
-
 #include <I2C_Commands.h>
 #include <math.h>
 
 #define HMC5883L_ADDRESS 0x1E
 
-void HMC5883L_init(void);
+i2c_write_func HMC5883L_i2c_write_func;
+i2c_read_func HMC5883L_i2c_read_func;
+
+void HMC5883L_init(i2c_write_func _i2c_write_func, i2c_read_func _i2c_read_func);
 void HMC5883L_read(uint8_t* read_buffer);
 void getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer);
 float computeCompassDir(int16_t x, int16_t y, int16_t z);

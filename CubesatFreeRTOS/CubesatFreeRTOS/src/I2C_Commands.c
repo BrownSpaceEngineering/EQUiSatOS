@@ -47,8 +47,7 @@ void configure_i2c_master(void)
 void i2c_writer_helper(struct i2c_master_packet* packet_address,
                        enum status_code (*i2c_write)(struct i2c_master_module *const module,
                                                      struct i2c_master_packet *const packet)){
-	uint16_t timeout = 0;
-	int x = i2c_write(&i2c_master_instance, packet_address);
+	i2c_write(&i2c_master_instance, packet_address);
 }
 
 /*
