@@ -11,4 +11,4 @@ void run_test_HMC5883L_computeCompassDir(const struct test_case *test);
 
 void run_HMC5883L_tests(void);
 
-#endif /* HMC5883L_Magnetometer_Commands_Tests.h */
+#endif /* HMC5883L_MAGNETOMETER_COMMANDS_TESTS_H */
