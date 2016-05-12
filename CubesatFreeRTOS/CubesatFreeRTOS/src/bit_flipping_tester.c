@@ -66,8 +66,8 @@ void bitFlip_callbackFunc(void) {
   if (coin < 13108u) {
     // The random number will be a valid memory address with only 0.5 probability:
     coin = rand_LFSR();
-    int addr = (coin << 16) >> 16; // generate a random address between 0 and 2^15 - 1
-    
+    int addr = ((uint32_t)coin << 16) >> 16; // generate a random address between 0 and 2^15 - 1
+
     /* If addr is less than 0, we select from a register s.t. the probability of
      * a bit flip occurring in a register is approx. 0.00625
      *
