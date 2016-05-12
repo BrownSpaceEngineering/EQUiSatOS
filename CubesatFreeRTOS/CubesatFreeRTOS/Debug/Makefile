@@ -123,6 +123,7 @@ C_SRCS +=  \
 ../src/tests/HMC5883L_Magnetometer_Commands_Tests.c \
 ../src/tests/I2C_Mock.c \
 ../src/tests/i2c_unit_tests.c \
+../src/tests/MLX90614_IR_Sensor_Tests.c \
 ../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.c \
 ../src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.c \
 ../src/console.c \
@@ -177,6 +178,7 @@ src/ASF/common/utils/unit_test/suite.o \
 src/tests/HMC5883L_Magnetometer_Commands_Tests.o \
 src/tests/I2C_Mock.o \
 src/tests/i2c_unit_tests.o \
+src/tests/MLX90614_IR_Sensor_Tests.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.o \
 src/console.o \
@@ -224,6 +226,7 @@ src/ASF/common/utils/unit_test/suite.o \
 src/tests/HMC5883L_Magnetometer_Commands_Tests.o \
 src/tests/I2C_Mock.o \
 src/tests/i2c_unit_tests.o \
+src/tests/MLX90614_IR_Sensor_Tests.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.o \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.o \
 src/console.o \
@@ -271,6 +274,7 @@ src/ASF/common/utils/unit_test/suite.d \
 src/tests/HMC5883L_Magnetometer_Commands_Tests.d \
 src/tests/I2C_Mock.d \
 src/tests/i2c_unit_tests.d \
+src/tests/MLX90614_IR_Sensor_Tests.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.d \
 src/console.d \
@@ -318,6 +322,7 @@ src/ASF/common/utils/unit_test/suite.d \
 src/tests/HMC5883L_Magnetometer_Commands_Tests.d \
 src/tests/I2C_Mock.d \
 src/tests/i2c_unit_tests.d \
+src/tests/MLX90614_IR_Sensor_Tests.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave.d \
 src/ASF/sam0/drivers/sercom/i2c/i2c_samd21_r21_d10_d11/i2c_slave_interrupt.d \
 src/console.d \
@@ -375,6 +380,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
