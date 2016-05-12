@@ -1,12 +1,17 @@
 #include <MLX90614_IR_Sensor.h>
 
+void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i2c_write_no_stop_func) {
+	MLX90614_i2c_write_func = _i2c_write_func;
+	MLX90614_i2c_write_no_stop_func = _i2c_write_no_stop_func;
+	MLX90614_i2c_read_func = _i2c_read_func;
+}
+
 /* Read 2 bytes over I2C from an MLX device.
     device_addr: I2C address of the device
     mem_addr: RAM or EEPROM address to read OR'd with its opcode (see datasheet)
     buf: 2-byte destination data buffer
 */
 void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
-	
 	struct i2c_master_packet write_packet = {
 		.address     = device_addr,
 		.data_length = 1,
@@ -24,9 +29,9 @@ void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) {
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
-	
-	i2c_write_command_no_stop(&write_packet);
-	i2c_read_command(&read_packet);
+
+	(*MLX90614_i2c_write_no_stop_func)(&write_packet);
+	(*MLX90614_i2c_read_func)(&read_packet);
 }
 
 
@@ -54,41 +59,39 @@ void write_MLX90614_eeprom(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf) 
 		.hs_master_code  = 0x0,
 	};
 	
-	i2c_write_command(&write_packet);
+	(*MLX90614_i2c_write_func)(&write_packet);
 }
 
-//reads a 2 byte value which is sorted:
-//if lsb_first=true, lsb is the 0 entry
-//if lsb_first=false, lsb is the 1 entry
-uint16_t MLX90614_read2ByteValue(uint16_t device_addr, uint8_t mem_addr, bool lsb_first){
+// reads a 2 byte value which is sorted:
+// if lsb_first=true, lsb is the 0 entry
+// if lsb_first=false, lsb is the 1 entry
+uint16_t MLX90614_read2ByteValue(uint16_t device_addr, uint8_t mem_addr, bool lsb_first) {
 	uint8_t read_buffer[2] = {
-		0x0,0x0
+		0x0, 0x0
 	};
-	read_MLX90614(device_addr, mem_addr,read_buffer);
+	read_MLX90614(device_addr, mem_addr, read_buffer);
 	uint16_t res = 0;
-	if(lsb_first){
+	if(lsb_first) {
 		res = read_buffer[0] | (((uint16_t)read_buffer[1]) << 8);
-	}else{
+	} else {
 		res = read_buffer[1] | (((uint16_t)read_buffer[0]) << 8);
 	}
 	return res;
 }
 
-//Function to read raw ir data from sensor.  is_ir2 is a boolean to determine which sensor to read from, 1 if false, 2 if true
-uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2)
-{
+// Function to read raw IR data from sensor.  is_ir2 is a boolean to determine which sensor to read from, 1 if false, 2 if true
+uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2) {
 	uint8_t data_addr = 0;
-	if(is_ir2){
+	if(is_ir2) {
 		data_addr = MLX90614_RAWIR2;
-	}else{
+	} else {
 		data_addr = MLX90614_RAWIR1;
 	}
-	
 	//unknown what the structure of the rawir data is, LSB MSB or MSB LSB. Assumed LSB MSB like temp data but unsure
-	return MLX90614_read2ByteValue(device_addr,data_addr,true);
+	return MLX90614_read2ByteValue(device_addr, data_addr, true);
 }
 
-//converts a data value from the sensor corresponding to a temperature memory address to a celsius temperature
+// converts a data value from the sensor corresponding to a temperature memory address to a celsius temperature
 float dataToTemp(uint16_t data){
 	float temp = (float) data;
 	temp *= .02;
@@ -96,33 +99,31 @@ float dataToTemp(uint16_t data){
 	return temp;
 }
 
-//reads object temp if is_ambient is false, ambient if true
+// reads object temp if is_ambient is false, ambient if true
 float MLX90614_readTempC(uint8_t device_addr, bool is_ambient) {
 	uint8_t data_addr = 0;
-	
-	if(is_ambient){
+	if(is_ambient) {
 		data_addr = MLX90614_TA;
-	}else{
+	} else {
 		data_addr = MLX90614_TOBJ1;
 	}
-	
-	uint16_t data = MLX90614_read2ByteValue(device_addr,data_addr,true);
+	uint16_t data = MLX90614_read2ByteValue(device_addr, data_addr, true);
 	float temp = dataToTemp(data);
 	return temp;
 }
 
-//recursive check, should always return the same value as device_addr
-uint16_t MLX90614_getAddress(uint8_t device_addr){
-	uint16_t mem = MLX90614_read2ByteValue(device_addr,MLX90614_SMBUS,false);
+// recursive check, should always return the same value as device_addr
+uint16_t MLX90614_getAddress(uint8_t device_addr) {
+	uint16_t mem = MLX90614_read2ByteValue(device_addr, MLX90614_SMBUS, false);
 	return mem;
 }
 
-//changes device address from current_addr to new_addr. make sure new_addr doesnt conflict with any networked i2c devices
+// changes device address from current_addr to new_addr. make sure new_addr doesnt conflict with any networked i2c devices
 void MLX90614_setAddress(uint8_t current_addr, uint8_t new_addr) {
-	uint16_t mem = MLX90614_read2ByteValue(current_addr,MLX90614_SMBUS,false);
+	uint16_t mem = MLX90614_getAddress(current_addr);
 	uint8_t* raws = (uint8_t*) &mem;
 	raws[1] = new_addr;
-	write_MLX90614_eeprom(current_addr,MLX90614_SMBUS,raws);
+	write_MLX90614_eeprom(current_addr, MLX90614_SMBUS, raws);
 }
 
 //http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code
@@ -163,4 +164,3 @@ uint8_t crc(uint8_t* message, int nBytes)
      */
     return (remainder);
 }
-

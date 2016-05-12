@@ -16,6 +16,11 @@
 //eeprom addresses
 #define MLX90614_SMBUS 0x2E
 
+i2c_func MLX90614_i2c_write_func;
+i2c_func MLX90614_i2c_read_func;
+i2c_func MLX90614_i2c_write_no_stop_func;
+
+void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i2c_write_no_stop_func);
 void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf);
 uint16_t MLX90614_read2ByteValue(uint16_t device_addr, uint8_t mem_addr, bool lsb_first);
 uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2);
