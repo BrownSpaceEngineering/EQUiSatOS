@@ -14,7 +14,7 @@
 	Gain = 5
 	Single Measurement Mode
 */
-void HMC5883L_init(i2c_write_func _i2c_write_func, i2c_read_func _i2c_read_func){
+void HMC5883L_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func){
 	HMC5883L_i2c_write_func = _i2c_write_func;
 	HMC5883L_i2c_read_func = _i2c_read_func;
 	
