@@ -54,7 +54,6 @@ uint16_t MLX90614_readRawIRData(uint8_t SMBus_addr, uint8_t channel) {
 		MLX90614_read(SMBus_addr, channel, read_buf);
 		data = *((uint16_t *)read_buf); // Cast pointer to dereference 2 bytes, MSB first
 	}
-
 	return data;
 }
 

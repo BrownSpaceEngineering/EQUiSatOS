@@ -93,6 +93,11 @@
 #include <i2c_common.h>
 #include <i2c_master.h>
 
+// From module: SERCOM I2C - Slave Mode I2C (Callback APIs)
+#include <i2c_common.h>
+#include <i2c_slave.h>
+#include <i2c_slave_interrupt.h>
+
 // From module: SERCOM Polled API
 #include <sercom.h>
 
@@ -122,5 +127,8 @@
 
 // From module: USART - Serial interface- SAM implementation for devices with only USART
 #include <serial.h>
+
+// From module: Unit test framework - SAM0 implementation
+#include <unit_test/suite.h>
 
 #endif // ASF_H

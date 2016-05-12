@@ -91,6 +91,7 @@
 
 #include "main.h"
 #include "MLX90614_IR_Sensor.h"
+#include "tests/HMC5883L_Magnetometer_Commands_Tests.h"
 
 //extern void xPortSysTickHandler(void);
 
@@ -205,14 +206,18 @@ int main(void)
 	printf("-- %s\n\r", BOARD_NAME);
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	
+	
+	run_HMC5883L_tests();
+	
 	configure_i2c_master();
-	/*
-	while(true){
+	
+	
+	/*while(true){
 		float x = MLX90614_readObjectTempC();
 		uint16_t data = MLX90614_readRawIRData(MLX90614_RAWIR1);
-	}
+	}*/
 	//READ FROM MAGNETOMETER
-	HMC5883L_init();
+	HMC5883L_init(*i2c_write_command, *i2c_read_command);
 	for (int j = 0; j < 15; j++) {				
 	uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
 	HMC5883L_read(readBuff);
@@ -227,11 +232,14 @@ int main(void)
 	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
 	int a = 0;
 	}
-	*/
+	
 	//MLX90614_getSMBusAddr(MLX90614_I2CADDR);
-	MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
-	struct adc_module temp_instance;
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+	uint8_t buf[256];
+	float a = MLX90614_readObjectTempC(0x5A);
+	int b = 1;
+	printf("%f", a);
+	//struct adc_module temp_instance;
+	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	/*int i = 0;
 	int cum = 0;
 	while(i<50){
@@ -242,10 +250,11 @@ int main(void)
 	}
 	printf("AVG: %d\n\r", cum/i);*/
     //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
-	while(true){
+	//while(true){
 		//brightness(temp_instance);
-		MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
-	}
+	//	uint16_t temp = MLX90614_readRawIRData(MLX90614_I2CADDR, MLX90614_RAWIR1);
+	//	int a=1;
+	//}
 	// motor controller test that says bad address
 	/*uint8_t write_buffer[3] = {
 		0xaa, 0x0a, 0x00
