@@ -32,14 +32,14 @@ void run_test_HMC5883L_getXYZ(const struct test_case *test) {
 		0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 	};
 	int16_t xyz_buffer[3] = {0, 0, 0};
-	getXYZ(dummy_read_values, xyz_buffer);
+	HMC5883L_getXYZ(dummy_read_values, xyz_buffer);
 	test_assert_true(test, xyz_buffer[0] == 0x0A0B, "HMC5883L getXYZ x byte incorrect.");
 	test_assert_true(test, xyz_buffer[1] == 0x0C0D, "HMC5883L getXYZ y byte incorrect.");
 	test_assert_true(test, xyz_buffer[2] == 0x0E0F, "HMC5883L getXYZ z byte incorrect.");
 }
 
 void run_test_HMC5883L_computeCompassDir(const struct test_case *test) {
-	float heading_degrees = computeCompassDir(0xAB, 0xCD, 0xEF); // 171, 205, 239
+	float heading_degrees = HMC5883L_computeCompassDir(0xAB, 0xCD, 0xEF); // 171, 205, 239
 	float epsilon = 0.0000001;
 	test_assert_true(test, abs(heading_degrees - 68.41698) < epsilon, "HMC5883L computeCompassDir incorrect.");
 }
