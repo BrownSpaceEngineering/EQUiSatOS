@@ -68,10 +68,7 @@ void bitFlip_callbackFunc(void) {
     coin = rand_LFSR();
     int addr = ((uint32_t)coin << 16) >> 16; // generate a random address between 0 and 2^15 - 1
 
-    /* If addr is less than 0, we select from a register s.t. the probability of
-     * a bit flip occurring in a register is approx. 0.00625
-     *
-     * If the addr is nonnegative, we treat its value as a randomly-selected byte
+    /* If the addr is nonnegative, we treat its value as a randomly-selected byte
      * of memory in which we flip a bit. This happens with probability 0.1
      */
     if (addr >= 0) { // select from SRAM (p=0.1)
@@ -82,8 +79,6 @@ void bitFlip_callbackFunc(void) {
       uint8_t flipmask = 1 << (coin % 8);
 
       *ptr ^= flipmask; // XOR to flip that bit
-
-    } else if (addr > -1024) { // select from a register (p=0.00625)
 
     }
   }
