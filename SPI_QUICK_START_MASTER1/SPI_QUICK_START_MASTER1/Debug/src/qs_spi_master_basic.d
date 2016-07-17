@@ -108,7 +108,8 @@ src/qs_spi_master_basic.d src/qs_spi_master_basic.o: \
  ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21/clock_feature.h \
  ../src/ASF/common/boards/board.h \
  ../src/ASF/sam0/boards/samd21_xplained_pro/samd21_xplained_pro.h \
- ../src/config/conf_board.h ../src/ASF/sam0/drivers/port/port.h \
+ ../src/config/conf_board.h ../src/ASF/sam0/drivers/nvm/nvm.h \
+ ../src/ASF/sam0/drivers/port/port.h \
  ../src/ASF/sam0/drivers/system/pinmux/pinmux.h \
  ../src/ASF/sam0/drivers/sercom/sercom.h \
  ../src/ASF/sam0/drivers/system/system.h \
@@ -117,11 +118,20 @@ src/qs_spi_master_basic.d src/qs_spi_master_basic.o: \
  ../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h \
  ../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h \
  ../src/ASF/sam0/drivers/sercom/sercom_pinout.h \
+ ../src/ASF/sam0/drivers/sercom/sercom_interrupt.h \
+ ../src/ASF/sam0/drivers/sercom/sercom.h \
  ../src/ASF/sam0/drivers/sercom/spi/spi.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/config/conf_spi.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
+ ../src/config/conf_spi.h ../src/ASF/sam0/drivers/sercom/usart/usart.h \
+ ../src/ASF/sam0/drivers/sercom/usart/usart_interrupt.h \
+ ../src/ASF/sam0/drivers/sercom/usart/usart.h \
+ ../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h \
+ ../src/ASF/common/services/serial/serial.h \
+ ../src/ASF/common/services/serial/sam0_usart/usart_serial.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h \
+ ../src/ASF/sam0/boards/samd21_xplained_pro/samd21_xplained_pro.h \
+ ../src/Bootloader/flash_memory.h
 
 ../src/asf.h:
 
@@ -345,6 +355,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/config/conf_board.h:
 
+../src/ASF/sam0/drivers/nvm/nvm.h:
+
 ../src/ASF/sam0/drivers/port/port.h:
 
 ../src/ASF/sam0/drivers/system/pinmux/pinmux.h:
@@ -363,6 +375,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam0/drivers/sercom/sercom_pinout.h:
 
+../src/ASF/sam0/drivers/sercom/sercom_interrupt.h:
+
+../src/ASF/sam0/drivers/sercom/sercom.h:
+
 ../src/ASF/sam0/drivers/sercom/spi/spi.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h:
@@ -371,4 +387,20 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/config/conf_spi.h:
 
+../src/ASF/sam0/drivers/sercom/usart/usart.h:
+
+../src/ASF/sam0/drivers/sercom/usart/usart_interrupt.h:
+
+../src/ASF/sam0/drivers/sercom/usart/usart.h:
+
+../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h:
+
+../src/ASF/common/services/serial/serial.h:
+
+../src/ASF/common/services/serial/sam0_usart/usart_serial.h:
+
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
+
+../src/ASF/sam0/boards/samd21_xplained_pro/samd21_xplained_pro.h:
+
+../src/Bootloader/flash_memory.h:
