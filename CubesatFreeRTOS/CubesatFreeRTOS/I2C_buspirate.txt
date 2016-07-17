@@ -1,0 +1,11 @@
+# Sequence of bytes to write new address:
+# assuming default addr of 0x5a (0xb4 write, 0xb5 read)
+#
+# Use https://www.ghsi.de/CRC/index.php as a CRC calculator
+# MLX90614 uses CRC-8 with polynomial x8+x2+x1+1 i.e. 100000111
+
+[0xb4 0x2e [0xb5 r:3] # read current EEPROM SMBUS addr
+[0xb4 0x2e 0xXX 0xXX 0xPEC] # set new EEPROM SMBUS addr
+
+# 24.04.16: Updated IR2 on Processor Test Board to 0x5B (0xb6 write, 0xb7 read)
+

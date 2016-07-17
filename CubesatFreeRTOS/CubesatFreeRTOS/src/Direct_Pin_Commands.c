@@ -1,6 +1,6 @@
 #include <Direct_Pin_Commands.h>
 
-void get_pin(bool dir,uint8_t pin){
+void setup_pin(bool dir,uint8_t pin){
 	struct port_config conf;
 	port_get_config_defaults(&conf);
 	if(dir){

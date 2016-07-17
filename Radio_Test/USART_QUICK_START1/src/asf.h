@@ -52,26 +52,12 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
-// From module: ADC - Analog-to-Digital Converter (Polled APIs)
-#include <adc.h>
-
 // From module: Common SAM0 compiler driver
 #include <compiler.h>
 #include <status_codes.h>
 
-// From module: FreeRTOS - kernel 8.0.1
-#include <FreeRTOS.h>
-#include <StackMacros.h>
-#include <croutine.h>
-#include <event_groups.h>
-#include <list.h>
-#include <mpu_wrappers.h>
-#include <portable.h>
-#include <projdefs.h>
-#include <queue.h>
-#include <semphr.h>
-#include <task.h>
-#include <timers.h>
+// From module: Delay routines
+#include <delay.h>
 
 // From module: Generic board support
 #include <board.h>
@@ -85,31 +71,13 @@
 // From module: Part identification macros
 #include <parts.h>
 
-// From module: SERCOM Callback API
-#include <sercom.h>
-#include <sercom_interrupt.h>
-
-// From module: SERCOM I2C - Master Mode I2C (Polled APIs)
-#include <i2c_common.h>
-#include <i2c_master.h>
-
-// From module: SERCOM I2C - Slave Mode I2C (Callback APIs)
-#include <i2c_common.h>
-#include <i2c_slave.h>
-#include <i2c_slave_interrupt.h>
-
 // From module: SERCOM Polled API
 #include <sercom.h>
 
-// From module: SERCOM SPI - Serial Peripheral Interface (Callback APIs)
-#include <spi.h>
-#include <spi_interrupt.h>
-
-// From module: SERCOM USART - Serial Communications (Callback APIs)
+// From module: SERCOM USART - Serial Communications (Polled APIs)
 #include <usart.h>
-#include <usart_interrupt.h>
 
-// From module: SYSTEM - Clock Management for SAMD21
+// From module: SYSTEM - Clock Management for SAMD21/R21/DAx
 #include <clock.h>
 #include <gclk.h>
 
@@ -122,13 +90,10 @@
 // From module: SYSTEM - Interrupt Driver
 #include <system_interrupt.h>
 
-// From module: Standard serial I/O (stdio)
-#include <stdio_serial.h>
+// From module: SYSTEM - Power Management for SAM D20/D21/R21/D09/D10/D11/DA0/DA1
+#include <power.h>
 
-// From module: USART - Serial interface- SAM implementation for devices with only USART
-#include <serial.h>
-
-// From module: Unit test framework - SAM0 implementation
-#include <unit_test/suite.h>
+// From module: SYSTEM - Reset Management for SAM D20/D21/R21/D09/D10/D11/DA0/DA1
+#include <reset.h>
 
 #endif // ASF_H

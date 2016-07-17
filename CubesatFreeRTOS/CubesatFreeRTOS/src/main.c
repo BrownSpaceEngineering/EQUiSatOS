@@ -91,6 +91,7 @@
 
 #include "main.h"
 #include "MLX90614_IR_Sensor.h"
+#include "tests/HMC5883L_Magnetometer_Commands_Tests.h"
 
 //extern void xPortSysTickHandler(void);
 
@@ -204,42 +205,60 @@ int main(void)
 	printf("-- Freertos Example --\n\r");
 	printf("-- %s\n\r", BOARD_NAME);
 	printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+
+	run_HMC5883L_tests();
 	
+
 	configure_i2c_master(SERCOM2);
 	/*
 	while(true){
 		float x = MLX90614_readObjectTempC();
 		uint16_t data = MLX90614_readRawIRData(MLX90614_RAWIR1);
-	}
+	}*/
 	//READ FROM MAGNETOMETER
-	HMC5883L_init();
-	for (int j = 0; j < 15; j++) {				
-	uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
-	HMC5883L_read(readBuff);
-	int16_t xyzBuff[3] = {0, 0, 0};
-	getXYZ(readBuff, xyzBuff);
-	int i;
-	for (i = 0; i < 6; i++) {		
-		printf("%x ", readBuff[i]);					
+	HMC5883L_init(*i2c_write_command, *i2c_read_command);
+	for (int j = 0; j < 15; j++) {
+		uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
+		HMC5883L_read(readBuff);
+		int16_t xyzBuff[3] = {0, 0, 0};
+		HMC5883L_getXYZ(readBuff, xyzBuff);
+		int i;
+		for (i = 0; i < 6; i++) {		
+			printf("%x ", readBuff[i]);					
+		}
+		printf("\n\r");
+		printf("%d %d %d\n\r", xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
+		float heading = HMC5883L_computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
+		int a = 0;
 	}
-	printf("\n\r");
-	printf("%d %d %d\n\r", xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
-	float heading = computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
-	int a = 0;
-	}
-	*/
-	uint8_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
-	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR + 1);
-	uint8_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR + 1);
-	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR + 1,MLX90614_DEFAULT_I2CADDR);
-	uint8_t val3 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+
+	/*
+	uint16_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
+	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR);
+	uint16_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
 	
 	while(true){
 		float x = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
 		int y = 1;
 	}
+	*/
+	setup_switching();
+ 	pick_side(true);
+	bool x =get_input(SIDE_1_ENABLE);
+	pick_input(0x00);
+	pick_input(0x01);
+	pick_input(0x02);
+	pick_input(0x03);
+	pick_side(false);
+	pick_input(0x00);
+	pick_input(0x01);
+	pick_input(0x02);
+	pick_input(0x03);
+	pick_side(true);
+	
 	struct adc_module temp_instance;
 	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+
 	/*int i = 0;
 	int cum = 0;
 	while(i<50){
@@ -250,6 +269,7 @@ int main(void)
 	}
 	printf("AVG: %d\n\r", cum/i);*/
     //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
+
 	// motor controller test that says bad address
 	/*uint8_t write_buffer[3] = {
 		0xaa, 0x0a, 0x00

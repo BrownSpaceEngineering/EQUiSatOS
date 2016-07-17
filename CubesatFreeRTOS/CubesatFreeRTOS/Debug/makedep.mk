@@ -2,11 +2,29 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\common\utils\unit_test\suite.c
+
+src\tests\HMC5883L_Magnetometer_Commands_Tests.c
+
+src\tests\I2C_Mock.c
+
+src\tests\i2c_unit_tests.c
+
+src\tests\MLX90614_IR_Sensor_Tests.c
+
+src\ASF\sam0\drivers\sercom\i2c\i2c_samd21_r21_d10_d11\i2c_slave.c
+
+src\ASF\sam0\drivers\sercom\i2c\i2c_samd21_r21_d10_d11\i2c_slave_interrupt.c
+
 src\console.c
+
+src\Direct_Pin_Commands.c
 
 src\MLX90614_IR_Sensor.c
 
 src\SPI_Commands.c
+
+src\switching_commands.c
 
 src\TEMD6200_Commands.c
 

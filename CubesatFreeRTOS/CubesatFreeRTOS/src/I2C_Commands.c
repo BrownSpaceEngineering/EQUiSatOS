@@ -43,20 +43,13 @@ void configure_i2c_master(Sercom* sercom)
 	
 	Modified to take a boolean to determine stop/nostop instead of passing function pointers
 */
-void i2c_writer_helper(struct i2c_master_packet* packet_address,
-                       bool should_stop)
+void i2c_writer_helper(struct i2c_master_packet* packet_address, bool should_stop)
 {
-	uint16_t timeout = 0;
-	
-	int x = 0;
-	
-	if(should_stop){
-		x = i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
-	}else{
-		x = i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
+	if(should_stop) {
+		i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
+	} else {
+		i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
 	}
-	
-	int y = 1;
 }
 
 /*
