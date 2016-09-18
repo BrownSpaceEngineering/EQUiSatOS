@@ -6,7 +6,7 @@
  * This file includes the appropriate board header file according to the
  * defined board (parameter BOARD).
  *
- * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -152,6 +152,10 @@ extern "C" {
 #define SAMB11_XPLAINED_PRO        84  //!< SAM B11 Xplained Pro board.
 #define SAME70_XPLAINED            85  //!< SAME70 Xplained board.
 #define SAML22_XPLAINED_PRO        86  //!< SAM L22 Xplained Pro board.
+#define SAML22_XPLAINED_PRO_B      87  //!< SAM L22 Xplained Pro board.
+#define SAMR21ZLL_EK               88  //!< SAMR21ZLL-EK board.
+#define ATMEGA168PB_XPLAINED_MINI  89  //!< ATMEGA168PB Xplained MINI board.
+#define ATMEGA324PB_XPLAINED_PRO   90  //!< ATMEGA324PB Xplained Pro board.
 #define SIMULATOR_XMEGA_A1         97  //!< Simulator for XMEGA A1 devices.
 #define AVR_SIMULATOR_UC3          98  //!< Simulator for the AVR UC3 device family.
 #define USER_BOARD                 99  //!< User-reserved board (if any).
@@ -278,12 +282,16 @@ extern "C" {
 #  include "samd21_xplained_pro/samd21_xplained_pro.h"
 #elif BOARD == SAMR21_XPLAINED_PRO
 #  include "samr21_xplained_pro/samr21_xplained_pro.h"
+#elif BOARD == SAMR21ZLL_EK
+#  include "samr21zll_ek/samr21zll_ek.h"
 #elif BOARD == SAMD11_XPLAINED_PRO
 #  include "samd11_xplained_pro/samd11_xplained_pro.h"
 #elif BOARD == SAML21_XPLAINED_PRO && defined(__SAML21J18A__)
 #  include "saml21_xplained_pro/saml21_xplained_pro.h"
 #elif BOARD == SAML22_XPLAINED_PRO
 #  include "saml22_xplained_pro/saml22_xplained_pro.h"
+#elif BOARD == SAML22_XPLAINED_PRO_B
+#  include "saml22_xplained_pro_b/saml22_xplained_pro_b.h"
 #elif BOARD == SAML21_XPLAINED_PRO && defined(__SAML21J18B__)
 #  include "saml21_xplained_pro_b/saml21_xplained_pro.h"
 #elif BOARD == SAMD10_XPLAINED_MINI
@@ -354,6 +362,10 @@ extern "C" {
 #  include "samb11_xplained_pro/samb11_xplained_pro.h"
 #elif BOARD == SAME70_XPLAINED
 #  include "same70_xplained/same70_xplained.h"
+#elif BOARD == ATMEGA168PB_XPLAINED_MINI
+#  include "atmega168pb_xplained_mini/atmega168pb_xplained_mini.h"
+#elif BOARD == ATMEGA324PB_XPLAINED_PRO
+#  include "atmega324pb_xplained_pro/atmega324pb_xplained_pro.h"
 #elif BOARD == SIMULATOR_XMEGA_A1
 #  include "simulator/xmega_a1/simulator_xmega_a1.h"
 #elif BOARD == AVR_SIMULATOR_UC3

@@ -190,10 +190,10 @@ void system_gclk_init(void);
  * by the user application.
  *
  * The default configuration is:
- *  \li Clock is generated undivided from the source frequency
- *  \li Clock generator output is low when the generator is disabled
+ *  \li The clock is generated undivided from the source frequency
+ *  \li The clock generator output is low when the generator is disabled
  *  \li The input clock is sourced from input clock channel 0
- *  \li Clock will be disabled during sleep
+ *  \li The clock will be disabled during sleep
  *  \li The clock output will not be routed to a physical GPIO pin
  *
  * \param[out] config  Configuration structure to initialize to default values
@@ -248,8 +248,8 @@ bool system_gclk_gen_is_enabled(
  * user application.
  *
  * The default configuration is as follows:
- *  \li Clock is sourced from the Generic Clock Generator channel 0
- *  \li Clock configuration will not be write-locked when set
+ *  \li The clock is sourced from the Generic Clock Generator channel 0
+ *  \li The clock configuration will not be write-locked when set
  *
  * \param[out] config  Configuration structure to initialize to default values
  */

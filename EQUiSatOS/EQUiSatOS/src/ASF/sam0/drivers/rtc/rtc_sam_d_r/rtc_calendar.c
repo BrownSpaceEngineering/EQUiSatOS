@@ -174,7 +174,7 @@ void rtc_calendar_reset(struct rtc_module *const module)
  * \param[in, out] module  Pointer to the software instance struct
  * \param[in] time  Pointer to the time structure
  *
- * \return 32-bit value
+ * \return 32-bit value.
  */
 uint32_t rtc_calendar_time_to_register_value(
 		struct rtc_module *const module,

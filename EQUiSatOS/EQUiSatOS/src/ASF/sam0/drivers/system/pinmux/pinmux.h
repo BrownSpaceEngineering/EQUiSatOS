@@ -65,9 +65,6 @@
  *  - Atmel | SMART SAM DA1
  *  - Atmel | SMART SAM C20/C21
  *
- * Physically, the modules are interconnected within the device as shown in the
- * following diagram:
- *
  * The outline of this documentation is as follows:
  *  - \ref asfdoc_sam0_system_pinmux_prerequisites
  *  - \ref asfdoc_sam0_system_pinmux_module_overview
@@ -203,7 +200,7 @@ extern "C" {
 #endif
 
 /*@{*/
-#if (SAML21) || (SAMC20) || (SAMC21) || defined(__DOXYGEN__)
+#if (SAML21) || (SAMC20) || (SAMC21) || (SAMD21) || defined(__DOXYGEN__)
 /** Output Driver Strength Selection feature support */
 #  define FEATURE_SYSTEM_PINMUX_DRIVE_STRENGTH
 #endif
@@ -277,7 +274,7 @@ struct system_pinmux_config {
 	/** Logic level pull of the input buffer */
 	enum system_pinmux_pin_pull input_pull;
 
-	/** Enable lowest possible powerstate on the pin.
+	/** Enable lowest possible powerstate on the pin
 	 *
 	 *  \note All other configurations will be ignored, the pin will be disabled.
 	 */
@@ -644,8 +641,8 @@ void system_pinmux_group_set_output_drive(
  *	</tr>
  *	<tr>
  *		<td>42121F</td>
- *		<td>08/2015</td>
- *		<td>Added support for SAM L21/L22, SAM DA1, and SAM C20/C21</td>
+ *		<td>12/2015</td>
+ *		<td>Added support for SAM L21/L22, SAM DA1, SAM D09, and SAM C20/C21</td>
  *	</tr>
  *	<tr>
  *		<td>42121E</td>

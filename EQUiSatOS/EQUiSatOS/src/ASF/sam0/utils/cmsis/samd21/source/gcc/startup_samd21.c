@@ -218,10 +218,13 @@ const DeviceVectors exception_table = {
 #else
         (void*) (0UL), /* Reserved */
 #endif
+/* FIX: there is no more element for SAMD21G18A (SAMW25) in DeviceVectors. */
+#ifndef __SAMD21G18A__
 #ifdef ID_AC1
         (void*) AC1_Handler             /* 28 Analog Comparators 1 */
 #else
         (void*) (0UL)  /* Reserved */
+#endif
 #endif
 };
 

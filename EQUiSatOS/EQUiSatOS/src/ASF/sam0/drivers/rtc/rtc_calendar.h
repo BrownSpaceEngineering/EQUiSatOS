@@ -3,7 +3,7 @@
  *
  * \brief SAM RTC Driver (Calendar Mode)
  *
- * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -228,7 +228,7 @@
  *
  *
  * \subsection asfdoc_sam0_rtc_calendar_module_overview_tamper_detect RTC Tamper Detect
- * see  \ref asfdoc_sam0_rtc_tamper_detect
+ * See \ref asfdoc_sam0_rtc_tamper_detect.
  *
  * \section asfdoc_sam0_rtc_calendar_special_considerations Special Considerations
  *
@@ -299,7 +299,7 @@
  *       should be used.
  *
  * \subsubsection asfdoc_sam0_rtc_calendar_clock_saml SAM L21/C20/C21 Clock Setup
- * The RTC clock can be selected from OSC32K, XOSC32K or OSCULP32K. A 32KHz
+ * The RTC clock can be selected from OSC32K, XOSC32K, or OSCULP32K. A 32KHz
  * or 1KHz oscillator clock frequency is required. This clock must be
  * configured and enabled in the 32KHz oscillator controller before using the RTC.
  *
@@ -384,16 +384,16 @@ extern "C" {
 #if (SAML21) || (SAML22) || (SAMC20) || (SAMC21) || defined(__DOXYGEN__)
 /** RTC periodic interval interrupt. */
 #  define FEATURE_RTC_PERIODIC_INT
-/** RTC prescaler is off */
+/** RTC prescaler is off. */
 #  define FEATURE_RTC_PRESCALER_OFF
-/** RTC clock selection */
+/** RTC clock selection. */
 #  define FEATURE_RTC_CLOCK_SELECTION
 #  if !(SAMC20) && !(SAMC21)
-/** General purpose registers */
+/** General purpose registers. */
 #  define FEATURE_RTC_GENERAL_PURPOSE_REG
 #  endif
 #else
-/** RTC continuously updated */
+/** RTC continuously updated. */
 #  define FEATURE_RTC_CONTINUOUSLY_UPDATED
 #endif
 
@@ -688,7 +688,7 @@ enum rtc_calendar_alarm_mask {
 struct rtc_calendar_events {
 	/** Generate an output event on each overflow of the RTC count */
 	bool generate_event_on_overflow;
-	/** Generate an output event on a alarm channel match against the RTC
+	/** Generate an output event on an alarm channel match against the RTC
 	 *  count */
 	bool generate_event_on_alarm[RTC_NUM_OF_ALARMS];
 	/** Generate an output event periodically at a binary division of the RTC
@@ -763,7 +763,7 @@ struct rtc_calendar_config {
 	bool clock_24h;
 	/** Initial year for counter value 0 */
 	uint16_t year_init_value;
-#if (SAML22)
+#if (SAML21XXXB) || (SAML22) || (SAMC20) || (SAMC21)
 	/** Enable count read synchronization. The CLOCK value requires
 	 * synchronization when reading. Disabling the synchronization
 	 * will prevent the CLOCK value from displaying the current value. */
@@ -837,7 +837,7 @@ static inline void rtc_calendar_get_config_defaults(
 #endif
 	config->clock_24h           = false;
 	config->year_init_value     = 2000;
-#if (SAML22)
+#if (SAML21XXXB) || (SAML22) || (SAMC20) || (SAMC21) 
 	config->enable_read_sync    = true;
 #endif
 	for (uint8_t i = 0; i < RTC_NUM_OF_ALARMS; i++) {
@@ -981,10 +981,10 @@ static inline void rtc_calendar_clear_overflow(struct rtc_module *const module)
  * \param[in,out]  module  RTC hardware module
  * \param[in]  n  RTC periodic interval interrupt
  *
- * \return periodic interval interrupt state of the RTC module.
+ * \return Periodic interval interrupt state of the RTC module.
  *
- * \retval true   RTC periodic interval interrupt occurs
- * \retval false  RTC periodic interval interrupt dosen't occurs
+ * \retval true   RTC periodic interval interrupt occur
+ * \retval false  RTC periodic interval interrupt doesn't occur
  */
 static inline bool rtc_calendar_is_periodic_interval(struct rtc_module *const module,
 										enum rtc_calendar_periodic_interval n)
@@ -1026,7 +1026,7 @@ static inline void rtc_calendar_clear_periodic_interval(struct rtc_module *const
  * \brief Check the RTC alarm flag.
  *
  * Check if the specified alarm flag is set. The flag is set when there
- * is an compare match between the alarm value and the clock.
+ * is a compare match between the alarm value and the clock.
  *
  * \param[in,out] module  Pointer to the software instance struct
  * \param[in] alarm_index  Index of the alarm to check
@@ -1253,7 +1253,7 @@ static inline void rtc_write_general_purpose_reg(
  * \param[in] module  Pointer to the software instance struct
  * \param[in] index General purpose register index (0..3)
  *
- * \return Value Of general purpose register
+ * \return Value of general purpose register.
  */
 static inline uint32_t rtc_read_general_purpose_reg(
 	struct rtc_module *const module,
@@ -1350,7 +1350,7 @@ void rtc_tamper_get_stamp (struct rtc_module *const module,
  *          clock to the module if it is disabled</td>
  *	</tr>
  *	<tr>
- *		<td>Initial Release</td>
+ *		<td>Initial release</td>
  *	</tr>
  * </table>
  */
@@ -1379,8 +1379,8 @@ void rtc_tamper_get_stamp (struct rtc_module *const module,
  *	</tr>
  *	<tr>
  *		<td>42126E</td>
- *		<td>10/2015</td>
- *		<td>Added support for SAM L21/L22, SAM C21, and SAM DA1</td>
+ *		<td>12/2015</td>
+ *		<td>Added support for SAM L21/L22, SAM C21, SAM D09, and SAM DA1</td>
  *	</tr>
  *	<tr>
  *		<td>42126D</td>
@@ -1401,7 +1401,7 @@ void rtc_tamper_get_stamp (struct rtc_module *const module,
  *	<tr>
  *		<td>42126A</td>
  *		<td>06/2013</td>
- *		<td>Initial release</td>
+ *		<td>Initial document release</td>
  *	</tr>
  * </table>
  */

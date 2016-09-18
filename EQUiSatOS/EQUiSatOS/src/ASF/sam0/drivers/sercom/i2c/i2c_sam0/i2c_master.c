@@ -87,8 +87,9 @@ static enum status_code _i2c_master_set_config(
 
 	/* Temporary variables. */
 	uint32_t tmp_ctrla;
-	int32_t tmp_baud;
-	int32_t tmp_baud_hs;
+	int32_t tmp_baud = 0;
+	int32_t tmp_baud_hs = 0;
+	int32_t tmp_baudlow_hs = 0;
 	enum status_code tmp_status_code = STATUS_OK;
 
 	SercomI2cm *const i2c_module = &(module->hw->I2CM);
@@ -151,7 +152,7 @@ static enum status_code _i2c_master_set_config(
 	}
 
 	/* Check and set SCL clock stretch mode. */
-	if (config->scl_stretch_only_after_ack_bit) {
+	if (config->scl_stretch_only_after_ack_bit || (config->transfer_speed == I2C_MASTER_SPEED_HIGH_SPEED)) {
 		tmp_ctrla |= SERCOM_I2CM_CTRLA_SCLSM;
 	}
 
@@ -173,33 +174,32 @@ static enum status_code _i2c_master_set_config(
 
 	/* Find and set baudrate, considering sda/scl rise time */
 	uint32_t fgclk       = system_gclk_chan_get_hz(SERCOM0_GCLK_ID_CORE + sercom_index);
-	uint32_t fscl        = 1000*config->baud_rate;
+	uint32_t fscl        = 1000 * config->baud_rate;
+	uint32_t fscl_hs     = 1000 * config->baud_rate_high_speed;
 	uint32_t trise       = config->sda_scl_rise_time_ns;
-	int32_t  numerator   = fgclk - fscl*(10 + fgclk*trise/1000000000);
-	int32_t  denominator = 2*fscl;
-	/* For more accurate result, can use round div. */
-	tmp_baud = (int32_t)(div_ceil(numerator, denominator));
+	
+	tmp_baud = (int32_t)(div_ceil(
+			fgclk - fscl * (10 + fgclk * trise * 0.000000001), 2 * fscl));
+	
+	/* For High speed mode, set the SCL ratio of high:low to 1:2. */
+	if (config->transfer_speed == I2C_MASTER_SPEED_HIGH_SPEED) {
+		tmp_baudlow_hs = (int32_t)((fgclk * 2.0) / (3.0 * fscl_hs) - 1);
+		if (tmp_baudlow_hs) {
+			tmp_baud_hs = (int32_t)(fgclk / fscl_hs) - 2 - tmp_baudlow_hs;
+		} else {
+			tmp_baud_hs = (int32_t)(div_ceil(fgclk, 2 * fscl_hs)) - 1;
+		}
+	}
 
 	/* Check that baudrate is supported at current speed. */
-	if (tmp_baud > 255 || tmp_baud < 0) {
+	if (tmp_baud > 255 || tmp_baud < 0 || tmp_baud_hs > 255 || tmp_baud_hs < 0) {
 		/* Baud rate not supported. */
 		tmp_status_code = STATUS_ERR_BAUDRATE_UNAVAILABLE;
-	} else {
-		/* Find baudrate for high speed */
-		tmp_baud_hs = (int32_t)(div_ceil(
-				system_gclk_chan_get_hz(SERCOM0_GCLK_ID_CORE + sercom_index),
-				(2000*(config->baud_rate_high_speed))) - 1);
-
-		/* Check that baudrate is supported at current speed. */
-		if (tmp_baud_hs > 255 || tmp_baud_hs < 0) {
-			/* Baud rate not supported. */
-			tmp_status_code = STATUS_ERR_BAUDRATE_UNAVAILABLE;
-		}
 	}
 	if (tmp_status_code != STATUS_ERR_BAUDRATE_UNAVAILABLE) {
 		/* Baud rate acceptable. */
 		i2c_module->BAUD.reg = SERCOM_I2CM_BAUD_BAUD(tmp_baud) |
-			SERCOM_I2CM_BAUD_HSBAUD(tmp_baud_hs);
+			SERCOM_I2CM_BAUD_HSBAUD(tmp_baud_hs) | SERCOM_I2CM_BAUD_HSBAUDLOW(tmp_baudlow_hs);
 	}
 
 	return tmp_status_code;
@@ -553,8 +553,12 @@ static enum status_code _i2c_master_read_packet(
 	/* Wait for response on bus. */
 	tmp_status = _i2c_master_wait_for_bus(module);
 
-	/* Set action to ack. */
-	i2c_module->CTRLB.reg &= ~SERCOM_I2CM_CTRLB_ACKACT;
+	/* Set action to ack or nack. */
+	if ((sclsm_flag) && (packet->data_length == 1)) {
+		i2c_module->CTRLB.reg |= SERCOM_I2CM_CTRLB_ACKACT;
+	} else {
+		i2c_module->CTRLB.reg &= ~SERCOM_I2CM_CTRLB_ACKACT;	
+	}
 
 	/* Check for address response error unless previous error is
 	 * detected. */

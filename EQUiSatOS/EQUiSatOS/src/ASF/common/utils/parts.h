@@ -3,7 +3,7 @@
  *
  * \brief Atmel part identification macros
  *
- * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -425,6 +425,7 @@
 		AVR8_PART_IS_DEFINED(ATmega164PA) || \
 		AVR8_PART_IS_DEFINED(ATmega324A)  || \
 		AVR8_PART_IS_DEFINED(ATmega324PA) || \
+		AVR8_PART_IS_DEFINED(ATmega324PB) || \
 		AVR8_PART_IS_DEFINED(ATmega644)   || \
 		AVR8_PART_IS_DEFINED(ATmega644A)  || \
 		AVR8_PART_IS_DEFINED(ATmega644PA) || \
@@ -448,12 +449,15 @@
 		AVR8_PART_IS_DEFINED(ATmega48)    || \
 		AVR8_PART_IS_DEFINED(ATmega48A)   || \
 		AVR8_PART_IS_DEFINED(ATmega48PA)  || \
+		AVR8_PART_IS_DEFINED(ATmega48PB)  || \
 		AVR8_PART_IS_DEFINED(ATmega88)    || \
 		AVR8_PART_IS_DEFINED(ATmega88A)   || \
 		AVR8_PART_IS_DEFINED(ATmega88PA)  || \
+		AVR8_PART_IS_DEFINED(ATmega88PB)  || \
 		AVR8_PART_IS_DEFINED(ATmega168)   || \
 		AVR8_PART_IS_DEFINED(ATmega168A)  || \
 		AVR8_PART_IS_DEFINED(ATmega168PA) || \
+		AVR8_PART_IS_DEFINED(ATmega168PB) || \
 		AVR8_PART_IS_DEFINED(ATmega328)   || \
 		AVR8_PART_IS_DEFINED(ATmega328P)  || \
 		AVR8_PART_IS_DEFINED(ATmega328PB) \
@@ -1019,6 +1023,10 @@
 		SAM_PART_IS_DEFINED(SAMD10D13AM) || \
 		SAM_PART_IS_DEFINED(SAMD10D14AM) \
 	)
+
+#define SAMD10DU ( \
+		SAM_PART_IS_DEFINED(SAMD10D14AU) \
+	)
 /** @} */
 
 /**
@@ -1035,6 +1043,10 @@
 
 #define SAMD11DM ( \
 		SAM_PART_IS_DEFINED(SAMD11D14AM) \
+	)
+
+#define SAMD11DU ( \
+		SAM_PART_IS_DEFINED(SAMD11D14AU) \
 	)
 /** @} */
 
@@ -1530,10 +1542,10 @@
 #define SAMD09 (SAMD09C || SAMD09D)
 
 /** SAMD10 Family */
-#define SAMD10 (SAMD10C || SAMD10DS || SAMD10DM)
+#define SAMD10 (SAMD10C || SAMD10DS || SAMD10DM || SAMD10DU)
 
 /** SAMD11 Family */
-#define SAMD11 (SAMD11C || SAMD11DS || SAMD11DM)
+#define SAMD11 (SAMD11C || SAMD11DS || SAMD11DM || SAMD11DU)
 
 /** SAMDA1 Family */
 #define SAMDA1 (SAMDA1J || SAMDA1G || SAMDA1E)

@@ -3,7 +3,7 @@
  *
  * \brief SAM SERCOM USART Driver
  *
- * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -597,7 +597,7 @@ enum status_code usart_read_wait(
 		else if (error_code & SERCOM_USART_STATUS_ISF) {
 			/* Clear flag by writing 1 to it  and
 			 *  return with an error code */
-			usart_hw->STATUS.reg |= SERCOM_USART_STATUS_ISF;
+			usart_hw->STATUS.reg = SERCOM_USART_STATUS_ISF;
 
 			return STATUS_ERR_PROTOCOL;
 		}
@@ -606,7 +606,7 @@ enum status_code usart_read_wait(
 		else if (error_code & SERCOM_USART_STATUS_COLL) {
 			/* Clear flag by writing 1 to it
 			 *  return with an error code */
-			usart_hw->STATUS.reg |= SERCOM_USART_STATUS_COLL;
+			usart_hw->STATUS.reg = SERCOM_USART_STATUS_COLL;
 
 			return STATUS_ERR_PACKET_COLLISION;
 		}

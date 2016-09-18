@@ -1,109 +1,53 @@
-#include "main.h"
+/**
+ * \file
+ *
+ * \brief Empty user application template
+ *
+ */
 
-int main(void)
+/**
+ * \mainpage User Application template doxygen documentation
+ *
+ * \par Empty user application template
+ *
+ * This is a bare minimum user application template.
+ *
+ * For documentation of the board, go \ref group_common_boards "here" for a link
+ * to the board-specific documentation.
+ *
+ * \par Content
+ *
+ * -# Include the ASF header files (through asf.h)
+ * -# Minimal main function that starts with a call to system_init()
+ * -# Basic usage of on-board LED and button
+ * -# "Insert application code here" comment
+ *
+ */
+
+/*
+ * Include header files for all drivers that have been imported from
+ * Atmel Software Framework (ASF).
+ */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
+#include <asf.h>
+
+int main (void)
 {
-	// Initilize the SAM system
 	system_init();
 
-	configure_i2c_master(SERCOM2);
-	
-	while(true){
-		uint16_t data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
-		uint16_t data2 = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
-		int a = 2;
-	}
-	//READ FROM MAGNETOMETER
-	HMC5883L_init(*i2c_write_command, *i2c_read_command);
-	for (int j = 0; j < 15; j++) {
-		uint8_t readBuff[6] = {0, 0, 0, 0, 0, 0};
-		HMC5883L_read(readBuff);
-		int16_t xyzBuff[3] = {0, 0, 0};
-		HMC5883L_getXYZ(readBuff, xyzBuff);
-		int i;
-		for (i = 0; i < 6; i++) {		
-			printf("%x ", readBuff[i]);					
+	/* Insert application code here, after the board has been initialized. */
+
+	/* This skeleton code simply sets the LED to the state of the button. */
+	while (1) {
+		/* Is button pressed? */
+		if (port_pin_get_input_level(BUTTON_0_PIN) == BUTTON_0_ACTIVE) {
+			/* Yes, so turn LED on. */
+			port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
+		} else {
+			/* No, so turn LED off. */
+			port_pin_set_output_level(LED_0_PIN, !LED_0_ACTIVE);
 		}
-		printf("\n\r");
-		printf("%d %d %d\n\r", xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
-		float heading = HMC5883L_computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
-		int a = 0;
 	}
-
-	/*
-	uint16_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
-	MLX90614_setAddress(MLX90614_DEFAULT_I2CADDR,MLX90614_DEFAULT_I2CADDR);
-	uint16_t val2 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
-	
-	while(true){
-		float x = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
-		int y = 1;
-	}
-	*/
-	setup_switching();
- 	pick_side(true);
-	bool x =get_input(SIDE_1_ENABLE);
-	pick_input(0x00);
-	pick_input(0x01);
-	pick_input(0x02);
-	pick_input(0x03);
-	pick_side(false);
-	pick_input(0x00);
-	pick_input(0x01);
-	pick_input(0x02);
-	pick_input(0x03);
-	pick_side(true);
-	
-	struct adc_module temp_instance;
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
-
-	/*int i = 0;
-	int cum = 0;
-	while(i<50){
-		int x = readVoltagemV(temp_instance);
-		cum += x;
-		printf("%d\n\r",x);
-		i++;
-	}
-	printf("AVG: %d\n\r", cum/i);*/
-    //printf("Temperature in F: %f\r\n", MLX90614_read_temperature());
-
-	// motor controller test that says bad address
-	/*uint8_t write_buffer[3] = {
-		0xaa, 0x0a, 0x00
-	};
-	
-	struct i2c_master_packet write_packet = {
-		.address     = 0x0f,
-		.data_length = 3,
-		.data        = write_buffer,
-		.ten_bit_address = false,
-		.high_speed      = false,
-		.hs_master_code  = 0x0,
-	};
-	i2c_write_command(&write_packet);
-	
-	// Create task to monitor processor activity
-	if (xTaskCreate(task_monitor, "Monitor", TASK_MONITOR_STACK_SIZE, NULL,
-			TASK_MONITOR_STACK_PRIORITY, NULL) != pdPASS) {
-		//printf("Failed to create Monitor task\r\n");
-	}
-
-	// Create task to make led blink
-	if (xTaskCreate(task_led, "Led", TASK_LED_STACK_SIZE, NULL,
-			TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
-		//printf("Failed to create test led task\r\n");
-	}
-	
-	// Create task to make led blink
-	if (xTaskCreate(task_adc_read, "ADC", TASK_ADC_STACK_SIZE, NULL,
-	TASK_ADC_STACK_PRIORITY, NULL) != pdPASS) {
-		//printf("Failed to create test led task\r\n");
-	}
-
-	// Start the scheduler.
-	vTaskStartScheduler();
-
-	// Will only get here if there was insufficient memory to create the idle task.
-	*/
-	return 0;
 }

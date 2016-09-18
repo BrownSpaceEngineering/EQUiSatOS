@@ -88,7 +88,7 @@
  *
  * \section asfdoc_sam0_sercom_usart_overview Module Overview
  *
- * This driver will use one (or more) SERCOM interface(s) on the system
+ * This driver will use one (or more) SERCOM interface(s) in the system
  * and configure it to run as a USART interface in either synchronous
  * or asynchronous mode.
  *
@@ -282,7 +282,7 @@ extern "C" {
  */
 #if (SAMD21) || (SAMR21) || (SAMD09) || (SAMD10) || (SAMD11) || (SAML21) || \
 	(SAML22) ||(SAMDA1) || (SAMC20) || (SAMC21) || defined(__DOXYGEN__)
-/** Usart sync scheme version 2. */
+/** USART sync scheme version 2. */
 #  define FEATURE_USART_SYNC_SCHEME_V2
 /** USART oversampling. */
 #  define FEATURE_USART_OVER_SAMPLE
@@ -1477,7 +1477,7 @@ static inline bool lin_master_transmission_status(struct usart_module *const mod
  * conjunction to optimize the serial data pin-out.
  *
  * When TX and RX are connected to the same pin, the USART will operate in
- * half-duplex mode if both the transmitter and receivers are enabled.
+ * half-duplex mode if both one transmitter and several receivers are enabled.
  *
  * \note When RX and XCK are connected to the same pin, the receiver must not
  *       be enabled if the USART is configured to use an external clock.
@@ -1559,8 +1559,8 @@ static inline bool lin_master_transmission_status(struct usart_module *const mod
  *	</tr>
  *	<tr>
  *		<td>42118F</td>
- *		<td>08/2015</td>
- *		<td>Added support for SAM L21/L22, SAM DA1, and SAM C20/C21</td>
+ *		<td>12/2015</td>
+ *		<td>Added support for SAM L21/L22, SAM DA1, SAM D09, and SAM C20/C21</td>
  *	</tr>
  *	<tr>
  *		<td>42118E</td>

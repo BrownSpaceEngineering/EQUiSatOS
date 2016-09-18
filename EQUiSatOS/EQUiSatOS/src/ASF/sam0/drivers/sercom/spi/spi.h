@@ -3,7 +3,7 @@
  *
  * \brief SAM Serial Peripheral Interface Driver
  *
- * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -102,7 +102,7 @@
  * \subsection asfdoc_sam0_sercom_spi_module_features Driver Feature Macro Definition
  * <table>
  *  <tr>
- *    <th>Driver Feature Macro</th>
+ *    <th>Driver feature macro</th>
  *    <th>Supported devices</th>
  *  </tr>
  *  <tr>
@@ -1305,7 +1305,7 @@ static inline enum status_code spi_read(
 	if (spi_module->STATUS.reg & SERCOM_SPI_STATUS_BUFOVF) {
 		retval = STATUS_ERR_OVERFLOW;
 		/* Clear overflow flag */
-		spi_module->STATUS.reg |= SERCOM_SPI_STATUS_BUFOVF;
+		spi_module->STATUS.reg = SERCOM_SPI_STATUS_BUFOVF;
 	}
 
 	/* Read the character from the DATA register */
@@ -1766,14 +1766,14 @@ enum status_code spi_select_slave(
   *
   * <table>
   *	<tr>
-  *		<th>Doc. Rev.</td>
-  *		<th>Date</td>
-  *		<th>Comments</td>
+  *		<th>Doc. Rev.</th>
+  *		<th>Date</th>
+  *		<th>Comments</th>
   *	</tr>
   *	<tr>
   *		<td>42115E</td>
-  *		<td>08/2015</td>
-  *		<td>Add SAM L21/L22, SAM DA1 and SAM C21 support</td>
+  *		<td>12/2015</td>
+  *		<td>Add SAM L21/L22, SAM DA1, SAM D09, and SAM C21 support</td>
   *	</tr>
   *	<tr>
   *		<td>42115D</td>
