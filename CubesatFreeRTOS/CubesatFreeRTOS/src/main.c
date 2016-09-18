@@ -210,11 +210,12 @@ int main(void)
 	
 
 	configure_i2c_master(SERCOM2);
-	/*
+	
 	while(true){
-		float x = MLX90614_readObjectTempC();
-		uint16_t data = MLX90614_readRawIRData(MLX90614_RAWIR1);
-	}*/
+		uint16_t data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
+		uint16_t data2 = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+		int a = 2;
+	}
 	//READ FROM MAGNETOMETER
 	HMC5883L_init(*i2c_write_command, *i2c_read_command);
 	for (int j = 0; j < 15; j++) {
