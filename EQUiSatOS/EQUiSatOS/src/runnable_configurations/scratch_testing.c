@@ -8,10 +8,7 @@
 #include "run.h"
 #include "scratch_testing.h"
 
-void runit(){
-	// Initilize the SAM system
-	system_init();
-
+void runit(){	
 	configure_i2c_master(SERCOM2);
 	
 	while(true){

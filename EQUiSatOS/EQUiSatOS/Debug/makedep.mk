@@ -78,6 +78,10 @@ src\processor_drivers\RTC_Commands.c
 
 src\processor_drivers\SPI_Commands.c
 
+src\processor_drivers\USART_Commands.c
+
+src\radio\Radio_Commands.c
+
 src\runnable_configurations\scratch_testing.c
 
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
