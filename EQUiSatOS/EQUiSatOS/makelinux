@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Script to make the project on linux
+
+MKFILE="Makefile-linux"
+
+sh convert_studio7_linux.sh CubeSatFreeRTOS
+cd Debug/
+make -f $MKFILE clean
+make -f $MKFILE
+
