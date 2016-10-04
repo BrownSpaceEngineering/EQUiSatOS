@@ -25,10 +25,10 @@ void configure_i2c_master(Sercom* sercom)
 	/* Initialize and enable device with config. */
 	//! [init_module]
 	int init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
-	printf("I2C master init status: %d\r\n", init_status);
+	//printf("I2C master init status: %d\r\n", init_status);
 	while(init_status != STATUS_OK) {
 		init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
-		printf("I2C master init error status: %d\r\n", init_status);
+		//printf("I2C master init error status: %d\r\n", init_status);
 	}
 	//! [init_module]
 
@@ -77,7 +77,7 @@ void i2c_read_command(struct i2c_master_packet* packet_address){
 	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) != STATUS_OK) {
 		if (timeout++ == TIMEOUT) {
 			break;
-			printf("timeout");
+			//printf("timeout");
 		}
 	}
 }

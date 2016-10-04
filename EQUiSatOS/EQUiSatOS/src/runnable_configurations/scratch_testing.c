@@ -9,13 +9,25 @@
 #include "scratch_testing.h"
 
 void runit(){	
-	configure_i2c_master(SERCOM2);
+	configure_i2c_master(SERCOM4);
+	float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+	int a = 3;
 	
-	while(true){
-		uint16_t data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
-		uint16_t data2 = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+	/*
+	uint8_t addr = 0x01;
+	
+	while(addr != 0x00){
+		float data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
+		float data2 = MLX90614_readTempC(0x5B,false);
 		int a = 2;
+		int b = a+1;
+		if(data2 > -273){
+			int a=1;
+		}
+		addr = addr + 1;
 	}
+	**/
+	/**
 	//READ FROM MAGNETOMETER
 	HMC5883L_init(*i2c_write_command, *i2c_read_command);
 	for (int j = 0; j < 15; j++) {
@@ -32,6 +44,7 @@ void runit(){
 		float heading = HMC5883L_computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
 		int a = 0;
 	}
+	**/
 
 	/*
 	uint16_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
