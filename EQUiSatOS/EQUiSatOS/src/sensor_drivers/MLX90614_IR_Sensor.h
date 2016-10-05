@@ -16,21 +16,33 @@
 //eeprom addresses
 #define MLX90614_SMBUS 0x2E
 
+typedef enum {DEFAULT = MLX90614_DEFAULT_I2CADDR,
+              TBOARD_IR2 = MLX90614_TBOARD_IR2
+              /* TODO: add more members to this enum
+                 as we get more IR sensors to talk to */
+              } MLXDeviceAddr;
+
+typedef enum {IR1 = MLX90614_RAWIR1,
+             IR2 = MLX90614_RAWIR2} IRChannel;
+
+typedef enum {AMBIENT = MLX90614_TA,
+              OBJ1 = MLX90614_TOBJ1,
+              OBJ2 = MLX90614_TOBJ2} IRTempTarget;
+
 i2c_func MLX90614_i2c_write_func;
 i2c_func MLX90614_i2c_read_func;
 i2c_func MLX90614_i2c_write_no_stop_func;
 
 void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i2c_write_no_stop_func);
-void read_MLX90614(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf);
-uint16_t MLX90614_read2ByteValue(uint16_t device_addr, uint8_t mem_addr, bool lsb_first);
-uint16_t MLX90614_readRawIRData(uint8_t device_addr, bool is_ir2);
+void read_MLX90614(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf);
+uint16_t MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr);
+uint16_t MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan);
 float dataToTemp(uint16_t data);
-float MLX90614_readTempC(uint8_t device_addr, bool is_ambient);
+float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target);
 
-uint16_t MLX90614_getAddress(uint8_t device_addr);
+uint16_t MLX90614_getAddress(MLXDeviceAddr addr);
 
-void write_MLX90614_eeprom(uint8_t device_addr, uint8_t mem_addr, uint8_t* buf);
-void MLX90614_setAddress(uint8_t current_addr, uint8_t new_addr);
+void write_MLX90614_eeprom(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf);
+void MLX90614_setAddress(MLXDeviceAddr current_addr, MLXDeviceAddr new_addr);
 
-uint8_t crc(uint8_t* message, int nBytes);
 #endif
