@@ -98,6 +98,10 @@ src\radio\Radio_Commands.c
 
 src\runnable_configurations\flatsat.c
 
+src\runnable_configurations\init_rtos_tasks.c
+
+src\runnable_configurations\rtos_tasks.c
+
 src\runnable_configurations\scratch_testing.c
 
 src\sensor_drivers\AD7991_ADC.c
@@ -113,4 +117,3 @@ src\sensor_drivers\switching_commands.c
 src\sensor_drivers\TCA9535_GPIO.c
 
 src\sensor_drivers\TEMD6200_Commands.c
-

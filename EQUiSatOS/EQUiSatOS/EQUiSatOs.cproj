@@ -1558,6 +1558,18 @@
     <Compile Include="src\runnable_configurations\run.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\runnable_configurations\init_rtos_tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\init_rtos_tasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\rtos_tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\rtos_tasks.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1574,6 +1586,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\AD7991_ADC.h">
+        <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.c">
