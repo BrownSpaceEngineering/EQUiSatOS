@@ -289,26 +289,26 @@
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.18.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.28.1" />
         </dependencies>
         <project id="common.applications.user_application.xplained_pro2.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
-    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800007794</ToolNumber>
-      <ToolName>EDBG</ToolName>
+      <ToolNumber>ATML2130021800007809</ToolNumber>
+      <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <com_atmel_avrdbg_tool_atmelice>
@@ -1427,6 +1427,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\flatsat.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\flatsat.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">

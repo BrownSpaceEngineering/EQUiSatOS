@@ -13,7 +13,7 @@ void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _
 */
 void read_MLX90614(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf) {
 	struct i2c_master_packet write_packet = {
-		.address     = device_addr,
+		.address     = addr,
 		.data_length = 1,
 		.data        = &mem_addr,
 		.ten_bit_address = false,
@@ -22,7 +22,7 @@ void read_MLX90614(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf) {
 	};
 	
 	struct i2c_master_packet read_packet = {
-		.address     = device_addr,
+		.address     = addr,
 		.data_length = 2,
 		.data        = buf,
 		.ten_bit_address = false,
@@ -46,12 +46,12 @@ void write_MLX90614_eeprom(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf) {
 		mem_addr, buf[0], buf[1]
 	};
 	
-	uint8_t write_buf[4] = {
-		mem_addr, buf[0], buf[1], crc(crc_buf,3)
+	uint8_t write_buf[4] = {0,0,0,0
+	//	mem_addr, buf[0], buf[1], crc(crc_buf,3)
 	};
 	
 	struct i2c_master_packet write_packet = {
-		.address     = device_addr,
+		.address     = addr,
 		.data_length = 4,
 		.data        = write_buf,
 		.ten_bit_address = false,
@@ -67,13 +67,13 @@ uint16_t MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr) {
 	uint8_t read_buffer[2] = {
 		0x0, 0x0
 	};
-	read_MLX90614(device_addr, mem_addr, read_buffer);
+	read_MLX90614(addr, mem_addr, read_buffer);
 	return read_buffer[0] | (((uint16_t)read_buffer[1]) << 8); // assumes LSB is in read_buffer[0]
 }
 
 // Function to read raw IR data from sensor. chan can be IR1 or IR2
 uint16_t MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan) {
-	return MLX90614_read2ByteValue(device_addr, (uint8_t)chan);
+	return MLX90614_read2ByteValue(addr, (uint8_t)chan);
 }
 
 // converts a data value from the sensor corresponding to a temperature memory address to a celsius temperature
@@ -85,13 +85,13 @@ float dataToTemp(uint16_t data){
 // Read target temperature in degrees Celsius
 // temp_target can be AMBIENT, OBJ1, OBJ2
 float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target) {
-	uint16_t data = MLX90614_read2ByteValue(device_addr, (uint8_t) temp_target);
+	uint16_t data = MLX90614_read2ByteValue(addr, (uint8_t) temp_target);
 	return dataToTemp(data);
 }
 
 // sanity check, should always return the same value as device_addr
 uint16_t MLX90614_getAddress(MLXDeviceAddr addr) {
-	return MLX90614_read2ByteValue(device_addr, MLX90614_SMBUS);
+	return MLX90614_read2ByteValue(addr, MLX90614_SMBUS);
 }
 
 // changes device address from current_addr to new_addr. make sure new_addr doesnt conflict with any networked i2c devices

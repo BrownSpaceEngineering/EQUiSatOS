@@ -82,6 +82,8 @@ src\processor_drivers\USART_Commands.c
 
 src\radio\Radio_Commands.c
 
+src\runnable_configurations\flatsat.c
+
 src\runnable_configurations\scratch_testing.c
 
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
