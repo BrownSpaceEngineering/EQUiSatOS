@@ -15,7 +15,7 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
 	config_adc.reference = ADC_REFERENCE_INT1V;
 	config_adc.positive_input = pin;
-	config_adc.resolution = ADC_RESOLUTION_12BIT;
+	config_adc.resolution = ADC_RESOLUTION_10BIT;
 
 	//setup_set_config
 	adc_init(adc_instance, ADC, &config_adc);
