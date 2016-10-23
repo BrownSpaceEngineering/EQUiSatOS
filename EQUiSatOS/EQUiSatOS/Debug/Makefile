@@ -168,6 +168,8 @@ C_SRCS +=  \
 ../src/processor_drivers/USART_Commands.c \
 ../src/radio/Radio_Commands.c \
 ../src/radio/Stacks/Num_Stack.c \
+../src/runnable_configurations/init_rtos_tasks.c \
+../src/runnable_configurations/rtos_tasks.c \
 ../src/runnable_configurations/scratch_testing.c \
 ../src/runnable_configurations/Sensor_Structs.c \
 ../src/sensor_drivers/HMC5883L_Magnetometer_Commands.c \
@@ -224,6 +226,8 @@ src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
 src/radio/Stacks/Num_Stack.o \
+src/runnable_configurations/init_rtos_tasks.o \
+src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
 src/runnable_configurations/Sensor_Structs.o \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.o \
@@ -273,6 +277,8 @@ src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
 src/radio/Stacks/Num_Stack.o \
+src/runnable_configurations/init_rtos_tasks.o \
+src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
 src/runnable_configurations/Sensor_Structs.o \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.o \
@@ -322,6 +328,8 @@ src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
 src/radio/Stacks/Num_Stack.d \
+src/runnable_configurations/init_rtos_tasks.d \
+src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
 src/runnable_configurations/Sensor_Structs.d \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.d \
@@ -371,6 +379,8 @@ src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
 src/radio/Stacks/Num_Stack.d \
+src/runnable_configurations/init_rtos_tasks.d \
+src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
 src/runnable_configurations/Sensor_Structs.d \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.d \

@@ -84,6 +84,10 @@ src\radio\Radio_Commands.c
 
 src\radio\Stacks\Num_Stack.c
 
+src\runnable_configurations\init_rtos_tasks.c
+
+src\runnable_configurations\rtos_tasks.c
+
 src\runnable_configurations\scratch_testing.c
 
 src\runnable_configurations\Sensor_Structs.c
