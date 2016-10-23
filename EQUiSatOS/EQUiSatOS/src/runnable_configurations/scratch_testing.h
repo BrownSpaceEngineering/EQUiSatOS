@@ -9,6 +9,7 @@
 #ifndef SCRATCH_TESTING_H_
 #define SCRATCH_TESTING_H_
 
-void runit();
+void runit(void);
+void radioTest(void);
 
 #endif /* SCRATCH_TESTING_H_ */
