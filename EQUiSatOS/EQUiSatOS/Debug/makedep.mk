@@ -108,6 +108,14 @@ src\sensor_drivers\AD7991_ADC.c
 
 src\sensor_drivers\LTC1380_Multiplexer_Commands.c
 
+src\radio\Stacks\Num_Stack.c
+
+src\runnable_configurations\scratch_testing.c
+
+src\runnable_configurations\Sensor_Structs.c
+
+src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
+
 src\sensor_drivers\MLX90614_IR_Sensor.c
 
 src\sensor_drivers\MPU9250_9axis_Commands.c

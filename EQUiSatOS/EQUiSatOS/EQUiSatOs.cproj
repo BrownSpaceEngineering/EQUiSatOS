@@ -742,6 +742,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
+    <Folder Include="src\radio\Stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
     <Folder Include="src\runnable_configurations" />
@@ -1553,6 +1554,15 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\flatsat.h">
+        <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\Sensor_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">
@@ -1592,6 +1602,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\Sensor_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.h">
