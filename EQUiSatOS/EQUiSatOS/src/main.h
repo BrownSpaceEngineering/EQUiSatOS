@@ -10,6 +10,7 @@
 #define MAIN_H
 
 #include "runnable_configurations/scratch_testing.h"
+#include "radio/Stacks/Num_Stack.h"
 #include <asf.h>
 
 #endif /* MAIN_H */

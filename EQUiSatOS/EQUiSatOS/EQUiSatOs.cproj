@@ -296,7 +296,7 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
-    <avrtoolserialnumber>ATML2130021800007794</avrtoolserialnumber>
+    <avrtoolserialnumber>ATML2130021800009153</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
@@ -307,8 +307,8 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800007794</ToolNumber>
-      <ToolName>EDBG</ToolName>
+      <ToolNumber>ATML2130021800009153</ToolNumber>
+      <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
@@ -767,6 +767,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
+    <Folder Include="src\radio\Stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
     <Folder Include="src\runnable_configurations" />
@@ -1508,6 +1509,15 @@
     <Compile Include="src\radio\Radio_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\runnable_configurations\run.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1515,6 +1525,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\Sensor_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
