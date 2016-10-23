@@ -47,10 +47,6 @@ float readVoltageV(struct adc_module adc_instance){
 	return readVoltagemV(adc_instance)/1000;
 } 
 
-float resultToVoltage(float result) {
-	return 5.599744685 + 0.4909903275 * result;
-}
-
 float voltageToTemp(float voltage) {
 	return 0.1*voltage - 50;
 }
