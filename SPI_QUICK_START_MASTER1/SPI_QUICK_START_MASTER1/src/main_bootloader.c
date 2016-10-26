@@ -10,6 +10,7 @@
 
 #include "conf_uart_serial.h"
 
+#include "Bootloader/mram.h"
 #include "Bootloader/flash_memory.h"
 
 #define SAM_BA_BOTH_INTERFACES      0
@@ -55,9 +56,6 @@ static void configure_console(void) {
 &usart_conf);
     usart_enable(&cdc_uart_module);
 }
-
-
-
 
 static void check_start_application(void);
 
@@ -117,7 +115,7 @@ static void check_start_application(void)
 #	define DEBUG_PIN_LOW 	do{}while(0)
 #endif
 
-
+/*
 /**
 Function to define the bootloader, there are function to write the mram and to read from it,
 after that it is necessary to call the function to write the flash and then start the application.
@@ -125,7 +123,9 @@ after that it is necessary to call the function to write the flash and then star
 int main(void)
 {
 	
+	/*
 	uint8_t example_array[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
 	save_binary_into_flash(example_array, 5, 512);	
-	check_start_application();
+	check_start_application();*/
+	return test_mram();
 }

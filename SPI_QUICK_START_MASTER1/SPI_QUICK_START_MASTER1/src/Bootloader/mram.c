@@ -16,12 +16,12 @@ void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
 uint8_t initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate){
 	struct spi_config config_spi_master;
 	spi_get_config_defaults(&config_spi_master);
-	config_spi_master.mux_setting = EXT1_SPI_SERCOM_MUX_SETTING;
-	config_spi_master.pinmux_pad0 = EXT1_SPI_SERCOM_PINMUX_PAD0;
+	config_spi_master.mux_setting = SPI_SIGNAL_MUX_SETTING_E;
+	config_spi_master.pinmux_pad0 = PINMUX_PA16C_SERCOM1_PAD0;
 	config_spi_master.pinmux_pad1 = PINMUX_UNUSED;
-	config_spi_master.pinmux_pad2 = EXT1_SPI_SERCOM_PINMUX_PAD2;
-	config_spi_master.pinmux_pad3 = EXT1_SPI_SERCOM_PINMUX_PAD3;
-	spi_init(spi_master_instance, EXT1_SPI_MODULE, &config_spi_master);
+	config_spi_master.pinmux_pad2 = PINMUX_PA18C_SERCOM1_PAD2;
+	config_spi_master.pinmux_pad3 = PINMUX_PA19C_SERCOM1_PAD3;
+	spi_init(spi_master_instance, SERCOM1, &config_spi_master);
 	enum status_code code = spi_set_baudrate(spi_master_instance, baudrate);
 	spi_enable(spi_master_instance);
 }
@@ -29,7 +29,7 @@ uint8_t initialize_master(struct spi_module *spi_master_instance, uint32_t baudr
 uint8_t initialize_slave(struct spi_slave_inst *slave){
 	struct spi_slave_inst_config slave_dev_config;
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
-	slave_dev_config.ss_pin = EXT1_PIN_SPI_SS_0;
+	slave_dev_config.ss_pin = PIN_PA17C_SERCOM1_PAD1;
 	spi_attach_slave(slave, &slave_dev_config);
 }
 
