@@ -212,7 +212,7 @@
         <documentation help="" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.21.0" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.28.1" />
         </dependencies>
         <project id="sam0.drivers.sercom.spi.quick_start_master.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />

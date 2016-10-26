@@ -22,6 +22,7 @@ They are setting for SERCOM 3 in the data sheet, but samd21_xplained_pro.h offer
 #include <samd21_xplained_pro.h>
 #include <spi.h>
 
+#include "Bootloader/mram.h"
 #include "Bootloader/flash_memory.h"
 #define READ_LEN 5
 
@@ -79,23 +80,23 @@ int main(void)
 	static uint8_t enable = 0x06;
 	static uint8_t status[5] = {0x03, 0x00, 0x00, 0x00, 0x08};
 	
-	save_binary_into_flash(status, 6, 512);
+	save_binary_into_flash(status, 6, 512); // this saves the array into flash...?
 	
 	spi_select_slave(&spi_master_instance, &slave, false);
 	spi_select_slave(&spi_master_instance, &slave, true);
-	enum status_code code_1 = spi_write_buffer_wait(&spi_master_instance, &enable, 1);
+	enum status_code code_1 = spi_write_buffer_wait(&spi_master_instance, &enable, 1); // what does writing the raw buffer mean?
 	spi_select_slave(&spi_master_instance, &slave, false);
 	
 	uint8_t temp[5] = {0x01, 0x01, 0x01, 0x01, 0x01};
 	uint8_t temp2[5] = {0x01, 0x01, 0x01, 0x01, 0x01};
 	static uint8_t write_8[5] = {0x02, 0x00, 0x00, 0x00, 0x15};
 	spi_select_slave(&spi_master_instance, &slave, true);
-	enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, write_8, &temp, 5);
+	enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, write_8, &temp, 5); // why &temp?
 	spi_select_slave(&spi_master_instance, &slave, false);	
 	
 	while (true) {
 		spi_select_slave(&spi_master_instance, &slave, true);
-		code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp2, 5);
+		code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp2, 5); // why &temp2 also?
 		spi_select_slave(&spi_master_instance, &slave, false);
 	}
 }
