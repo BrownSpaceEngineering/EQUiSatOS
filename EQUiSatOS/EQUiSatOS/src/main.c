@@ -74,6 +74,9 @@ int main(void)
 	}
 	Stack_Remove_Front(&test);
 	
+	int16_t returner[2];
+	Stack_Iterate(&test, 2, &returner);
+	
 	runit();
 }
 
