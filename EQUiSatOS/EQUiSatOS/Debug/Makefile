@@ -322,7 +322,6 @@ src/sensor_drivers/AD7991_ADC.o \
 src/sensor_drivers/LTC1380_Multiplexer_Commands.o \
 src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/scratch_testing.o \
-src/runnable_configurations/Sensor_Structs.o \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.o \
 src/sensor_drivers/MLX90614_IR_Sensor.o \
 src/sensor_drivers/MPU9250_9axis_Commands.o \
@@ -385,7 +384,6 @@ src/sensor_drivers/AD7991_ADC.d \
 src/sensor_drivers/LTC1380_Multiplexer_Commands.d \
 src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/scratch_testing.d \
-src/runnable_configurations/Sensor_Structs.d \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.d \
 src/sensor_drivers/MLX90614_IR_Sensor.d \
 src/sensor_drivers/MPU9250_9axis_Commands.d \

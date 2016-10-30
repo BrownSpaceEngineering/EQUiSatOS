@@ -5,14 +5,23 @@
  *  Author: mckenna
  */ 
 
+#ifndef INIT_RTOS_TASKS_H
+#define INIT_RTOS_TASKS_H
+
 #include "rtos_task_frequencies.h"
 #include "rtos_tasks.h"
 
 /* Global task frequencies to allow for changing them in different states */
-int taskFrequencies[NUM_TASKS]; 
+int taskFrequencies[NUM_TASKS];
 
-void runit();
+/* Global satellite state - is this the best way to do this? */
+int CurrentState;
+
+void runit_2();
 
 void set_state_idle();
 void set_state_flash();
+//void set_state_boot();
 void set_state_low_power();
+
+#endif

@@ -1564,7 +1564,10 @@
     <Compile Include="src\radio\Stacks\Num_Stack.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\Sensor_Structs.h">
+    <Compile Include="src\radio\Stacks\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">
@@ -1588,6 +1591,7 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
+<<<<<<< 183edafd6b55a3aa8a7ea3b774469be7da637ab2
     <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </None>
@@ -1603,6 +1607,8 @@
     <Compile Include="src\runnable_configurations\Sensor_Structs.c">
       <SubType>compile</SubType>
     </Compile>
+=======
+>>>>>>> Wrote most of basic rtos sensor read task and struct definition
     <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
       <SubType>compile</SubType>
     </Compile>

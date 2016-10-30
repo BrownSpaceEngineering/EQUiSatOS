@@ -15,6 +15,7 @@
 
 #include "runnable_configurations/scratch_testing.h"
 #include <global.h>
+#include "runnable_configurations/init_rtos_tasks.h"
 #include "radio/Stacks/Num_Stack.h"
 #include <asf.h>
 
