@@ -498,6 +498,10 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+
+
+
+
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

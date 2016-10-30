@@ -8,6 +8,7 @@
 // TODO: "#ifdef... #endif"?
 
 #define NUM_STACK_MAX 4
+#include <asf.h>
 
 typedef struct Num_Stack
 {

@@ -1540,6 +1540,8 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\Sensor_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
       <SubType>compile</SubType>
     </Compile>

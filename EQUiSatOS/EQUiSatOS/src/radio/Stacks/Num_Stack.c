@@ -12,6 +12,7 @@ void Stack_Init(Num_Stack* S)
 int Stack_Top(Num_Stack* S)
 {
 	// Could also be S->size == 0
+	// TODO: Think about whether we need second conditional
 	if (S->top_index != -1 && S->top_index < S->size) 
 	{
 		return S->data[S->top_index];
@@ -27,6 +28,7 @@ int Stack_Top(Num_Stack* S)
 int Stack_Bottom(Num_Stack* S)
 {
 	// Could also be S->size == 0
+	// TODO: Think about whether we need second conditional
 	if (S->bottom_index != -1 && S->bottom_index < S->size)
 	{
 		return S->data[S->bottom_index];
@@ -76,7 +78,12 @@ void Stack_Remove_Front(Num_Stack* S)
 		}
 		else
 		{
-			S->top_index = (S->top_index - 1) % NUM_STACK_MAX;
+			S->top_index = S->top_index - 1;
+			
+			if (S->top_index < 0)
+			{
+				S->top_index = S->top_index + NUM_STACK_MAX;
+			}
 		}
 	}
 }
@@ -104,9 +111,19 @@ void Stack_Remove_Back(Num_Stack* S)
 
 int * Iterate(Num_Stack* S)
 {
-	int result[S->size];
-	for (int i = 0; i < S->size; i++)
-	{
-		result[i] = S->data[i % NUM_STACK_MAX];
-	}
+	// if (n < S->size)
+	// {
+	//	int result[S->size];
+	//	for (int i = S->top_index; i > ; i--)
+	//	{
+	//		result[i] = S->data[i % NUM_STACK_MAX];
+	//	}
+		
+	//	return result;
+	// }
+	// TODO: Do we want dummies here?
+	// else
+	// {
+		// return 0;	
+	// }
 }
