@@ -74,6 +74,7 @@ int main(void)
 	}
 	Stack_Remove_Front(&test);
 	
-	runit();
+	//runit();
+	runit_2();
 }
 

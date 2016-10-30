@@ -171,7 +171,6 @@ C_SRCS +=  \
 ../src/runnable_configurations/init_rtos_tasks.c \
 ../src/runnable_configurations/rtos_tasks.c \
 ../src/runnable_configurations/scratch_testing.c \
-../src/runnable_configurations/Sensor_Structs.c \
 ../src/sensor_drivers/HMC5883L_Magnetometer_Commands.c \
 ../src/sensor_drivers/MLX90614_IR_Sensor.c \
 ../src/sensor_drivers/switching_commands.c \
@@ -229,7 +228,6 @@ src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
-src/runnable_configurations/Sensor_Structs.o \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.o \
 src/sensor_drivers/MLX90614_IR_Sensor.o \
 src/sensor_drivers/switching_commands.o \
@@ -280,7 +278,6 @@ src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
-src/runnable_configurations/Sensor_Structs.o \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.o \
 src/sensor_drivers/MLX90614_IR_Sensor.o \
 src/sensor_drivers/switching_commands.o \
@@ -331,7 +328,6 @@ src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
-src/runnable_configurations/Sensor_Structs.d \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.d \
 src/sensor_drivers/MLX90614_IR_Sensor.d \
 src/sensor_drivers/switching_commands.d \
@@ -382,7 +378,6 @@ src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
-src/runnable_configurations/Sensor_Structs.d \
 src/sensor_drivers/HMC5883L_Magnetometer_Commands.d \
 src/sensor_drivers/MLX90614_IR_Sensor.d \
 src/sensor_drivers/switching_commands.d \
@@ -403,8 +398,6 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 
