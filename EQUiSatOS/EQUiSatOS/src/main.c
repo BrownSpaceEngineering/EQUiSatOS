@@ -74,7 +74,10 @@ int main(void)
 	}
 	Stack_Remove_Front(&test);
 	
-	//runit();
-	runit_2();
+	int16_t returner[2];
+	Stack_Iterate(&test, 2, &returner);
+	
+	runit();
+	//runit_2();
 }
 
