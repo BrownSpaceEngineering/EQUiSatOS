@@ -106,6 +106,7 @@ src\runnable_configurations\rtos_tasks.c
 
 src\runnable_configurations\scratch_testing.c
 
+<<<<<<< 5bccd393ad7b9c7abcbf7236293f757686e759aa
 src\sensor_drivers\AD7991_ADC.c
 
 src\sensor_drivers\LTC1380_Multiplexer_Commands.c
@@ -116,11 +117,17 @@ src\runnable_configurations\scratch_testing.c
 
 src\runnable_configurations\Sensor_Structs.c
 
+=======
+>>>>>>> Fix things until idle_data_read_task runs
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
 
+<<<<<<< 5bccd393ad7b9c7abcbf7236293f757686e759aa
 src\sensor_drivers\MPU9250_9axis_Commands.c
+=======
+src\sensor_drivers\sensor_read_commands.c
+>>>>>>> Fix things until idle_data_read_task runs
 
 src\sensor_drivers\switching_commands.c
 

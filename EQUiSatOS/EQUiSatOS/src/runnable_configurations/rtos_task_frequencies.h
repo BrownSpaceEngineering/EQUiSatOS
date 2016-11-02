@@ -8,7 +8,7 @@
 #ifndef RTOS_TASK_FREQ_H
 #define RTOS_TASK_FREQ_H
 
-/* action frequencies */
+/* action frequency periods in MS */
 // idle state
 #define idle_TASK_LED_FREQ						200
 #define idle_TASK_RADIO_TRANSMIT_FREQ			200
@@ -21,8 +21,8 @@
 #define low_power_TASK_LED_FREQ					200
 #define low_power_TASK_RADIO_TRANSMIT_FREQ		200
 
-/* sensor read frequencies (correspond directly to states) */
-#define IDLE_RD_TASK_FREQ						200
+/* sensor read frequency periods (correspond directly to states)  in MS */
+#define IDLE_RD_TASK_FREQ						1000
 #define FLASH_RD_TASK_FREQ						200
 #define LOW_POWER_RD_TASK_FREQ					200
 
@@ -50,20 +50,18 @@
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
 
-
-
 /* "idle" state LOG frequencies - normal operation 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define idle_IR_READS_PER_LOG					IDLE_RD_TASK_FREQ / 200
-#define idle_TEMP_READS_PER_LOG					IDLE_RD_TASK_FREQ / 200
-#define idle_DIODE_READS_PER_LOG				IDLE_RD_TASK_FREQ / 200
-#define idle_LED_CURRENT_READS_PER_LOG			IDLE_RD_TASK_FREQ / 200
-#define idle_GYRO_READS_PER_LOG					IDLE_RD_TASK_FREQ / 200
-#define idle_MAGNETOMETER_READS_PER_LOG			IDLE_RD_TASK_FREQ / 200
-#define idle_CHARGING_DATA_READS_PER_LOG		IDLE_RD_TASK_FREQ / 200
-#define idle_RADIO_TEMP_READS_PER_LOG			IDLE_RD_TASK_FREQ / 200
-#define idle_BAT_VOLTAGE_READS_PER_LOG			IDLE_RD_TASK_FREQ / 200
-#define idle_REG_VOLTAGE_READS_PER_LOG			IDLE_RD_TASK_FREQ / 200
+#define idle_IR_READS_PER_LOG					4000 / IDLE_RD_TASK_FREQ
+#define idle_TEMP_READS_PER_LOG					200 / IDLE_RD_TASK_FREQ
+#define idle_DIODE_READS_PER_LOG				200 / IDLE_RD_TASK_FREQ
+#define idle_LED_CURRENT_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
+#define idle_GYRO_READS_PER_LOG					200 / IDLE_RD_TASK_FREQ
+#define idle_MAGNETOMETER_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
+#define idle_CHARGING_DATA_READS_PER_LOG		200 / IDLE_RD_TASK_FREQ
+#define idle_RADIO_TEMP_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
+#define idle_BAT_VOLTAGE_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
+#define idle_REG_VOLTAGE_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
 
 // from above values, define a shortcut for the MOST reads per log
 // corresponding to the LOWEST log frequency, which can be used
@@ -73,45 +71,47 @@
 // should be of size one, defining their lengths as:
 // [state]_MAX_READS_PER_LOG / [state]_[sensor]_READS_PER_LOG
 // will result in the lowest frequency having a size of 1
+// (multiply this by something to change the smallest size; 
+// i.e. x2 means _LOWEST_FREQ_SENSOR has an array of size 2)
 #define idle_MAX_READS_PER_LOG					idle_IR_READS_PER_LOG
 // define a reference to the lowest frequency sensor using the 
 // enum value from the data_types enum so we can easily
 // check if it's been read (which would indicate that a state struct is full) 
 // (this is the same sensor that was used in _MAX_READS_PER_LOG)
-#define idle_LOWEST_FREQ_SENSOR  				0	
+#define idle_LOWEST_FREQ_SENSOR  				0 // IR
 
-/* "flash" state LOG frequencies - operation during flash 
+/* "flash" state LOG frequency periods - operation during flash 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define flash_IR_READS_PER_LOG					FLASH_RD_TASK_FREQ / 200 
-#define flash_TEMP_READS_PER_LOG				FLASH_RD_TASK_FREQ / 200
-#define flash_DIODE_READS_PER_LOG				FLASH_RD_TASK_FREQ / 200
-#define flash_LED_CURRENT_READS_PER_LOG			FLASH_RD_TASK_FREQ / 200
-#define flash_GYRO_READS_PER_LOG				FLASH_RD_TASK_FREQ / 200
-#define flash_MAGNETOMETER_READS_PER_LOG		FLASH_RD_TASK_FREQ / 200
-#define flash_CHARGING_DATA_READS_PER_LOG		FLASH_RD_TASK_FREQ / 200
-#define flash_RADIO_TEMP_READS_PER_LOG			FLASH_RD_TASK_FREQ / 200
-#define flash_BAT_VOLTAGE_READS_PER_LOG			FLASH_RD_TASK_FREQ / 200
-#define flash_REG_VOLTAGE_READS_PER_LOG			FLASH_RD_TASK_FREQ / 200
+#define flash_IR_READS_PER_LOG					200 / FLASH_RD_TASK_FREQ 
+#define flash_TEMP_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
+#define flash_DIODE_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
+#define flash_LED_CURRENT_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
+#define flash_GYRO_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
+#define flash_MAGNETOMETER_READS_PER_LOG		200 / FLASH_RD_TASK_FREQ
+#define flash_CHARGING_DATA_READS_PER_LOG		200 / FLASH_RD_TASK_FREQ
+#define flash_RADIO_TEMP_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
+#define flash_BAT_VOLTAGE_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
+#define flash_REG_VOLTAGE_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
 
 // shortcuts from above values
 #define flash_MAX_READS_PER_LOG					flash_IR_READS_PER_LOG
-#define flash_LOWEST_FREQ_SENSOR  				0	
+#define flash_LOWEST_FREQ_SENSOR  				0 // IR
 
-/* "low_power" state LOG frequencies - operation when low on power 
+/* "low_power" state LOG frequency periods - operation when low on power 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define low_power_IR_READS_PER_LOG				LOW_POWER_RD_TASK_FREQ / 200 
-#define low_power_TEMP_READS_PER_LOG			LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_DIODE_READS_PER_LOG			LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_LED_CURRENT_READS_PER_LOG		LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_GYRO_READS_PER_LOG			LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_MAGNETOMETER_READS_PER_LOG	LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_CHARGING_DATA_READS_PER_LOG	LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_RADIO_TEMP_READS_PER_LOG		LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_BAT_VOLTAGE_READS_PER_LOG		LOW_POWER_RD_TASK_FREQ / 200
-#define low_power_REG_VOLTAGE_READS_PER_LOG		LOW_POWER_RD_TASK_FREQ / 200
+#define low_power_IR_READS_PER_LOG				200 / LOW_POWER_RD_TASK_FREQ 
+#define low_power_TEMP_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_DIODE_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_LED_CURRENT_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_GYRO_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_MAGNETOMETER_READS_PER_LOG	200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_CHARGING_DATA_READS_PER_LOG	200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_RADIO_TEMP_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_BAT_VOLTAGE_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_REG_VOLTAGE_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
 
 // shortcuts from above values
 #define low_power_MAX_READS_PER_LOG				low_power_IR_READS_PER_LOG
-#define low_power_LOWEST_FREQ_SENSOR  			0	
+#define low_power_LOWEST_FREQ_SENSOR  			0 // IR
 
 #endif

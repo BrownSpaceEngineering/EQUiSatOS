@@ -12,6 +12,8 @@
 
 #include <asf.h>
 #include <inttypes.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"
@@ -22,9 +24,11 @@
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 #include "radio/Stacks/Sensor_Structs.h"
 #include "radio/Stacks/State_Structs.h"
+#include "init_rtos_tasks.h"
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
@@ -80,6 +84,7 @@ typedef enum
 
 /* Enum for all types of collected data (for consistency across sensor read functions) 
    Based off: https://docs.google.com/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit 
+   https://docs.google.com/spreadsheets/d/1EGv9MapHfgPCEahHojSbnT92tt32k0kPWfgaWkicNCE/edit
    NOTE:
 	If you add/remove a type of collected data, there are several things you must change:
 		1. Add the task to the tasks data_types (below) AND update NUM_DATA_TYPES
@@ -114,9 +119,9 @@ extern void vApplicationIdleHook(void); // lowest-priority task... may be used f
 extern void vApplicationTickHook(void);
 
 // Action tasks
-static void task_antenna_deploy(void *pvParameters); // Will this be a task?
-static void task_led(void *pvParameters);
-static void task_radio_transmit(void *pvParameters);
+void task_antenna_deploy(void *pvParameters); // Will this be a task?
+void task_led(void *pvParameters);
+void task_radio_transmit(void *pvParameters);
 
 // NEW
 // have queues for each of these, and inside each of these read at HIGHEST frequency
@@ -124,20 +129,20 @@ static void task_radio_transmit(void *pvParameters);
 //, and finally add all the data from these into a big struct corresponding to each struct instead of 
 // each sensor
 
-// Sensor read tasks
-static void task_data_read_idle(void *pvParameters);
-static void task_data_read_flash(void *pvParameters);
-static void task_data_read_boot(void *pvParameters);
-static void task_data_read_low_power(void *pvParameters);
+// Data read tasks
+void task_data_read_idle(void *pvParameters);
+void task_data_read_flash(void *pvParameters);
+void task_data_read_boot(void *pvParameters);
+void task_data_read_low_power(void *pvParameters);
 
 /* Queue definitions */
-static idle_data_t *idle_readings_equistack;
+idle_data_t *idle_readings_equistack;
 /*static flash_data_t *flash_readings_equistack;*/
 /*static boot_data_t *boot_readings_equistack;*/
 /*static low_power_data_t *low_power_readings_equistack;*/
 
 
 /* Helper Functions */
-static void increment_all(int* int_arr, int length);
+void increment_all(int* int_arr, int length);
 
 #endif
