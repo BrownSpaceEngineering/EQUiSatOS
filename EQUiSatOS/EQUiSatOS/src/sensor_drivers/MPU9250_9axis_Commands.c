@@ -49,8 +49,9 @@ void MPU9250_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i
 
 void MPU9250_read_mag(MPU9250Reading* toFill){
 	// Request single magnetometer read to be performed
-	uint8_t* reqData = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
+	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
 	writeDataToAddress(reqData,2,MAG_ADDRESS);
+	
 	// Check if measurement is ready
 	uint8_t status = !MAG_DATA_READY;
 	while(!(status&MAG_DATA_READY)){
@@ -141,9 +142,28 @@ MPU9250Reading MPU9250_read(){
 	
 	MPU9250_read_acc(&output);
 	MPU9250_read_gyro(&output);
-	//MPU9250_read_mag(&output);
+	MPU9250_read_mag(&output);
 	
 	HumanReading reading = humanReadableOutput(output);
 	
+	float direction = MPU9250_computeCompassDir(reading.mag.x, reading.mag.y, reading.mag.z);
+	
 	return output;
+}
+
+float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z) {
+	float heading = atan2(z, x);
+	float declinationAngle = 0.244346;
+	heading += declinationAngle;
+	// Correct for when signs are reversed.
+	if(heading < 0) {
+		heading += 2*M_PI;	
+	}	
+
+	// Check for wrap due to addition of declination.
+	if(heading > 2*M_PI) {
+		heading -= 2*M_PI;	
+	}	
+	float headingDegrees = heading * 180/M_PI;	
+	return headingDegrees;
 }

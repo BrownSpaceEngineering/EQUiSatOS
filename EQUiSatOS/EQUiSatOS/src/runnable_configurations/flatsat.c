@@ -7,6 +7,11 @@ int16_t xyzBuff[3] = {0, 0, 0};
 	
 void flatsat_init(void) {
 	configure_i2c_master(SERCOM4);
+	MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
+	while(true){
+		MPU9250_read();
+	}
+	
 	delay_init();
 	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	HMC5883L_init(*i2c_write_command, *i2c_read_command);	

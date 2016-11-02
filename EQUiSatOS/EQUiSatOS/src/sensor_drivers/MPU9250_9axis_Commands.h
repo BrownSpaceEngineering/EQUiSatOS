@@ -2,6 +2,7 @@
 #define _MPU9250_9AXIS_COMMANDS_H_
 
 #include "../processor_drivers/I2C_Commands.h"
+#include <math.h>
 
 #define		MPU9250_ADDRESS				0x68
 #define		MAG_ADDRESS					0x0C
@@ -55,6 +56,7 @@ void MPU9250_read_mag(MPU9250Reading* toFill);
 void MPU9250_read_acc(MPU9250Reading* toFill);
 void MPU9250_read_gyro(MPU9250Reading* toFill);
 MPU9250Reading MPU9250_read();
+float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 
 
 #endif
