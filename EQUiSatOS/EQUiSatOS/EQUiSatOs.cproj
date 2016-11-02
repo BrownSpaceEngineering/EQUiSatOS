@@ -295,14 +295,14 @@
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
-    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -1444,16 +1444,10 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\sensor_drivers\MPU9250_9axis_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\MPU9250_9axis_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\MLX90614_IR_Sensor.c">

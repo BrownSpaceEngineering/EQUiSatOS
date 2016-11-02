@@ -86,8 +86,6 @@ src\runnable_configurations\flatsat.c
 
 src\runnable_configurations\scratch_testing.c
 
-src\sensor_drivers\MPU9250_9axis_Commands.c
-
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c

@@ -8,12 +8,8 @@ int16_t xyzBuff[3] = {0, 0, 0};
 void flatsat_init(void) {
 	configure_i2c_master(SERCOM4);
 	delay_init();
-	
-	MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
-	MPU9250Reading res = MPU9250_read();
-	
 	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
-	HMC5883L_init(i2c_write_command, i2c_read_command);	
+	HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	setup_pin(true,PIN_PA12); //init gpio pin for flashing
 }
