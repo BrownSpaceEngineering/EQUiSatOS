@@ -297,7 +297,7 @@
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
     <avrtoolserialnumber>ATML2130021800009153</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -311,6 +311,19 @@
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
+    <custom>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">custom</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Custom Programming Tool</ToolName>
+    </custom>
+    <CustomProgrammingToolCommand>
+    </CustomProgrammingToolCommand>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -1521,7 +1534,10 @@
     <Compile Include="src\radio\Stacks\Num_Stack.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\Sensor_Structs.h">
+    <Compile Include="src\radio\Stacks\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">
@@ -1543,9 +1559,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\Sensor_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
