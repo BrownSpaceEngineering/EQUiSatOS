@@ -6,6 +6,8 @@
  */ 
 
 // TODO: "#ifdef... #endif"?
+#ifndef _NUM_STACK_H_
+#define _NUM_STACK_H_
 
 #define NUM_STACK_MAX 4
 #include <asf.h>
@@ -25,3 +27,5 @@ void Stack_Add_Front();
 void Stack_Remove_Front();
 void Stack_Remove_Back();
 int * Iterate();
+
+#endif

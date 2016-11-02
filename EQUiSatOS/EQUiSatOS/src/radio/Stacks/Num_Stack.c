@@ -2,6 +2,8 @@
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 #include "Num_Stack.h"
 
+// All the functions are
+
 void Stack_Init(Num_Stack* S)
 {
 	S->size = 0;
