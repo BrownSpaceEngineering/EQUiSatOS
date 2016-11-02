@@ -108,6 +108,7 @@ void Stack_Remove_Back(Num_Stack* S)
 
 // TODO: This may change in the future
 // Iterate only for a couple elements?
+// NOT WORKING
 
 void Stack_Iterate(Num_Stack* S, int16_t n, int16_t Return_Array)
 {
@@ -137,6 +138,7 @@ void Stack_Iterate(Num_Stack* S, int16_t n, int16_t Return_Array)
 		{
 			copy_S.data[i] = S->data[i];
 		}
+		
 		int16_t result[n];
 		int16_t my_ind = copy_S.top_index;
 		for(int i = 0; i < n; i++)
@@ -144,6 +146,7 @@ void Stack_Iterate(Num_Stack* S, int16_t n, int16_t Return_Array)
 			result[i] = Stack_Top(&copy_S);
 			Stack_Remove_Front(&copy_S);
 		}
+		
 		Return_Array = result;
 	}
 	else

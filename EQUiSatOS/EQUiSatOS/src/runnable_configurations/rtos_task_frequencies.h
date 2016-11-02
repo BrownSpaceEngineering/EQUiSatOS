@@ -25,6 +25,7 @@
 #define IDLE_RD_TASK_FREQ						1000
 #define FLASH_RD_TASK_FREQ						200
 #define LOW_POWER_RD_TASK_FREQ					200
+#define BOOT_RD_TASK_FREQ					    200
 
 /* Data structure size determinations 
 	Each should ideally be equal to DATA_DURATION_TO_STORE * (max _RD_FREQ / _READS_PER_LOG)
@@ -113,5 +114,21 @@
 // shortcuts from above values
 #define low_power_MAX_READS_PER_LOG				low_power_IR_READS_PER_LOG
 #define low_power_LOWEST_FREQ_SENSOR  			0 // IR
+
+#define boot_IR_READS_PER_LOG				BOOT_RD_TASK_FREQ / 200
+#define boot_TEMP_READS_PER_LOG			    BOOT_RD_TASK_FREQ / 200
+#define boot_DIODE_READS_PER_LOG			BOOT_RD_TASK_FREQ / 200
+#define boot_LED_CURRENT_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_GYRO_READS_PER_LOG			    BOOT_RD_TASK_FREQ / 200
+#define boot_MAGNETOMETER_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_CHARGING_DATA_READS_PER_LOG	BOOT_RD_TASK_FREQ / 200
+#define boot_RADIO_TEMP_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_BAT_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_REG_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_REG_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+
+// shortcuts from above values
+#define boot_MAX_READS_PER_LOG				boot_IR_READS_PER_LOG
+#define boot_LOWEST_FREQ_SENSOR  			0
 
 #endif

@@ -2,11 +2,11 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\testing_functions\Num_Stack_Test.c
+
 src\runnable_configurations\isItOn.c
 
 src\testing_functions\watchdog_task_test.c
-
-src\testing_functions\Num_Stack_Test.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
@@ -100,37 +100,39 @@ src\radio\Radio_Commands.c
 
 src\runnable_configurations\flatsat.c
 
+src\radio\Stacks\boot_Stack.c
+
+src\radio\Stacks\flash_Stack.c
+
+src\radio\Stacks\idle_Stack.c
+
+src\radio\Stacks\low_power_Stack.c
+
+src\radio\Stacks\Num_Stack.c
+
 src\runnable_configurations\init_rtos_tasks.c
 
 src\runnable_configurations\rtos_tasks.c
 
 src\runnable_configurations\scratch_testing.c
 
-<<<<<<< 5bccd393ad7b9c7abcbf7236293f757686e759aa
 src\sensor_drivers\AD7991_ADC.c
-
-src\sensor_drivers\LTC1380_Multiplexer_Commands.c
-
-src\radio\Stacks\Num_Stack.c
-
-src\runnable_configurations\scratch_testing.c
 
 src\runnable_configurations\Sensor_Structs.c
 
-=======
->>>>>>> Fix things until idle_data_read_task runs
-src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
+src\sensor_drivers\LTC1380_Multiplexer_Commands.c
+
+src\runnable_configurations\Sensor_Structs.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
 
-<<<<<<< 5bccd393ad7b9c7abcbf7236293f757686e759aa
 src\sensor_drivers\MPU9250_9axis_Commands.c
-=======
+
 src\sensor_drivers\sensor_read_commands.c
->>>>>>> Fix things until idle_data_read_task runs
 
 src\sensor_drivers\switching_commands.c
 
 src\sensor_drivers\TCA9535_GPIO.c
 
 src\sensor_drivers\TEMD6200_Commands.c
+

@@ -765,7 +765,7 @@
     </Compile>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\global.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1565,7 +1565,34 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\flatsat.h">
-        <SubType>compile</SubType>
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\boot_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\boot_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\EquiStacks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\flash_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\flash_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\idle_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\idle_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\low_power_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\low_power_Stack.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Stacks\Num_Stack.c">
       <SubType>compile</SubType>
@@ -1610,7 +1637,7 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\AD7991_ADC.h">
-        <SubType>compile</SubType>
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\Sensor_Structs.c">
       <SubType>compile</SubType>
