@@ -90,11 +90,11 @@ src\runnable_configurations\rtos_tasks.c
 
 src\runnable_configurations\scratch_testing.c
 
-src\runnable_configurations\Sensor_Structs.c
-
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
+
+src\sensor_drivers\sensor_read_commands.c
 
 src\sensor_drivers\switching_commands.c
 
