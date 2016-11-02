@@ -1,4 +1,3 @@
-
 #ifndef FLATSAT_H_
 #define FLATSAT_H_
 

@@ -20,7 +20,7 @@ char receivebuffer[16];
 char sendbuffer[16];
 
 /* function prototype */
-void USART_init();
+void USART_init(void);
 void edbg_usart_clock_init(void);
 void edbg_usart_pin_init(void);
 void edbg_usart_init(void);

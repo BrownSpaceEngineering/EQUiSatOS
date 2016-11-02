@@ -8,7 +8,7 @@
 #include "run.h"
 #include "scratch_testing.h"
 
-void runit(){	
+void runit(void){	
 	configure_i2c_master(SERCOM4);
 	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
@@ -123,4 +123,12 @@ void runit(){
 
 	// Will only get here if there was insufficient memory to create the idle task.
 	*/
+}
+
+void radioTest(void) {	
+	USART_init();
+	setSendEnable(true);
+	initializeRadio();	
+	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};
+	usart_send_string(toSend);
 }
