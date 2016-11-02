@@ -21,6 +21,7 @@
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
+#include "sensor_drivers/MPU9250_9axis_Commands.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
