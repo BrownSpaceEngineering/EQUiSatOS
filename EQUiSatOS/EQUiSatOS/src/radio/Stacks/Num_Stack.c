@@ -1,7 +1,6 @@
-// Basic implementation from 
+// Basic implementation from
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 #include "Num_Stack.h"
-
 
 void Stack_Init(Num_Stack* S)
 {
@@ -14,7 +13,7 @@ int16_t Stack_Top(Num_Stack* S)
 {
 	// Could also be S->size == 0
 	// TODO: Think about whether we need second conditional
-	if (S->top_index != -1 && S->top_index < S->size) 
+	if (S->top_index != -1 && S->top_index < S->size)
 	{
 		return S->data[S->top_index];
 	}
@@ -45,7 +44,7 @@ int16_t Stack_Bottom(Num_Stack* S)
 void Stack_Add_Front(Num_Stack* S, int16_t val)
 {
 	S->top_index = (S->top_index + 1) % NUM_STACK_MAX;
-	
+
 	// something was overwritten
 	// could also be
 	// if (size == max_size)
@@ -59,10 +58,10 @@ void Stack_Add_Front(Num_Stack* S, int16_t val)
 		{
 			S->bottom_index = 0;
 		}
-		
+
 		S->size++;
 	}
-	
+
 	S->data[S->top_index] = val;
 }
 
@@ -71,7 +70,7 @@ void Stack_Remove_Front(Num_Stack* S)
 	if (S->size > 0)
 	{
 		S->size--;
-		
+
 		if (S->size == 0)
 		{
 			S->bottom_index = -1;
@@ -80,7 +79,7 @@ void Stack_Remove_Front(Num_Stack* S)
 		else
 		{
 			S->top_index = S->top_index - 1;
-			
+
 			if (S->top_index < 0)
 			{
 				S->top_index = S->top_index + NUM_STACK_MAX;
@@ -94,14 +93,14 @@ void Stack_Remove_Back(Num_Stack* S)
 	if (S->size > 0)
 	{
 		S->size--;
-		
+
 		if (S->size == 0)
 		{
 			S->bottom_index = -1;
 			S->top_index = -1;
 		}
 		else
-		{	
+		{
 			S->bottom_index = (S->bottom_index + 1) % NUM_STACK_MAX;
 		}
 	}
@@ -119,13 +118,13 @@ void Stack_Iterate(Num_Stack* S, int16_t n, int16_t Return_Array)
 	//	{
 	//		result[i] = S->data[i % NUM_STACK_MAX];
 	//	}
-		
+
 	//	return result;
 	// }
 	// TODO: Do we want dummies here?
 	// else
 	// {
-		// return 0;	
+		// return 0;
 	// }
 	if(n < S->size)
 	{
