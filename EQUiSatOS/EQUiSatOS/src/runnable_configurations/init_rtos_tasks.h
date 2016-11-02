@@ -8,11 +8,12 @@
 #ifndef INIT_RTOS_TASKS_H
 #define INIT_RTOS_TASKS_H
 
-#include "rtos_task_frequencies.h"
 #include "rtos_tasks.h"
+#include "rtos_task_frequencies.h"
+//#include "radio/Stacks/EquiStacks.h"
 
 /* Global task frequencies to allow for changing them in different states */
-int taskFrequencies[NUM_TASKS];
+int taskFrequencies[6]; //NUM_TASKS - DONT KNOW WHY THIS DOESNT WORK
 
 /* Global satellite state - is this the best way to do this? */
 int CurrentState;

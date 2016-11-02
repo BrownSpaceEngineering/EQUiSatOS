@@ -5,27 +5,25 @@
  *  Author: mckenna
  */ 
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "rtos_tasks.h"
 #include "init_rtos_tasks.h"
+#include "rtos_tasks.h"
 
 void runit_2()
 {
 	//configure_i2c_master(SERCOM4);
 	
 	// Initialize EQUiStacks
+	//idle_Stack_Init(idle_readings_equistack)
 	
 	// Make sure we define the first state
-	//set_state_idle();
+	set_state_idle();
 	
-	// for some CRAZY WEIRD (probably header guards) reason it can't find task_data_read_idle
-// 	xTaskCreate(task_data_read_idle,
-// 			"idle data reader",
-// 			TASK_SENS_RD_IDLE_STACK_SIZE,
-// 			NULL,
-// 			TASK_SENS_RD_IDLE_PRIORITY,
-// 			NULL);
+	xTaskCreate(task_data_read_idle,
+			"idle data reader",
+			TASK_SENS_RD_IDLE_STACK_SIZE,
+			NULL,
+			TASK_SENS_RD_IDLE_PRIORITY,
+			NULL);
 			
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();

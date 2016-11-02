@@ -4,6 +4,8 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+src\testing_functions\Num_Stack_Test.c
+
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
@@ -101,6 +103,8 @@ src\runnable_configurations\scratch_testing.c
 src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
+
+src\sensor_drivers\sensor_read_commands.c
 
 src\sensor_drivers\switching_commands.c
 
