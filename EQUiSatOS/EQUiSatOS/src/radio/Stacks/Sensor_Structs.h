@@ -22,7 +22,7 @@ typedef struct error_t
 typedef struct ir_batch
 {
 	uint32_t timestamp;
-	uint16_t values[6];
+	uint16_t values[12];
 } ir_batch;
 
 typedef struct temp_batch

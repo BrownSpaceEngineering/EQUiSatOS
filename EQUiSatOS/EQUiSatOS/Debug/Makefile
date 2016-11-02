@@ -167,6 +167,10 @@ C_SRCS +=  \
 ../src/processor_drivers/SPI_Commands.c \
 ../src/processor_drivers/USART_Commands.c \
 ../src/radio/Radio_Commands.c \
+../src/radio/Stacks/boot_Stack.c \
+../src/radio/Stacks/flash_Stack.c \
+../src/radio/Stacks/idle_Stack.c \
+../src/radio/Stacks/low_power_Stack.c \
 ../src/radio/Stacks/Num_Stack.c \
 ../src/runnable_configurations/init_rtos_tasks.c \
 ../src/runnable_configurations/rtos_tasks.c \
@@ -224,6 +228,10 @@ src/processor_drivers/RTC_Commands.o \
 src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
+src/radio/Stacks/boot_Stack.o \
+src/radio/Stacks/flash_Stack.o \
+src/radio/Stacks/idle_Stack.o \
+src/radio/Stacks/low_power_Stack.o \
 src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
@@ -274,6 +282,10 @@ src/processor_drivers/RTC_Commands.o \
 src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
+src/radio/Stacks/boot_Stack.o \
+src/radio/Stacks/flash_Stack.o \
+src/radio/Stacks/idle_Stack.o \
+src/radio/Stacks/low_power_Stack.o \
 src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
@@ -324,6 +336,10 @@ src/processor_drivers/RTC_Commands.d \
 src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
+src/radio/Stacks/boot_Stack.d \
+src/radio/Stacks/flash_Stack.d \
+src/radio/Stacks/idle_Stack.d \
+src/radio/Stacks/low_power_Stack.d \
 src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
@@ -374,6 +390,10 @@ src/processor_drivers/RTC_Commands.d \
 src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
+src/radio/Stacks/boot_Stack.d \
+src/radio/Stacks/flash_Stack.d \
+src/radio/Stacks/idle_Stack.d \
+src/radio/Stacks/low_power_Stack.d \
 src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
@@ -398,6 +418,14 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
+
+
+
+
+
+
 
 
 

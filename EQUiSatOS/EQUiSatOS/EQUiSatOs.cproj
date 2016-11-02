@@ -296,7 +296,7 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
-    <avrtoolserialnumber>ATML2130021800009153</avrtoolserialnumber>
+    <avrtoolserialnumber>ATML2130021800009084</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
@@ -307,7 +307,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009153</ToolNumber>
+      <ToolNumber>ATML2130021800009084</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
@@ -1520,6 +1520,33 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\boot_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\boot_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\EquiStacks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\flash_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\flash_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\idle_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\idle_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\low_power_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\low_power_Stack.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Stacks\Num_Stack.c">
