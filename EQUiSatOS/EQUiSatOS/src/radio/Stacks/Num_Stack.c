@@ -2,6 +2,10 @@
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 #include "Num_Stack.h"
 
+<<<<<<< HEAD
+// All the functions are
+=======
+>>>>>>> origin/rtos
 
 void Stack_Init(Num_Stack* S)
 {
