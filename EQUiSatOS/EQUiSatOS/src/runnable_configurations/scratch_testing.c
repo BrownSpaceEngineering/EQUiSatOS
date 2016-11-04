@@ -127,8 +127,18 @@ void runit(void){
 
 void radioTest(void) {	
 	USART_init();
-	setSendEnable(true);
+	setup_pin(true,PIN_PB01); //init shutdown pin
+	setup_pin(true,PIN_PB02); //init send enable pin
+	setup_pin(true,PIN_PB03); //init receive enable pin
+	
+	set_output(true, PIN_PB01);
+	setSendEnable(false);
+	setReceiveEnable(false);
+	
 	initializeRadio();	
-	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};
-	usart_send_string(toSend);
+	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
+	while (true) {		
+		usart_send_string(toSend);
+		delay_ms(100);		
+	}		
 }

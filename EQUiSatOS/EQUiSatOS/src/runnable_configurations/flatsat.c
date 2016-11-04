@@ -11,7 +11,7 @@ void flatsat_init(void) {
 	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
-	setup_pin(true,PIN_PA12); //init gpio pin for flashing
+	setup_pin(true,PIN_PA16); //init gpio pin for flashing
 }
 
 void read_IR(void) {
@@ -26,17 +26,17 @@ void read_mag(void) {
 }
 
 void led_flash(void) {
-	set_output(true, PIN_PA12);
+	set_output(true, PIN_PA16);
 	delay_ms(100);
-	set_output(false, PIN_PA12);
+	set_output(false, PIN_PA16);
 	delay_ms(900);
-	set_output(true, PIN_PA12);
+	set_output(true, PIN_PA16);
 	delay_ms(100);
-	set_output(false, PIN_PA12);
+	set_output(false, PIN_PA16);
 	delay_ms(900);
-	set_output(true, PIN_PA12);
+	set_output(true, PIN_PA16);
 	delay_ms(100);
-	set_output(false, PIN_PA12);
+	set_output(false, PIN_PA16);
 	delay_ms(900);
 }
 
@@ -47,8 +47,8 @@ void read_temp(void) {
 void flatsat_run(void) {	
 	flatsat_init();
 	while (1) {
-		read_IR();
-		read_mag();		
+		//read_IR();
+		//read_mag();		
 		led_flash();	
 		//read_temp();
 	}

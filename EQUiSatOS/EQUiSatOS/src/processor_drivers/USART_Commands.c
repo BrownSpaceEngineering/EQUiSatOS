@@ -10,9 +10,9 @@
 uint8_t edbg_rx_data,ext_rx_data;
 
 void USART_init() {
-	//edbg_usart_clock_init();
-	//edbg_usart_pin_init();
-	//edbg_usart_init();
+	edbg_usart_clock_init();
+	edbg_usart_pin_init();
+	edbg_usart_init();
 	ext_usart_clock_init();
 	ext_usart_pin_init();
 	ext_usart_init();
@@ -182,8 +182,8 @@ Generic clock is enabled in all sleep modes by setting RUNSTDBY bit as 1,
 USART clock mode is selected as USART with internal clock by setting MODE bit into 1.
 */
 SERCOM3->USART.CTRLA.reg = SERCOM_USART_CTRLA_DORD |
-SERCOM_USART_CTRLA_RXPO(0x1) |
- SERCOM_USART_CTRLA_TXPO(0x0) |
+SERCOM_USART_CTRLA_RXPO(0x3) |
+ SERCOM_USART_CTRLA_TXPO(0x1) |
  SERCOM_USART_CTRLA_SAMPR(0x0)|
  SERCOM_USART_CTRLA_RUNSTDBY |
  SERCOM_USART_CTRLA_MODE_USART_INT_CLK ;

@@ -104,34 +104,36 @@ int responseCheck(char arr[]){
 }
 
 void setSendEnable(bool level) {
-	set_output(level, PIN_PA02);
+	set_output(level, PIN_PB02);
 }
 
 void setReceiveEnable(bool level) {
-	set_output(level, PIN_PA03);
+	set_output(level, PIN_PB03);
 }
 
 void initializeRadio() {
-	setup_pin(true,PIN_PB02); //init send enable pin
-	setup_pin(true,PIN_PB03); //init receive enable pin
-	
+	delay_ms(1500);
 	setCommandMode();
-	delay_ms(100); //remember to put delay, because the MCU is faster than the USART
+	delay_ms(1500); //remember to put delay, because the MCU is faster than the USART
 	
 	setDealerMode();
 	delay_ms(100);
-	working = responseCheck(dealer_response);	
+	working = responseCheck(dealer_response);
+	print(receivebuffer);
 	
 	setTxFreq();
 	delay_ms(100);
 	working = responseCheck(txFreq_response);	
+	print(receivebuffer);
 	
 	setRxFreq();
 	delay_ms(100);
 	working = responseCheck(rxFreq_response);	
+	print(receivebuffer);
 	
 	setModulationFormat();
 	delay_ms(400);	
+	
 	
 	setLinkSpeed();
 	delay_ms(100);	
@@ -139,8 +141,10 @@ void initializeRadio() {
 	setChannel();
 	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
 	working = responseCheck(channel_response);	
+	print(receivebuffer);
 	
 	warmReset();
 	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
 	working = responseCheck(warmReset_response);	
+	print(receivebuffer);
 }
