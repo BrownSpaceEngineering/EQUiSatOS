@@ -90,6 +90,8 @@ src\sensor_drivers\HMC5883L_Magnetometer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
 
+src\sensor_drivers\MPU9250_9axis_Commands.c
+
 src\sensor_drivers\switching_commands.c
 
 src\sensor_drivers\TEMD6200_Commands.c
