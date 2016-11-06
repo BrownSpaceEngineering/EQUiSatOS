@@ -5,8 +5,6 @@
  *  Author: rj16
  */ 
 
-// TODO: "#ifdef... #endif"?
-
 #ifndef FLASH_STACK_H_
 #define FLASH_STACK_H_
 
