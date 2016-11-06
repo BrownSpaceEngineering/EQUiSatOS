@@ -35,13 +35,7 @@ typedef struct idle_data_t
 
 typedef struct flash_data_t
 {
-	/* lists sizes are proportional to the max READS_PER_LOG
-	(because the higher the MAX number of READS_PER_LOG, the lower the 
-	frequency of the least frequent task, and the larger our higher-frequency 
-	arrays need to be to get that one element of lower frequency data).
-	They are also inversely proportional to the READS_PER_LOG of each 
-	corresponding sensor because if MORE reads are required for each log,
-	the data is of LOWER frequency and thus needs a SMALLER array. */
+	/* ibid */
 	ir_batch ir_data								[flash_MAX_READS_PER_LOG / flash_IR_READS_PER_LOG];
 	temp_batch temp_data							[flash_MAX_READS_PER_LOG / flash_TEMP_READS_PER_LOG];
 	diode_batch diode_data							[flash_MAX_READS_PER_LOG / flash_DIODE_READS_PER_LOG];
@@ -57,13 +51,7 @@ typedef struct flash_data_t
 
 typedef struct low_power_data_t
 {
-	/* lists sizes are proportional to the max READS_PER_LOG
-	(because the higher the MAX number of READS_PER_LOG, the lower the 
-	frequency of the least frequent task, and the larger our higher-frequency 
-	arrays need to be to get that one element of lower frequency data).
-	They are also inversely proportional to the READS_PER_LOG of each 
-	corresponding sensor because if MORE reads are required for each log,
-	the data is of LOWER frequency and thus needs a SMALLER array. */
+	/* ibid */
 	ir_batch ir_data								[low_power_MAX_READS_PER_LOG / low_power_IR_READS_PER_LOG];
 	temp_batch temp_data							[low_power_MAX_READS_PER_LOG / low_power_TEMP_READS_PER_LOG];
 	diode_batch diode_data							[low_power_MAX_READS_PER_LOG / low_power_DIODE_READS_PER_LOG];
@@ -79,13 +67,7 @@ typedef struct low_power_data_t
 
 typedef struct boot_data_t
 {
-	/* lists sizes are proportional to the max READS_PER_LOG
-	(because the higher the MAX number of READS_PER_LOG, the lower the 
-	frequency of the least frequent task, and the larger our higher-frequency 
-	arrays need to be to get that one element of lower frequency data).
-	They are also inversely proportional to the READS_PER_LOG of each 
-	corresponding sensor because if MORE reads are required for each log,
-	the data is of LOWER frequency and thus needs a SMALLER array. */
+	/* ibid */
 	ir_batch ir_data								[boot_MAX_READS_PER_LOG / boot_IR_READS_PER_LOG];
 	temp_batch temp_data							[boot_MAX_READS_PER_LOG / boot_TEMP_READS_PER_LOG];
 	diode_batch diode_data							[boot_MAX_READS_PER_LOG / boot_DIODE_READS_PER_LOG];

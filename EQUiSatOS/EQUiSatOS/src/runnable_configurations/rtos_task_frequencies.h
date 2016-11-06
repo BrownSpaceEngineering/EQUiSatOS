@@ -27,24 +27,6 @@
 #define LOW_POWER_RD_TASK_FREQ					200
 #define BOOT_RD_TASK_FREQ					    200
 
-/* Data structure size determinations 
-	Each should ideally be equal to DATA_DURATION_TO_STORE * (max _RD_FREQ / _READS_PER_LOG)
-								AKA DATA_DURATION_TO_STORE * [logs per second]
-	*/
-
-// #define DATA_DURATION_TO_STORE =				10 // sec; ideal duration of data to store in queues
-// 				
-// #define IR_RD_QUEUE_SIZE						DATA_DURATION_TO_STORE * (flash_STATE_RD_FREQ / ) // state queue should be the LAST to overflow  
-// #define TEMP_RD_QUEUE_SIZE						200
-// #define DIODE_RD_QUEUE_SIZE						200
-// #define LED_CURRENT_RD_QUEUE_SIZE				200
-// #define GYRO_RD_QUEUE_SIZE						200
-// #define MAGNETOMETER_RD_QUEUE_SIZE				200
-// #define CHARGING_DATA_RD_QUEUE_SIZE				200
-// #define RADIO_TEMP_RD_QUEUE_SIZE					200
-// #define BAT_VOLTAGE_RD_QUEUE_SIZE				200
-// #define REG_VOLTAGE_RD_QUEUE_SIZE				200
-
 /* READS_PER_LOG for each sensor at each state - 
 	how often the data is logged in a equistack for transmission 
 	NOTE: because the actual HZ frequency entered here is only computed relative 
@@ -132,3 +114,23 @@
 #define boot_LOWEST_FREQ_SENSOR  			0
 
 #endif
+
+// TRASH
+
+/* Data structure size determinations 
+	Each should ideally be equal to DATA_DURATION_TO_STORE * (max _RD_FREQ / _READS_PER_LOG)
+								AKA DATA_DURATION_TO_STORE * [logs per second]
+	*/
+
+// #define DATA_DURATION_TO_STORE =				10 // sec; ideal duration of data to store in queues
+// 				
+// #define IR_RD_QUEUE_SIZE						DATA_DURATION_TO_STORE * (flash_STATE_RD_FREQ / ) // state queue should be the LAST to overflow  
+// #define TEMP_RD_QUEUE_SIZE						200
+// #define DIODE_RD_QUEUE_SIZE						200
+// #define LED_CURRENT_RD_QUEUE_SIZE				200
+// #define GYRO_RD_QUEUE_SIZE						200
+// #define MAGNETOMETER_RD_QUEUE_SIZE				200
+// #define CHARGING_DATA_RD_QUEUE_SIZE				200
+// #define RADIO_TEMP_RD_QUEUE_SIZE					200
+// #define BAT_VOLTAGE_RD_QUEUE_SIZE				200
+// #define REG_VOLTAGE_RD_QUEUE_SIZE				200

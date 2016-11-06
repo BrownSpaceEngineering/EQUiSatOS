@@ -5,8 +5,6 @@
  *  Author: rj16
  */ 
 
-// TODO: "#ifdef... #endif"?
-
 #ifndef IDLE_STACK_H_
 #define IDLE_STACK_H_
 
