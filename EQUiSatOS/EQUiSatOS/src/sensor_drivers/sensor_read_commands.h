@@ -10,7 +10,7 @@
 
 #include "../radio/Stacks/Sensor_Structs.h"
 
-static ir_batch read_ir_batch();
-static temp_batch read_temp_batch();
+ir_batch read_ir_batch();
+temp_batch read_temp_batch();
 
 #endif

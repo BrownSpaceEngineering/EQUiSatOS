@@ -56,7 +56,8 @@ void task_data_read_idle(void *pvParameters)
 	int data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	idle_data_t *current_struct;// = malloc(sizeof(idle_data_t));
+	size_t struct_size = sizeof(idle_data_t); // THIS IS ZERO FOR SOME REASON
+	idle_data_t *current_struct = pvPortMalloc(struct_size);
 		
 	for( ;; )
 	{	
@@ -82,12 +83,10 @@ void task_data_read_idle(void *pvParameters)
 		// OR COULD USE THE DATA_ARRAY_TAILS
 		if (reads_since_last_log[idle_LOWEST_FREQ_SENSOR] >= idle_MAX_READS_PER_LOG)
 		{
-			//idle_Struct_Push(idle_readings_equistack, current_struct);
+			idle_Stack_Push(idle_readings_equistack, current_struct);
 			
 			// reinitialize data struct
-			//current_struct = malloc(sizeof(idle_data_t))
-			
-			//memcpy(current_struct, blank_struct, sizeof(blank_struct));	
+			current_struct = pvPortMalloc(sizeof(idle_data_t));
 		}
 		
 		// increment reads in reads_since_last_log

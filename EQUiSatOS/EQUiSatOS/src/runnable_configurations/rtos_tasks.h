@@ -26,9 +26,14 @@
 #include "sensor_drivers/switching_commands.h"
 #include "sensor_drivers/sensor_read_commands.h"
 
+#include "init_rtos_tasks.h"
 #include "radio/Stacks/Sensor_Structs.h"
 #include "radio/Stacks/State_Structs.h"
-#include "init_rtos_tasks.h"
+
+#include "radio/Stacks/idle_Stack.h"
+#include "radio/Stacks/flash_Stack.h"
+#include "radio/Stacks/boot_Stack.h"
+#include "radio/Stacks/low_power_Stack.h"
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
@@ -122,12 +127,6 @@ extern void vApplicationTickHook(void);
 void task_antenna_deploy(void *pvParameters); // Will this be a task?
 void task_led(void *pvParameters);
 void task_radio_transmit(void *pvParameters);
-
-// NEW
-// have queues for each of these, and inside each of these read at HIGHEST frequency
-// but write at different frequencies depending on constants like READ_PER_LOG for each sensor
-//, and finally add all the data from these into a big struct corresponding to each struct instead of 
-// each sensor
 
 // Data read tasks
 void task_data_read_idle(void *pvParameters);
