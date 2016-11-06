@@ -34,18 +34,20 @@ typedef struct temp_batch
 typedef struct diode_batch
 {
 	uint32_t timestamp;
-	uint16_t values[6]
+	uint16_t values[6];
 } diode_batch;
 
 typedef struct led_current_batch
 {
 	uint32_t timestamp;
-	uint16_t values[4]
+	uint16_t values[4];
 } led_current_batch;
 
 typedef struct gyro_batch
 {
-	
+	uint32_t timestamp;
+	// one for each axis
+	uint16_t values[3];
 } gyro_batch;
 
 typedef struct magnetometer_batch
