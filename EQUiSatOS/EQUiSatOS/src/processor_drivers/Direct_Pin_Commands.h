@@ -17,6 +17,7 @@ pin is a pin definition, such as PIN_PA10
 */
 void setup_pin(bool dir,uint8_t pin);
 void set_output(bool output, uint8_t pin);
+bool get_output(uint8_t pin);
 bool get_input(uint8_t pin);
 
 #endif /* INCFILE1_H_ */

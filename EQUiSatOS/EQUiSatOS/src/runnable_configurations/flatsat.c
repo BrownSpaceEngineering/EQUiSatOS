@@ -7,14 +7,14 @@ int16_t xyzBuff[3] = {0, 0, 0};
 	
 void flatsat_init(void) {
 	configure_i2c_master(SERCOM4);
-	MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
-	while(true){
-		MPU9250_read();
-	}
+	//MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
+	//while(true){
+		//MPU9250_read();
+	//}
 	
 	delay_init();
 	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
-	HMC5883L_init(*i2c_write_command, *i2c_read_command);	
+	//HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	setup_pin(true,PIN_PA16); //init gpio pin for flashing
 }
@@ -54,7 +54,7 @@ void flatsat_run(void) {
 	while (1) {
 		//read_IR();
 		//read_mag();		
-		led_flash();	
+		//led_flash();	
 		//read_temp();
 	}
 }

@@ -2,9 +2,12 @@
 #define _MLX90614_IR_SENSOR_H_
 
 #include "../processor_drivers/I2C_Commands.h"
+#include "../processor_drivers/Direct_Pin_Commands.h"
 
 #define MLX90614_DEFAULT_I2CADDR 0x5A
 #define MLX90614_TBOARD_IR2 0x5B // address IR2 on Processor Test Board
+
+#define POWER_PIN PIN_PA17
 
 //ram addresses
 #define MLX90614_RAWIR1 0x04
@@ -44,5 +47,8 @@ uint16_t MLX90614_getAddress(MLXDeviceAddr addr);
 
 void write_MLX90614_eeprom(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf);
 void MLX90614_setAddress(MLXDeviceAddr current_addr, MLXDeviceAddr new_addr);
+
+void irPower(bool trueIsOn);
+bool isIROn();
 
 #endif

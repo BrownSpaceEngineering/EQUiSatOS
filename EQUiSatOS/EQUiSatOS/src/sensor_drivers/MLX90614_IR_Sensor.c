@@ -4,6 +4,23 @@ void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _
 	MLX90614_i2c_write_func = _i2c_write_func;
 	MLX90614_i2c_write_no_stop_func = _i2c_write_no_stop_func;
 	MLX90614_i2c_read_func = _i2c_read_func;
+	
+	setup_pin(true,POWER_PIN); //init low power ir pin
+	irPower(true);
+}
+
+/*
+	Powers on or off the ir sensor.  True is on, false is off.
+*/
+void irPower(bool trueIsOn){
+	set_output(trueIsOn, POWER_PIN);	
+};
+
+/*
+	returns if the ir is powered on
+*/
+bool isIROn(){
+	get_output(POWER_PIN);
 }
 
 /* Read 2 bytes over I2C from an MLX device.

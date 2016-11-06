@@ -5,7 +5,7 @@ int main(void)
 {
 	// Initilize the SAM system
 	system_init();
-	//flatsat_run();	
-	radioTest();
+	flatsat_run();	
+	//radioTest();
 	
 }
