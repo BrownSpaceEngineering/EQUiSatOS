@@ -4,6 +4,8 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+src\radio\Stacks\State_Structs.c
+
 src\testing_functions\Num_Stack_Test.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
