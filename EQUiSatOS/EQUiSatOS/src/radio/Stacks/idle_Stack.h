@@ -20,6 +20,7 @@ typedef struct idle_Stack
 	int16_t     size;
 	int16_t     top_index;
 	int16_t     bottom_index;	
+	SemaphoreHandle_t mutex;
 } idle_Stack;
 
 void idle_Stack_Init(idle_Stack*);
