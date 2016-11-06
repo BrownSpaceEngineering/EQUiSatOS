@@ -5,4 +5,3 @@ int main(void)
 	system_init();
 	runit_2();
 }
-

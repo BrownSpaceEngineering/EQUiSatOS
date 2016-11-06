@@ -790,7 +790,10 @@
     <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
+    <Compile Include=   "src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
+          <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\Num_Stack_Test.c">

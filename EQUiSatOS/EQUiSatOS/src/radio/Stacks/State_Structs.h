@@ -10,6 +10,7 @@
 
 #include "Sensor_Structs.h"
 #include "../runnable_configurations/rtos_task_frequencies.h"
+#include <asf.h>
 
 typedef struct idle_data_t
 {
@@ -80,5 +81,10 @@ typedef struct boot_data_t
 	regulator_voltages_batch regulator_voltages_data[boot_MAX_READS_PER_LOG / boot_REG_VOLTAGE_READS_PER_LOG];
 	
 } boot_data_t;
+
+void free_boot(boot_data_t*);
+void free_low_power(low_power_data_t*);
+void free_idle(idle_data_t*);
+void free_flash(flash_data_t*);
 
 #endif

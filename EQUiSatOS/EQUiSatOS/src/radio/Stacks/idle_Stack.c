@@ -14,10 +14,12 @@ void idle_Stack_Init(idle_Stack* S)
 	S->size = 0;
 	S->top_index = -1;
 	S->bottom_index = -1;
+	S->mutex = xSemaphoreCreateMutex();
 }
 
 idle_data_t* idle_Stack_Top(idle_Stack* S)
 {
+	xSemaphoreTake(S->mutex);
 	// Could also be S->size == 0
 	// TODO: Think about whether we need second conditional
 	if (S->top_index != -1 && S->top_index < S->size)
@@ -30,11 +32,14 @@ idle_data_t* idle_Stack_Top(idle_Stack* S)
 		// Return dummy
 		return NULL;
 	}
+	
+	xSemaphoreGive(S->mutex);
 }
 
 // Overwrites the bottom value if need be
 void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 {
+	xSemaphoreTake(S->mutex, (TickType_t) 10);
 	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
 	
 	// something was overwritten
@@ -55,4 +60,5 @@ void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 	}
 	
 	S->data[S->top_index] = val;
+	xSemaphoreGive(S->mutex);
 }
