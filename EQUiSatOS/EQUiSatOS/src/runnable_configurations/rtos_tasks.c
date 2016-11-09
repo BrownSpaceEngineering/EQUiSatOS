@@ -16,6 +16,32 @@ void increment_all(int* int_arr, int length)
 	}
 }
 
+/* Individual sensor helpers for data reading tasks */
+void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+{
+	if (reads_since_last_log[IR_DATA] >= reads_per_log)
+	{
+		// read sensor and compile into batch
+		ir_batch batch = {.timestamp = 42, .values = {1, 2, 3, 4, 5, 6}}; //read_ir_batch();
+			
+		// log sensor data to the appropriate array within the big struct
+		batch_list[data_array_tails[IR_DATA]] = batch;
+			
+		// increment array tail marker and reset reads-per-log counter
+		data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
+		reads_since_last_log[IR_DATA] = 0;
+	}
+}
+
+void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_gyro_batch_if_ready(gyro_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+
 /* Action Tasks */
 void task_radio_transmit(void *pvParameters)
 {
@@ -45,19 +71,18 @@ void task_radio_transmit(void *pvParameters)
 }
 
 /* Data Read Tasks */
-
 void task_data_read_idle(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	// tracking arrays
-	int reads_since_last_log[NUM_DATA_TYPES];
+	int reads_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
+												// one of the sensors, so the value in here keeps growing?
 	int data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	size_t struct_size = sizeof(idle_data_t); // THIS IS ZERO FOR SOME REASON
-	idle_data_t *current_struct = pvPortMalloc(struct_size);
+	idle_data_t *current_struct = pvPortMalloc(sizeof(idle_data_t)); // sizeof IS ZERO because we can't do calculations in #defines
 		
 	for( ;; )
 	{	
@@ -65,18 +90,8 @@ void task_data_read_idle(void *pvParameters)
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, IDLE_RD_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		if (reads_since_last_log[IR_DATA] >= idle_IR_READS_PER_LOG)
-		{
-			// read sensor and compile into batch
-			ir_batch batch = {.timestamp = 42, .values = {1, 2, 3, 4, 5, 6}}; //read_ir_batch();
-			
-			// log sensor data to the appropriate array within the big struct
-			current_struct->ir_data[data_array_tails[IR_DATA]] = batch;
-			
-			// increment array tail marker and reset reads-per-log counter
-			data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
-			reads_since_last_log[IR_DATA] = 0;
-		}
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once the lowest frequency sensor has just logged)

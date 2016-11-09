@@ -35,7 +35,7 @@
 
 /* "idle" state LOG frequencies - normal operation 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define idle_IR_READS_PER_LOG					4000 / IDLE_RD_TASK_FREQ
+#define idle_IR_READS_PER_LOG					4 // 4000 / IDLE_RD_TASK_FREQ
 #define idle_TEMP_READS_PER_LOG					200 / IDLE_RD_TASK_FREQ
 #define idle_DIODE_READS_PER_LOG				200 / IDLE_RD_TASK_FREQ
 #define idle_LED_CURRENT_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
@@ -56,12 +56,12 @@
 // will result in the lowest frequency having a size of 1
 // (multiply this by something to change the smallest size; 
 // i.e. x2 means _LOWEST_FREQ_SENSOR has an array of size 2)
-#define idle_MAX_READS_PER_LOG					idle_IR_READS_PER_LOG
+#define idle_MAX_READS_PER_LOG					4 // idle_IR_READS_PER_LOG
 // define a reference to the lowest frequency sensor using the 
 // enum value from the data_types enum so we can easily
 // check if it's been read (which would indicate that a state struct is full) 
 // (this is the same sensor that was used in _MAX_READS_PER_LOG)
-#define idle_LOWEST_FREQ_SENSOR  				0 // IR
+#define idle_LOWEST_FREQ_SENSOR  				0 // IR_DATA
 
 /* "flash" state LOG frequency periods - operation during flash 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */

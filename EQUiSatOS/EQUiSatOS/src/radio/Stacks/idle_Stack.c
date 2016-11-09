@@ -19,7 +19,7 @@ void idle_Stack_Init(idle_Stack* S)
 
 idle_data_t* idle_Stack_Top(idle_Stack* S)
 {
-	xSemaphoreTake(S->mutex);
+	xSemaphoreTake(S->mutex, 10);
 	// Could also be S->size == 0
 	// TODO: Think about whether we need second conditional
 	if (S->top_index != -1 && S->top_index < S->size)
