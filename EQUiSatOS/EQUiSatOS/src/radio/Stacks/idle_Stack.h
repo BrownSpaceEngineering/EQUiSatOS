@@ -5,8 +5,6 @@
  *  Author: rj16
  */ 
 
-// TODO: "#ifdef... #endif"?
-
 #ifndef IDLE_STACK_H_
 #define IDLE_STACK_H_
 
@@ -24,7 +22,7 @@ typedef struct idle_Stack
 	SemaphoreHandle_t mutex;
 } idle_Stack;
 
-void idle_Stack_Init(idle_Stack*);
+idle_Stack* idle_Stack_Init();
 idle_data_t* idle_Stack_Top(idle_Stack*);
 void idle_Stack_Push(idle_Stack*, idle_data_t*);
 

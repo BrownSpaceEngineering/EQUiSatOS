@@ -21,7 +21,10 @@ void assert_triggered( const char * file, uint32_t line );
 #define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
-#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 15000 ) )
+#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 5000 ) )
+#define configSUPPORT_STATIC_ALLOCATION         1
+#define configSUPPORT_DYNAMIC_ALLOCATION		1
+#define configAPPLICATION_ALLOCATED_HEAP		1
 #define configMAX_TASK_NAME_LEN                 ( 8 )
 #define configUSE_TRACE_FACILITY                0
 #define configUSE_16_BIT_TICKS                  0
@@ -52,7 +55,7 @@ to exclude the API function. */
 #define INCLUDE_uxTaskPriorityGet               1
 #define INCLUDE_vTaskDelete                     1
 #define INCLUDE_vTaskSuspend                    1
-#define INCLUDE_xResumeFromISR                  1
+#define INCLUDE_xReameFromISR                  1
 #define INCLUDE_vTaskDelayUntil                 1
 #define INCLUDE_vTaskDelay                      1
 #define INCLUDE_xTaskGetSchedulerState          1

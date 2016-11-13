@@ -13,13 +13,20 @@ void runit_2()
 	//configure_i2c_master(SERCOM4);
 	
 	// Initialize EQUiStacks
-	//idle_Stack_Init(idle_readings_equistack)
+	idle_readings_equistack = idle_Stack_Init();
 	
 	// Make sure we define the first state
 	set_state_idle();
 	
 	xTaskCreate(task_data_read_idle,
 			"idle data reader",
+			TASK_SENS_RD_IDLE_STACK_SIZE,
+			NULL,
+			TASK_SENS_RD_IDLE_PRIORITY,
+			NULL);
+			
+	xTaskCreate(test_free,
+			"Tests the freeing of structs",
 			TASK_SENS_RD_IDLE_STACK_SIZE,
 			NULL,
 			TASK_SENS_RD_IDLE_PRIORITY,

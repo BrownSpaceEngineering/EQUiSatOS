@@ -26,9 +26,14 @@
 #include "sensor_drivers/switching_commands.h"
 #include "sensor_drivers/sensor_read_commands.h"
 
+#include "init_rtos_tasks.h"
 #include "radio/Stacks/Sensor_Structs.h"
 #include "radio/Stacks/State_Structs.h"
-#include "init_rtos_tasks.h"
+
+#include "radio/Stacks/idle_Stack.h"
+#include "radio/Stacks/flash_Stack.h"
+#include "radio/Stacks/boot_Stack.h"
+#include "radio/Stacks/low_power_Stack.h"
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
@@ -59,9 +64,8 @@ typedef enum
 	SENSOR_READ_FLASH,
 	SENSOR_READ_BOOT,
 	SENSOR_READ_LOW_POWER,
+	NUM_TASKS = SENSOR_READ_LOW_POWER + 1
 } task_type;
-
-#define NUM_TASKS		6
 
 /* Enum for all states
    NOTE:
@@ -105,10 +109,9 @@ typedef enum
 	CHARGING_DATA,
 	RADIO_TEMP_DATA,
 	BAT_VOLT_DATA,
-	REG_VOLT_DATA
+	REG_VOLT_DATA,
+	NUM_DATA_TYPES = REG_VOLT_DATA + 1
 } data_types;
-
-#define NUM_DATA_TYPES		10
 
 /* Task headers */
 
@@ -123,12 +126,6 @@ void task_antenna_deploy(void *pvParameters); // Will this be a task?
 void task_led(void *pvParameters);
 void task_radio_transmit(void *pvParameters);
 
-// NEW
-// have queues for each of these, and inside each of these read at HIGHEST frequency
-// but write at different frequencies depending on constants like READ_PER_LOG for each sensor
-//, and finally add all the data from these into a big struct corresponding to each struct instead of 
-// each sensor
-
 // Data read tasks
 void task_data_read_idle(void *pvParameters);
 void task_data_read_flash(void *pvParameters);
@@ -141,6 +138,17 @@ idle_data_t *idle_readings_equistack;
 /*static boot_data_t *boot_readings_equistack;*/
 /*static low_power_data_t *low_power_readings_equistack;*/
 
+/* Individual sensor helpers for data reading tasks */
+void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_gyro_batch_if_ready(gyro_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 
 /* Helper Functions */
 void increment_all(int* int_arr, int length);

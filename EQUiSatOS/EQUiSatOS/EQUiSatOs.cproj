@@ -49,7 +49,7 @@
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
         </options>
         <configurations>
-          <configuration key="config.thirdparty.os.freertos-8_0_1.memory_manager" value="1_static_allocation" default="1_static_allocation" content-id="Atmel.ASF" />
+          <configuration key="config.thirdparty.os.freertos-8_0_1.memory_manager" value="4_first_fit_coallesce" default="1_static_allocation" content-id="Atmel.ASF" />
         </configurations>
         <files>
           <file path="src/ASF/sam0/drivers/nvm/nvm.c" framework="" version="3.31.0" source="sam0\drivers\nvm\nvm.c" changed="False" content-id="Atmel.ASF" />
@@ -114,7 +114,6 @@
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/readme.txt" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\readme.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/port.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/portmacro.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/spi.c" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\spi.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/spi.h" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\spi.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/quick_start_slave/qs_spi_slave_basic.h" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\quick_start_slave\qs_spi_slave_basic.h" changed="False" content-id="Atmel.ASF" />
@@ -285,6 +284,7 @@
           <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/adc/adc_callback.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_callback.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_callback.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -796,7 +796,16 @@
     <Compile Include="src\radio\Stacks\Num_Stack.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\radio\Stacks\State_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\struct_tests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\struct_tests.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\Num_Stack_Test.c">
@@ -806,6 +815,9 @@
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\a00111.html">
       <SubType>compile</SubType>
     </None>
     <None Include="src\config\conf_clocks.h">
@@ -1334,9 +1346,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h">
