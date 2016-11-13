@@ -14,10 +14,7 @@
 
 //#define SLAVE_SELECT_PIN EXT1_PIN_SPI_SS_0
 
-#define NUM_CONTROL_BYTES 0x04
-#define READ_COMMAND 0x02
-#define WRITE_COMMAND 0x03
-#define ENABLE_COMMAND 0x06
+extern const uint8_t NUM_CONTROL_BYTES, READ_COMMAND, WRITE_COMMAND, ENABLE_COMMAND;
 
 /************************************************************************/
 /* Initialize the master, the baudrate should be inside the proper range*/

@@ -39,8 +39,8 @@ int test_mram(void)
 {
 	system_init();
 
-	struct spi_module msi; // master instance
-	initialize_master(&msi, 10000000); // seems to be the more "modern" implementation in mram.c
+	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
+	initialize_slave(&slave);
 	
 	static uint8_t enable = 0x06;
 	static uint8_t status[5] = {0x03, 0x00, 0x00, 0x00, 0x08};

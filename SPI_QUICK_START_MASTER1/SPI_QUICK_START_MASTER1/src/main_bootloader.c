@@ -2,11 +2,10 @@
 #include <samd21j18a.h>
 #include <stdbool.h>
 
-#include <samd21_xplained_pro.h>
 #include <spi.h>
 #include <usart.h>
 #include <stdio_serial.h>
-
+#include <delay.h>
 
 #include "conf_uart_serial.h"
 
@@ -35,7 +34,6 @@
 #define BOOT_LOAD_PIN                     PIN_PA15
 #define BOOT_PIN_MASK                     (1U << (BOOT_LOAD_PIN & 0x1f))
 #define FLASH_WAIT_STATES                 1
-
 
 static struct usart_module cdc_uart_module;
 /**
@@ -107,7 +105,7 @@ static void check_start_application(void)
 }
 
 
-#if DEBUG_ENABLE
+#ifdef DEBUG_ENABLE
 #	define DEBUG_PIN_HIGH 	port_pin_set_output_level(BOOT_LED, 1)
 #	define DEBUG_PIN_LOW 	port_pin_set_output_level(BOOT_LED, 0)
 #else
@@ -122,10 +120,23 @@ after that it is necessary to call the function to write the flash and then star
  */
 int main(void)
 {
+	//uint8_t example_array[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
+	//save_binary_into_flash(example_array, 5, 512);
 	
-	/*
-	uint8_t example_array[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
-	save_binary_into_flash(example_array, 5, 512);	
-	check_start_application();*/
-	return test_mram();
+	struct spi_module spi_master_instance;
+	struct spi_slave_inst slave;
+	
+	system_init();
+	
+	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
+	initialize_slave(&slave);
+	
+	static uint8_t enable = 0x06;
+	write_bytes(&spi_master_instance, &slave, &enable, 0x01, 0x00);
+	
+	// TODO: write program binary to MRAM
+	
+	check_start_application();
+	
+	return 0;
 }

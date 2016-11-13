@@ -7,6 +7,11 @@
 
 #include "mram.h"
 
+const uint8_t NUM_CONTROL_BYTES = 0x04;
+const uint8_t READ_COMMAND = 0x02;
+const uint8_t WRITE_COMMAND = 0x03;
+const uint8_t ENABLE_COMMAND = 0x06;
+
 void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
 	buffer[0] = command;
 	buffer[1] = address;
