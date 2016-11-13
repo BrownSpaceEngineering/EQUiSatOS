@@ -62,9 +62,18 @@ boot_data_t init_test_struct(){
 }
 
 void test_free(){
-	for(int i = 0; i < 100; i ++){
-		boot_data_t bdt = init_test_struct();
-		free_boot(&bdt);
+	
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	for (;;)
+	{
+		vTaskDelayUntil( &xNextWakeTime, 500 / portTICK_PERIOD_MS);
+		
+		for(int i = 0; i < 100; i ++)
+		{
+			boot_data_t bdt = init_test_struct();
+			free_boot(&bdt);
+		}
 	}
 	int local_show = 5;
 }
