@@ -790,6 +790,12 @@
     <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\Num_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1565,12 +1571,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Stacks\low_power_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Stacks\Sensor_Structs.h">

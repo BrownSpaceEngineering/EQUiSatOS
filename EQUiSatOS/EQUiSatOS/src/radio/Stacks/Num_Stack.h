@@ -1,31 +1,30 @@
 /*
  * Num_Stack.h
  *
- * Created: 10/18/2016 9:46:57 PM
+ * Created: 11/8/2016 6:07:26 PM
  *  Author: rj16
  */ 
 
-// TODO: "#ifdef... #endif"?
-#ifndef _NUM_STACK_H_
-#define _NUM_STACK_H_
 
-#define NUM_STACK_MAX 4
+#ifndef NUM_STACK_H_
+#define NUM_STACK_H_
+
+#define MUTEX_WAIT_TIME_TICKS 10
+#define IDLE_STACK_MAX 4
 #include <asf.h>
+#include "State_Structs.h"
 
 typedef struct Num_Stack
 {
-	int16_t     data[NUM_STACK_MAX];
-	int16_t     size;
-	int16_t     top_index;
-	int16_t     bottom_index;	
+	int16_t           data[IDLE_STACK_MAX];
+	int16_t           size;
+	int16_t           top_index;
+	int16_t           bottom_index;
+	SemaphoreHandle_t mutex;
 } Num_Stack;
 
-void Stack_Init(Num_Stack*);
-int16_t Stack_Top(Num_Stack*);
-int16_t Stack_Bottom(Num_Stack*);
-void Stack_Remove_Front(Num_Stack*);
-void Stack_Remove_Back(Num_Stack*);
-void Stack_Iterate(Num_Stack*, int16_t, int16_t);
-void Stack_Add_Front(Num_Stack*, int16_t);
+void Num_Stack_Init(Num_Stack*);
+int16_t Num_Stack_Top(Num_Stack*);
+void Num_Stack_Push(Num_Stack*, int16_t);
 
-#endif
+#endif /* NUM_STACK_H_ */

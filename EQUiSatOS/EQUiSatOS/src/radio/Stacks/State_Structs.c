@@ -219,6 +219,7 @@ void free_flash(flash_data_t* fd){
 	{
 		vPortFree(&(fd->regulator_voltages_data[i]));
 	}
+
 	vPortFree(&(fd->regulator_voltages_data));
 	vPortFree(&fd);
 }
