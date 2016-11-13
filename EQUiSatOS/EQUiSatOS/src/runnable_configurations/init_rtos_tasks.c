@@ -13,7 +13,7 @@ void runit_2()
 	//configure_i2c_master(SERCOM4);
 	
 	// Initialize EQUiStacks
-	//idle_Stack_Init(idle_readings_equistack)
+	idle_readings_equistack = idle_Stack_Init();
 	
 	// Make sure we define the first state
 	set_state_idle();

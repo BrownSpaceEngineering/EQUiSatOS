@@ -82,7 +82,7 @@ void task_data_read_idle(void *pvParameters)
 	int data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	idle_data_t *current_struct = pvPortMalloc(sizeof(idle_data_t)); // sizeof IS ZERO because we can't do calculations in #defines
+	idle_data_t *current_struct = pvPortMalloc(sizeof(idle_data_t)); 
 		
 	for( ;; )
 	{	
@@ -90,19 +90,18 @@ void task_data_read_idle(void *pvParameters)
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, IDLE_RD_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
-		
 		// once we've collected all the data we need to into the current struct, add the whole thing
-		// (all data is collected once the lowest frequency sensor has just logged)
-		// OR COULD USE THE DATA_ARRAY_TAILS
-		if (reads_since_last_log[idle_LOWEST_FREQ_SENSOR] >= idle_MAX_READS_PER_LOG)
+		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
+		if (data_array_tails[IR_DATA] >= idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG)
 		{
 			idle_Stack_Push(idle_readings_equistack, current_struct);
 			
 			// reinitialize data struct
 			current_struct = pvPortMalloc(sizeof(idle_data_t));
 		}
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
 		
 		// increment reads in reads_since_last_log
 		increment_all(reads_since_last_log, NUM_DATA_TYPES);		
