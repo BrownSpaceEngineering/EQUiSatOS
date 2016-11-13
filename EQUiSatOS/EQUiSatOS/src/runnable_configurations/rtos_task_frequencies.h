@@ -25,7 +25,7 @@
 #define IDLE_RD_TASK_FREQ						1000
 #define FLASH_RD_TASK_FREQ						200
 #define LOW_POWER_RD_TASK_FREQ					200
-#define BOOT_RD_TASK_FREQ					    200
+#define BOOT_RD_TASK_FREQ					    1000
 
 /* READS_PER_LOG for each sensor at each state - 
 	how often the data is logged in a equistack for transmission 
@@ -35,16 +35,16 @@
 
 /* "idle" state LOG frequencies - normal operation 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define idle_IR_READS_PER_LOG					4 // 4000 / IDLE_RD_TASK_FREQ
-#define idle_TEMP_READS_PER_LOG					200 / IDLE_RD_TASK_FREQ
-#define idle_DIODE_READS_PER_LOG				200 / IDLE_RD_TASK_FREQ
-#define idle_LED_CURRENT_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
-#define idle_GYRO_READS_PER_LOG					200 / IDLE_RD_TASK_FREQ
-#define idle_MAGNETOMETER_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
-#define idle_CHARGING_DATA_READS_PER_LOG		200 / IDLE_RD_TASK_FREQ
-#define idle_RADIO_TEMP_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
-#define idle_BAT_VOLTAGE_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
-#define idle_REG_VOLTAGE_READS_PER_LOG			200 / IDLE_RD_TASK_FREQ
+#define idle_IR_READS_PER_LOG					(2000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_TEMP_READS_PER_LOG					(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_GYRO_READS_PER_LOG					(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_MAGNETOMETER_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
+#define idle_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
 
 // from above values, define a shortcut for the MOST reads per log
 // corresponding to the LOWEST log frequency, which can be used
@@ -56,7 +56,7 @@
 // will result in the lowest frequency having a size of 1
 // (multiply this by something to change the smallest size; 
 // i.e. x2 means _LOWEST_FREQ_SENSOR has an array of size 2)
-#define idle_MAX_READS_PER_LOG					4 // idle_IR_READS_PER_LOG
+#define idle_MAX_READS_PER_LOG					idle_IR_READS_PER_LOG
 // define a reference to the lowest frequency sensor using the 
 // enum value from the data_types enum so we can easily
 // check if it's been read (which would indicate that a state struct is full) 
@@ -65,16 +65,16 @@
 
 /* "flash" state LOG frequency periods - operation during flash 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define flash_IR_READS_PER_LOG					200 / FLASH_RD_TASK_FREQ 
-#define flash_TEMP_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
-#define flash_DIODE_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
-#define flash_LED_CURRENT_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
-#define flash_GYRO_READS_PER_LOG				200 / FLASH_RD_TASK_FREQ
-#define flash_MAGNETOMETER_READS_PER_LOG		200 / FLASH_RD_TASK_FREQ
-#define flash_CHARGING_DATA_READS_PER_LOG		200 / FLASH_RD_TASK_FREQ
-#define flash_RADIO_TEMP_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
-#define flash_BAT_VOLTAGE_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
-#define flash_REG_VOLTAGE_READS_PER_LOG			200 / FLASH_RD_TASK_FREQ
+#define flash_IR_READS_PER_LOG					400 / 200 // = ms / FLASH_RD_TASK_FREQ 
+#define flash_TEMP_READS_PER_LOG				400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_DIODE_READS_PER_LOG				400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_LED_CURRENT_READS_PER_LOG			400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_GYRO_READS_PER_LOG				400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_MAGNETOMETER_READS_PER_LOG		400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_CHARGING_DATA_READS_PER_LOG		400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_RADIO_TEMP_READS_PER_LOG			400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_BAT_VOLTAGE_READS_PER_LOG			400 / 200 // = ms / FLASH_RD_TASK_FREQ
+#define flash_REG_VOLTAGE_READS_PER_LOG			400 / 200 // = ms / FLASH_RD_TASK_FREQ
 
 // shortcuts from above values
 #define flash_MAX_READS_PER_LOG					flash_IR_READS_PER_LOG
@@ -82,32 +82,32 @@
 
 /* "low_power" state LOG frequency periods - operation when low on power 
 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-#define low_power_IR_READS_PER_LOG				200 / LOW_POWER_RD_TASK_FREQ 
-#define low_power_TEMP_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_DIODE_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_LED_CURRENT_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_GYRO_READS_PER_LOG			200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_MAGNETOMETER_READS_PER_LOG	200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_CHARGING_DATA_READS_PER_LOG	200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_RADIO_TEMP_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_BAT_VOLTAGE_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
-#define low_power_REG_VOLTAGE_READS_PER_LOG		200 / LOW_POWER_RD_TASK_FREQ
+#define low_power_IR_READS_PER_LOG				400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ 
+#define low_power_TEMP_READS_PER_LOG			400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_DIODE_READS_PER_LOG			400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_LED_CURRENT_READS_PER_LOG		400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_GYRO_READS_PER_LOG			400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_MAGNETOMETER_READS_PER_LOG	400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_CHARGING_DATA_READS_PER_LOG	400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_RADIO_TEMP_READS_PER_LOG		400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_BAT_VOLTAGE_READS_PER_LOG		400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
+#define low_power_REG_VOLTAGE_READS_PER_LOG		400 / 200 // = ms / LOW_POWER_RD_TASK_FREQ
 
 // shortcuts from above values
 #define low_power_MAX_READS_PER_LOG				low_power_IR_READS_PER_LOG
 #define low_power_LOWEST_FREQ_SENSOR  			0 // IR
 
-#define boot_IR_READS_PER_LOG				BOOT_RD_TASK_FREQ / 200
-#define boot_TEMP_READS_PER_LOG			    BOOT_RD_TASK_FREQ / 200
-#define boot_DIODE_READS_PER_LOG			BOOT_RD_TASK_FREQ / 200
-#define boot_LED_CURRENT_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
-#define boot_GYRO_READS_PER_LOG			    BOOT_RD_TASK_FREQ / 200
-#define boot_MAGNETOMETER_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
-#define boot_CHARGING_DATA_READS_PER_LOG	BOOT_RD_TASK_FREQ / 200
-#define boot_RADIO_TEMP_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
-#define boot_BAT_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
-#define boot_REG_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
-#define boot_REG_VOLTAGE_READS_PER_LOG		BOOT_RD_TASK_FREQ / 200
+#define boot_IR_READS_PER_LOG				4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_TEMP_READS_PER_LOG			    4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_DIODE_READS_PER_LOG			4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_LED_CURRENT_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_GYRO_READS_PER_LOG			    4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_MAGNETOMETER_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_CHARGING_DATA_READS_PER_LOG	4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_RADIO_TEMP_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_BAT_VOLTAGE_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_REG_VOLTAGE_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
+#define boot_REG_VOLTAGE_READS_PER_LOG		4000 / 1000 // = ms / BOOT_RD_TASK_FREQ
 
 // shortcuts from above values
 #define boot_MAX_READS_PER_LOG				boot_IR_READS_PER_LOG

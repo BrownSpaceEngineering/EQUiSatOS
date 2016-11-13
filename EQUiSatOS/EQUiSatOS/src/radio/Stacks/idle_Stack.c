@@ -9,12 +9,14 @@
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 #include "idle_Stack.h"
 
-void idle_Stack_Init(idle_Stack* S)
+idle_Stack* idle_Stack_Init()
 {
+	idle_Stack* S = pvPortMalloc(sizeof(idle_Stack));
 	S->size = 0;
 	S->top_index = -1;
 	S->bottom_index = -1;
 	S->mutex = xSemaphoreCreateMutex();
+	return S;
 }
 
 idle_data_t* idle_Stack_Top(idle_Stack* S)
