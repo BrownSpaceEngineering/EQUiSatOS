@@ -25,12 +25,12 @@ void runit_2()
 			TASK_SENS_RD_IDLE_PRIORITY,
 			NULL);
 			
-	xTaskCreate(test_free,
-			"Tests the freeing of structs",
-			TASK_SENS_RD_IDLE_STACK_SIZE,
-			NULL,
-			TASK_SENS_RD_IDLE_PRIORITY,
-			NULL);
+// 	xTaskCreate(test_free,
+// 			"Tests the freeing of structs",
+// 			TASK_SENS_RD_IDLE_STACK_SIZE,
+// 			NULL,
+// 			TASK_SENS_RD_IDLE_PRIORITY,
+// 			NULL);
 			
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
