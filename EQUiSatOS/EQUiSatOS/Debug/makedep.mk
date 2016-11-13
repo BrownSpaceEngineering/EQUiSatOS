@@ -144,7 +144,11 @@ src\sensor_drivers\TEMD6200_Commands.c
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+<<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
+=======
+src\radio\Stacks\Num_Stack.c
+>>>>>>> Fixed mutexes and updated num_stack
 
 src\radio\Stacks\State_Structs.c
 
@@ -235,8 +239,6 @@ src\radio\Stacks\flash_Stack.c
 src\radio\Stacks\idle_Stack.c
 
 src\radio\Stacks\low_power_Stack.c
-
-src\radio\Stacks\Num_Stack.c
 
 src\runnable_configurations\init_rtos_tasks.c
 

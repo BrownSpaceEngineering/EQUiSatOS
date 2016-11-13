@@ -8,6 +8,7 @@
 #ifndef IDLE_STACK_H_
 #define IDLE_STACK_H_
 
+#define MUTEX_WAIT_TIME_TICKS 10
 #define IDLE_STACK_MAX 4
 #include <asf.h>
 #include "State_Structs.h"
