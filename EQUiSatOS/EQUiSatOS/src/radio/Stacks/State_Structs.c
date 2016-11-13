@@ -58,6 +58,7 @@ void free_boot(boot_data_t* bd){
 		vPortFree(&bd->regulator_voltages_data[i]);
 	}
 	vPortFree(&bd->regulator_voltages_data);
+	vPortFree(&bd);
 }
 
 void free_low_power(low_power_data_t* lpd){
@@ -111,6 +112,7 @@ void free_low_power(low_power_data_t* lpd){
 		vPortFree(&lpd->regulator_voltages_data[i]);
 	}
 	vPortFree(&lpd->regulator_voltages_data);
+	vPortFree(&lpd);
 }
 
 void free_idle(idle_data_t* id){
@@ -164,6 +166,7 @@ void free_idle(idle_data_t* id){
 		vPortFree(&id->regulator_voltages_data[i]);
 	}
 	vPortFree(&id->regulator_voltages_data);
+	vPortFree(&id);
 }
 
 void free_flash(flash_data_t* fd){
@@ -217,4 +220,5 @@ void free_flash(flash_data_t* fd){
 		vPortFree(&fd->regulator_voltages_data[i]);
 	}
 	vPortFree(&fd->regulator_voltages_data);
+	vPortFree(&fd);
 }

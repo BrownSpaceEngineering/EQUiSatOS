@@ -8,6 +8,8 @@ src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 
 src\radio\Stacks\State_Structs.c
 
+src\runnable_configurations\struct_tests.c
+
 src\testing_functions\Num_Stack_Test.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
