@@ -69,16 +69,26 @@ typedef struct low_power_data_t
 typedef struct boot_data_t
 {
 	/* ibid */
-	ir_batch ir_data								[boot_MAX_READS_PER_LOG / boot_IR_READS_PER_LOG];
-	temp_batch temp_data							[boot_MAX_READS_PER_LOG / boot_TEMP_READS_PER_LOG];
-	diode_batch diode_data							[boot_MAX_READS_PER_LOG / boot_DIODE_READS_PER_LOG];
-	led_current_batch led_current_data				[boot_MAX_READS_PER_LOG / boot_LED_CURRENT_READS_PER_LOG];
-	gyro_batch gyro_data							[boot_MAX_READS_PER_LOG / boot_GYRO_READS_PER_LOG];
-	magnetometer_batch magnetometer_data			[boot_MAX_READS_PER_LOG / boot_MAGNETOMETER_READS_PER_LOG];
-	charging_batch charging_data					[boot_MAX_READS_PER_LOG / boot_CHARGING_DATA_READS_PER_LOG];
-	radio_temp_batch radio_temp_data				[boot_MAX_READS_PER_LOG / boot_RADIO_TEMP_READS_PER_LOG];
-	battery_voltages_batch battery_voltages_data	[boot_MAX_READS_PER_LOG / boot_BAT_VOLTAGE_READS_PER_LOG];
-	regulator_voltages_batch regulator_voltages_data[boot_MAX_READS_PER_LOG / boot_REG_VOLTAGE_READS_PER_LOG];
+	//ir_batch ir_data								[boot_MAX_READS_PER_LOG / boot_IR_READS_PER_LOG];
+	//temp_batch temp_data							[boot_MAX_READS_PER_LOG / boot_TEMP_READS_PER_LOG];
+	//diode_batch diode_data							[boot_MAX_READS_PER_LOG / boot_DIODE_READS_PER_LOG];
+	//led_current_batch led_current_data				[boot_MAX_READS_PER_LOG / boot_LED_CURRENT_READS_PER_LOG];
+	//gyro_batch gyro_data							[boot_MAX_READS_PER_LOG / boot_GYRO_READS_PER_LOG];
+	//magnetometer_batch magnetometer_data			[boot_MAX_READS_PER_LOG / boot_MAGNETOMETER_READS_PER_LOG];
+	//charging_batch charging_data					[boot_MAX_READS_PER_LOG / boot_CHARGING_DATA_READS_PER_LOG];
+	//radio_temp_batch radio_temp_data				[boot_MAX_READS_PER_LOG / boot_RADIO_TEMP_READS_PER_LOG];
+	//battery_voltages_batch battery_voltages_data	[boot_MAX_READS_PER_LOG / boot_BAT_VOLTAGE_READS_PER_LOG];
+	//regulator_voltages_batch regulator_voltages_data[boot_MAX_READS_PER_LOG / boot_REG_VOLTAGE_READS_PER_LOG];
+	ir_batch ir_data								[1];
+	temp_batch temp_data							[1];
+	diode_batch diode_data							[1];
+	led_current_batch led_current_data				[1];
+	gyro_batch gyro_data							[1];
+	magnetometer_batch magnetometer_data			[1];
+	charging_batch charging_data					[1];
+	radio_temp_batch radio_temp_data				[1];
+	battery_voltages_batch battery_voltages_data	[1];
+	regulator_voltages_batch regulator_voltages_data[1];
 	
 } boot_data_t;
 

@@ -57,7 +57,12 @@ void free_boot(boot_data_t* bd){
 	{
 		vPortFree(&(bd->regulator_voltages_data[i]));
 	}
+<<<<<<< acdfa3af522a93d0f556a3465cfc0ad35a0e5f2e
 	vPortFree(&(bd->regulator_voltages_data));
+=======
+	vPortFree(&bd->regulator_voltages_data);
+	vPortFree(&bd);
+>>>>>>> Wrote tests for free, made incremental updates to other files
 }
 
 void free_low_power(low_power_data_t* lpd){
@@ -110,7 +115,12 @@ void free_low_power(low_power_data_t* lpd){
 	{
 		vPortFree(&(lpd->regulator_voltages_data[i]));
 	}
+<<<<<<< acdfa3af522a93d0f556a3465cfc0ad35a0e5f2e
 	vPortFree(&(lpd->regulator_voltages_data));
+=======
+	vPortFree(&lpd->regulator_voltages_data);
+	vPortFree(&lpd);
+>>>>>>> Wrote tests for free, made incremental updates to other files
 }
 
 void free_idle(idle_data_t* id){
@@ -163,7 +173,12 @@ void free_idle(idle_data_t* id){
 	{
 		vPortFree(&(id->regulator_voltages_data[i]));
 	}
+<<<<<<< acdfa3af522a93d0f556a3465cfc0ad35a0e5f2e
 	vPortFree(&(id->regulator_voltages_data));
+=======
+	vPortFree(&id->regulator_voltages_data);
+	vPortFree(&id);
+>>>>>>> Wrote tests for free, made incremental updates to other files
 }
 
 void free_flash(flash_data_t* fd){
@@ -216,5 +231,10 @@ void free_flash(flash_data_t* fd){
 	{
 		vPortFree(&(fd->regulator_voltages_data[i]));
 	}
+<<<<<<< acdfa3af522a93d0f556a3465cfc0ad35a0e5f2e
 	vPortFree(&(fd->regulator_voltages_data));
+=======
+	vPortFree(&fd->regulator_voltages_data);
+	vPortFree(&fd);
+>>>>>>> Wrote tests for free, made incremental updates to other files
 }
