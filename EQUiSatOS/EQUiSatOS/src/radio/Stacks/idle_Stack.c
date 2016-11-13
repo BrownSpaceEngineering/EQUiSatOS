@@ -19,7 +19,8 @@ void idle_Stack_Init(idle_Stack* S)
 
 idle_data_t* idle_Stack_Top(idle_Stack* S)
 {
-	xSemaphoreTake(S->mutex);
+	// TODO:  More precise mutexing
+	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	// Could also be S->size == 0
 	// TODO: Think about whether we need second conditional
 	if (S->top_index != -1 && S->top_index < S->size)
@@ -39,6 +40,7 @@ idle_data_t* idle_Stack_Top(idle_Stack* S)
 // Overwrites the bottom value if need be
 void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 {
+	// TODO: Change if needed
 	xSemaphoreTake(S->mutex, (TickType_t) 10);
 	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
 	
@@ -47,6 +49,7 @@ void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 	// if (size == max_size)
 	if (S->bottom_index == S->top_index)
 	{
+		free_idle(&(S->data[S->top_index]));
 		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
 	}
 	else

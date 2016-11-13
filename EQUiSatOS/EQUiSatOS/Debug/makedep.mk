@@ -4,6 +4,8 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+src\radio\Stacks\Num_Stack.c
+
 src\radio\Stacks\State_Structs.c
 
 src\testing_functions\Num_Stack_Test.c
@@ -93,8 +95,6 @@ src\radio\Stacks\flash_Stack.c
 src\radio\Stacks\idle_Stack.c
 
 src\radio\Stacks\low_power_Stack.c
-
-src\radio\Stacks\Num_Stack.c
 
 src\runnable_configurations\init_rtos_tasks.c
 

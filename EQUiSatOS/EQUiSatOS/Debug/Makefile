@@ -128,6 +128,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+../src/radio/Stacks/Num_Stack.c \
 ../src/radio/Stacks/State_Structs.c \
 ../src/testing_functions/Num_Stack_Test.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -173,7 +174,6 @@ C_SRCS +=  \
 ../src/radio/Stacks/flash_Stack.c \
 ../src/radio/Stacks/idle_Stack.c \
 ../src/radio/Stacks/low_power_Stack.c \
-../src/radio/Stacks/Num_Stack.c \
 ../src/runnable_configurations/init_rtos_tasks.c \
 ../src/runnable_configurations/rtos_tasks.c \
 ../src/runnable_configurations/scratch_testing.c \
@@ -192,6 +192,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+src/radio/Stacks/Num_Stack.o \
 src/radio/Stacks/State_Structs.o \
 src/testing_functions/Num_Stack_Test.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -237,7 +238,6 @@ src/radio/Stacks/boot_Stack.o \
 src/radio/Stacks/flash_Stack.o \
 src/radio/Stacks/idle_Stack.o \
 src/radio/Stacks/low_power_Stack.o \
-src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
@@ -249,6 +249,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+src/radio/Stacks/Num_Stack.o \
 src/radio/Stacks/State_Structs.o \
 src/testing_functions/Num_Stack_Test.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -294,7 +295,6 @@ src/radio/Stacks/boot_Stack.o \
 src/radio/Stacks/flash_Stack.o \
 src/radio/Stacks/idle_Stack.o \
 src/radio/Stacks/low_power_Stack.o \
-src/radio/Stacks/Num_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
@@ -306,6 +306,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+src/radio/Stacks/Num_Stack.d \
 src/radio/Stacks/State_Structs.d \
 src/testing_functions/Num_Stack_Test.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -351,7 +352,6 @@ src/radio/Stacks/boot_Stack.d \
 src/radio/Stacks/flash_Stack.d \
 src/radio/Stacks/idle_Stack.d \
 src/radio/Stacks/low_power_Stack.d \
-src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
@@ -363,6 +363,7 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+src/radio/Stacks/Num_Stack.d \
 src/radio/Stacks/State_Structs.d \
 src/testing_functions/Num_Stack_Test.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -408,7 +409,6 @@ src/radio/Stacks/boot_Stack.d \
 src/radio/Stacks/flash_Stack.d \
 src/radio/Stacks/idle_Stack.d \
 src/radio/Stacks/low_power_Stack.d \
-src/radio/Stacks/Num_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
