@@ -1027,9 +1027,13 @@ C_SRCS +=  \
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+<<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> Fixed mutexes and updated num_stack
+=======
+../src/radio/Stacks/Sensor_Structs.c \
+>>>>>>> Added complexity (hopefully improving) free
 ../src/radio/Stacks/State_Structs.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -1101,9 +1105,13 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> commit issues
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> Fixed mutexes and updated num_stack
+=======
+src/radio/Stacks/Sensor_Structs.o \
+>>>>>>> Added complexity (hopefully improving) free
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -1169,11 +1177,15 @@ src/radio/Stacks/Num_Stack.o \
 =======
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 >>>>>>> commit issues
 =======
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> Fix commit issues
+=======
+src/radio/Stacks/Sensor_Structs.o \
+>>>>>>> Added complexity (hopefully improving) free
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -1231,9 +1243,13 @@ C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Fixed mutexes and updated num_stack
+=======
+src/radio/Stacks/Sensor_Structs.d \
+>>>>>>> Added complexity (hopefully improving) free
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -1291,9 +1307,13 @@ C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Fixed mutexes and updated num_stack
+=======
+src/radio/Stacks/Sensor_Structs.d \
+>>>>>>> Added complexity (hopefully improving) free
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -1362,6 +1382,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
