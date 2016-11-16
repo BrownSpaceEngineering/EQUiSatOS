@@ -1018,9 +1018,12 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+<<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
+=======
+>>>>>>> Fix commit issues
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
@@ -1090,9 +1093,12 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
+=======
+>>>>>>> Fix commit issues
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> commit issues
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
@@ -1155,6 +1161,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
@@ -1165,6 +1172,10 @@ src/radio/Stacks/Num_Stack.o \
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> commit issues
+=======
+src/radio/Stacks/Num_Stack.o \
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+>>>>>>> Fix commit issues
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/testing_functions/Num_Stack_Test.o \
