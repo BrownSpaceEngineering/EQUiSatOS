@@ -133,7 +133,8 @@ void task_data_read_boot(void *pvParameters);
 void task_data_read_low_power(void *pvParameters);
 
 /* Queue definitions */
-idle_data_t *idle_readings_equistack;
+uint8_t *last_state_read_equistack; // TODO: should these be pointers to num-stacks, idle_sturct_stacks etc.
+idle_data_t *idle_readings_equistack; 
 /*static flash_data_t *flash_readings_equistack;*/
 /*static boot_data_t *boot_readings_equistack;*/
 /*static low_power_data_t *low_power_readings_equistack;*/
