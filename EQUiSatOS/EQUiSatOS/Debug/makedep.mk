@@ -12,8 +12,6 @@ src\radio\Stacks\State_Structs.c
 
 src\runnable_configurations\struct_tests.c
 
-src\testing_functions\Num_Stack_Test.c
-
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c

@@ -808,12 +808,6 @@
     <Compile Include="src\runnable_configurations\struct_tests.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\testing_functions\Num_Stack_Test.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\testing_functions\Num_Stack_Test.h">
-      <SubType>compile</SubType>
-    </Compile>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
       <SubType>compile</SubType>
     </None>
