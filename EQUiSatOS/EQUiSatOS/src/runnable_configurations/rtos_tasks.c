@@ -192,7 +192,7 @@ void task_radio_transmit(void *pvParameters)
 		do
 		{
 			// read the next state to transmit (pop something off state queue) 
-			int nextState = IDLE; //num_Stack_Top(stateReadQueue); 
+			int nextState = IDLE; // num_Stack_Top(last_state_read_equistack); 
 		
 			// based on what state we're in, compile a different message
 			switch(nextState)
@@ -244,10 +244,12 @@ void task_data_read_idle(void *pvParameters)
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
 		if (data_array_tails[IR_DATA] >= idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG)
 		{
+			// push to list of transmissions, including adding a corresponding state
 			idle_Stack_Push(idle_readings_equistack, current_struct);
+			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
 			// reinitialize data struct
-			current_struct = pvPortMalloc(sizeof(idle_data_t));
+			current_struct = pvPortMalloc(sizeof(idle_data_t)); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
