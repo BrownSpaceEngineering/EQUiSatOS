@@ -135,7 +135,7 @@ void task_data_read_low_power(void *pvParameters);
 /* Queue definitions */
 uint8_t *last_state_read_equistack; // TODO: should these be pointers to num-stacks, idle_sturct_stacks etc.
 idle_data_t *idle_readings_equistack; 
-/*static flash_data_t *flash_readings_equistack;*/
+flash_data_t *flash_readings_equistack;
 /*static boot_data_t *boot_readings_equistack;*/
 /*static low_power_data_t *low_power_readings_equistack;*/
 
@@ -152,6 +152,7 @@ void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int
 void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 
 /* Helper Functions */
+uint32_t get_current_timestamp(void);
 void increment_all(int* int_arr, int length);
 
 #endif

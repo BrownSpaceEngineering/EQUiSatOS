@@ -1018,12 +1018,16 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+<<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
 =======
 >>>>>>> Fix commit issues
+=======
+../src/radio/Stacks/Data_Heap.c \
+>>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
@@ -1096,12 +1100,16 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
 =======
 >>>>>>> Fix commit issues
+=======
+src/radio/Stacks/Data_Heap.o \
+>>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> commit issues
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
@@ -1167,6 +1175,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
@@ -1175,6 +1184,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> Fixed mutexes and updated num_stack
 =======
+=======
+src/radio/Stacks/Data_Heap.o \
+>>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
@@ -1241,7 +1253,12 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
+=======
+src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Num_Stack.d \
+>>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
@@ -1305,7 +1322,12 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
+=======
+src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Num_Stack.d \
+>>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
@@ -1382,6 +1404,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
