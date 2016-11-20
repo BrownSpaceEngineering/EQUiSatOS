@@ -9,6 +9,10 @@
 
 #define POWER_PIN PIN_PA17
 
+#define MLX90614_SHOULD_STOP false
+
+#define MLX90614_WHOAMI	0x2e
+
 //ram addresses
 #define MLX90614_RAWIR1 0x04
 #define MLX90614_RAWIR2 0x05
@@ -32,12 +36,7 @@ typedef enum {AMBIENT = MLX90614_TA,
               OBJ1 = MLX90614_TOBJ1,
               OBJ2 = MLX90614_TOBJ2} IRTempTarget;
 
-i2c_func MLX90614_i2c_write_func;
-i2c_func MLX90614_i2c_read_func;
-i2c_func MLX90614_i2c_write_no_stop_func;
-
-void MLX90614_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i2c_write_no_stop_func);
-void read_MLX90614(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf);
+void MLX90614_init(void);
 uint16_t MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr);
 uint16_t MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan);
 float dataToTemp(uint16_t data);
@@ -45,10 +44,7 @@ float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target);
 
 uint16_t MLX90614_getAddress(MLXDeviceAddr addr);
 
-void write_MLX90614_eeprom(MLXDeviceAddr addr, uint8_t mem_addr, uint8_t* buf);
-void MLX90614_setAddress(MLXDeviceAddr current_addr, MLXDeviceAddr new_addr);
-
 void irPower(bool trueIsOn);
-bool isIROn();
+bool isIROn(void);
 
 #endif

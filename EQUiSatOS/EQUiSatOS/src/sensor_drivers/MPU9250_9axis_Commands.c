@@ -1,66 +1,33 @@
 #include "MPU9250_9axis_Commands.h"
 
-void writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address){
-	struct i2c_master_packet write_packet = {
-		.address     = address,
-		.data_length = len,
-		.data        = data,
-		.ten_bit_address = false,
-		.high_speed      = false,
-		.hs_master_code  = 0x0,
-	};
-	
-	(*MPU9250_i2c_write_func)(&write_packet);
-}
-
-void readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation){	
-	struct i2c_master_packet read_packet = {
-		.address     = address,
-		.data_length = len,
-		.data        = buffer,
-		.ten_bit_address = false,
-		.high_speed      = false,
-		.hs_master_code  = 0x0,
-	};
-	
-	uint8_t data[] = {memoryLocation};
-	
-	writeDataToAddress(data,1,address);
-	(*MPU9250_i2c_read_func)(&read_packet);
-}
-
-void MPU9250_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func, i2c_func _i2c_write_no_stop_func) {
-	MPU9250_i2c_write_func = _i2c_write_func;
-	MPU9250_i2c_write_no_stop_func = _i2c_write_no_stop_func;
-	MPU9250_i2c_read_func = _i2c_read_func;
-	
+void MPU9250_init(void) {
 	uint8_t address = 0;
 	
-	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS);
+	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_2000_DPS};
 	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
 	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
 	
-	writeDataToAddress(gyroData,2,MPU9250_ADDRESS);
-	writeDataToAddress(accData,2,MPU9250_ADDRESS);
-	writeDataToAddress(magData,2,MPU9250_ADDRESS);
+	writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
 void MPU9250_read_mag(MPU9250Reading* toFill){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
-	writeDataToAddress(reqData,2,MAG_ADDRESS);
+	writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	// Check if measurement is ready
-	uint8_t status = !MAG_DATA_READY;
-	while(!(status&MAG_DATA_READY)){
-		readFromAddressAndMemoryLocation(&status,1,MAG_ADDRESS,MAG_STATUS_ADDRESS);
+	uint8_t status[1] = {!MAG_DATA_READY};
+	while(!(status[0]&MAG_DATA_READY)){
+		readFromAddressAndMemoryLocation(status,1,MAG_ADDRESS,MAG_STATUS_ADDRESS,MPU9250_SHOULD_STOP);
 	}
-
+	
 	//Read data
 	uint8_t data[6] = {0,0,0,0,0,0};
-	readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS);
+	readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->mag.x = -(data[3]<<8 | data[2]);
@@ -71,7 +38,7 @@ void MPU9250_read_mag(MPU9250Reading* toFill){
 void MPU9250_read_acc(MPU9250Reading* toFill){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
-	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS);
+	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->accel.x=-(data[0]<<8 | data[1]);
@@ -82,7 +49,7 @@ void MPU9250_read_acc(MPU9250Reading* toFill){
 void MPU9250_read_gyro(MPU9250Reading* toFill){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
-	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS);
+	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->gyro.x=-(data[0]<<8 | data[1]);
@@ -135,7 +102,7 @@ HumanReading humanReadableOutput(MPU9250Reading input){
 	return output;
 }
 
-MPU9250Reading MPU9250_read(){
+MPU9250Reading MPU9250_read(void){
 	MPU9250Reading output;
 	
 	initReading(&output);

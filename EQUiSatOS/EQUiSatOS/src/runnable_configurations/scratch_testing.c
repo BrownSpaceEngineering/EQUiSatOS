@@ -9,10 +9,10 @@
 #include "scratch_testing.h"
 
 void runit(void){	
-	configure_i2c_master(SERCOM4);
-	MLX90614_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
-	float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
-	int a = 3;
+	configure_i2c_standard(SERCOM4);
+	MLX90614_init();
+	//float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+	//int a = 3;
 	
 	/*
 	uint8_t addr = 0x01;
@@ -59,7 +59,7 @@ void runit(void){
 	*/
 	setup_switching();
  	pick_side(true);
-	bool x =get_input(SIDE_1_ENABLE);
+	//bool x =get_input(SIDE_1_ENABLE);
 	pick_input(0x00);
 	pick_input(0x01);
 	pick_input(0x02);

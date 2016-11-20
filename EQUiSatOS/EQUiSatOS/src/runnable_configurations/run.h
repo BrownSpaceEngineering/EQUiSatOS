@@ -17,7 +17,6 @@
 #include "processor_drivers/ADC_Commands.h"
 #include "processor_drivers/Direct_Pin_Commands.h"
 #include "processor_drivers/USART_Commands.h"
-#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
@@ -30,9 +29,6 @@
 #define TASK_LED_STACK_PRIORITY            (tskIDLE_PRIORITY)
 #define TASK_ADC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
 #define TASK_ADC_STACK_PRIORITY	           (tskIDLE_PRIORITY)
-
-
-static struct usart_module cdc_uart_module;
 
 extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 signed char *pcTaskName);

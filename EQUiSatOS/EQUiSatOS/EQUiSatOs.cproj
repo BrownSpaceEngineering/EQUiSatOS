@@ -319,9 +319,20 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800056157</ToolNumber>
+      <ToolNumber>J41800025475</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
+    <custom>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">custom</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Custom Programming Tool</ToolName>
+    </custom>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -1444,12 +1455,12 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
+    <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
+    </None>
+    <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\sensor_drivers\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>
