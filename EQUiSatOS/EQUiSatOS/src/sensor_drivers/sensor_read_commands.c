@@ -9,7 +9,7 @@
 
 ir_batch read_ir_batch()
 {
-	ir_batch batch = {.timestamp = 42, .values = {1, 2, 3, 4, 5, 6}};
+	ir_batch batch;// = {.values = {1, 2, 3, 4, 5, 6}};
 	return batch;
 }
 temp_batch read_temp_batch();

@@ -4,6 +4,8 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+src\radio\Stacks\Data_Heap.c
+
 src\radio\Stacks\Num_Stack.c
 
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c

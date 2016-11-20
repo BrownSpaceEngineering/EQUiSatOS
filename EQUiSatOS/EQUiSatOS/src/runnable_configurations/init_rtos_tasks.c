@@ -23,14 +23,35 @@ void runit_2()
 			TASK_SENS_RD_IDLE_STACK_SIZE,
 			NULL,
 			TASK_SENS_RD_IDLE_PRIORITY,
-			NULL);
+			idle_task_handle);
 			
-  	xTaskCreate(test_free,
+	xTaskCreate(task_data_read_flash,
+			"flash data reader",
+			TASK_SENS_RD_FLASH_STACK_SIZE,
+			NULL,
+			TASK_SENS_RD_FLASH_PRIORITY,
+			flash_task_handle);
+			
+	/*xTaskCreate(task_data_read_boot,
+			"boot data reader",
+			TASK_SENS_RD_BOOT_STACK_SIZE,
+			NULL,
+			TASK_SENS_RD_BOOT_PRIORITY,
+			boot_task_handle);
+			
+	xTaskCreate(task_data_read_low_power,
+			"low power data reader",
+			TASK_SENS_RD_LOW_POWER_STACK_SIZE,
+			NULL,
+			TASK_SENS_RD_LOW_POWER_PRIORITY,
+			boot_task_handle);*/
+			
+  /*xTaskCreate(test_free,
   		"Tests the freeing of structs",
   		TASK_SENS_RD_IDLE_STACK_SIZE,
   		NULL,
   		TASK_SENS_RD_IDLE_PRIORITY,
-  		NULL);
+  		NULL);*/
 			
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
@@ -39,6 +60,10 @@ void runit_2()
 void set_state_idle()
 {
 	CurrentState = IDLE;
+	
+	// TODO: we need to suspend the other tasks and somehow immediatly add OR delete thier interior structs and make a new one
+	// Maybe look for changes in state inside the rtos tasks?
+	// OR bring thier current structs, etc. global so we can manually reset them? -> NOOOOO
 	
 	taskFrequencies[LED_TASK] =					idle_TASK_LED_FREQ;
 	taskFrequencies[RADIO_TRANSMIT_TASK] =		idle_TASK_RADIO_TRANSMIT_FREQ;

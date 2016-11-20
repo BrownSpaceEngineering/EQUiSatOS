@@ -21,6 +21,12 @@ int CurrentState;
 
 void runit_2();
 
+/* Task handles for starting and stopping */
+TaskHandle_t idle_task_handle;
+TaskHandle_t flash_task_handle;
+TaskHandle_t boot_task_handle;
+TaskHandle_t low_power_task_handle;
+
 void set_state_idle();
 void set_state_flash();
 //void set_state_boot();
