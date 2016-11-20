@@ -18,12 +18,12 @@ void runit_2()
 	// Make sure we define the first state
 	set_state_idle();
 	
-	xTaskCreate(task_data_read_idle,
-			"idle data reader",
-			TASK_SENS_RD_IDLE_STACK_SIZE,
-			NULL,
-			TASK_SENS_RD_IDLE_PRIORITY,
-			NULL);
+	//xTaskCreate(task_data_read_idle,
+		//"idle data reader",
+		//TASK_SENS_RD_IDLE_STACK_SIZE,
+		//NULL,
+		//TASK_SENS_RD_IDLE_PRIORITY,
+		//NULL);
 			
   	xTaskCreate(test_free,
   		"Tests the freeing of structs",

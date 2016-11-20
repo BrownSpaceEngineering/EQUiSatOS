@@ -92,9 +92,9 @@ typedef struct boot_data_t
 	
 } boot_data_t;
 
-void free_boot(boot_data_t*);
-void free_low_power(low_power_data_t*);
-void free_idle(idle_data_t*);
-void free_flash(flash_data_t*);
+void free_boot(boot_data_t* bd);
+void free_low_power(low_power_data_t* lpd);
+void free_idle(idle_data_t* id);
+void free_flash(flash_data_t* fd);
 
 #endif
