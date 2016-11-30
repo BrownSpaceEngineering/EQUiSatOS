@@ -13,7 +13,7 @@ boot_data_t init_test_struct(void){
 	ir_batch ib; // ir_batch *ib = pvPortMalloc(sizeof(ir_batch));
 	/*ib.timestamp = 65;*/ // ib->timestamp = 65;
 	ib.values[0] = 5; // ib->values[0] = 5;
-	BDT.ir_data[0] = ib; // BDT->ir_data[0] = *ib;
+	BDT->ir_data[0] = ib; // BDT->ir_data[0] = *ib;
 	
 	temp_batch tb;
 	/*tb.timestamp = 65;*/
