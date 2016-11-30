@@ -8,6 +8,8 @@
 #ifndef DATA_HEAP_H_
 #define DATA_HEAP_H_
 
+#define NONE_UNALLOC_FREE_INDEX -1;
+
 #include <asf.h>
 
 // TODO: it may be better to simply allocate the heaps with some given first size,
@@ -15,18 +17,20 @@
 
 typedef struct data_t_heap 
 {
-	size_t slot_size;		// size of each slot in bytes
-	uint16_t num_slots;		// number of slot_size sized slots
-	void** slots;			// array of pointers representing each slot
+	size_t slot_size;			// size of each slot in bytes
+	int16_t num_slots;			// number of slot_size sized slots
+	int16_t first_free_index;	// index in slots of the first unallocated slot
+	void** slots;				// array of pointers representing each slot
 } data_t_heap;
 
-data_t_heap* create_data_t_heap(size_t slot_size, uint16_t num_slots);
+data_t_heap* create_data_t_heap(size_t slot_size, int16_t num_slots);
+void free_data_t_heap(data_t_heap* heap);
 
 void *data_t_malloc(data_t_heap* heap);
-
 void data_t_free(void* ptr, data_t_heap* heap);
 
 /* Helper functions */
 void clear_existing_data(void* ptr, size_t slot_size);
+void update_first_free_index(data_t_heap* heap);
 
 #endif /* DATA_HEAP_H_ */

@@ -25,4 +25,5 @@ int main(void)
 
 	//runit();
 	runit_2();
+	//data_heap_tests();
 }

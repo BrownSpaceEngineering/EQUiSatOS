@@ -1027,7 +1027,11 @@ C_SRCS +=  \
 >>>>>>> Fix commit issues
 =======
 ../src/radio/Stacks/Data_Heap.c \
+<<<<<<< 04d929ec0611bda1cbea7132535cf1d44b2deae9
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
+=======
+../src/radio/Stacks/Data_Heap_Testing.c \
+>>>>>>> Wrote tests for Data_Heap custom malloc; few of them work yet
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
@@ -1109,7 +1113,11 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 >>>>>>> Fix commit issues
 =======
 src/radio/Stacks/Data_Heap.o \
+<<<<<<< 04d929ec0611bda1cbea7132535cf1d44b2deae9
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
+=======
+src/radio/Stacks/Data_Heap_Testing.o \
+>>>>>>> Wrote tests for Data_Heap custom malloc; few of them work yet
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> commit issues
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
@@ -1186,7 +1194,11 @@ src/radio/Stacks/Num_Stack.o \
 =======
 =======
 src/radio/Stacks/Data_Heap.o \
+<<<<<<< 04d929ec0611bda1cbea7132535cf1d44b2deae9
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
+=======
+src/radio/Stacks/Data_Heap_Testing.o \
+>>>>>>> Wrote tests for Data_Heap custom malloc; few of them work yet
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
@@ -1257,6 +1269,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
 src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
@@ -1326,6 +1339,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
 src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
@@ -1404,6 +1418,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
