@@ -26,6 +26,8 @@ src\ASF\sam0\drivers\system\pinmux\pinmux.c
 
 src\ASF\sam0\drivers\system\system.c
 
+src\ASF\sam0\drivers\tcc\tcc.c
+
 src\ASF\sam0\utils\cmsis\samd21\source\gcc\startup_samd21.c
 
 src\ASF\sam0\utils\cmsis\samd21\source\system_samd21.c
@@ -73,6 +75,8 @@ src\processor_drivers\ADC_Commands.c
 src\processor_drivers\Direct_Pin_Commands.c
 
 src\processor_drivers\I2C_Commands.c
+
+src\processor_drivers\PWM_Commands.c
 
 src\processor_drivers\RTC_Commands.c
 

@@ -10,12 +10,12 @@ void flatsat_init(void) {
 	//while(true){
 		//MPU9250_read();
 	//}
-	
+	configure_pwm();
 	delay_init();
-	MLX90614_init();
+	//MLX90614_init();
 	//HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
-	setup_pin(true,PIN_PA16); //init gpio pin for flashing
+	//setup_pin(true,PIN_PA16); //init gpio pin for flashing
 }
 
 float read_IR(void) {
@@ -52,9 +52,11 @@ float read_temp(void) {
 void flatsat_run(void) {	
 	flatsat_init();
 	while (1) {
-		read_IR();	
+		delay_ms(3000);
+		setPulseWidthFraction(3,4);
+		//read_IR();	
 		//read_temp();
-		read_IMU();
+		//read_IMU();
 		//led_flash();
 	}
 }
