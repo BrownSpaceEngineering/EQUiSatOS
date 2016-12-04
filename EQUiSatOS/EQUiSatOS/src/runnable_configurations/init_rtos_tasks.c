@@ -61,9 +61,9 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 	
-	// TODO: we need to suspend the other tasks and somehow immediatly add OR delete thier interior structs and make a new one
+	// TODO: we need to suspend the other tasks and somehow immediately add OR delete their interior structs and make a new one
 	// Maybe look for changes in state inside the rtos tasks?
-	// OR bring thier current structs, etc. global so we can manually reset them? -> NOOOOO
+	// OR bring their current structs, etc. global so we can manually reset them? -> NOOOOO
 	
 	taskFrequencies[LED_TASK] =					idle_TASK_LED_FREQ;
 	taskFrequencies[RADIO_TRANSMIT_TASK] =		idle_TASK_RADIO_TRANSMIT_FREQ;
