@@ -65,7 +65,7 @@ typedef enum
 	SENSOR_READ_FLASH,
 	SENSOR_READ_BOOT,
 	SENSOR_READ_LOW_POWER,
-	NUM_TASKS = SENSOR_READ_LOW_POWER + 1
+	NUM_TASKS
 } task_type;
 
 /* Enum for all states
@@ -111,7 +111,7 @@ typedef enum
 	RADIO_TEMP_DATA,
 	BAT_VOLT_DATA,
 	REG_VOLT_DATA,
-	NUM_DATA_TYPES = REG_VOLT_DATA + 1
+	NUM_DATA_TYPES //= REG_VOLT_DATA + 1
 } data_types;
 
 /* Task headers */

@@ -12,6 +12,8 @@ src\radio\Stacks\Num_Stack.c
 
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 
+src\radio\Stacks\stack_tests.c
+
 src\radio\Stacks\Sensor_Structs.c
 
 src\radio\Stacks\State_Structs.c

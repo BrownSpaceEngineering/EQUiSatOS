@@ -13,5 +13,7 @@
 #include "flash_Stack.h"
 #include "idle_Stack.h"
 #include "low_power_Stack.h"
+#include "Num_Stack.h"
+#include "stack_tests.h"
 
 #endif /* EQUISTACKS_H_ */
