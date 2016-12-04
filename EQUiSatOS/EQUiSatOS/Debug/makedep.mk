@@ -161,6 +161,8 @@ src\radio\Stacks\Num_Stack.c
 
 src\radio\Stacks\Sensor_Structs.c
 
+src\radio\Stacks\stack_tests.c
+
 src\radio\Stacks\State_Structs.c
 
 src\runnable_configurations\struct_tests.c

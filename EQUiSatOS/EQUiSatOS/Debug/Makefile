@@ -1035,6 +1035,7 @@ C_SRCS +=  \
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 ../src/radio/Stacks/Num_Stack.c \
@@ -1042,6 +1043,9 @@ C_SRCS +=  \
 =======
 ../src/radio/Stacks/Sensor_Structs.c \
 >>>>>>> Added complexity (hopefully improving) free
+=======
+../src/radio/Stacks/stack_tests.c \
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 ../src/radio/Stacks/State_Structs.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -1121,6 +1125,7 @@ src/radio/Stacks/Data_Heap_Testing.o \
 src/radio/Stacks/Num_Stack.o \
 >>>>>>> commit issues
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.o \
@@ -1128,6 +1133,9 @@ src/radio/Stacks/Num_Stack.o \
 =======
 src/radio/Stacks/Sensor_Structs.o \
 >>>>>>> Added complexity (hopefully improving) free
+=======
+src/radio/Stacks/stack_tests.o \
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -1206,10 +1214,14 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 =======
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 >>>>>>> Fix commit issues
 =======
 src/radio/Stacks/Sensor_Structs.o \
 >>>>>>> Added complexity (hopefully improving) free
+=======
+src/radio/Stacks/stack_tests.o \
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -1273,6 +1285,7 @@ src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.d \
@@ -1280,6 +1293,9 @@ src/radio/Stacks/Num_Stack.d \
 =======
 src/radio/Stacks/Sensor_Structs.d \
 >>>>>>> Added complexity (hopefully improving) free
+=======
+src/radio/Stacks/stack_tests.d \
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -1343,6 +1359,7 @@ src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
 src/radio/Stacks/Num_Stack.d \
@@ -1350,6 +1367,9 @@ src/radio/Stacks/Num_Stack.d \
 =======
 src/radio/Stacks/Sensor_Structs.d \
 >>>>>>> Added complexity (hopefully improving) free
+=======
+src/radio/Stacks/stack_tests.d \
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -1531,10 +1551,13 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+<<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 
 
 
 
+=======
+>>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
