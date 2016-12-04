@@ -256,7 +256,7 @@ void task_data_read_idle(void *pvParameters)
 			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
 			// reinitialize data struct
-			current_struct = pvPortMalloc(sizeof(idle_data_t)); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
+			current_struct = data_t_malloc(idle_data_t_heap); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
