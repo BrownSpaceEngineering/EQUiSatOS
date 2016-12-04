@@ -51,7 +51,7 @@ void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 	// if (size == max_size)
 	if (S->bottom_index == S->top_index)
 	{
-		free_idle(&(S->data[S->top_index]));
+		data_t_free(&(S->data[S->top_index]), idle_data_t_heap);
 		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
 	}
 	else

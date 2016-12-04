@@ -34,6 +34,7 @@
 #include "radio/Stacks/flash_Stack.h"
 #include "radio/Stacks/boot_Stack.h"
 #include "radio/Stacks/low_power_Stack.h"
+#include "../radio/Stacks/Data_Heap.h"
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
@@ -138,6 +139,11 @@ idle_data_t *idle_readings_equistack;
 flash_data_t *flash_readings_equistack;
 /*static boot_data_t *boot_readings_equistack;*/
 /*static low_power_data_t *low_power_readings_equistack;*/
+
+data_t_heap *idle_data_t_heap;
+// data_t_heap *flash_data_t_heap;
+// data_t_heap *boot_data_t_heap;
+// data_t_heap *low_power_data_t_heap;
 
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);

@@ -19,7 +19,7 @@ void data_heap_tests(void)
 
 	// Malloc testing
 	// (check that data exists correctly everywhere)
-	basic_struct** data_ptrs;
+	basic_struct* data_ptrs[100];
 	
 	data_ptrs[0] = data_t_malloc(heap1);
 	data_ptrs[0]->name = "Number one";
@@ -57,8 +57,8 @@ void data_heap_tests(void)
 	
 	// Freeing testing
 	// (check that data at each place is wiped)
-	data_t_free(data_ptrs[0], heap1);
 	data_t_free(data_ptrs[50], heap1);
+	data_t_free(data_ptrs[0], heap1);
 	data_t_free(data_ptrs[99], heap1);
 	
 	// Re-malloc testing
@@ -75,8 +75,8 @@ void data_heap_tests(void)
 	data_t_free(data_ptrs[0], heap1);
 	data_ptrs[0] = data_t_malloc(heap1);
 	basic_struct* should_be_null2 = data_t_malloc(heap1);
-	basic_struct* should_be_null3 = data_ptrs[0] = data_t_malloc(heap1);
-	basic_struct* should_be_null4 = data_ptrs[0] = data_t_malloc(heap1);
+	basic_struct* should_be_null3 = data_t_malloc(heap1);
+	basic_struct* should_be_null4 = data_t_malloc(heap1);
 	
 	data_t_free(data_ptrs[60], heap1);	
 	data_t_free(data_ptrs[2], heap1);
@@ -84,7 +84,7 @@ void data_heap_tests(void)
 	data_t_free(data_ptrs[1], heap1);
 	data_ptrs[1] = data_t_malloc(heap1); // Should have memory address corresponding to 1
 	data_t_free(data_ptrs[98], heap1);
-	data_ptrs[20] = data_t_malloc(heap1); // Should have memory address corresponding to 20
+	data_ptrs[2] = data_t_malloc(heap1); // Should have memory address corresponding to 2
 	data_t_free(data_ptrs[99], heap1);
 	
 	// Complete free test
