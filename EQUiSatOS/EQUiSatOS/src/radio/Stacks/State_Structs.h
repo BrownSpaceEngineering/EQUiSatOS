@@ -14,6 +14,7 @@
 
 typedef struct idle_data_t
 {
+	uint32_t timestamp;
 	/* lists sizes are proportional to the max READS_PER_LOG
 	(because the higher the MAX number of READS_PER_LOG, the lower the 
 	frequency of the least frequent task, and the larger our higher-frequency 
@@ -36,6 +37,7 @@ typedef struct idle_data_t
 
 typedef struct flash_data_t
 {
+	uint32_t timestamp;
 	/* ibid */
 	ir_batch ir_data								[flash_MAX_READS_PER_LOG / flash_IR_READS_PER_LOG];
 	temp_batch temp_data							[flash_MAX_READS_PER_LOG / flash_TEMP_READS_PER_LOG];
@@ -52,6 +54,7 @@ typedef struct flash_data_t
 
 typedef struct low_power_data_t
 {
+	uint32_t timestamp;
 	/* ibid */
 	ir_batch ir_data								[low_power_MAX_READS_PER_LOG / low_power_IR_READS_PER_LOG];
 	temp_batch temp_data							[low_power_MAX_READS_PER_LOG / low_power_TEMP_READS_PER_LOG];
@@ -68,6 +71,7 @@ typedef struct low_power_data_t
 
 typedef struct boot_data_t
 {
+	uint32_t timestamp;
 	/* ibid */
 	//ir_batch ir_data								[boot_MAX_READS_PER_LOG / boot_IR_READS_PER_LOG];
 	//temp_batch temp_data							[boot_MAX_READS_PER_LOG / boot_TEMP_READS_PER_LOG];
@@ -92,9 +96,9 @@ typedef struct boot_data_t
 	
 } boot_data_t;
 
-void free_boot(boot_data_t*);
-void free_low_power(low_power_data_t*);
-void free_idle(idle_data_t*);
-void free_flash(flash_data_t*);
+void free_boot(boot_data_t* bd);
+void free_low_power(low_power_data_t* lpd);
+void free_idle(idle_data_t* id);
+void free_flash(flash_data_t* fd);
 
 #endif

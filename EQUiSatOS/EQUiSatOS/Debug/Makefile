@@ -128,9 +128,12 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+../src/radio/Stacks/Data_Heap.c \
+../src/radio/Stacks/Data_Heap_Testing.c \
 ../src/radio/Stacks/Num_Stack.c \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 ../src/radio/Stacks/stack_tests.c \
+../src/radio/Stacks/Sensor_Structs.c \
 ../src/radio/Stacks/State_Structs.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -193,9 +196,13 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+src/radio/Stacks/Data_Heap.o \
+src/radio/Stacks/Data_Heap_Testing.o \
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/radio/Stacks/stack_tests.o \
+src/radio/Stacks/Sensor_Structs.o \
+>>>>>>> origin/rtos
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -251,9 +258,12 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+src/radio/Stacks/Data_Heap.o \
+src/radio/Stacks/Data_Heap_Testing.o \
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/radio/Stacks/stack_tests.o \
+src/radio/Stacks/Sensor_Structs.o \
 src/radio/Stacks/State_Structs.o \
 src/runnable_configurations/struct_tests.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
@@ -309,9 +319,12 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/radio/Stacks/stack_tests.d \
+src/radio/Stacks/Sensor_Structs.d \
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -367,9 +380,13 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+src/radio/Stacks/Data_Heap.d \
+src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/radio/Stacks/stack_tests.d \
+src/radio/Stacks/Sensor_Structs.d \
+>>>>>>> origin/rtos
 src/radio/Stacks/State_Structs.d \
 src/runnable_configurations/struct_tests.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
@@ -438,7 +455,6 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
-
 
 
 

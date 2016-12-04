@@ -8,6 +8,12 @@
 #include "rtos_tasks.h"
 
 /* Helper Functions */
+uint32_t get_current_timestamp(void)
+{
+	// TODO: get a more accurate and persistent timestamp (relative to an alive message)
+	return xTaskGetTickCount(); // represents the ms from vstartscheduler
+}
+
 void increment_all(int* int_arr, int length)
 {
 	for(int i = 0; i < length; i++)
@@ -192,7 +198,7 @@ void task_radio_transmit(void *pvParameters)
 		do
 		{
 			// read the next state to transmit (pop something off state queue) 
-			int nextState = IDLE; //num_Stack_Top(stateReadQueue); 
+			int nextState = IDLE; // num_Stack_Top(last_state_read_equistack); 
 		
 			// based on what state we're in, compile a different message
 			switch(nextState)
@@ -212,7 +218,7 @@ void task_radio_transmit(void *pvParameters)
 				case LOW_POWER: 
 					break;
 				default:
-					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping (potentially infinitely) until we get some				
+					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely) 				
 			};
 		} while (!validDataTransmitted);
 	}
@@ -233,6 +239,7 @@ void task_data_read_idle(void *pvParameters)
 	
 	// initialize first struct
 	idle_data_t *current_struct = pvPortMalloc(sizeof(idle_data_t)); 
+	current_struct->timestamp = get_current_timestamp();
 		
 	for( ;; )
 	{	
@@ -244,14 +251,25 @@ void task_data_read_idle(void *pvParameters)
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
 		if (data_array_tails[IR_DATA] >= idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG)
 		{
+			// push to list of transmissions, including adding a corresponding state
 			idle_Stack_Push(idle_readings_equistack, current_struct);
+			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
 			// reinitialize data struct
-			current_struct = pvPortMalloc(sizeof(idle_data_t));
+			current_struct = pvPortMalloc(sizeof(idle_data_t)); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
 		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
+// 		add_temp_batch_if_ready(&(current_struct->temp_data), &data_array_tails, &reads_since_last_log, idle_TEMP_READS_PER_LOG);
+// 		add_diode_batch_if_ready(&(current_struct->diode_data), &data_array_tails, &reads_since_last_log, idle_DIODE_READS_PER_LOG);
+// 		add_led_current_batch_if_ready(&(current_struct->led_current_data), &data_array_tails, &reads_since_last_log, idle_LED_CURRENT_READS_PER_LOG);
+// 		add_gyro_batch_if_ready(&(current_struct->gyro_data), &data_array_tails, &reads_since_last_log, idle_GYRO_READS_PER_LOG);
+// 		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), &data_array_tails, &reads_since_last_log, idle_MAGNETOMETER_READS_PER_LOG);
+// 		add_charging_batch_if_ready(&(current_struct->charging_data), &data_array_tails, &reads_since_last_log, idle_CHARGING_DATA_READS_PER_LOG);
+// 		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), &data_array_tails, &reads_since_last_log, idle_RADIO_TEMP_READS_PER_LOG);
+// 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), &data_array_tails, &reads_since_last_log, idle_BAT_VOLTAGE_READS_PER_LOG);
+// 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), &data_array_tails, &reads_since_last_log, idle_REG_VOLTAGE_READS_PER_LOG);
 		
 		// increment reads in reads_since_last_log
 		increment_all(reads_since_last_log, NUM_DATA_TYPES);		
@@ -260,6 +278,59 @@ void task_data_read_idle(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-// static void task_data_read_flash(void *pvParameters);
+void task_data_read_flash(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	// tracking arrays
+	int reads_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
+	// one of the sensors, so the value in here keeps growing?
+	int data_array_tails[NUM_DATA_TYPES];
+	
+	// initialize first struct
+	flash_data_t *current_struct = pvPortMalloc(sizeof(flash_data_t));
+	current_struct->timestamp = get_current_timestamp();
+	
+	for( ;; )
+	{	
+		// block for a time based on this task's globally-set frequency
+		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
+		vTaskDelayUntil( &xNextWakeTime, FLASH_RD_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// once we've collected all the data we need to into the current struct, add the whole thing
+		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
+		if (data_array_tails[IR_DATA] >= flash_MAX_READS_PER_LOG / flash_IR_READS_PER_LOG)
+		{
+			// push to list of transmissions, including adding a corresponding state
+			flash_Stack_Push(flash_readings_equistack, current_struct);
+			//num_Stack_Push(last_state_read_equistack, IDLE);
+			
+			// reinitialize data struct
+			current_struct = pvPortMalloc(sizeof(flash_data_t)); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
+			current_struct->timestamp = get_current_timestamp();
+			// TODO: THESE ARRAYS MUST BE RESET (AT LEAST DATA_ARRAY_TAILS) SO FIGURE OUT HOW TO DO IT!!!!
+			//data_array_tails = ...;
+			// TODO: reads_since_last_log = ...;
+		}
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, flash_IR_READS_PER_LOG);
+// 		add_temp_batch_if_ready(&(current_struct->temp_data), &data_array_tails, &reads_since_last_log, flash_TEMP_READS_PER_LOG);
+// 		add_diode_batch_if_ready(&(current_struct->diode_data), &data_array_tails, &reads_since_last_log, flash_DIODE_READS_PER_LOG);
+// 		add_led_current_batch_if_ready(&(current_struct->led_current_data), &data_array_tails, &reads_since_last_log, flash_LED_CURRENT_READS_PER_LOG);
+// 		add_gyro_batch_if_ready(&(current_struct->gyro_data), &data_array_tails, &reads_since_last_log, flash_GYRO_READS_PER_LOG);
+// 		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), &data_array_tails, &reads_since_last_log, flash_MAGNETOMETER_READS_PER_LOG);
+// 		add_charging_batch_if_ready(&(current_struct->charging_data), &data_array_tails, &reads_since_last_log, flash_CHARGING_DATA_READS_PER_LOG);
+// 		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), &data_array_tails, &reads_since_last_log, flash_RADIO_TEMP_READS_PER_LOG);
+// 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), &data_array_tails, &reads_since_last_log, flash_BAT_VOLTAGE_READS_PER_LOG);
+// 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), &data_array_tails, &reads_since_last_log, flash_REG_VOLTAGE_READS_PER_LOG);
+		
+		// increment reads in reads_since_last_log
+		increment_all(reads_since_last_log, NUM_DATA_TYPES);
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
 // static void task_data_read_boot(void *pvParameters);
 // static void task_data_read_low_power(void *pvParameters);

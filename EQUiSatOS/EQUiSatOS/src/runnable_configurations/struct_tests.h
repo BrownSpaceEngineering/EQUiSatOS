@@ -13,7 +13,7 @@
 #include "../radio/Stacks/State_Structs.h"
 #include "../radio/Stacks/Sensor_Structs.h"
 
-boot_data_t init_test_struct();
-void test_free();
+boot_data_t init_test_struct(void);
+void test_free(void *pvParameters);
 
 #endif /* STRUCT_TESTS_H_ */
