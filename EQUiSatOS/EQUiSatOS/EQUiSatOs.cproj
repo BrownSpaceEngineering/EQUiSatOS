@@ -799,6 +799,12 @@
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\radio\Stacks\stack_tests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\Stacks\stack_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\radio\Stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>

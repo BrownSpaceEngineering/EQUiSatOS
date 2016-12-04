@@ -18,27 +18,29 @@ int16_t Num_Stack_Top(Num_Stack* S)
 {
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	
 	// Could also be S->size == 0
 	// TODO: Think about whether we need second conditional
 	if (S->top_index != -1 && S->top_index < S->size)
 	{
+		xSemaphoreGive(S->mutex);
 		return S->data[S->top_index];
 	}
 	else
 	{
 		// TODO:
 		// Return dummy
+		xSemaphoreGive(S->mutex);
 		return NULL;
 	}
-	
-	xSemaphoreGive(S->mutex);
 }
 
 // Overwrites the bottom value if need be
-void Num_Stack_Test_Push(Num_Stack* S, int16_t val)
+void Num_Stack_Push(Num_Stack* S, int16_t val)
 {
 	// TODO: Change if needed
-	xSemaphoreTake(S->mutex, (TickType_t) 10);
+	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	
 	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
 	
 	// something was overwritten
@@ -46,7 +48,7 @@ void Num_Stack_Test_Push(Num_Stack* S, int16_t val)
 	// if (size == max_size)
 	if (S->bottom_index == S->top_index)
 	{
-		vPortFree(&(S->data[S->top_index]));
+		//vPortFree(&(S->data[S->top_index]));
 		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
 	}
 	else
@@ -60,5 +62,6 @@ void Num_Stack_Test_Push(Num_Stack* S, int16_t val)
 	}
 	
 	S->data[S->top_index] = val;
+	
 	xSemaphoreGive(S->mutex);
 }

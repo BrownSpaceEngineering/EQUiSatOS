@@ -11,7 +11,7 @@
 
 #include "runnable_configurations/scratch_testing.h"
 #include "runnable_configurations/init_rtos_tasks.h"
-#include "radio/Stacks/Num_Stack.h"
+#include "radio/Stacks/EquiStacks.h"
 #include <asf.h>
 
 #endif /* MAIN_H */
