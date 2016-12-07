@@ -10,3 +10,4 @@
 
 # 24.04.16: Updated IR2 on Processor Test Board to 0x5B (0xb6 write, 0xb7 read)
 
+# 06.12.16: Programmed 5 new MLX90614 for solar panel board - 0x5c, 0x5d, 0x5e, 0x5f, 0x6a
