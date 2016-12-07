@@ -12,21 +12,21 @@
 idle_Stack* idle_Stack_Init()
 {
 	idle_Stack* S = pvPortMalloc(sizeof(idle_Stack));
-	S->size = 0;
 	S->top_index = -1;
 	S->bottom_index = -1;
 	S->mutex = xSemaphoreCreateMutex();
+
 	return S;
 }
 
-idle_data_t* idle_Stack_Top(idle_Stack* S)
+idle_data_t* idle_Stack_Top(idle_Stack* S) // TODO: Remove the element you return
 {
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
-	// Could also be S->size == 0
-	// TODO: Think about whether we need second conditional
-	if (S->top_index != -1 && S->top_index < S->size)
+
+	if (S->top_index != -1)
 	{
+		// top of full stack is right before staged index
 		return S->data[S->top_index];
 	}
 	else
@@ -40,7 +40,7 @@ idle_data_t* idle_Stack_Top(idle_Stack* S)
 }
 
 // Overwrites the bottom value if need be
-void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
+idle_data_t* idle_Stack_Stage(idle_Stack* S, idle_data_t* val)
 {
 	// TODO: Change if needed
 	xSemaphoreTake(S->mutex, (TickType_t) 10);
@@ -51,7 +51,6 @@ void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 	// if (size == max_size)
 	if (S->bottom_index == S->top_index)
 	{
-		data_t_free(&(S->data[S->top_index]), idle_data_t_heap);
 		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
 	}
 	else
@@ -65,5 +64,9 @@ void idle_Stack_Push(idle_Stack* S, idle_data_t* val)
 	}
 
 	S->data[S->top_index] = val;
+	idle_data_t* staged_pointer = S->data[(S->top_index + 1) % IDLE_STACK_MAX];
+	clear_existing_data(staged_pointer, sizeof(idle_data_t));
+
 	xSemaphoreGive(S->mutex);
+	return staged_pointer; // return pointer to staged data
 }

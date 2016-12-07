@@ -157,6 +157,7 @@ src\runnable_configurations\struct_tests.c
 
 src\stacks\boot_Stack.c
 
+<<<<<<< a80674390dc307fccd74b9c174b0b9c2490d0573
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
@@ -168,6 +169,9 @@ src\stacks\data_heap.c
 
 src\stacks\data_heap_testing.c
 >>>>>>> Stylistic adjustments
+=======
+src\stacks\equistacks.c
+>>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
 
 src\stacks\flash_Stack.c
 

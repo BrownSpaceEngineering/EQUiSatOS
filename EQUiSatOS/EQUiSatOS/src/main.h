@@ -19,8 +19,4 @@
 #include "stacks/EquiStacks.h"
 #include <asf.h>
 
-// TEMP
-#include "stacks/Data_Heap_Testing.h"
-#include "stacks/package_stack.h"
-
 #endif /* MAIN_H */

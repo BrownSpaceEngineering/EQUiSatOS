@@ -13,11 +13,11 @@
 #include <asf.h>
 #include "State_Structs.h"
 #include "../runnable_configurations/rtos_tasks.h"
+#include "equistacks.h"
 
 typedef struct idle_Stack
 {
 	idle_data_t*     data[IDLE_STACK_MAX];
-	int16_t     size;
 	int16_t     top_index;
 	int16_t     bottom_index;	
 	SemaphoreHandle_t mutex;
@@ -25,6 +25,6 @@ typedef struct idle_Stack
 
 idle_Stack* idle_Stack_Init();
 idle_data_t* idle_Stack_Top(idle_Stack* S);
-void idle_Stack_Push(idle_Stack* S, idle_data_t* val);
+idle_data_t* idle_Stack_Stage(idle_Stack* S, idle_data_t* val);
 
 #endif
