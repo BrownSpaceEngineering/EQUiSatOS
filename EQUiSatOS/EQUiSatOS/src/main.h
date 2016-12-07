@@ -20,7 +20,7 @@
 #include <asf.h>
 
 // TEMP
-#include "radio/Stacks/Num_Stack.h"
-#include "radio/Stacks/Data_Heap_Testing.h"
+#include "stacks/Data_Heap_Testing.h"
+#include "stacks/package_stack.h"
 
 #endif /* MAIN_H */

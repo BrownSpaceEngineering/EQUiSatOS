@@ -33,7 +33,7 @@
           <option id="common.services.ioport" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils.unit_test" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common2.services.delay" value="Add" config="systick" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.adc" value="Add" config="polled" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.adc" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.drivers.nvm" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.rtc" value="Add" config="calendar_callback" content-id="Atmel.ASF" />
@@ -42,8 +42,6 @@
           <option id="sam0.drivers.sercom.usart" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.system.clock" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
           <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
@@ -51,7 +49,7 @@
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
         </options>
         <configurations>
-          <configuration key="config.thirdparty.os.freertos-8_0_1.memory_manager" value="1_static_allocation" default="1_static_allocation" content-id="Atmel.ASF" />
+          <configuration key="config.thirdparty.os.freertos-8_0_1.memory_manager" value="4_first_fit_coallesce" default="1_static_allocation" content-id="Atmel.ASF" />
         </configurations>
         <files>
           <file path="src/ASF/sam0/drivers/nvm/nvm.c" framework="" version="3.31.0" source="sam0\drivers\nvm\nvm.c" changed="False" content-id="Atmel.ASF" />
@@ -116,7 +114,6 @@
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/readme.txt" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\readme.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/port.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/portmacro.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/spi.c" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\spi.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/spi.h" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\spi.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/spi/quick_start_slave/qs_spi_slave_basic.h" framework="" version="3.31.0" source="sam0\drivers\sercom\spi\quick_start_slave\qs_spi_slave_basic.h" changed="False" content-id="Atmel.ASF" />
@@ -285,29 +282,21 @@
           <file path="src/ASF/thirdparty/CMSIS/Lib/license.txt" framework="" version="" source="thirdparty/CMSIS/Lib/license.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/README.txt" framework="" version="" source="thirdparty/CMSIS/README.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/tcc/tcc.c" framework="" version="3.28.1" source="sam0\drivers\tcc\tcc.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/tcc/quick_start_buffering/qs_tcc_buffering.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/tcc/quick_start_dma/qs_tcc_dma.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start_dma\qs_tcc_dma.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/tcc/tcc.h" framework="" version="3.28.1" source="sam0\drivers\tcc\tcc.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/tcc/quick_start/qs_tcc_basic.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start\qs_tcc_basic.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/wdt.c" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/wdt.h" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/quick_start/qs_wdt_basic.h" framework="" version="3.28.1" source="sam0\drivers\wdt\quick_start\qs_wdt_basic.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/wdt_callback.c" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt_callback.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/wdt_callback.h" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt_callback.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.28.1" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/adc/adc_callback.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_callback.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.28.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.31.0" />
         </dependencies>
         <project id="common.applications.user_application.xplained_pro2.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
-    <avrtoolserialnumber>ATML2130021800009153</avrtoolserialnumber>
+    <avrtoolserialnumber>ATML2130021800007794</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
@@ -318,21 +307,10 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009084</ToolNumber>
+      <ToolNumber>ATML2130021800007794</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
-    <com_atmel_avrdbg_tool_atmelice>
-      <ToolOptions>
-        <InterfaceProperties>
-          <SwdClock>0</SwdClock>
-        </InterfaceProperties>
-        <InterfaceName>SWD</InterfaceName>
-      </ToolOptions>
-      <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800056157</ToolNumber>
-      <ToolName>Atmel-ICE</ToolName>
-    </com_atmel_avrdbg_tool_atmelice>
     <custom>
       <ToolOptions xmlns="">
         <InterfaceProperties>
@@ -369,9 +347,7 @@
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0PLUS=true</Value>
-      <Value>TCC_ASYNC=false</Value>
-      <Value>WDT_CALLBACK_MODE=true</Value>
-      <Value>ADC_CALLBACK_MODE=false</Value>
+      <Value>ADC_CALLBACK_MODE=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -417,8 +393,6 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
-      <Value>../src/ASF/sam0/drivers/tcc</Value>
-      <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -485,7 +459,7 @@
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -529,8 +503,6 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
-      <Value>../src/ASF/sam0/drivers/tcc</Value>
-      <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -558,9 +530,7 @@
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0PLUS=true</Value>
-      <Value>TCC_ASYNC=false</Value>
-      <Value>WDT_CALLBACK_MODE=true</Value>
-      <Value>ADC_CALLBACK_MODE=false</Value>
+      <Value>ADC_CALLBACK_MODE=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -606,11 +576,10 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
-      <Value>../src/ASF/sam0/drivers/tcc</Value>
-      <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
   <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
@@ -675,7 +644,7 @@
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -719,8 +688,6 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
-      <Value>../src/ASF/sam0/drivers/tcc</Value>
-      <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -779,13 +746,6 @@
     <Folder Include="src\ASF\sam0\drivers\system\power\power_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\system\reset\" />
     <Folder Include="src\ASF\sam0\drivers\system\reset\reset_sam_d_r\" />
-    <Folder Include="src\ASF\sam0\drivers\tcc\" />
-    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start\" />
-    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\" />
-    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_dma\" />
-    <Folder Include="src\ASF\sam0\drivers\wdt\" />
-    <Folder Include="src\ASF\sam0\drivers\wdt\quick_start\" />
-    <Folder Include="src\ASF\sam0\drivers\wdt\quick_start_callback\" />
     <Folder Include="src\ASF\sam0\utils\" />
     <Folder Include="src\ASF\sam0\utils\cmsis\" />
     <Folder Include="src\ASF\sam0\utils\cmsis\samd21\" />
@@ -820,43 +780,100 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
-    <Folder Include="src\radio\Stacks" />
+    <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
     <Folder Include="src\runnable_configurations" />
     <Folder Include="src\processor_drivers" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\config\proc_pins.h">
+    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\errors.h">
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\testing_functions\Num_Stack_Test.c">
+    <Compile Include="src\runnable_configurations\struct_tests.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\testing_functions\Num_Stack_Test.h">
+    <Compile Include="src\runnable_configurations\struct_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\boot_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\boot_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap_testing.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap_testing.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\equistacks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\flash_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\flash_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\idle_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\idle_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\low_power_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\low_power_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Num_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Num_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\package_stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\package_stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Sensor_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\stack_tests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\stack_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\State_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
       <SubType>compile</SubType>
     </None>
-    <Compile Include="src\global.h">
+    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\a00111.html">
       <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\isItOn.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\isItOn.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\testing_functions\watchdog_task_test.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\testing_functions\watchdog_task_test.h">
-      <SubType>compile</SubType>
-    </Compile>
+    </None>
     <None Include="src\config\conf_clocks.h">
       <SubType>compile</SubType>
     </None>
@@ -1328,39 +1345,6 @@
     <None Include="src\ASF\sam0\utils\cmsis\samd21\include\pio\samd21e16b.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\tcc\quick_start_dma\qs_tcc_dma.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\tcc\quick_start\qs_tcc_basic.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\tcc\tcc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\tcc\tcc.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\wdt\quick_start\qs_wdt_basic.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\wdt\wdt.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\wdt\wdt.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\wdt\wdt_callback.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\wdt\wdt_callback.h">
-      <SubType>compile</SubType>
-    </None>
     <Compile Include="src\ASF\sam0\utils\cmsis\samd21\source\gcc\startup_samd21.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1416,9 +1400,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h">
@@ -1595,15 +1576,6 @@
     <Compile Include="src\processor_drivers\I2C_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\PWM_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\PWM_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\processor_drivers\RTC_Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1622,64 +1594,10 @@
     <Compile Include="src\processor_drivers\USART_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\radio\Radio_Commands.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\flatsat.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\flatsat.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\boot_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\boot_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\EquiStacks.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\flash_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\flash_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\idle_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\idle_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\low_power_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\low_power_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Sensor_Structs.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">
@@ -1703,43 +1621,19 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\sensor_drivers\AD7991_ADC.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\AD7991_ADC.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\Sensor_Structs.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.c">
+    <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\Sensor_Structs.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.h">
+    <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\MLX90614_IR_Sensor.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\MPU9250_9axis_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\MPU9250_9axis_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\sensor_read_commands.c">
@@ -1752,12 +1646,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\switching_commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\TCA9535_GPIO.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\sensor_drivers\TCA9535_GPIO.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\TEMD6200_Commands.c">
