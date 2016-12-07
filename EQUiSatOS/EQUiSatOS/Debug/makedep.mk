@@ -22,6 +22,8 @@ src\stacks\low_power_Stack.c
 
 src\stacks\Num_Stack.c
 
+src\stacks\package_stack.c
+
 src\stacks\Sensor_Structs.c
 
 src\stacks\stack_tests.c

@@ -137,6 +137,7 @@ C_SRCS +=  \
 ../src/stacks/idle_Stack.c \
 ../src/stacks/low_power_Stack.c \
 ../src/stacks/Num_Stack.c \
+../src/stacks/package_stack.c \
 ../src/stacks/Sensor_Structs.c \
 ../src/stacks/stack_tests.c \
 ../src/stacks/State_Structs.c \
@@ -205,6 +206,7 @@ src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
+src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
@@ -266,6 +268,7 @@ src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
+src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
@@ -327,6 +330,7 @@ src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
+src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
@@ -388,6 +392,7 @@ src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
+src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
@@ -453,6 +458,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
