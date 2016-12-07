@@ -1008,7 +1008,7 @@ SUBDIRS :=  \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/ \
 ../src/config/ \
 ../src/radio \
-../src/radio/Stacks \
+../src/stacks \
 ../src/testing_functions \
 ../src/sensor_drivers \
 ../src/runnable_configurations \
@@ -1018,6 +1018,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
@@ -1047,7 +1048,20 @@ C_SRCS +=  \
 ../src/radio/Stacks/stack_tests.c \
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 ../src/radio/Stacks/State_Structs.c \
+=======
+../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+>>>>>>> Stylistic adjustments
 ../src/runnable_configurations/struct_tests.c \
+../src/stacks/boot_Stack.c \
+../src/stacks/data_heap.c \
+../src/stacks/data_heap_testing.c \
+../src/stacks/flash_Stack.c \
+../src/stacks/idle_Stack.c \
+../src/stacks/low_power_Stack.c \
+../src/stacks/Num_Stack.c \
+../src/stacks/Sensor_Structs.c \
+../src/stacks/stack_tests.c \
+../src/stacks/State_Structs.c \
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
 ../src/ASF/sam0/boards/samd21_xplained_pro/board_init.c \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c \
@@ -1086,10 +1100,6 @@ C_SRCS +=  \
 ../src/processor_drivers/SPI_Commands.c \
 ../src/processor_drivers/USART_Commands.c \
 ../src/radio/Radio_Commands.c \
-../src/radio/Stacks/boot_Stack.c \
-../src/radio/Stacks/flash_Stack.c \
-../src/radio/Stacks/idle_Stack.c \
-../src/radio/Stacks/low_power_Stack.c \
 ../src/runnable_configurations/init_rtos_tasks.c \
 ../src/runnable_configurations/rtos_tasks.c \
 ../src/runnable_configurations/scratch_testing.c \
@@ -1108,6 +1118,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
@@ -1137,7 +1148,20 @@ src/radio/Stacks/Sensor_Structs.o \
 src/radio/Stacks/stack_tests.o \
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.o \
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+>>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.o \
+src/stacks/boot_Stack.o \
+src/stacks/data_heap.o \
+src/stacks/data_heap_testing.o \
+src/stacks/flash_Stack.o \
+src/stacks/idle_Stack.o \
+src/stacks/low_power_Stack.o \
+src/stacks/Num_Stack.o \
+src/stacks/Sensor_Structs.o \
+src/stacks/stack_tests.o \
+src/stacks/State_Structs.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.o \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.o \
@@ -1176,10 +1200,6 @@ src/processor_drivers/RTC_Commands.o \
 src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
-src/radio/Stacks/boot_Stack.o \
-src/radio/Stacks/flash_Stack.o \
-src/radio/Stacks/idle_Stack.o \
-src/radio/Stacks/low_power_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
@@ -1191,6 +1211,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
 <<<<<<< e8c3757db15d9e5797411cb748de09c496cb7ad0
@@ -1223,7 +1244,20 @@ src/radio/Stacks/Sensor_Structs.o \
 src/radio/Stacks/stack_tests.o \
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.o \
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+>>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.o \
+src/stacks/boot_Stack.o \
+src/stacks/data_heap.o \
+src/stacks/data_heap_testing.o \
+src/stacks/flash_Stack.o \
+src/stacks/idle_Stack.o \
+src/stacks/low_power_Stack.o \
+src/stacks/Num_Stack.o \
+src/stacks/Sensor_Structs.o \
+src/stacks/stack_tests.o \
+src/stacks/State_Structs.o \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.o \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.o \
@@ -1262,10 +1296,6 @@ src/processor_drivers/RTC_Commands.o \
 src/processor_drivers/SPI_Commands.o \
 src/processor_drivers/USART_Commands.o \
 src/radio/Radio_Commands.o \
-src/radio/Stacks/boot_Stack.o \
-src/radio/Stacks/flash_Stack.o \
-src/radio/Stacks/idle_Stack.o \
-src/radio/Stacks/low_power_Stack.o \
 src/runnable_configurations/init_rtos_tasks.o \
 src/runnable_configurations/rtos_tasks.o \
 src/runnable_configurations/scratch_testing.o \
@@ -1277,6 +1307,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
@@ -1297,7 +1328,20 @@ src/radio/Stacks/Sensor_Structs.d \
 src/radio/Stacks/stack_tests.d \
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.d \
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+>>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.d \
+src/stacks/boot_Stack.d \
+src/stacks/data_heap.d \
+src/stacks/data_heap_testing.d \
+src/stacks/flash_Stack.d \
+src/stacks/idle_Stack.d \
+src/stacks/low_power_Stack.d \
+src/stacks/Num_Stack.d \
+src/stacks/Sensor_Structs.d \
+src/stacks/stack_tests.d \
+src/stacks/State_Structs.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.d \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.d \
@@ -1336,10 +1380,6 @@ src/processor_drivers/RTC_Commands.d \
 src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
-src/radio/Stacks/boot_Stack.d \
-src/radio/Stacks/flash_Stack.d \
-src/radio/Stacks/idle_Stack.d \
-src/radio/Stacks/low_power_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
@@ -1351,6 +1391,7 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
@@ -1371,7 +1412,20 @@ src/radio/Stacks/Sensor_Structs.d \
 src/radio/Stacks/stack_tests.d \
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
 src/radio/Stacks/State_Structs.d \
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+>>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.d \
+src/stacks/boot_Stack.d \
+src/stacks/data_heap.d \
+src/stacks/data_heap_testing.d \
+src/stacks/flash_Stack.d \
+src/stacks/idle_Stack.d \
+src/stacks/low_power_Stack.d \
+src/stacks/Num_Stack.d \
+src/stacks/Sensor_Structs.d \
+src/stacks/stack_tests.d \
+src/stacks/State_Structs.d \
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.d \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.d \
@@ -1410,10 +1464,6 @@ src/processor_drivers/RTC_Commands.d \
 src/processor_drivers/SPI_Commands.d \
 src/processor_drivers/USART_Commands.d \
 src/radio/Radio_Commands.d \
-src/radio/Stacks/boot_Stack.d \
-src/radio/Stacks/flash_Stack.d \
-src/radio/Stacks/idle_Stack.d \
-src/radio/Stacks/low_power_Stack.d \
 src/runnable_configurations/init_rtos_tasks.d \
 src/runnable_configurations/rtos_tasks.d \
 src/runnable_configurations/scratch_testing.d \
@@ -1551,21 +1601,22 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
+=======
+>>>>>>> Stylistic adjustments
 
 
 
 
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 =======
 >>>>>>> Reworked some of the header files and added a testing file for Num_Stacks
-src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
-	@echo Building file: $<
-	@echo Invoking: ARM/GNU C Compiler : 5.3.1
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21J18A__ -DDEBUG -DTEST_SUITE_DEFINE_ASSERT_MACRO -D_ASSERT_ENABLE_ -DSYSTICK_MODE -DRTC_CALENDAR_ASYNC=true -DI2C_MASTER_CALLBACK_MODE=false -DUSART_CALLBACK_MODE=false -D__FREERTOS__ -DSPI_CALLBACK_MODE=false -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DARM_MATH_CM0PLUS=true -DADC_CALLBACK_MODE=true  -I"../src/ASF/sam0/drivers/nvm" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/common/services/ioport" -I"../src/ASF/common/services/serial" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/adc" -I"../src/ASF/sam0/drivers/adc/adc_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/sam0/drivers/sercom/i2c" -I"../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/sam0/boards" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/ASF/sam0/boards/samd21_xplained_pro" -I"../src" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/system/interrupt"  -O0 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
-	@echo Finished building: $<
-	
+=======
 
-src/radio/Stacks/%.o: ../src/radio/Stacks/%.c
+
+>>>>>>> Stylistic adjustments
+src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21J18A__ -DDEBUG -DTEST_SUITE_DEFINE_ASSERT_MACRO -D_ASSERT_ENABLE_ -DSYSTICK_MODE -DRTC_CALENDAR_ASYNC=true -DI2C_MASTER_CALLBACK_MODE=false -DUSART_CALLBACK_MODE=false -D__FREERTOS__ -DSPI_CALLBACK_MODE=false -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DARM_MATH_CM0PLUS=true -DADC_CALLBACK_MODE=true  -I"../src/ASF/sam0/drivers/nvm" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/common/services/ioport" -I"../src/ASF/common/services/serial" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/adc" -I"../src/ASF/sam0/drivers/adc/adc_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/sam0/drivers/sercom/i2c" -I"../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/sam0/boards" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/ASF/sam0/boards/samd21_xplained_pro" -I"../src" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/system/interrupt"  -O0 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
@@ -1580,6 +1631,13 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/%.o: ../src/A
 	
 
 src/runnable_configurations/%.o: ../src/runnable_configurations/%.c
+	@echo Building file: $<
+	@echo Invoking: ARM/GNU C Compiler : 5.3.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21J18A__ -DDEBUG -DTEST_SUITE_DEFINE_ASSERT_MACRO -D_ASSERT_ENABLE_ -DSYSTICK_MODE -DRTC_CALENDAR_ASYNC=true -DI2C_MASTER_CALLBACK_MODE=false -DUSART_CALLBACK_MODE=false -D__FREERTOS__ -DSPI_CALLBACK_MODE=false -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DARM_MATH_CM0PLUS=true -DADC_CALLBACK_MODE=true  -I"../src/ASF/sam0/drivers/nvm" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/common/services/ioport" -I"../src/ASF/common/services/serial" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/adc" -I"../src/ASF/sam0/drivers/adc/adc_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/sam0/drivers/sercom/i2c" -I"../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/sam0/boards" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/ASF/sam0/boards/samd21_xplained_pro" -I"../src" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/system/interrupt"  -O0 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+src/stacks/%.o: ../src/stacks/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21J18A__ -DDEBUG -DTEST_SUITE_DEFINE_ASSERT_MACRO -D_ASSERT_ENABLE_ -DSYSTICK_MODE -DRTC_CALENDAR_ASYNC=true -DI2C_MASTER_CALLBACK_MODE=false -DUSART_CALLBACK_MODE=false -D__FREERTOS__ -DSPI_CALLBACK_MODE=false -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DARM_MATH_CM0PLUS=true -DADC_CALLBACK_MODE=true  -I"../src/ASF/sam0/drivers/nvm" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/common/services/ioport" -I"../src/ASF/common/services/serial" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/adc" -I"../src/ASF/sam0/drivers/adc/adc_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/sam0/drivers/sercom/i2c" -I"../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include" -I"../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/sam0/boards" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/ASF/sam0/boards/samd21_xplained_pro" -I"../src" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/system/interrupt"  -O0 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

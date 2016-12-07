@@ -27,14 +27,14 @@
 #include "sensor_drivers/sensor_read_commands.h"
 
 #include "init_rtos_tasks.h"
-#include "radio/Stacks/Sensor_Structs.h"
-#include "radio/Stacks/State_Structs.h"
+#include "stacks/Sensor_Structs.h"
+#include "stacks/State_Structs.h"
 
-#include "radio/Stacks/idle_Stack.h"
-#include "radio/Stacks/flash_Stack.h"
-#include "radio/Stacks/boot_Stack.h"
-#include "radio/Stacks/low_power_Stack.h"
-#include "../radio/Stacks/Data_Heap.h"
+#include "stacks/idle_Stack.h"
+#include "stacks/flash_Stack.h"
+#include "stacks/boot_Stack.h"
+#include "stacks/low_power_Stack.h"
+#include "../stacks/Data_Heap.h"
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 

@@ -5,7 +5,7 @@
  *  Author: mcken
  */ 
 
-#include "Data_Heap.h"
+#include "data_heap.h"
 
 data_t_heap *create_data_t_heap(size_t slot_size, int16_t num_slots)
 { 

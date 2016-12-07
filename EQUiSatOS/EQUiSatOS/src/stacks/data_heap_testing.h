@@ -8,7 +8,7 @@
 #ifndef DATA_HEAP_TESTING_H_
 #define DATA_HEAP_TESTING_H_
 
-#include "Data_Heap.h"
+#include "data_heap.h"
 
 void data_heap_tests(void);
 void init5(int arr[], int v0, int v1, int v2, int v3, int v4);

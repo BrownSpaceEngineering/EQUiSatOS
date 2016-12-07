@@ -9,7 +9,7 @@
 #ifndef STACK_TESTS_H_
 #define STACK_TESTS_H_
 
-#include "radio/Stacks/EquiStacks.h"
+#include "stacks/EquiStacks.h"
 #include "runnable_configurations/init_rtos_tasks.h"
 #include "runnable_configurations/rtos_tasks.h"
 

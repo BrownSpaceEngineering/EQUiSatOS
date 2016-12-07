@@ -144,28 +144,50 @@ src\sensor_drivers\TEMD6200_Commands.c
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
 =======
 src\radio\Stacks\Data_Heap.c
+=======
+src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
+>>>>>>> Stylistic adjustments
 
-src\radio\Stacks\Data_Heap_Testing.c
+src\runnable_configurations\struct_tests.c
 
-src\radio\Stacks\Num_Stack.c
+src\stacks\boot_Stack.c
 
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 =======
 src\radio\Stacks\Num_Stack.c
 >>>>>>> Fixed mutexes and updated num_stack
+=======
+src\stacks\data_heap.c
 
-src\radio\Stacks\Sensor_Structs.c
+src\stacks\data_heap_testing.c
+>>>>>>> Stylistic adjustments
 
+src\stacks\flash_Stack.c
+
+<<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 src\radio\Stacks\stack_tests.c
 
 src\radio\Stacks\State_Structs.c
+=======
+src\stacks\idle_Stack.c
+>>>>>>> Stylistic adjustments
 
-src\runnable_configurations\struct_tests.c
+src\stacks\low_power_Stack.c
+
+src\stacks\Num_Stack.c
+
+src\stacks\Sensor_Structs.c
+
+src\stacks\stack_tests.c
+
+src\stacks\State_Structs.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
@@ -242,14 +264,6 @@ src\processor_drivers\SPI_Commands.c
 src\processor_drivers\USART_Commands.c
 
 src\radio\Radio_Commands.c
-
-src\radio\Stacks\boot_Stack.c
-
-src\radio\Stacks\flash_Stack.c
-
-src\radio\Stacks\idle_Stack.c
-
-src\radio\Stacks\low_power_Stack.c
 
 src\runnable_configurations\init_rtos_tasks.c
 
