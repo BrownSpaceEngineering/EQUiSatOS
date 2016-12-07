@@ -835,6 +835,12 @@
     <Compile Include="src\stacks\Num_Stack.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\stacks\package_stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\package_stack.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\stacks\Sensor_Structs.c">
       <SubType>compile</SubType>
     </Compile>

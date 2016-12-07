@@ -14,4 +14,6 @@
 #include "stacks/EquiStacks.h"
 #include <asf.h>
 
+#include "stacks/package_stack.h"
+
 #endif /* MAIN_H */
