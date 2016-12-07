@@ -14,7 +14,7 @@ void Num_Stack_Init(Num_Stack* S)
 	S->mutex = xSemaphoreCreateMutex();
 }
 
-int16_t Num_Stack_Top(Num_Stack* S)
+int16_t Num_Stack_Stage(Num_Stack* S)
 {
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);

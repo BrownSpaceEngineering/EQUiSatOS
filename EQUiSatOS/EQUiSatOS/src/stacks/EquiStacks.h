@@ -16,4 +16,6 @@
 #include "Num_Stack.h"
 #include "stack_tests.h"
 
+void clear_existing_data(void* ptr, size_t slot_size);
+
 #endif /* EQUISTACKS_H_ */

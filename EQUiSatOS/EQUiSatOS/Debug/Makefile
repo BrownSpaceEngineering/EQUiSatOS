@@ -131,8 +131,7 @@ C_SRCS +=  \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/stacks/boot_Stack.c \
-../src/stacks/data_heap.c \
-../src/stacks/data_heap_testing.c \
+../src/stacks/equistacks.c \
 ../src/stacks/flash_Stack.c \
 ../src/stacks/idle_Stack.c \
 ../src/stacks/low_power_Stack.c \
@@ -199,8 +198,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
-src/stacks/data_heap.o \
-src/stacks/data_heap_testing.o \
+src/stacks/equistacks.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -260,8 +258,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
-src/stacks/data_heap.o \
-src/stacks/data_heap_testing.o \
+src/stacks/equistacks.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -321,8 +318,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
-src/stacks/data_heap.d \
-src/stacks/data_heap_testing.d \
+src/stacks/equistacks.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
@@ -382,8 +378,7 @@ src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
-src/stacks/data_heap.d \
-src/stacks/data_heap_testing.d \
+src/stacks/equistacks.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
@@ -453,8 +448,6 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 

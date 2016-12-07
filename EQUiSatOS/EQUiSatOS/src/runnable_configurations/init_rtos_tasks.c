@@ -14,7 +14,6 @@ void runit_2()
 	
 	// Initialize EQUiStacks
 	idle_readings_equistack = idle_Stack_Init();
-	idle_data_t_heap = create_data_t_heap(sizeof(idle_data_t), IDLE_STACK_MAX);
 	
 	// Make sure we define the first state
 	set_state_idle();

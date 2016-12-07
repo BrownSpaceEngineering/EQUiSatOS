@@ -10,9 +10,7 @@ src\runnable_configurations\struct_tests.c
 
 src\stacks\boot_Stack.c
 
-src\stacks\data_heap.c
-
-src\stacks\data_heap_testing.c
+src\stacks\equistacks.c
 
 src\stacks\flash_Stack.c
 

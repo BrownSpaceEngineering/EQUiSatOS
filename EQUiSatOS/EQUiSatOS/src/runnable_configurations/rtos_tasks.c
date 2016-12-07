@@ -251,12 +251,11 @@ void task_data_read_idle(void *pvParameters)
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
 		if (data_array_tails[IR_DATA] >= idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG)
 		{
-			// push to list of transmissions, including adding a corresponding state
-			idle_Stack_Push(idle_readings_equistack, current_struct);
-			//num_Stack_Push(last_state_read_equistack, IDLE);
+			// push to list of transmissions, getting back the next staged address we can start adding to
+			current_struct = idle_Stack_Stage(idle_readings_equistack, current_struct);
 			
-			// reinitialize data struct
-			current_struct = data_t_malloc(idle_data_t_heap); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
+			// log state read
+			//num_Stack_Push(last_state_read_equistack, IDLE);
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
