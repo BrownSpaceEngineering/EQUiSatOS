@@ -780,7 +780,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
-    <Folder Include="src\radio\Stacks" />
+    <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
     <Folder Include="src\runnable_configurations" />
@@ -790,43 +790,76 @@
     <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\radio\Stacks\Data_Heap.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Data_Heap.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Data_Heap_Testing.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Data_Heap_Testing.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Num_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\stack_tests.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\stack_tests.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Sensor_Structs.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\struct_tests.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\struct_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\boot_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\boot_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap_testing.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\data_heap_testing.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\equistacks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\flash_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\flash_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\idle_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\idle_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\low_power_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\low_power_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Num_Stack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Num_Stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Sensor_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\stack_tests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\stack_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\State_Structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
@@ -1559,39 +1592,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\boot_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\boot_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\EquiStacks.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\flash_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\flash_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\idle_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\idle_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\low_power_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\low_power_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\Sensor_Structs.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\run.h">

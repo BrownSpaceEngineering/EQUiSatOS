@@ -11,10 +11,10 @@
 
 #include "runnable_configurations/scratch_testing.h"
 #include "runnable_configurations/init_rtos_tasks.h"
-#include "radio/Stacks/EquiStacks.h"
+#include "stacks/EquiStacks.h"
 #include <asf.h>
 
 // TEMP
-#include "radio/Stacks/Data_Heap_Testing.h"
+#include "stacks/Data_Heap_Testing.h"
 
 #endif /* MAIN_H */

@@ -10,8 +10,8 @@
 #define STRUCT_TESTS_H_
 
 #include <asf.h>
-#include "../radio/Stacks/State_Structs.h"
-#include "../radio/Stacks/Sensor_Structs.h"
+#include "../stacks/State_Structs.h"
+#include "../stacks/Sensor_Structs.h"
 
 boot_data_t init_test_struct(void);
 void test_free(void *pvParameters);

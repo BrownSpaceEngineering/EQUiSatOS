@@ -4,21 +4,29 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
-src\radio\Stacks\Data_Heap.c
-
-src\radio\Stacks\Data_Heap_Testing.c
-
-src\radio\Stacks\Num_Stack.c
-
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 
-src\radio\Stacks\stack_tests.c
-
-src\radio\Stacks\Sensor_Structs.c
-
-src\radio\Stacks\State_Structs.c
-
 src\runnable_configurations\struct_tests.c
+
+src\stacks\boot_Stack.c
+
+src\stacks\data_heap.c
+
+src\stacks\data_heap_testing.c
+
+src\stacks\flash_Stack.c
+
+src\stacks\idle_Stack.c
+
+src\stacks\low_power_Stack.c
+
+src\stacks\Num_Stack.c
+
+src\stacks\Sensor_Structs.c
+
+src\stacks\stack_tests.c
+
+src\stacks\State_Structs.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
@@ -95,14 +103,6 @@ src\processor_drivers\SPI_Commands.c
 src\processor_drivers\USART_Commands.c
 
 src\radio\Radio_Commands.c
-
-src\radio\Stacks\boot_Stack.c
-
-src\radio\Stacks\flash_Stack.c
-
-src\radio\Stacks\idle_Stack.c
-
-src\radio\Stacks\low_power_Stack.c
 
 src\runnable_configurations\init_rtos_tasks.c
 

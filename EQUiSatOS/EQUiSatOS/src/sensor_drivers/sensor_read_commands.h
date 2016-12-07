@@ -8,7 +8,7 @@
 #ifndef SENSOR_READ_COMMANDS_H
 #define	SENSOR_READ_COMMANDS_H
 
-#include "../radio/Stacks/Sensor_Structs.h"
+#include "../stacks/Sensor_Structs.h"
 
 ir_batch read_ir_batch(void);
 temp_batch read_temp_batch(void);
