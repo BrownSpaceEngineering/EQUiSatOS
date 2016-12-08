@@ -131,8 +131,7 @@ int main(void)
 	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
 	initialize_slave(&slave);
 	
-	static uint8_t enable = 0x06;
-	write_bytes(&spi_master_instance, &slave, &enable, 0x01, 0x00);
+	//write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, 2728, 0x00);
 	
 	// TODO: write program binary to MRAM
 	
