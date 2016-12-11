@@ -33,6 +33,9 @@ LINKER_SCRIPT_DEP:=
 
 # Every subdirectory with source files must be described here
 SUBDIRS :=  \
+../EQUiSatOS/ \
+../EQUiSatOS/src/ \
+../EQUiSatOS/src/stacks/ \
 ../src/ \
 ../src/ASF/ \
 ../src/ASF/common2/ \
@@ -453,6 +456,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
