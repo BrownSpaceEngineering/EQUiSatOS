@@ -14,25 +14,23 @@ idle_Stack* idle_Stack_Init()
 	idle_Stack* S = pvPortMalloc(sizeof(idle_Stack));
 	S->top_index = -1;
 	S->bottom_index = -1;
+	S->size = 0;
 	S->mutex = xSemaphoreCreateMutex();
 
 	return S;
 }
 
-idle_data_t* idle_Stack_Top(idle_Stack* S) // TODO: Remove the element you return
+idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n)
 {
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
-
-	if (S->top_index != -1)
+	
+	if (n < S->size)
 	{
-		// top of full stack is right before staged index
-		return S->data[S->top_index];
+		return S->data[(S->top_index + n) % IDLE_STACK_MAX];
 	}
 	else
 	{
-		// TODO:
-		// Return dummy
 		return NULL;
 	}
 
@@ -40,18 +38,33 @@ idle_data_t* idle_Stack_Top(idle_Stack* S) // TODO: Remove the element you retur
 }
 
 // Overwrites the bottom value if need be
-idle_data_t* idle_Stack_Stage(idle_Stack* S, idle_data_t* val)
+idle_data_t* idle_Stack_Stage(idle_Stack* S)
 {
-	// TODO: Change if needed
-	xSemaphoreTake(S->mutex, (TickType_t) 10);
-	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
-
-	// something was overwritten
-	// could also be
-	// if (size == max_size)
-	if (S->bottom_index == S->top_index)
+	if (S->size > 0)
 	{
-		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
+		xSemaphoreTake(S->mutex, (TickType_t) 10);
+
+		S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
+
+		if (S->bottom_index == S->top_index)
+		{
+			S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
+		}
+		else
+		{
+			S->size++;
+
+			if (S->bottom_index == -1)
+			{
+				S->bottom_index = 0;
+			}
+		}
+
+		idle_data_t* staged_pointer = S->data[(S->top_index + 1) % IDLE_STACK_MAX];
+		clear_existing_data(staged_pointer, sizeof(idle_data_t));
+
+		xSemaphoreGive(S->mutex);
+		return staged_pointer; // return pointer to staged data
 	}
 	else
 	{
@@ -69,4 +82,7 @@ idle_data_t* idle_Stack_Stage(idle_Stack* S, idle_data_t* val)
 
 	xSemaphoreGive(S->mutex);
 	return staged_pointer; // return pointer to staged data
+}
+		return S->data[S->top_index + 1];
+	}
 }

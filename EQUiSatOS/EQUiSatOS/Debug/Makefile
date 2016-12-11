@@ -923,6 +923,9 @@ LINKER_SCRIPT_DEP:=
 
 # Every subdirectory with source files must be described here
 SUBDIRS :=  \
+../EQUiSatOS/ \
+../EQUiSatOS/src/ \
+../EQUiSatOS/src/stacks/ \
 ../src/ \
 ../src/ASF/ \
 ../src/ASF/common2/ \
@@ -1616,6 +1619,7 @@ LINKER_SCRIPT_DEP+=  \
 
 <<<<<<< a80674390dc307fccd74b9c174b0b9c2490d0573
 
+<<<<<<< 68844e97cce4d87d342bc425f072eff7fd668088
 <<<<<<< 373e5a808f2b1457f3896041b9a8077fa13d0f4d
 >>>>>>> Stylistic adjustments
 =======
@@ -1624,6 +1628,10 @@ LINKER_SCRIPT_DEP+=  \
 >>>>>>> Added basic functionality to convert data to a char array for transmission
 =======
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
+=======
+
+
+>>>>>>> changes to equistacks - untested
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
