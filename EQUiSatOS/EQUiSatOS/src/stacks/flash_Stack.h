@@ -10,18 +10,19 @@
 
 #define FLASH_STACK_MAX 4
 #include <asf.h>
-#include "State_Structs.h"
+#include "State_Structs.h"'
+#include "equistacks.h"
 
 typedef struct flash_Stack
 {
 	flash_data_t*     data[FLASH_STACK_MAX];
-	int16_t     size;
 	int16_t     top_index;
 	int16_t     bottom_index;	
+	SemaphoreHandle_t mutex;
 } flash_Stack;
 
-void flash_Stack_Init(flash_Stack*);
+flash_Stack* flash_Stack_Init();
 flash_data_t* flash_Stack_Top(flash_Stack*);
-void flash_Stack_Push(flash_Stack*, flash_data_t*);
+flash_data_t* flash_Stack_Stage(flash_Stack*, flash_data_t*);
 
 #endif

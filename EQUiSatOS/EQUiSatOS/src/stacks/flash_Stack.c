@@ -9,19 +9,23 @@
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 #include "flash_Stack.h"
 
-void flash_Stack_Init(flash_Stack* S)
+flash_Stack* flash_Stack_Init()
 {
-	S->size = 0;
+	flash_Stack* S = pvPortMalloc(sizeof(flash_Stack));
 	S->top_index = -1;
 	S->bottom_index = -1;
+	S->mutex = xSemaphoreCreateMutex();
+
+	return S;
 }
 
-flash_data_t* flash_Stack_Top(flash_Stack* S)
+flash_data_t* flash_Stack_Top(flash_Stack* S) // TODO: Remove the element you return
 {
-	// Could also be S->size == 0
-	// TODO: Think about whether we need second conditional
-	if (S->top_index != -1 && S->top_index < S->size)
+	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	
+	if (S->top_index != -1)
 	{
+		// top of full stack is right before staged index
 		return S->data[S->top_index];
 	}
 	else
@@ -30,16 +34,17 @@ flash_data_t* flash_Stack_Top(flash_Stack* S)
 		// Return dummy
 		return NULL;
 	}
+	
+	xSemaphoreGive(S->mutex);
 }
 
 // Overwrites the bottom value if need be
-void flash_Stack_Push(flash_Stack* S, flash_data_t* val)
+flash_data_t* flash_Stack_Stage(flash_Stack* S, flash_data_t* val)
 {
+	// TODO: Change if needed
+	xSemaphoreTake(S->mutex, (TickType_t) 10);
 	S->top_index = (S->top_index + 1) % FLASH_STACK_MAX;
 	
-	// something was overwritten
-	// could also be
-	// if (size == max_size)
 	if (S->bottom_index == S->top_index)
 	{
 		S->bottom_index = (S->bottom_index + 1) % FLASH_STACK_MAX;
@@ -50,10 +55,12 @@ void flash_Stack_Push(flash_Stack* S, flash_data_t* val)
 		{
 			S->bottom_index = 0;
 		}
-		
-		S->size++;
 	}
 	
-	
 	S->data[S->top_index] = val;
+	flash_data_t* staged_pointer = S->data[(S->top_index + 1) % FLASH_STACK_MAX];
+	clear_existing_data(staged_pointer, sizeof(flash_data_t));
+	
+	xSemaphoreGive(S->mutex);
+	return staged_pointer; // return pointer to staged data
 }
