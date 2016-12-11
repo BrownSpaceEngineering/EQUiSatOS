@@ -7,10 +7,6 @@
 
 #include "Sensor_Structs.h"
 
-void free_error(error_t* et){
-	vPortFree(&et);
-}
-
 void free_ir(ir_batch* ib){
 	vPortFree(&(ib->values));
 	vPortFree(&ib);

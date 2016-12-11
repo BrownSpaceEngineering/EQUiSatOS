@@ -11,6 +11,8 @@
 // this definitely won't be the final implementation (callsign and checksum need to be changed)
 // decide on which state is which int
 // also return state
+
+// buffer definitely needs to have enough space for all the data
 uint8_t to_char_arr(void *input, int sizeof_input, int state, char *buffer)
 {
 	char callsign[] = "BSErocks";

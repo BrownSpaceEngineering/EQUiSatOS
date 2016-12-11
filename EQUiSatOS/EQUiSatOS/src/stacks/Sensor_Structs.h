@@ -14,11 +14,6 @@
 // TODO: Parity bits?
 // TODO: Make sure these are the batches we want
 // TODO: Does it make sense to wrap these arrays in structs?????
-typedef struct error_t 
-{
-	uint8_t id;
-} error_t;
-void free_error(error_t*);
 
 typedef struct ir_batch
 {
