@@ -9,7 +9,7 @@
 #ifndef PACKAGE_STACK_H_
 #define PACKAGE_STACK_H_
 
-#include "asf.h"
+#include <asf.h>
 #include "equistacks.h"
 
 uint8_t to_char_arr(void *input, int sizeof_input, int state, char *buffer);

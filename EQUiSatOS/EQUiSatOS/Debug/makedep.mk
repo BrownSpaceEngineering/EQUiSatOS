@@ -12,6 +12,8 @@ src\stacks\boot_Stack.c
 
 src\stacks\equistacks.c
 
+src\stacks\errors.c
+
 src\stacks\flash_Stack.c
 
 src\stacks\idle_Stack.c

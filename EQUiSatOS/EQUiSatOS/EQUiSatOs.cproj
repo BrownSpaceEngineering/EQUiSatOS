@@ -814,6 +814,12 @@
     <Compile Include="src\stacks\equistacks.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\stacks\errors.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\errors.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\stacks\flash_Stack.c">
       <SubType>compile</SubType>
     </Compile>

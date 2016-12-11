@@ -135,6 +135,7 @@ C_SRCS +=  \
 ../src/runnable_configurations/struct_tests.c \
 ../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
+../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
 ../src/stacks/idle_Stack.c \
 ../src/stacks/low_power_Stack.c \
@@ -203,6 +204,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
+src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -264,6 +266,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
+src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -325,6 +328,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
+src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
@@ -386,6 +390,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
+src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \

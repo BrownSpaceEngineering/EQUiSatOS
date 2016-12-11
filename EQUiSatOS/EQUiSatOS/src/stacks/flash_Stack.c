@@ -1,7 +1,7 @@
 /*
- * flash_Stack.c
+ * idle_Stack.c
  *
- * Created: 11/1/2016 9:20:30 PM
+ * Created: 11/1/2016 9:19:41 PM
  *  Author: jleiken
  */ 
 
@@ -15,23 +15,21 @@ flash_Stack* flash_Stack_Init()
 	S->top_index = -1;
 	S->bottom_index = -1;
 	S->mutex = xSemaphoreCreateMutex();
-
+	S->size = 0;
+	
 	return S;
 }
 
-flash_data_t* flash_Stack_Top(flash_Stack* S) // TODO: Remove the element you return
+flash_data_t* flash_Stack_Get(flash_Stack* S, int16_t n)
 {
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	
-	if (S->top_index != -1)
+	if (n < S->size)
 	{
-		// top of full stack is right before staged index
-		return S->data[S->top_index];
+		return S->data[(S->top_index + n) % FLASH_STACK_MAX];
 	}
 	else
 	{
-		// TODO:
-		// Return dummy
 		return NULL;
 	}
 	
@@ -39,28 +37,36 @@ flash_data_t* flash_Stack_Top(flash_Stack* S) // TODO: Remove the element you re
 }
 
 // Overwrites the bottom value if need be
-flash_data_t* flash_Stack_Stage(flash_Stack* S, flash_data_t* val)
+flash_data_t* flash_Stack_Stage(flash_Stack* S)
 {
-	// TODO: Change if needed
-	xSemaphoreTake(S->mutex, (TickType_t) 10);
-	S->top_index = (S->top_index + 1) % FLASH_STACK_MAX;
-	
-	if (S->bottom_index == S->top_index)
+	if (S->size > 0)
 	{
-		S->bottom_index = (S->bottom_index + 1) % FLASH_STACK_MAX;
+		xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	
+		S->top_index = (S->top_index + 1) % FLASH_STACK_MAX;
+	
+		if (S->bottom_index == S->top_index)
+		{
+			S->bottom_index = (S->bottom_index + 1) % FLASH_STACK_MAX;
+		}
+		else
+		{
+			S->size++;
+		
+			if (S->bottom_index == -1)
+			{
+				S->bottom_index = 0;
+			}
+		}
+	
+		flash_data_t* staged_pointer = S->data[(S->top_index + 1) % FLASH_STACK_MAX];
+		clear_existing_data(staged_pointer, sizeof(flash_data_t));
+	
+		xSemaphoreGive(S->mutex);
+		return staged_pointer; // return pointer to staged data
 	}
 	else
 	{
-		if (S->bottom_index == -1)
-		{
-			S->bottom_index = 0;
-		}
+		return S->data[S->top_index + 1];
 	}
-	
-	S->data[S->top_index] = val;
-	flash_data_t* staged_pointer = S->data[(S->top_index + 1) % FLASH_STACK_MAX];
-	clear_existing_data(staged_pointer, sizeof(flash_data_t));
-	
-	xSemaphoreGive(S->mutex);
-	return staged_pointer; // return pointer to staged data
 }
