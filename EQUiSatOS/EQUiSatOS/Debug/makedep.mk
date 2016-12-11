@@ -173,6 +173,8 @@ src\stacks\data_heap_testing.c
 src\stacks\equistacks.c
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
 
+src\stacks\errors.c
+
 src\stacks\flash_Stack.c
 
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5

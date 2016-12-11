@@ -1057,6 +1057,7 @@ C_SRCS +=  \
 ../src/runnable_configurations/struct_tests.c \
 ../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
+../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
 ../src/stacks/idle_Stack.c \
 ../src/stacks/low_power_Stack.c \
@@ -1157,6 +1158,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
+src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -1253,6 +1255,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
+src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/low_power_Stack.o \
@@ -1337,6 +1340,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
+src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
@@ -1421,6 +1425,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
+src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/low_power_Stack.d \
@@ -1625,6 +1630,7 @@ LINKER_SCRIPT_DEP+=  \
 =======
 
 
+<<<<<<< 8d1466fc4e629b810ff3c50b762fd9fd1eb84ce5
 >>>>>>> Added basic functionality to convert data to a char array for transmission
 =======
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
@@ -1632,6 +1638,11 @@ LINKER_SCRIPT_DEP+=  \
 
 
 >>>>>>> changes to equistacks - untested
+=======
+
+
+
+>>>>>>> Implemented the structures for errors
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
