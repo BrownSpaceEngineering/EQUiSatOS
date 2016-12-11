@@ -5,7 +5,7 @@
  *  Author: mckenna
  */ 
 
-#include "rtos_tasks.h"
+#include "init_rtos_tasks.h"
 
 void runit_2()
 {
@@ -13,6 +13,7 @@ void runit_2()
 	
 	// Initialize EQUiStacks
 	idle_readings_equistack = idle_Stack_Init();
+	flash_readings_equistack = flash_Stack_Init();
 	
 	// Make sure we define the first state
 	set_state_idle();

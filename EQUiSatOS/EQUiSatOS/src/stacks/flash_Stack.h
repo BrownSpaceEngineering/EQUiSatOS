@@ -10,9 +10,7 @@
 
 #define MUTEX_WAIT_TIME_TICKS 10
 #define FLASH_STACK_MAX 4
-#include <asf.h>
 #include "State_Structs.h"
-#include "../runnable_configurations/rtos_tasks.h"
 #include "equistacks.h"
 
 typedef struct flash_Stack
@@ -24,7 +22,7 @@ typedef struct flash_Stack
 	SemaphoreHandle_t mutex;
 } flash_Stack;
 
-flash_Stack* flash_Stack_Init();
+flash_Stack* flash_Stack_Init(void);
 flash_data_t* flash_Stack_Get(flash_Stack* S, int16_t n);
 flash_data_t* flash_Stack_Stage(flash_Stack* S);
 

@@ -37,7 +37,7 @@ boot_data_t init_test_struct(void){
 	
 	magnetometer_batch mb;
 	/*mb.timestamp = 65;*/
-	mb.value = 5;
+	mb.values[0] = 5;
 	BDT->magnetometer_data[0] = mb;
 	
 	charging_batch cb;

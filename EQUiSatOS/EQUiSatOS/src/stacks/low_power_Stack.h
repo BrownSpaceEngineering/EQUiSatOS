@@ -11,7 +11,6 @@
 #define LOW_POWER_STACK_H_
 
 #define LOW_POWER_STACK_MAX 4
-#include <asf.h>
 #include "State_Structs.h"
 
 typedef struct low_power_Stack

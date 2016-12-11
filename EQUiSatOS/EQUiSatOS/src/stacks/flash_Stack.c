@@ -1,5 +1,5 @@
 /*
- * idle_Stack.c
+ * flash_Stack.c
  *
  * Created: 11/1/2016 9:19:41 PM
  *  Author: jleiken
@@ -16,6 +16,11 @@ flash_Stack* flash_Stack_Init()
 	S->bottom_index = -1;
 	S->mutex = xSemaphoreCreateMutex();
 	S->size = 0;
+	
+	for (int i = 0; i < FLASH_STACK_MAX; i++)
+	{
+		S->data[i] = pvPortMalloc(sizeof(flash_data_t));
+	}
 	
 	return S;
 }

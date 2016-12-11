@@ -17,6 +17,11 @@ idle_Stack* idle_Stack_Init()
 	S->size = 0;
 	S->mutex = xSemaphoreCreateMutex();
 	
+	for (int i = 0; i < IDLE_STACK_MAX; i++)
+	{
+		S->data[i] = pvPortMalloc(sizeof(idle_data_t));
+	}
+	
 	return S;
 }
 

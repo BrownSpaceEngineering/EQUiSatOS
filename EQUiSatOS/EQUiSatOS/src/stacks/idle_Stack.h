@@ -9,10 +9,8 @@
 #define IDLE_STACK_H_
 
 #define IDLE_STACK_MAX 4
-#include <asf.h>
-#include "State_Structs.h"
-#include "../runnable_configurations/rtos_tasks.h"
 #include "equistacks.h"
+#include "State_Structs.h"
 
 typedef struct idle_Stack
 {
