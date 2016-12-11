@@ -5,7 +5,6 @@
  *  Author: mckenna
  */
 
-#include "init_rtos_tasks.h"
 #include "rtos_tasks.h"
 
 void runit_2()

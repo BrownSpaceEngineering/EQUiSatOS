@@ -9,6 +9,8 @@
 #ifndef EQUISTACKS_H_
 #define EQUISTACKS_H_
 
+#define MUTEX_WAIT_TIME_TICKS 10
+
 #include "boot_Stack.h"
 #include "flash_Stack.h"
 #include "idle_Stack.h"

@@ -154,5 +154,6 @@ void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list,
 /* Helper Functions */
 uint32_t get_current_timestamp(void);
 void increment_all(int* int_arr, int length);
+void set_all(int* int_arr, int length, int value);
 
 #endif

@@ -16,7 +16,8 @@
 #include "runnable_configurations/scratch_testing.h"
 #include <global.h>
 #include "runnable_configurations/init_rtos_tasks.h"
-#include "stacks/EquiStacks.h"
+#include "stacks/equistacks.h"
+#include "stacks/package_stack.h"
 #include <asf.h>
 
 #endif /* MAIN_H */

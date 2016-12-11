@@ -1637,12 +1637,16 @@ LINKER_SCRIPT_DEP+=  \
 =======
 
 
+<<<<<<< ef248f8dbe46377f7a7ee8d3fb76c86499817519
 >>>>>>> changes to equistacks - untested
 =======
 
 
 
 >>>>>>> Implemented the structures for errors
+=======
+
+>>>>>>> Add data_array_tails reset; various equistack integrations
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

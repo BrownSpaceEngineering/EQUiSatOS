@@ -7,21 +7,6 @@
 
 #include "rtos_tasks.h"
 
-/* Helper Functions */
-uint32_t get_current_timestamp(void)
-{
-	// TODO: get a more accurate and persistent timestamp (relative to an alive message)
-	return xTaskGetTickCount(); // represents the ms from vstartscheduler
-}
-
-void increment_all(int* int_arr, int length)
-{
-	for(int i = 0; i < length; i++)
-	{
-		int_arr[i] = int_arr[i] + 1;
-	}
-}
-
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
 {
@@ -29,10 +14,10 @@ void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *rea
 	{
 		// read sensor and compile into batch
 		ir_batch batch = read_ir_batch();
-			
+		
 		// log sensor data to the appropriate array within the big struct
 		batch_list[data_array_tails[IR_DATA]] = batch;
-			
+		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
 		reads_since_last_log[IR_DATA] = 0;
@@ -238,7 +223,7 @@ void task_data_read_idle(void *pvParameters)
 	int data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	idle_data_t *current_struct = pvPortMalloc(sizeof(idle_data_t)); 
+	idle_data_t *current_struct = idle_Stack_Stage(idle_readings_equistack);
 	current_struct->timestamp = get_current_timestamp();
 		
 	for( ;; )
@@ -252,11 +237,18 @@ void task_data_read_idle(void *pvParameters)
 		if (data_array_tails[IR_DATA] >= idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG)
 		{
 			// push to list of transmissions, getting back the next staged address we can start adding to
-			current_struct = idle_Stack_Stage(idle_readings_equistack, current_struct);
+			current_struct = idle_Stack_Stage(idle_readings_equistack);
 			
 			// log state read
 			//num_Stack_Push(last_state_read_equistack, IDLE);
+			
+			// reset data array tails so we're writing at the start
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
 		}
+		
+		
+		// TODO: DO PROBLEM CHECKS (TO GENERATE ERRORS) HERE
+		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
 		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
@@ -288,7 +280,7 @@ void task_data_read_flash(void *pvParameters)
 	int data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	flash_data_t *current_struct = pvPortMalloc(sizeof(flash_data_t));
+	flash_data_t *current_struct = flash_Stack_Stage(flash_readings_equistack); 
 	current_struct->timestamp = get_current_timestamp();
 	
 	for( ;; )
@@ -301,16 +293,15 @@ void task_data_read_flash(void *pvParameters)
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
 		if (data_array_tails[IR_DATA] >= flash_MAX_READS_PER_LOG / flash_IR_READS_PER_LOG)
 		{
-			// push to list of transmissions, including adding a corresponding state
-			flash_Stack_Push(flash_readings_equistack, current_struct);
+			// push to list of transmissions, getting back the next staged address we can start adding to
+			current_struct = flash_Stack_Stage(flash_readings_equistack);
+			
+			// log state read
 			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
-			// reinitialize data struct
-			current_struct = pvPortMalloc(sizeof(flash_data_t)); // TODO: Maybe only malloc at the beginning and just store this somewhere in a massive array
-			current_struct->timestamp = get_current_timestamp();
-			// TODO: THESE ARRAYS MUST BE RESET (AT LEAST DATA_ARRAY_TAILS) SO FIGURE OUT HOW TO DO IT!!!!
-			//data_array_tails = ...;
-			// TODO: reads_since_last_log = ...;
+			// reset data array tails so we're writing at the start
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+			// TODO: reads_since_last_log = ...; ???
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
@@ -333,3 +324,27 @@ void task_data_read_flash(void *pvParameters)
 }
 // static void task_data_read_boot(void *pvParameters);
 // static void task_data_read_low_power(void *pvParameters);
+
+
+/* Helper Functions */
+uint32_t get_current_timestamp(void)
+{
+	// TODO: get a more accurate and persistent timestamp (relative to an alive message)
+	return xTaskGetTickCount(); // represents the ms from vstartscheduler
+}
+
+void increment_all(int* int_arr, int length)
+{
+	for(int i = 0; i < length; i++)
+	{
+		int_arr[i] = int_arr[i] + 1;
+	}
+}
+
+void set_all(int* int_arr, int length, int value)
+{
+	for(int i = 0; i < length; i++)
+	{
+		int_arr[i] = value;
+	}
+}
