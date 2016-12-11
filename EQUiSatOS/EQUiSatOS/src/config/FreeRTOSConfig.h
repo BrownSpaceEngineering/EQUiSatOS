@@ -21,7 +21,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
-#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 5000 ) )
+#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 10000 ) )
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION		1
 #define configAPPLICATION_ALLOCATED_HEAP		1

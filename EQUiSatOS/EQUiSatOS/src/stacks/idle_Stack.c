@@ -17,6 +17,11 @@ idle_Stack* idle_Stack_Init()
 	S->size = 0;
 	S->mutex = xSemaphoreCreateMutex();
 
+	for (int i = 0; i < IDLE_STACK_MAX; i++)
+	{
+		S->data[i] = pvPortMalloc(sizeof(idle_data_t));
+	}
+
 	return S;
 }
 
@@ -24,7 +29,7 @@ idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n)
 {
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
-	
+
 	if (n < S->size)
 	{
 		return S->data[(S->top_index + n) % IDLE_STACK_MAX];

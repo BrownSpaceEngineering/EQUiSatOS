@@ -4,9 +4,6 @@
  * Created: 10/18/2016 9:46:57 PM
  *  Author: rj16
  */ 
-
-// TODO: "#ifdef... #endif"?
-
 #ifndef BOOT_STACK_H_
 #define BOOT_STACK_H_
 

@@ -19,7 +19,7 @@ int taskFrequencies[6]; //NUM_TASKS - DONT KNOW WHY THIS DOESNT WORK
 /* Global satellite state - is this the best way to do this? */
 int CurrentState;
 
-void runit_2();
+void runit_2(void);
 
 /* Task handles for starting and stopping */
 TaskHandle_t idle_task_handle;
@@ -27,9 +27,9 @@ TaskHandle_t flash_task_handle;
 TaskHandle_t boot_task_handle;
 TaskHandle_t low_power_task_handle;
 
-void set_state_idle();
-void set_state_flash();
-//void set_state_boot();
-void set_state_low_power();
+void set_state_idle(void);
+void set_state_flash(void);
+//void set_state_boot(void);
+void set_state_low_power(void);
 
 #endif

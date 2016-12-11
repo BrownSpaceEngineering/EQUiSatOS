@@ -9,14 +9,13 @@
 #ifndef NUM_STACK_H_
 #define NUM_STACK_H_
 
-#define MUTEX_WAIT_TIME_TICKS 1
-#define IDLE_STACK_MAX 4
-#include <asf.h>
+#define NUM_STACK_MAX 4
+#include "equistacks.h"
 #include "State_Structs.h"
 
 typedef struct Num_Stack
 {
-	int16_t           data[IDLE_STACK_MAX];
+	int16_t           data[NUM_STACK_MAX];
 	int16_t           size;
 	int16_t           top_index;
 	int16_t           bottom_index;

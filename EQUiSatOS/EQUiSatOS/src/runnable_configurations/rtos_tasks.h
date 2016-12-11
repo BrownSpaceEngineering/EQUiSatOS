@@ -29,11 +29,7 @@
 #include "init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
-
-#include "stacks/idle_Stack.h"
-#include "stacks/flash_Stack.h"
-#include "stacks/boot_Stack.h"
-#include "stacks/low_power_Stack.h"
+#include "stacks/equistacks.h" 
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
@@ -134,10 +130,10 @@ void task_data_read_low_power(void *pvParameters);
 
 /* Queue definitions */
 uint8_t *last_state_read_equistack; // TODO: should these be pointers to num-stacks, idle_sturct_stacks etc.
-idle_data_t *idle_readings_equistack; 
-flash_data_t *flash_readings_equistack;
-/*static boot_data_t *boot_readings_equistack;*/
-/*static low_power_data_t *low_power_readings_equistack;*/
+idle_Stack *idle_readings_equistack; 
+flash_Stack *flash_readings_equistack;
+/*boot_Stack *boot_readings_equistack;*/
+/*low_power_Stack *low_power_readings_equistack;*/
 
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);

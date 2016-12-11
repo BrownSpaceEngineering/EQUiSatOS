@@ -23,13 +23,13 @@ void free_ir(ir_batch*);
 
 typedef struct temp_batch
 {
-	uint16_t values[12];
+	uint16_t values[8];
 } temp_batch;
 void free_temp(temp_batch*);
 
 typedef struct diode_batch
 {
-	uint16_t values[6];
+	uint8_t values[6];
 } diode_batch;
 void free_diode(diode_batch*);
 
@@ -48,13 +48,14 @@ void free_gyro(gyro_batch*);
 
 typedef struct magnetometer_batch
 {
-	uint64_t value;
+	// one for each axis
+	uint16_t values[3];
 } magnetometer_batch;
 void free_magnetometer(magnetometer_batch*);
 
 typedef struct charging_batch
 {
-	uint32_t values[3];
+	uint32_t values[8];
 } charging_batch;
 void free_charging(charging_batch*);
 
@@ -66,7 +67,7 @@ void free_radio_temp(radio_temp_batch*);
 
 typedef struct battery_voltages_batch
 {
-	uint16_t values[5];
+	uint16_t values[6];
 } battery_voltages_batch;
 void free_battery_volt(battery_voltages_batch*);
 

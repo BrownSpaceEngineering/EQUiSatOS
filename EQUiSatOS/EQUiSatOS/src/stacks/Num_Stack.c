@@ -43,7 +43,7 @@ void Num_Stack_Push(Num_Stack* S, int16_t val)
 	// TODO: Change if needed
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 
-	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
+	S->top_index = (S->top_index + 1) % NUM_STACK_MAX;
 
 	// something was overwritten
 	// could also be
@@ -51,7 +51,7 @@ void Num_Stack_Push(Num_Stack* S, int16_t val)
 	if (S->bottom_index == S->top_index)
 	{
 		//vPortFree(&(S->data[S->top_index]));
-		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
+		S->bottom_index = (S->bottom_index + 1) % NUM_STACK_MAX;
 	}
 	else
 	{

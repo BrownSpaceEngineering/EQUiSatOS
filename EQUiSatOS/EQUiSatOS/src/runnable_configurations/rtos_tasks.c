@@ -251,7 +251,7 @@ void task_data_read_idle(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, idle_IR_READS_PER_LOG);
+		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, reads_since_last_log, idle_IR_READS_PER_LOG);
 // 		add_temp_batch_if_ready(&(current_struct->temp_data), &data_array_tails, &reads_since_last_log, idle_TEMP_READS_PER_LOG);
 // 		add_diode_batch_if_ready(&(current_struct->diode_data), &data_array_tails, &reads_since_last_log, idle_DIODE_READS_PER_LOG);
 // 		add_led_current_batch_if_ready(&(current_struct->led_current_data), &data_array_tails, &reads_since_last_log, idle_LED_CURRENT_READS_PER_LOG);
@@ -305,7 +305,7 @@ void task_data_read_flash(void *pvParameters)
 		}
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), &data_array_tails, &reads_since_last_log, flash_IR_READS_PER_LOG);
+		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, reads_since_last_log, flash_IR_READS_PER_LOG);
 // 		add_temp_batch_if_ready(&(current_struct->temp_data), &data_array_tails, &reads_since_last_log, flash_TEMP_READS_PER_LOG);
 // 		add_diode_batch_if_ready(&(current_struct->diode_data), &data_array_tails, &reads_since_last_log, flash_DIODE_READS_PER_LOG);
 // 		add_led_current_batch_if_ready(&(current_struct->led_current_data), &data_array_tails, &reads_since_last_log, flash_LED_CURRENT_READS_PER_LOG);
