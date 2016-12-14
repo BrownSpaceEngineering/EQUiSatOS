@@ -11,7 +11,7 @@
 /* action frequency periods in MS */
 // idle state
 #define idle_TASK_LED_FREQ						200
-#define idle_TASK_RADIO_TRANSMIT_FREQ			200
+#define idle_TASK_RADIO_TRANSMIT_FREQ			20000
 
 // flash state
 #define flash_TASK_LED_FREQ						200
