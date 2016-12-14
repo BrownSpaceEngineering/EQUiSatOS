@@ -15,8 +15,12 @@ void runit_2()
 	idle_readings_equistack = idle_Stack_Init();
 	flash_readings_equistack = flash_Stack_Init();
 
-	// Make sure we define the first state
-	set_state_idle();
+	xTaskCreate(task_radio_transmit,
+		"radio transmit action task",
+		TASK_RADIO_TRANSMIT_STACK_SIZE,
+		NULL,
+		TASK_RADIO_TRANSMIT_PRIORITY,
+		NULL);
 
 	xTaskCreate(task_data_read_idle,
 			"idle data reader",
@@ -53,6 +57,9 @@ void runit_2()
   		TASK_SENS_RD_IDLE_PRIORITY,
   		NULL);*/
 
+  	// Make sure we define the first state
+  	set_state_idle();
+
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
 }
@@ -61,12 +68,18 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 
+	taskFrequencies[LED_TASK] =					idle_TASK_LED_FREQ;
+	taskFrequencies[RADIO_TRANSMIT_TASK] =		idle_TASK_RADIO_TRANSMIT_FREQ;
+
 	// TODO: we need to suspend the other tasks and somehow immediately add OR delete their interior structs and make a new one
 	// Maybe look for changes in state inside the rtos tasks?
 	// OR bring their current structs, etc. global so we can manually reset them? -> NOOOOO
 
-	taskFrequencies[LED_TASK] =					idle_TASK_LED_FREQ;
-	taskFrequencies[RADIO_TRANSMIT_TASK] =		idle_TASK_RADIO_TRANSMIT_FREQ;
+	//vTaskSuspendAll(); TODO: Should we?
+// 	vTaskSuspend(flash_task_handle);
+// 	vTaskSuspend(boot_task_handle);
+// 	vTaskSuspend(low_power_task_handle);
+// 	vTaskResume(idle_task_handle);
 }
 
 void set_state_flash()
@@ -75,6 +88,13 @@ void set_state_flash()
 
 	taskFrequencies[LED_TASK] =					flash_TASK_LED_FREQ;
 	taskFrequencies[RADIO_TRANSMIT_TASK] =		flash_TASK_RADIO_TRANSMIT_FREQ;
+
+	// TODO: ibid
+	//vTaskSuspendAll(); TODO: Should we?
+// 	vTaskSuspend(idle_task_handle);
+// 	vTaskSuspend(boot_task_handle);
+// 	vTaskSuspend(low_power_task_handle);
+// 	vTaskResume(flash_task_handle);
 }
 
 void set_state_low_power()
@@ -83,4 +103,11 @@ void set_state_low_power()
 
 	taskFrequencies[LED_TASK] =					low_power_TASK_LED_FREQ;
 	taskFrequencies[RADIO_TRANSMIT_TASK] =		low_power_TASK_RADIO_TRANSMIT_FREQ;
+
+	// TODO: ibid
+	//vTaskSuspendAll(); TODO: Should we?
+// 	vTaskSuspend(idle_task_handle);
+// 	vTaskSuspend(flash_task_handle);
+// 	vTaskSuspend(boot_task_handle);
+// 	vTaskResume(low_power_task_handle);
 }
