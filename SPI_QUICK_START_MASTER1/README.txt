@@ -7,5 +7,5 @@ So, first you have to load the bootloader, as explained before.
 Then, in the solution go in properties:
 
 Tool - set programming settings to erase only programming area.
-Toolchain -> Linker -> include the string: -Wl,-section-start=bootloader=0x3000 -Wl,
+Toolchain -> Linker -> Memory Settings: add a FLASH segment .text=<app_start_address>
 It will make the program start at the address 0x3000, for example.

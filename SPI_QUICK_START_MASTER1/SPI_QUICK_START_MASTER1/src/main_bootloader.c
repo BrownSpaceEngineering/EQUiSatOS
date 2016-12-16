@@ -26,6 +26,8 @@
 #define APP_START_ADDRESS                 0x00003000
 #endif
 
+#define APP_START_RESET_VEC_ADDRESS (APP_START_ADDRESS+(uint32_t)0x04)
+
 #define NVM_SW_CALIB_DFLL48M_COARSE_VAL   58
 #define NVM_SW_CALIB_DFLL48M_FINE_VAL     64
 
@@ -64,9 +66,10 @@ static void check_start_application(void);
 static void check_start_application(void)
 {
 	uint32_t app_start_address;
+	void (*application_code_entry)(void);
 
 	/* Load the Reset Handler address of the application */
-	app_start_address = *(uint32_t *)(APP_START_ADDRESS + 4);
+	application_code_entry = (void (*)(void))(unsigned *)(*(unsigned *)(APP_START_RESET_VEC_ADDRESS));
 
 	/**
 	 * Test reset vector of application @APP_START_ADDRESS+4
@@ -100,8 +103,8 @@ static void check_start_application(void)
 	/* Rebase the vector table base address */
 	SCB->VTOR = ((uint32_t) APP_START_ADDRESS & SCB_VTOR_TBLOFF_Msk);
 
-	/* Jump to application Reset Handler in the application */
-	asm("bx %0"::"r"(app_start_address));
+	/* Jump to user Reset Handler in the application */
+	application_code_entry();
 }
 
 
