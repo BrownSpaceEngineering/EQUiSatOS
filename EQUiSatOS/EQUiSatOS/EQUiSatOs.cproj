@@ -1548,6 +1548,12 @@
     <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sensor_drivers\LTC1380_Multiplexer_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\sensor_drivers\MLX90614_IR_Sensor.c">
       <SubType>compile</SubType>
     </Compile>

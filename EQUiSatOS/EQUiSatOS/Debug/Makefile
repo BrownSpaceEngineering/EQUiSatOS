@@ -180,6 +180,7 @@ C_SRCS +=  \
 ../src/radio/Radio_Commands.c \
 ../src/runnable_configurations/flatsat.c \
 ../src/runnable_configurations/scratch_testing.c \
+../src/sensor_drivers/LTC1380_Multiplexer_Commands.c \
 ../src/sensor_drivers/MLX90614_IR_Sensor.c \
 ../src/sensor_drivers/MPU9250_9axis_Commands.c \
 ../src/sensor_drivers/switching_commands.c \
@@ -240,6 +241,7 @@ src/processor_drivers/Watchdog_Commands.o \
 src/radio/Radio_Commands.o \
 src/runnable_configurations/flatsat.o \
 src/runnable_configurations/scratch_testing.o \
+src/sensor_drivers/LTC1380_Multiplexer_Commands.o \
 src/sensor_drivers/MLX90614_IR_Sensor.o \
 src/sensor_drivers/MPU9250_9axis_Commands.o \
 src/sensor_drivers/switching_commands.o \
@@ -293,6 +295,7 @@ src/processor_drivers/Watchdog_Commands.o \
 src/radio/Radio_Commands.o \
 src/runnable_configurations/flatsat.o \
 src/runnable_configurations/scratch_testing.o \
+src/sensor_drivers/LTC1380_Multiplexer_Commands.o \
 src/sensor_drivers/MLX90614_IR_Sensor.o \
 src/sensor_drivers/MPU9250_9axis_Commands.o \
 src/sensor_drivers/switching_commands.o \
@@ -346,6 +349,7 @@ src/processor_drivers/Watchdog_Commands.d \
 src/radio/Radio_Commands.d \
 src/runnable_configurations/flatsat.d \
 src/runnable_configurations/scratch_testing.d \
+src/sensor_drivers/LTC1380_Multiplexer_Commands.d \
 src/sensor_drivers/MLX90614_IR_Sensor.d \
 src/sensor_drivers/MPU9250_9axis_Commands.d \
 src/sensor_drivers/switching_commands.d \
@@ -399,6 +403,7 @@ src/processor_drivers/Watchdog_Commands.d \
 src/radio/Radio_Commands.d \
 src/runnable_configurations/flatsat.d \
 src/runnable_configurations/scratch_testing.d \
+src/sensor_drivers/LTC1380_Multiplexer_Commands.d \
 src/sensor_drivers/MLX90614_IR_Sensor.d \
 src/sensor_drivers/MPU9250_9axis_Commands.d \
 src/sensor_drivers/switching_commands.d \
@@ -419,6 +424,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
