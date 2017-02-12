@@ -5,17 +5,20 @@ uint8_t magReadBuff[6] = {0, 0, 0, 0, 0, 0};
 int16_t xyzBuff[3] = {0, 0, 0};
 	
 void flatsat_init(void) {
-	configure_i2c_standard(SERCOM4);
+
+	//configure_i2c_standard(SERCOM4);
 	//MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	//while(true){
 		//MPU9250_read();
 	//}
-	configure_pwm();
+	//configure_pwm();
 	delay_init();
 	//MLX90614_init();
 	//HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
 	//setup_pin(true,PIN_PA16); //init gpio pin for flashing
+	configure_watchdog();
+	setup_pin(true,PIN_PB06);
 }
 
 float read_IR(void) {
@@ -51,12 +54,26 @@ float read_temp(void) {
 
 void flatsat_run(void) {	
 	flatsat_init();
-	while (1) {
-		delay_ms(3000);
-		setPulseWidthFraction(3,4);
+	
+	if(did_watchdog_reset()){
+		set_output(true,PIN_PB06);
+	}
+	
+	for (int i = 0; i<20; i++)
+	{
+		reset_watchdog();
+		delay_ms(500);
+	}
+	
+	
+	
+	//while (1) {
+		//delay_ms(3000);
+		//setPulseWidthFraction(3,4);
 		//read_IR();	
 		//read_temp();
 		//read_IMU();
 		//led_flash();
-	}
+		
+	//}
 }

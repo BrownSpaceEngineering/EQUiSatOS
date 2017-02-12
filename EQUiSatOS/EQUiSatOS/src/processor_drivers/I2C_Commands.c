@@ -89,8 +89,6 @@ void writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should
 		.hs_master_code  = 0x0,
 	};
 	
-	uint ret = 0;
-	
 	if(should_stop){
 		(used_i2c_write_func)(&write_packet);
 	}else{

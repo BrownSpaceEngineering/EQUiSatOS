@@ -144,4 +144,8 @@
 // From module: Unit test framework - SAM0 implementation
 #include <unit_test/suite.h>
 
+// From module: WDT - Watchdog Timer (Callback APIs)
+#include <wdt.h>
+#include <wdt_callback.h>
+
 #endif // ASF_H
