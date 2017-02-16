@@ -30,7 +30,9 @@ idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n)
 	// TODO:  More precise mutexing
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 
-	if (n < S->size)
+	// We want to ignore the bottom index which is currently staged and maybe
+	// being overwritten
+	if (n < S->size - 1)
 	{
 		return S->data[(S->top_index + n) % IDLE_STACK_MAX];
 	}
