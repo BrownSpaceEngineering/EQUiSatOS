@@ -41,37 +41,35 @@ idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n)
 	xSemaphoreGive(S->mutex);
 }
 
+idle_data_t* idle_Stack_Initial_Stage(idle_Stack* S)
+{
+	return S->data[0];
+}
+
 // Overwrites the bottom value if need be
 idle_data_t* idle_Stack_Stage(idle_Stack* S)
 {
-	if (S->size > 0)
+	xSemaphoreTake(S->mutex, (TickType_t) 10);
+	
+	S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
+	
+	if (S->bottom_index == S->top_index)
 	{
-		xSemaphoreTake(S->mutex, (TickType_t) 10);
-		
-		S->top_index = (S->top_index + 1) % IDLE_STACK_MAX;
-		
-		if (S->bottom_index == S->top_index)
-		{
-			S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
-		}
-		else
-		{
-			S->size++;
-			
-			if (S->bottom_index == -1)
-			{
-				S->bottom_index = 0;
-			}
-		}
-		
-		idle_data_t* staged_pointer = S->data[(S->top_index + 1) % IDLE_STACK_MAX];
-		clear_existing_data(staged_pointer, sizeof(idle_data_t));
-		
-		xSemaphoreGive(S->mutex);
-		return staged_pointer; // return pointer to staged data
+		S->bottom_index = (S->bottom_index + 1) % IDLE_STACK_MAX;
 	}
 	else
 	{
-		return S->data[S->top_index + 1];
+		S->size++;
+		
+		if (S->bottom_index == -1)
+		{
+			S->bottom_index = 0;
+		}
 	}
+	
+	idle_data_t* staged_pointer = S->data[(S->top_index + 1) % IDLE_STACK_MAX];
+	clear_existing_data(staged_pointer, sizeof(idle_data_t));
+	
+	xSemaphoreGive(S->mutex);
+	return staged_pointer; // return pointer to staged data
 }

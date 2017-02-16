@@ -8,7 +8,7 @@
 #ifndef IDLE_STACK_H_
 #define IDLE_STACK_H_
 
-#define IDLE_STACK_MAX 4
+#define IDLE_STACK_MAX 20
 #include "equistacks.h"
 #include "State_Structs.h"
 
@@ -23,6 +23,7 @@ typedef struct idle_Stack
 
 idle_Stack* idle_Stack_Init();
 idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n);
+idle_data_t* idle_Stack_Initial_Stage(idle_Stack* S);
 idle_data_t* idle_Stack_Stage(idle_Stack* S);
 
 #endif

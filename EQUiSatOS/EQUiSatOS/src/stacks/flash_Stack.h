@@ -8,7 +8,6 @@
 #ifndef FLASH_STACK_H_
 #define FLASH_STACK_H_
 
-#define MUTEX_WAIT_TIME_TICKS 10
 #define FLASH_STACK_MAX 4
 #include "State_Structs.h"
 #include "equistacks.h"
