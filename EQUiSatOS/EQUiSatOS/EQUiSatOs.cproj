@@ -802,6 +802,12 @@
     <Compile Include="src\runnable_configurations\struct_tests.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\runnable_configurations\task_testing.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\task_testing.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\stacks\boot_Stack.c">
       <SubType>compile</SubType>
     </Compile>
