@@ -155,6 +155,8 @@ src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 
 src\runnable_configurations\struct_tests.c
 
+src\runnable_configurations\task_testing.c
+
 src\stacks\boot_Stack.c
 
 <<<<<<< a80674390dc307fccd74b9c174b0b9c2490d0573

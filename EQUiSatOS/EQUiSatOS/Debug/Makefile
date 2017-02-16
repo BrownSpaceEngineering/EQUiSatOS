@@ -1055,6 +1055,7 @@ C_SRCS +=  \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 >>>>>>> Stylistic adjustments
 ../src/runnable_configurations/struct_tests.c \
+../src/runnable_configurations/task_testing.c \
 ../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
@@ -1156,6 +1157,7 @@ src/radio/Stacks/State_Structs.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.o \
+src/runnable_configurations/task_testing.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
@@ -1253,6 +1255,7 @@ src/radio/Stacks/State_Structs.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.o \
+src/runnable_configurations/task_testing.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
@@ -1338,6 +1341,7 @@ src/radio/Stacks/State_Structs.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 >>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.d \
+src/runnable_configurations/task_testing.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
@@ -1423,6 +1427,7 @@ src/radio/Stacks/State_Structs.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 >>>>>>> Stylistic adjustments
 src/runnable_configurations/struct_tests.d \
+src/runnable_configurations/task_testing.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
@@ -1644,6 +1649,7 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+<<<<<<< e41111496efa120ac0d9b235ac50ca5edb3388da
 >>>>>>> Implemented the structures for errors
 =======
 
@@ -1652,6 +1658,9 @@ LINKER_SCRIPT_DEP+=  \
 
 
 >>>>>>> Work on reducing memory issues
+=======
+
+>>>>>>> Post-flow meeting changes
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

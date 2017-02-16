@@ -7,6 +7,8 @@
 
 #include "init_rtos_tasks.h"
 
+#include "task_testing.h"
+
 void runit_2()
 {
 	//configure_i2c_master(SERCOM4);
@@ -15,26 +17,35 @@ void runit_2()
 	idle_readings_equistack = idle_Stack_Init();
 	flash_readings_equistack = flash_Stack_Init();
 
-	xTaskCreate(task_radio_transmit,
-		"radio transmit action task",
-		TASK_RADIO_TRANSMIT_STACK_SIZE,
+	// TODO: These will not be started here?
+
+	xTaskCreate(task_suicide_test,
+		"task suicide testing",
+		TASK_SENS_RD_IDLE_STACK_SIZE,
 		NULL,
-		TASK_RADIO_TRANSMIT_PRIORITY,
-		NULL);
+		TASK_SENS_RD_IDLE_PRIORITY,
+		suicide_test_handle);
 
-	xTaskCreate(task_data_read_idle,
-			"idle data reader",
-			TASK_SENS_RD_IDLE_STACK_SIZE,
-			NULL,
-			TASK_SENS_RD_IDLE_PRIORITY,
-			idle_task_handle);
-
-	xTaskCreate(task_data_read_flash,
-			"flash data reader",
-			TASK_SENS_RD_FLASH_STACK_SIZE,
-			NULL,
-			TASK_SENS_RD_FLASH_PRIORITY,
-			flash_task_handle);
+	//xTaskCreate(task_radio_transmit,
+		//"radio transmit action task",
+		//TASK_RADIO_TRANSMIT_STACK_SIZE,
+		//NULL,
+		//TASK_RADIO_TRANSMIT_PRIORITY,
+		//NULL);
+	//
+	//xTaskCreate(task_data_read_idle,
+			//"idle data reader",
+			//TASK_SENS_RD_IDLE_STACK_SIZE,
+			//NULL,
+			//TASK_SENS_RD_IDLE_PRIORITY,
+			//idle_task_handle);
+			//
+	//xTaskCreate(task_data_read_flash,
+			//"flash data reader",
+			//TASK_SENS_RD_FLASH_STACK_SIZE,
+			//NULL,
+			//TASK_SENS_RD_FLASH_PRIORITY,
+			//flash_task_handle);
 
 	/*xTaskCreate(task_data_read_boot,
 			"boot data reader",
