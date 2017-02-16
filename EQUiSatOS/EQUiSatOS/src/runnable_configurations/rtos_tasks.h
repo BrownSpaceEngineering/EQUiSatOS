@@ -14,6 +14,7 @@
 #include <inttypes.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include <assert.h>
 
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"

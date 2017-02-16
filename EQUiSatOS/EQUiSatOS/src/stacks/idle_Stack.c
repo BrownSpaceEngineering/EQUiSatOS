@@ -31,7 +31,7 @@ idle_data_t* idle_Stack_Get(idle_Stack* S, int16_t n)
 	
 	if (n < S->size)
 	{
-		return S->data[(S->top_index + n) % IDLE_STACK_MAX];
+		return S->data[(S->top_index - n) % IDLE_STACK_MAX];
 	}
 	else
 	{

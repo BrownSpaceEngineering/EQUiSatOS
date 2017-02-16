@@ -296,7 +296,7 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
-    <avrtoolserialnumber>ATML2130021800007794</avrtoolserialnumber>
+    <avrtoolserialnumber>ATML2130021800009084</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
@@ -307,7 +307,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800007794</ToolNumber>
+      <ToolNumber>ATML2130021800009084</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
@@ -862,10 +862,22 @@
     <Compile Include="src\stacks\stack_tests.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\stacks\stack_tests2.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\stack_tests2.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\State_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\testing_helper.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\testing_helper.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="..\..\..\..\EquiSAT%2520Backup\EQUiSat_before_rename.zip">

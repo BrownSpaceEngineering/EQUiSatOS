@@ -28,7 +28,11 @@ src\stacks\Sensor_Structs.c
 
 src\stacks\stack_tests.c
 
+src\stacks\stack_tests2.c
+
 src\stacks\State_Structs.c
+
+src\testing_functions\testing_helper.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
