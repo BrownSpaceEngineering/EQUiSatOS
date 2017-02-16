@@ -234,10 +234,8 @@ void task_data_read_idle(void *pvParameters)
 	
 	// initialize first struct
 	idle_data_t *current_struct = idle_Stack_Initial_Stage(idle_readings_equistack);
+	assert(current_struct != NULL); // TESTING
 	current_struct->timestamp = get_current_timestamp();
-	
-	// TESTING
-	assert(current_struct != NULL);
 		
 	for( ;; )
 	{	
