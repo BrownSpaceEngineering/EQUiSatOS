@@ -107,6 +107,23 @@ static void check_start_application(void)
 	application_code_entry();
 }
 
+// Returns the size, in bytes, of a 0xFF-terminated region of memory
+//  (inspired by my implementation of strlen for x86-64 machines)
+// XXX: THIS MAY BE AFFECTED BY THE ENDIANNESS OF SAMD21J, TEST FIRST!
+int binsize(char *begin) {
+  unsigned int* rsp = (unsigned int*)s; // Pointing into a 4-byte view of the buffer
+  int offset = 0;
+start: // we unroll the loop 4 bytes at a time (width of a pointer)
+      int window = *rsp;
+      // the following may need to be reversed if processor is big-endian:
+      if (!(~window & 0xff)) return offset; // If first byte is 0xFF
+      if (!(~window & 0xff00)) return offset + 1; // If second byte is 0xFF
+      if (!(~window & 0xff0000)) return offset + 2; // etc...
+      if (!(~window & 0xff000000)) return offset + 3;
+      ++rsp; offset+=4;
+goto start; // A gøtø once bit my sister...
+}
+
 
 #ifdef DEBUG_ENABLE
 #	define DEBUG_PIN_HIGH 	port_pin_set_output_level(BOOT_LED, 1)
@@ -133,12 +150,13 @@ int main(void)
 	
 	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
 	initialize_slave(&slave);
+
+  int binsz = binsize(APP_START_ADDRESS);
+
+  // write the binary into MRAM
+	write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, binsize, 0x00);
 	
-	//write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, 2728, 0x00);
-	
-	// TODO: write program binary to MRAM
-	
-	check_start_application();
+	check_start_application(); // jump to program
 	
 	return 0;
 }
