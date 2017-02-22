@@ -110,8 +110,8 @@ static void check_start_application(void)
 // Returns the size, in bytes, of a 0xFF-terminated region of memory
 //  (inspired by my implementation of strlen for x86-64 machines)
 // XXX: THIS MAY BE AFFECTED BY THE ENDIANNESS OF SAMD21J, TEST FIRST!
-int binsize(char *begin) {
-  unsigned int* rsp = (unsigned int*)s; // Pointing into a 4-byte view of the buffer
+int binsize(void *begin) {
+  unsigned int* rsp = (unsigned int*)begin; // Pointing into a 4-byte view of the buffer
   int offset = 0;
 start: // we unroll the loop 4 bytes at a time (width of a pointer)
       int window = *rsp;
