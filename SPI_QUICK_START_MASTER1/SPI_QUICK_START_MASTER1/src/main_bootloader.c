@@ -31,6 +31,7 @@
 #define NVM_SW_CALIB_DFLL48M_COARSE_VAL   58
 #define NVM_SW_CALIB_DFLL48M_FINE_VAL     64
 
+#define BINSIZE 1848 // size of LEDFlash binary in bytes
 
 //My defines
 #define BOOT_LOAD_PIN                     PIN_PA15
@@ -109,19 +110,19 @@ static void check_start_application(void)
 
 // Returns the size, in bytes, of a 0xFF-terminated region of memory
 //  (inspired by my implementation of strlen for x86-64 machines)
-// XXX: THIS MAY BE AFFECTED BY THE ENDIANNESS OF SAMD21J, TEST FIRST!
+// XXX: DURR THIS DOESN'T ACTUALLY WORK
 int binsize(void *begin) {
-  unsigned int* rsp = (unsigned int*)begin; // Pointing into a 4-byte view of the buffer
-  int offset = 0;
-start: // we unroll the loop 4 bytes at a time (width of a pointer)
-      int window = *rsp;
-      // the following may need to be reversed if processor is big-endian:
-      if (!(~window & 0xff)) return offset; // If first byte is 0xFF
-      if (!(~window & 0xff00)) return offset + 1; // If second byte is 0xFF
-      if (!(~window & 0xff0000)) return offset + 2; // etc...
-      if (!(~window & 0xff000000)) return offset + 3;
-      ++rsp; offset+=4;
-goto start; // A gøtø once bit my sister...
+	unsigned int* rsp = (unsigned int*)begin; // Pointing into a 4-byte view of the buffer
+	int offset = 0;
+	while(true) { // we unroll the loop 4 bytes at a time (width of a pointer)
+		int window = *rsp;
+		// the following may need to be reversed if processor is big-endian:
+		if (!(~window & 0xff)) return offset; // If first byte is 0xFF
+		if (!(~window & 0xff00)) return offset + 1; // If second byte is 0xFF
+		if (!(~window & 0xff0000)) return offset + 2; // etc...
+		if (!(~window & 0xff000000)) return offset + 3;
+		++rsp; offset+=4;
+	}
 }
 
 
@@ -151,10 +152,8 @@ int main(void)
 	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
 	initialize_slave(&slave);
 
-  int binsz = binsize(APP_START_ADDRESS);
-
-  // write the binary into MRAM
-	write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, binsize, 0x00);
+	// write the binary into MRAM
+	write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, BINSIZE, 0x00);
 	
 	check_start_application(); // jump to program
 	
