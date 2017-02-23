@@ -7,53 +7,73 @@
 #include "package_stack.h"
 
 // general structure of a transmission will be:
-//   callsign + statebit + data + checksum
-// this definitely won't be the final implementation (callsign and checksum need to be changed)
+//   call sign + state bit + data + checksum
+// Call sign: K1AD
 // decide on which state is which int
 // also return state
+char *buffer [BUFFER_SIZE];
 
-// buffer definitely needs to have enough space for all the data
-uint8_t to_char_arr(void *input, uint32_t time, int state, int *errors, char *buffer)
-{
-	char callsign[] = "k1ad";
-	// possibly move definition of callsign into .h file
-	int checksum = CHECKSUM;
-	// number of bytes that can be transmitted in one second
-	int size_allocated = 1200;
-	char *charindex = (char*)input;
-	// 4 bytes is the length of callsign
-	// alternatively use sizeof(callsign) / sizeof(callsign[1])
-	int index = 1;
-	for(int i = 0; i < 4; i++)
-	{
-		buffer[i] = callsign[i];
-		index++;
-	}
+void init_buffer() {
+	buffer[0] = 'K';
+	buffer[1] = '1';
+	buffer[2] = 'A';
+	buffer[3] = 'D';
+}
+
+char* get_buffer() {
+	return buffer;
+}
+
+uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data, uint8_t data_len) {
+	int index = 5;
 	
-	// MUST FIX, TOTAL PLACEHOLDER
-	for(int i = index; i < index + 4; i++)
-	{
-		buffer[i] = time;
-		index++;
+	char *str [4];
+	int len = sprintf(str, "", get_current_timestamp());
+	for(int i = 0; i < len; i++) {
+		buffer[i + index] = str[i];
 	}
+	index += len;
 	
-	buffer[index] = state;
+	buffer[index] = CurrentState;
 	index++;
 	
-	// ALMOST FOR SURE WILL REQUIRE FIX
-	for(int i = index; i < index + 8; i++)
-	{
-		buffer[i] = errors[i];
-		index++;
-	}
+	buffer[index] = error_len;
+	index++;
 	
-	for(int i = index; i <= size_allocated + index; i++)
-	{
-		buffer[i] = charindex[i - index];
-		index++;
-	}
+	buffer[index] = data_len;
+	index++;
 	
-	buffer[index] = checksum;
+	// Add header
+	int saferInIn = 0;
+	for(int i = 0; i < HEADER_LENGTH; i++) {
+		char *istr [6];
+		int len = sprintf(istr, "", header[i]);
+		for(int in = 0; in < len; in++) {
+			buffer[saferInIn + index] = istr[in];
+			saferInIn++;
+		}
+	}
+	index += saferInIn;
+	
+	// Add errors
+	for(int i = 0; i < error_len; i++) {
+		buffer[i + index] = errors[i];
+	}
+	index += error_len;
+	
+	// Add the data batch
+	saferInIn = 0;
+	for(int i = 0; i < data_len; i++) {
+		char *istr [6];
+		int len = sprintf(istr, "", data[i]);
+		for(int in = 0; in < len; in++) {
+			buffer[saferInIn + index] = istr[in];
+			saferInIn++;
+		}
+	}
+	index += saferInIn;
+	
+	buffer[index] = CHECKSUM;
 	buffer[index + 1] = NULL;
 	return 1;
 }
