@@ -12,7 +12,7 @@
 #include <asf.h>
 #include "equistacks.h"
 
-uint8_t to_char_arr(void *input, int sizeof_input, int state, char *buffer);
+uint8_t to_char_arr(void *input, int state, char *buffer);
 #define CHECKSUM 1
 
 
