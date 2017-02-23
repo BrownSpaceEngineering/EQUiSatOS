@@ -9,14 +9,6 @@
 #ifndef STACK_TESTS_H_
 #define STACK_TESTS_H_
 
-#include "../runnable_configurations/init_rtos_tasks.h"
-#include "../runnable_configurations/rtos_tasks.h"
-
-void Num_Stack_Test();
-void Num_Stack_Test_Mutex();
-void Num_Stack_Write1(void *pvParameters);
-void Num_Stack_Write2(void *pvParameters);
-void Num_Stack_Read1(void *pvParameters);
-void Num_Stack_Read2(void *pvParameters);
+#include "../testing_functions/testing_helper.h"
 
 #endif /* STACK_TESTS_H_ */
