@@ -13,26 +13,46 @@
 // also return state
 
 // buffer definitely needs to have enough space for all the data
-uint8_t to_char_arr(void *input, int sizeof_input, int state, char *buffer)
+uint8_t to_char_arr(void *input, uint32_t time, int state, int *errors, char *buffer)
 {
-	char callsign[] = "BSErocks";
+	char callsign[] = "k1ad";
 	// possibly move definition of callsign into .h file
 	int checksum = CHECKSUM;
+	// number of bytes that can be transmitted in one second
+	int size_allocated = 1200;
 	char *charindex = (char*)input;
-	// 8 is the length of callsign
+	// 4 bytes is the length of callsign
 	// alternatively use sizeof(callsign) / sizeof(callsign[1])
-	for(int i = 0; i < 8; i++)
+	int index = 1;
+	for(int i = 0; i < 4; i++)
 	{
 		buffer[i] = callsign[i];
+		index++;
 	}
-	int index = 8;
+	
+	// MUST FIX, TOTAL PLACEHOLDER
+	for(int i = index; i < index + 4; i++)
+	{
+		buffer[i] = time;
+		index++;
+	}
+	
 	buffer[index] = state;
 	index++;
-	for(int i = index; i <= sizeof_input + index; i++)
+	
+	// ALMOST FOR SURE WILL REQUIRE FIX
+	for(int i = index; i < index + 8; i++)
+	{
+		buffer[i] = errors[i];
+		index++;
+	}
+	
+	for(int i = index; i <= size_allocated + index; i++)
 	{
 		buffer[i] = charindex[i - index];
+		index++;
 	}
-	index += sizeof_input;
+	
 	buffer[index] = checksum;
 	buffer[index + 1] = NULL;
 	return 1;
