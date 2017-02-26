@@ -34,35 +34,43 @@
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
 
-#define TASK_LED_STACK_SIZE						(1024/sizeof(portSTACK_TYPE))
-#define TASK_LED_PRIORITY						(tskIDLE_PRIORITY)
+// Started at boot
+#define TASK_RADIO_TRANSMIT_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_RADIO_TRANSMIT_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_RADIO_TRANSMIT_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_RADIO_TRANSMIT_PRIORITY			(tskIDLE_PRIORITY)
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_SENS_RD_IDLE_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_SENS_RD_IDLE_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_SENS_RD_FLASH_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_SENS_RD_FLASH_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_SENS_RD_BOOT_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_SENS_RD_BOOT_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_BOOT_PRIORITY					(tskIDLE_PRIORITY)
 
-#define TASK_SENS_RD_LOW_POWER_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
-#define TASK_SENS_RD_LOW_POWER_PRIORITY			(tskIDLE_PRIORITY)
+#define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
+#define TASK_CURRENT_DATA_LOW_POWER_RD_STACK_SIZE	(1024/sizeof(portSTACK_TYPE))
+#define TASK_CURRENT_DATA_LOW_POWER_RD_PRIORITY		(tskIDLE_PRIORITY)
+
+#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
+
+// Don't think we're going to need this due to generally static frequencies
 /* Enum for all tasks (to allow for array-wise referencing for freq, etc.) */
-typedef enum
-{
-	LED_TASK,
-	RADIO_TRANSMIT_TASK,
-	SENSOR_READ_IDLE,
-	SENSOR_READ_FLASH,
-	SENSOR_READ_BOOT,
-	SENSOR_READ_LOW_POWER,
-	NUM_TASKS
-} task_type;
+// typedef enum
+// {
+// 	LED_TASK,
+// 	RADIO_TRANSMIT_TASK,
+// 	SENSOR_READ_IDLE,
+// 	SENSOR_READ_FLASH,
+// 	SENSOR_READ_BOOT,
+// 	SENSOR_READ_LOW_POWER,
+// 	NUM_TASKS
+// } task_type;
 
 /* Enum for all states
    NOTE:
@@ -77,23 +85,17 @@ typedef enum
 */
 typedef enum 
 {
+	HELLO_WORLD,
 	IDLE,
-	FLASH,
-	BOOT,
 	LOW_POWER
 } state_type;
 
 /* Enum for all types of collected data (for consistency across sensor read functions) 
-   Based off: https://docs.google.com/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit 
-   https://docs.google.com/spreadsheets/d/1EGv9MapHfgPCEahHojSbnT92tt32k0kPWfgaWkicNCE/edit
+   Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
    NOTE:
 	If you add/remove a type of collected data, there are several things you must change:
-		1. Add the task to the tasks data_types (below) AND update NUM_DATA_TYPES
-		2. Specify a frequency of logging via a _READS_PER_LOG in rtos_task_frequencies.h
-			FOR ALL satellite states (be sure to update MAX_READS_PER_LOG if relevant)
-		3. Create a batch type definition
-		4. Add a new array of data to ALL of the relevant state structs
-		5. Add collection/storing code to radio transmit for all states
+		- Create a batch type definition
+		- Add a new array of data to ALL of the relevant state structs
  */
 typedef enum
 {
@@ -118,23 +120,24 @@ extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
-// Action tasks
-void task_antenna_deploy(void *pvParameters); // Will this be a task?
-void task_led(void *pvParameters);
-void task_radio_transmit(void *pvParameters);
+// Action tasks (some also read data)
+void watchdog_task(void *pvParameters);
+void antenna_deploy_task(void *pvParameters);
+void battery_charging_task(void *pvParameters);
+void flash_activate_task(void *pvParameters);
+void transmit_task(void *pvParameters);
 
 // Data read tasks
-void task_data_read_idle(void *pvParameters);
-void task_data_read_flash(void *pvParameters);
-void task_data_read_boot(void *pvParameters);
-void task_data_read_low_power(void *pvParameters);
+void current_data_task(void *pvParameters);
+void current_data_low_power_task(void *pvParameters);
+void attitude_data_task(void *pvParameters);
 
 /* Queue definitions */
 uint8_t *last_state_read_equistack;
-idle_Stack *idle_readings_equistack; 
+idle_Stack *idle_readings_equistack; // will have only two elements
+/*low_power_Stack *idle_low_power_readings_equistack;*/ // will have only two elements
 flash_Stack *flash_readings_equistack;
-/*boot_Stack *boot_readings_equistack;*/
-/*low_power_Stack *low_power_readings_equistack;*/
+/* *attitude_readings_equistack;*/
 
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
