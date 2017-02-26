@@ -6,11 +6,11 @@ src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 
+src\runnable_configurations\rtos_task_frequencies.c
+
 src\runnable_configurations\struct_tests.c
 
 src\runnable_configurations\task_testing.c
-
-src\stacks\boot_Stack.c
 
 src\stacks\equistacks.c
 
@@ -19,8 +19,6 @@ src\stacks\errors.c
 src\stacks\flash_Stack.c
 
 src\stacks\idle_Stack.c
-
-src\stacks\low_power_Stack.c
 
 src\stacks\Num_Stack.c
 

@@ -132,14 +132,13 @@ SUBDIRS :=  \
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+../src/runnable_configurations/rtos_task_frequencies.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/runnable_configurations/task_testing.c \
-../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
 ../src/stacks/idle_Stack.c \
-../src/stacks/low_power_Stack.c \
 ../src/stacks/Num_Stack.c \
 ../src/stacks/package_stack.c \
 ../src/stacks/Sensor_Structs.c \
@@ -204,14 +203,13 @@ ASM_SRCS +=
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
-src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
-src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
@@ -269,14 +267,13 @@ src/sensor_drivers/TEMD6200_Commands.o
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
-src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
-src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
@@ -334,14 +331,13 @@ src/sensor_drivers/TEMD6200_Commands.o
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
-src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
-src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
@@ -399,14 +395,13 @@ src/sensor_drivers/TEMD6200_Commands.d
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
-src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
-src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
@@ -476,8 +471,6 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 

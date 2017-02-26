@@ -247,9 +247,13 @@ void current_data_task(void *pvParameters)
 		
 	for( ;; )
 	{	
-		// block for a time based on this task's globally-set frequency
+		// block for a time based on a frequency, determined by whether we're in IDLE or LOW_POWER mode.
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
-		vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		if (CurrentState == LOW_POWER) {
+			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_LOW_POWER_TASK_FREQ / portTICK_PERIOD_MS);
+		} else {
+			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		}
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)

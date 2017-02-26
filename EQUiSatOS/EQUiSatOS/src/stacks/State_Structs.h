@@ -39,38 +39,15 @@ typedef struct flash_data_t
 {
 	uint32_t timestamp;
 	/* ibid */
-	ir_batch ir_data								[flash_IR_DATA_ARR_LEN];
 	temp_batch temp_data							[flash_TEMP_DATA_ARR_LEN];
-	diode_batch diode_data							[flash_DIODE_DATA_ARR_LEN];
 	led_current_batch led_current_data				[flash_LED_CURRENT_DATA_ARR_LEN];
-	imu_batch imu_data								[flash_IMU_DATA_ARR_LEN];
-	magnetometer_batch magnetometer_data			[flash_MAGNETOMETER_DATA_ARR_LEN];
-	charging_batch charging_data					[flash_CHARGING_DATA_DATA_ARR_LEN];
-	radio_temp_batch radio_temp_data				[flash_RADIO_TEMP_DATA_ARR_LEN];
 	battery_voltages_batch battery_voltages_data	[flash_BAT_VOLTAGE_DATA_ARR_LEN];
-	regulator_voltages_batch regulator_voltages_data[flash_REG_VOLTAGE_DATA_ARR_LEN];
 	
 } flash_data_t;
 
-typedef struct low_power_data_t
-{
-	uint32_t timestamp;
-	/* ibid */
-	ir_batch ir_data								[low_power_IR_DATA_ARR_LEN];
-	temp_batch temp_data							[low_power_TEMP_DATA_ARR_LEN];
-	diode_batch diode_data							[low_power_DIODE_DATA_ARR_LEN];
-	led_current_batch led_current_data				[low_power_LED_CURRENT_DATA_ARR_LEN];
-	imu_batch imu_data								[low_power_IMU_DATA_ARR_LEN];
-	magnetometer_batch magnetometer_data			[low_power_MAGNETOMETER_DATA_ARR_LEN];
-	charging_batch charging_data					[low_power_CHARGING_DATA_DATA_ARR_LEN];
-	radio_temp_batch radio_temp_data				[low_power_RADIO_TEMP_DATA_ARR_LEN];
-	battery_voltages_batch battery_voltages_data	[low_power_BAT_VOLTAGE_DATA_ARR_LEN];
-	regulator_voltages_batch regulator_voltages_data[low_power_REG_VOLTAGE_DATA_ARR_LEN];
-	
-} low_power_data_t;
-
-void free_low_power(low_power_data_t* lpd);
 void free_idle(idle_data_t* id);
 void free_flash(flash_data_t* fd);
+
+// TODO: MORE
 
 #endif

@@ -65,13 +65,6 @@ void runit_2()
 		NULL,
 		TASK_CURRENT_DATA_RD_PRIORITY,
 		current_data_task_handle);
-		
-	xTaskCreate(current_data_low_power_task,
-		"current data low power reader task",
-		TASK_CURRENT_DATA_LOW_POWER_RD_STACK_SIZE,
-		NULL,
-		TASK_CURRENT_DATA_LOW_POWER_RD_PRIORITY,
-		current_data_low_power_task_handle);
 
 	xTaskCreate(attitude_data_task,
 		"attitude data reader task",
@@ -139,7 +132,7 @@ void set_state_low_power()
 	CurrentState = LOW_POWER;
 	
 	// TODO: ibid
-	vTaskResume(current_data_low_power_task_handle);
+	vTaskResume(current_data_task_handle);
 	vTaskSuspend(current_data_task_handle);
 	vTaskSuspend(flash_activate_task_handle);
 }

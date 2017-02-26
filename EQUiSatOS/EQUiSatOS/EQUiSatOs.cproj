@@ -796,6 +796,9 @@
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\runnable_configurations\rtos_task_frequencies.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\runnable_configurations\struct_tests.c">
       <SubType>compile</SubType>
     </Compile>
@@ -806,12 +809,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\task_testing.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\boot_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\boot_Stack.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\equistacks.c">
@@ -836,12 +833,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\idle_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\low_power_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\low_power_Stack.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\Num_Stack.c">

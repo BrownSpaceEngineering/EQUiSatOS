@@ -53,9 +53,6 @@
 #define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_CURRENT_DATA_LOW_POWER_RD_STACK_SIZE	(1024/sizeof(portSTACK_TYPE))
-#define TASK_CURRENT_DATA_LOW_POWER_RD_PRIORITY		(tskIDLE_PRIORITY)
-
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
@@ -129,13 +126,11 @@ void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
 void current_data_task(void *pvParameters);
-void current_data_low_power_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
 
 /* Queue definitions */
 uint8_t *last_state_read_equistack;
 idle_Stack *idle_readings_equistack; // will have only two elements
-/*low_power_Stack *idle_low_power_readings_equistack;*/ // will have only two elements
 flash_Stack *flash_readings_equistack;
 /* attitude_Stack attitude_readings_equistack;*/
 
