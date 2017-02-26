@@ -84,7 +84,14 @@ void runit_2()
 // 		NULL,
 // 		TASK_SENS_RD_IDLE_PRIORITY,
 // 		suicide_test_handle);
-//
+
+// 		xTaskCreate(task_stack_size_overflow_test,
+// 		"task stack size purpose test",
+// 		TASK_SENS_RD_IDLE_STACK_SIZE,
+// 		NULL,
+// 		TASK_SENS_RD_IDLE_PRIORITY,
+// 		suicide_test_handle);
+
   /*xTaskCreate(test_free,
   		"Tests the freeing of structs",
   		TASK_SENS_RD_IDLE_STACK_SIZE,
@@ -105,9 +112,9 @@ void set_state_hello_world()
 
 	xTaskCreate(attitude_data_task,
 		"attitude data reader task",
-		TASK_ATTITUDE_RD_STACK_SIZE,
+		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
 		NULL,
-		TASK_ATTITUDE_RD_PRIORITY,
+		TASK_ATTITUDE_DATA_DATA_RD_PRIORITY,
 		attitude_data_task_handle);
 	/*vTaskResume(attitude_data_task_handle); // TODO: Does this START the task? Or should we just do the above?*/
 }

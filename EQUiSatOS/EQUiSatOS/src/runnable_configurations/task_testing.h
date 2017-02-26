@@ -13,5 +13,6 @@
 TaskHandle_t suicide_test_handle;
 
 void task_suicide_test(void *pvParameters);
+void task_stack_size_overflow_test(void *pvParameters);
 
 #endif /* TASK_TESTING_H_ */

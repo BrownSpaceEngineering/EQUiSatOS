@@ -25,8 +25,8 @@ void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *rea
 			   batch_list[data_array_tails[IR_DATA]].values[3] == 3 &&
 			   batch_list[data_array_tails[IR_DATA]].values[4] == 4); // remove once implemented
 		assert(batch_list[data_array_tails[IR_DATA]].values[0] == batch.values[0]);
-		assert(batch_list[data_array_tails[IR_DATA]].values[1] == batch.values[1]);
-		assert(batch_list[data_array_tails[IR_DATA]].values[idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG - 1] == batch.values[idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG - 1]);
+		assert(batch_list[data_array_tails[IR_DATA]].values[1] == batch.values[1]); // TODO: is this task independent:
+		assert(batch_list[data_array_tails[IR_DATA]].values[idle_IR_DATA_ARR_LEN - 1] == batch.values[idle_IR_DATA_ARR_LEN - 1]);
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
@@ -49,6 +49,7 @@ void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int 
 		reads_since_last_log[TEMP_DATA] = 0;
 	}
 }
+
 void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
 {
 	if (reads_since_last_log[DIODE_DATA] >= reads_per_log)
@@ -178,10 +179,10 @@ void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list,
 }
 
 /* Action Tasks */
-void watchdog_task(void *pvParameters);
-void antenna_deploy_task(void *pvParameters);
-void battery_charging_task(void *pvParameters);
-void flash_activate_task(void *pvParameters);
+void watchdog_task(void *pvParameters) {};
+void antenna_deploy_task(void *pvParameters) {};
+void battery_charging_task(void *pvParameters) {};
+void flash_activate_task(void *pvParameters) {};
 void transmit_task(void *pvParameters)
 {
 	// initialize xNextWakeTime once
@@ -202,22 +203,22 @@ void transmit_task(void *pvParameters)
 			// based on what state we're in, compile a different message
 			switch(nextState)
 			{
-				case IDLE: ; // empty statement to allow definition
-					idle_data_t* idle_data_to_trans = idle_Stack_Get(idle_readings_equistack, 0);
-					
-					//if (idle_data_to_trans != NULL) 
-					//{ 
-					//	validDataTransmitted = true;
-					//}
-					break;
-				case FLASH: ; // empty statement to allow definition
-					break;
-				case BOOT: ; // empty statement to allow definition
-					break;
-				case LOW_POWER: ; // empty statement to allow definition
-					break;
-				default:
-					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely) 				
+// 				case IDLE: ; // empty statement to allow definition
+// 					idle_data_t* idle_data_to_trans = idle_Stack_Get(idle_readings_equistack, 0);
+// 					
+// 					//if (idle_data_to_trans != NULL) 
+// 					//{ 
+// 					//	validDataTransmitted = true;
+// 					//}
+// 					break;
+// 				case FLASH: ; // empty statement to allow definition
+// 					break;
+// 				case BOOT: ; // empty statement to allow definition
+// 					break;
+// 				case LOW_POWER: ; // empty statement to allow definition
+// 					break;
+// 				default:
+// 					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely) 				
 			};
 		} while (!validDataTransmitted);
 	}
@@ -248,7 +249,7 @@ void current_data_task(void *pvParameters)
 	{	
 		// block for a time based on this task's globally-set frequency
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
-		vTaskDelayUntil( &xNextWakeTime, IDLE_RD_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
@@ -304,8 +305,8 @@ void current_data_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-void current_data_low_power_task(void *pvParameters);
-void attitude_data_task(void *pvParameters);
+void current_data_low_power_task(void *pvParameters) {};
+void attitude_data_task(void *pvParameters) {};
 
 /* Helper Functions */
 uint32_t get_current_timestamp()

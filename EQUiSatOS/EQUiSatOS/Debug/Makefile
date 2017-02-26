@@ -1649,6 +1649,7 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+<<<<<<< ec27dbfc6905ed50c843a132a6bcf9591765f3cf
 <<<<<<< e41111496efa120ac0d9b235ac50ca5edb3388da
 >>>>>>> Implemented the structures for errors
 =======
@@ -1661,6 +1662,9 @@ LINKER_SCRIPT_DEP+=  \
 =======
 
 >>>>>>> Post-flow meeting changes
+=======
+
+>>>>>>> Finish changes up to build state
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

@@ -10,13 +10,13 @@
 
 /* action frequency periods in MS */
 #define WATCHDOG_TASK_FREQ						1000
-#define ANTENNA_DEPLOY_TASK_FREQ				1000;
-#define BATTERY_CHARGING_TASK_FREQ				1000;
-#define FLASH_ACTIVATE_TASK_FREQ				1000;
-#define TRANSMIT_TASK_FREQ						1000;
-#define ATTITUDE_DATA_TASK_FREQ					1000;
+#define ANTENNA_DEPLOY_TASK_FREQ				1000
+#define BATTERY_CHARGING_TASK_FREQ				1000
+#define FLASH_ACTIVATE_TASK_FREQ				1000
+#define TRANSMIT_TASK_FREQ						1000
+#define ATTITUDE_DATA_TASK_FREQ					1000
 
-#define CURRENT_DATA_TASK_FREQ					1000;
+#define CURRENT_DATA_TASK_FREQ					1000
 /* Data array lengths for current data reader task */
 #define idle_IR_DATA_ARR_LEN					1
 #define idle_TEMP_DATA_ARR_LEN					1
@@ -61,16 +61,42 @@
 
 /* Current data low power reader reads per log */
 /* ibid */
-#define idle_IR_READS_PER_LOG					(2000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_TEMP_READS_PER_LOG					(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_GYRO_READS_PER_LOG					(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_MAGNETOMETER_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define idle_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_IR_READS_PER_LOG					(2000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_GYRO_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+
+#define FLASH_DATA_TASK_FREQ		1000;
+/* Data array lengths for current data low power reader task */
+#define flash_IR_DATA_ARR_LEN					1
+#define flash_TEMP_DATA_ARR_LEN					1
+#define flash_DIODE_DATA_ARR_LEN				1
+#define flash_LED_CURRENT_DATA_ARR_LEN			1
+#define flash_GYRO_DATA_ARR_LEN					1
+#define flash_MAGNETOMETER_DATA_ARR_LEN			1
+#define flash_CHARGING_DATA_DATA_ARR_LEN		1
+#define flash_RADIO_TEMP_DATA_ARR_LEN			1
+#define flash_BAT_VOLTAGE_DATA_ARR_LEN			1
+#define flash_REG_VOLTAGE_DATA_ARR_LEN			1
+
+/* Current data low power reader reads per log */
+/* ibid */
+#define flash_IR_READS_PER_LOG					(2000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_GYRO_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
 
 // TODO: Do this for:
 // Attitude data
