@@ -82,19 +82,19 @@ void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_arr
 	}
 }
 
-void add_gyro_batch_if_ready(gyro_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
 {
-	if (reads_since_last_log[GYRO_DATA] >= reads_per_log)
+	if (reads_since_last_log[IMU_DATA] >= reads_per_log)
 	{
 		// read sensor and compile into batch
-		gyro_batch batch = read_gyro_batch();
+		imu_batch batch = read_imu_batch();
 		
 		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[GYRO_DATA]] = batch;
+		batch_list[data_array_tails[IMU_DATA]] = batch;
 		
 		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[GYRO_DATA] = data_array_tails[GYRO_DATA] + 1;
-		reads_since_last_log[GYRO_DATA] = 0;
+		data_array_tails[IMU_DATA] = data_array_tails[IMU_DATA] + 1;
+		reads_since_last_log[IMU_DATA] = 0;
 	}
 }
 
@@ -233,12 +233,12 @@ void current_data_task(void *pvParameters)
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	// tracking arrays
-	int reads_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
+	uint8_t reads_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
 												// one of the sensors, so the value in here keeps growing?
 												
 	// NOTE: data_array_tails should be this big for all data reading tasks 
 	// (this is just done for indexing consistency so that the add_*_batch_if_ready functions are universal) 
-	int data_array_tails[NUM_DATA_TYPES];
+	uint8_t data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
 	idle_data_t *current_struct = idle_Stack_Initial_Stage(idle_readings_equistack);

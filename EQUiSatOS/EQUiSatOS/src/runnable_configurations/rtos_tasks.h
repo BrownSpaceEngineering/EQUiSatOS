@@ -103,7 +103,7 @@ typedef enum
 	TEMP_DATA,
 	DIODE_DATA,
 	LED_CUR_DATA,
-	GYRO_DATA,
+	IMU_DATA,
 	MAGNETOMETER_DATA,
 	CHARGING_DATA,
 	RADIO_TEMP_DATA,
@@ -137,14 +137,14 @@ uint8_t *last_state_read_equistack;
 idle_Stack *idle_readings_equistack; // will have only two elements
 /*low_power_Stack *idle_low_power_readings_equistack;*/ // will have only two elements
 flash_Stack *flash_readings_equistack;
-/* *attitude_readings_equistack;*/
+/* attitude_Stack attitude_readings_equistack;*/
 
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_gyro_batch_if_ready(gyro_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);

@@ -16,7 +16,7 @@ idle_data_t* create_dummy_batch()
 	int* temp_data = result->temp_data;
 	int* diode_data = result->diode_data;
 	int* led_current_data = result->led_current_data;
-	int* gyro_data = result->gyro_data;
+	int* imu_data = result->imu_data;
 	int* magnetometer_data = result->magnetometer_data;
 	int* charging_data = result->charging_data;
 	int* radio_temp_data = result->radio_temp_data;
@@ -27,7 +27,7 @@ idle_data_t* create_dummy_batch()
 	create_dummy_arr(temp_data, 1);
 	create_dummy_arr(diode_data, 1);
 	create_dummy_arr(led_current_data, 1);
-	create_dummy_arr(gyro_data, 1);
+	create_dummy_arr(imu_data, 1);
 	create_dummy_arr(magnetometer_data, 1);
 	create_dummy_arr(charging_data, 1);
 	create_dummy_arr(radio_temp_data, 1);

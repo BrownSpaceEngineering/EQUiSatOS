@@ -8,13 +8,15 @@
 #ifndef RTOS_TASK_FREQ_H
 #define RTOS_TASK_FREQ_H
 
-/* action frequency periods in MS */
+/* action frequency periods in MS (some that actually have data collection are below) */
 #define WATCHDOG_TASK_FREQ						1000
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
-#define BATTERY_CHARGING_TASK_FREQ				1000
-#define FLASH_ACTIVATE_TASK_FREQ				1000
-#define TRANSMIT_TASK_FREQ						1000
-#define ATTITUDE_DATA_TASK_FREQ					1000
+#define BATTERY_CHARGING_TASK_FREQ				100
+
+/* 
+ * NOTE: The idle and lower_power data collections don't really need these constants;
+ * all sensors are being read at the same frequency, but we're doing it here for consistency
+ */
 
 #define CURRENT_DATA_TASK_FREQ					1000
 /* Data array lengths for current data reader task */
@@ -22,7 +24,7 @@
 #define idle_TEMP_DATA_ARR_LEN					1
 #define idle_DIODE_DATA_ARR_LEN					1
 #define idle_LED_CURRENT_DATA_ARR_LEN			1
-#define idle_GYRO_DATA_ARR_LEN					1
+#define idle_IMU_DATA_ARR_LEN					1
 #define idle_MAGNETOMETER_DATA_ARR_LEN			1
 #define idle_CHARGING_DATA_DATA_ARR_LEN			1
 #define idle_RADIO_TEMP_DATA_ARR_LEN			1
@@ -35,16 +37,16 @@
 	NOTE: because the actual HZ frequency entered here is only computed relative 
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
-#define idle_IR_READS_PER_LOG					(2000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_TEMP_READS_PER_LOG					(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_GYRO_READS_PER_LOG					(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_MAGNETOMETER_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
-#define idle_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_IR_READS_PER_LOG					1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_TEMP_READS_PER_LOG					1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_DIODE_READS_PER_LOG				1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_LED_CURRENT_READS_PER_LOG			1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_IMU_READS_PER_LOG					1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_MAGNETOMETER_READS_PER_LOG			1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_CHARGING_DATA_READS_PER_LOG		1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_RADIO_TEMP_READS_PER_LOG			1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_BAT_VOLTAGE_READS_PER_LOG			1 // = ms / CURRENT_DATA_TASK_FREQ
+#define idle_REG_VOLTAGE_READS_PER_LOG			1 // = ms / CURRENT_DATA_TASK_FREQ
 
 #define CURRENT_DATA_LOW_POWER_TASK_FREQ		1000;
 /* Data array lengths for current data low power reader task */
@@ -52,7 +54,7 @@
 #define low_power_TEMP_DATA_ARR_LEN					1
 #define low_power_DIODE_DATA_ARR_LEN				1
 #define low_power_LED_CURRENT_DATA_ARR_LEN			1
-#define low_power_GYRO_DATA_ARR_LEN					1
+#define low_power_IMU_DATA_ARR_LEN					1
 #define low_power_MAGNETOMETER_DATA_ARR_LEN			1
 #define low_power_CHARGING_DATA_DATA_ARR_LEN		1
 #define low_power_RADIO_TEMP_DATA_ARR_LEN			1
@@ -61,89 +63,67 @@
 
 /* Current data low power reader reads per log */
 /* ibid */
-#define low_power_IR_READS_PER_LOG					(2000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_GYRO_READS_PER_LOG				(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
-#define low_power_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_IR_READS_PER_LOG					1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_TEMP_READS_PER_LOG				1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_DIODE_READS_PER_LOG				1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_LED_CURRENT_READS_PER_LOG			1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_IMU_READS_PER_LOG					1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_MAGNETOMETER_READS_PER_LOG		1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_CHARGING_DATA_READS_PER_LOG		1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_RADIO_TEMP_READS_PER_LOG			1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_BAT_VOLTAGE_READS_PER_LOG			1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
+#define low_power_REG_VOLTAGE_READS_PER_LOG			1 // = ms / CURRENT_DATA_LOW_POWER_TASK_FREQ
 
-#define FLASH_DATA_TASK_FREQ		1000;
-/* Data array lengths for current data low power reader task */
-#define flash_IR_DATA_ARR_LEN					1
+/*
+ * These may have data array lists longer than 1
+ */
+
+#define FLASH_ACTIVATE_TASK_FREQ				1000
+/* Data array lengths for flash action and data reader task */
 #define flash_TEMP_DATA_ARR_LEN					1
-#define flash_DIODE_DATA_ARR_LEN				1
 #define flash_LED_CURRENT_DATA_ARR_LEN			1
-#define flash_GYRO_DATA_ARR_LEN					1
-#define flash_MAGNETOMETER_DATA_ARR_LEN			1
-#define flash_CHARGING_DATA_DATA_ARR_LEN		1
-#define flash_RADIO_TEMP_DATA_ARR_LEN			1
 #define flash_BAT_VOLTAGE_DATA_ARR_LEN			1
-#define flash_REG_VOLTAGE_DATA_ARR_LEN			1
 
-/* Current data low power reader reads per log */
+/* Flash action and data reader task reads per log */
 /* ibid */
-#define flash_IR_READS_PER_LOG					(2000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_GYRO_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_DATA_TASK_FREQ
+#define flash_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+#define flash_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+#define flash_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+
+
+#define TRANSMIT_TASK_FREQ						1000
+/* Data array lengths for radio transmit action and data reader task */
+#define transmit_RADIO_TEMP_DATA_ARR_LEN		1
+#define transmit_LED_CURRENT_DATA_ARR_LEN		1
+#define transmit_BAT_VOLTAGE_DATA_ARR_LEN		1
+
+/* Radio transmit and data read task reads per log */
+/* ibid */
+#define transmit_RADIO_TEMP_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+#define transmit_LED_CURRENT_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+#define transmit_BAT_VOLTAGE_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+
+
+#define ATTITUDE_DATA_TASK_FREQ							1000
+/* Data array lengths for attitude data reader task */
+#define attitute_data_IR_DATA_ARR_LEN					1
+#define attitute_data_DIODE_DATA_ARR_LEN				1
+#define attitute_data_IMU_DATA_ARR_LEN					1
+#define attitute_data_MAGNETOMETER_DATA_ARR_LEN			1
+
+/* Attitude data read task reads per log */
+/* ibid */
+#define attitute_data_IR_READS_PER_LOG					(2000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_IMU_READS_PER_LOG					(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
 
 // TODO: Do this for:
-// Attitude data
-// Radio data
-// Flash burst
 // Flash comparison?
 
 /*
-*
-* OLD
-*
-*/
-
-// /* READS_PER_LOG for each sensor at each state - 
-// 	how often the data is logged in a equistack for transmission 
-// 	NOTE: because the actual HZ frequency entered here is only computed relative 
-// 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
-// 	*/
-// 
-// /* "idle" state LOG frequencies - normal operation 
-// 	IF YOU CHANGE THESE: update _MAX_READS_PER_LOG below */
-// #define idle_IR_READS_PER_LOG					(2000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_TEMP_READS_PER_LOG					(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_GYRO_READS_PER_LOG					(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_MAGNETOMETER_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_CHARGING_DATA_READS_PER_LOG		(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_RADIO_TEMP_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// #define idle_REG_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / IDLE_RD_TASK_FREQ
-// 
-// // from above values, define a shortcut for the MOST reads per log
-// // corresponding to the LOWEST log frequency, which can be used
-// // to easily create a series of lists with the lowest log frequency
-// // having the smallest list (see State_Structs.h)
-// // EX. If we're creating lists where the lowest frequency data list
-// // should be of size one, defining their lengths as:
-// // [state]_MAX_READS_PER_LOG / [state]_[sensor]_READS_PER_LOG
-// // will result in the lowest frequency having a size of 1
-// // (multiply this by something to change the smallest size; 
-// // i.e. x2 means _LOWEST_FREQ_SENSOR has an array of size 2)
-// #define idle_MAX_READS_PER_LOG					idle_IR_READS_PER_LOG
-// // define a reference to the lowest frequency sensor using the 
-// // enum value from the data_types enum so we can easily
-// // check if it's been read (which would indicate that a state struct is full) 
-// // (this is the same sensor that was used in _MAX_READS_PER_LOG)
-// #define idle_LOWEST_FREQ_SENSOR  				0 // IR_DATA
+ * A function to make sure that the constants defined here are internally consistent.
+ */
+void assertConstantDefinitions(void);
 
 #endif

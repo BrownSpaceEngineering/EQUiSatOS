@@ -7,60 +7,6 @@
 
 #include "State_Structs.h"
 
-void free_boot(boot_data_t* bd){
-	for (int i = 0; i < sizeof(bd->ir_data); i++)
-	{
-		free_ir(&bd->ir_data[i]);
-	}
-	vPortFree(&(bd->ir_data));
-	for (int i = 0; i < sizeof(bd->temp_data); i++)
-	{
-		free_temp(&(bd->temp_data[i]));
-	}
-	vPortFree(&(bd->temp_data));
-	for (int i = 0; i < sizeof(bd->diode_data); i++)
-	{
-		free_diode(&(bd->diode_data[i]));
-	}
-	vPortFree(&(bd->diode_data));
-	for (int i = 0; i < sizeof(bd->led_current_data); i++)
-	{
-		free_led(&(bd->led_current_data[i]));
-	}
-	vPortFree(&(bd->led_current_data));
-	for (int i = 0; i < sizeof(bd->gyro_data); i++)
-	{
-		free_gyro(&(bd->gyro_data[i]));
-	}
-	vPortFree(&(bd->gyro_data));
-	for (int i = 0; i < sizeof(bd->magnetometer_data); i++)
-	{
-		free_magnetometer(&(bd->magnetometer_data[i]));
-	}
-	vPortFree(&(bd->magnetometer_data));
-	for (int i = 0; i < sizeof(bd->charging_data); i++)
-	{
-		free_charging(&(bd->charging_data[i]));
-	}
-	vPortFree(&(bd->charging_data));
-	for (int i = 0; i < sizeof(bd->radio_temp_data); i++)
-	{
-		free_radio_temp(&(bd->radio_temp_data[i]));
-	}
-	vPortFree(&(bd->radio_temp_data));
-	for (int i = 0; i < sizeof(bd->battery_voltages_data); i++)
-	{
-		free_battery_volt(&(bd->battery_voltages_data[i]));
-	}
-	vPortFree(&(bd->battery_voltages_data));
-	for (int i = 0; i < sizeof(bd->regulator_voltages_data); i++)
-	{
-		free_regulator_volt(&(bd->regulator_voltages_data[i]));
-	}
-	vPortFree(&(bd->regulator_voltages_data));
-	vPortFree(&bd);
-}
-
 void free_low_power(low_power_data_t* lpd){
 	for (int i = 0; i < sizeof(lpd->ir_data); i++)
 	{
@@ -82,16 +28,11 @@ void free_low_power(low_power_data_t* lpd){
 		free_led(&(lpd->led_current_data[i]));
 	}
 	vPortFree(&(lpd->led_current_data));
-	for (int i = 0; i < sizeof(lpd->gyro_data); i++)
+	for (int i = 0; i < sizeof(lpd->imu_data); i++)
 	{
-		free_gyro(&(lpd->gyro_data[i]));
+		free_imu(&(lpd->imu_data[i]));
 	}
-	vPortFree(&(lpd->gyro_data));
-	for (int i = 0; i < sizeof(lpd->magnetometer_data); i++)
-	{
-		free_magnetometer(&(lpd->magnetometer_data[i]));
-	}
-	vPortFree(&(lpd->magnetometer_data));
+	vPortFree(&(lpd->imu_data));
 	for (int i = 0; i < sizeof(lpd->charging_data); i++)
 	{
 		free_charging(&(lpd->charging_data[i]));
@@ -136,16 +77,11 @@ void free_idle(idle_data_t* id){
 		free_led(&(id->led_current_data[i]));
 	}
 	vPortFree(&(id->led_current_data));
-	for (int i = 0; i < sizeof(id->gyro_data); i++)
+	for (int i = 0; i < sizeof(id->imu_data); i++)
 	{
-		free_gyro(&(id->gyro_data[i]));
+		free_imu(&(id->imu_data[i]));
 	}
-	vPortFree(&(id->gyro_data));
-	for (int i = 0; i < sizeof(id->magnetometer_data); i++)
-	{
-		free_magnetometer(&(id->magnetometer_data[i]));
-	}
-	vPortFree(&(id->magnetometer_data));
+	vPortFree(&(id->imu_data));
 	for (int i = 0; i < sizeof(id->charging_data); i++)
 	{
 		free_charging(&(id->charging_data[i]));
@@ -190,16 +126,11 @@ void free_flash(flash_data_t* fd){
 		free_led(&(fd->led_current_data[i]));
 	}
 	vPortFree(&(fd->led_current_data));
-	for (int i = 0; i < sizeof(fd->gyro_data); i++)
+	for (int i = 0; i < sizeof(fd->imu_data); i++)
 	{
-		free_gyro(&(fd->gyro_data[i]));
+		free_imu(&(fd->imu_data[i]));
 	}
-	vPortFree(&(fd->gyro_data));
-	for (int i = 0; i < sizeof(fd->magnetometer_data); i++)
-	{
-		free_magnetometer(&(fd->magnetometer_data[i]));
-	}
-	vPortFree(&(fd->magnetometer_data));
+	vPortFree(&(fd->imu_data));
 	for (int i = 0; i < sizeof(fd->charging_data); i++)
 	{
 		free_charging(&(fd->charging_data[i]));
