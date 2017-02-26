@@ -23,7 +23,7 @@ void assertConstantDefinitions() {
 	// (multiply this by something to not a change in the smallest size;
 	// i.e. x2 means the lowest frequency sensor has an array of size 2)
 	// So, we should check that this property holds for all array lengths and reads_per_log of the sensors:
-	uint16_t idle_max_reads_per_log = max();
+	uint16_t idle_max_reads_per_log = 0; // TODO: use arrMax();
 	assert(idle_IR_DATA_ARR_LEN == idle_IR_READS_PER_LOG / idle_max_reads_per_log);
 	
 	// We also want to make sure that any sensors' reads per log is greater than zero,
@@ -31,4 +31,14 @@ void assertConstantDefinitions() {
 	// (because we can't log faster than we're even reading)
 	assert(idle_IR_READS_PER_LOG > 0);
 	
+}
+
+int arrMax(int* arr, uint8_t len) {
+	int maxVal = arr[0];
+	for (uint8_t i = 1; i < len; i++) {
+		if (arr[i] > maxVal) {
+			maxVal = arr[i];
+		}
+	}
+	return maxVal;
 }

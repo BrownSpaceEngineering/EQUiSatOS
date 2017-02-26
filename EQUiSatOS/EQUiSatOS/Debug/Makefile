@@ -1039,6 +1039,7 @@ C_SRCS +=  \
 ../src/radio/Stacks/Num_Stack.c \
 >>>>>>> commit issues
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 <<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
@@ -1054,14 +1055,15 @@ C_SRCS +=  \
 =======
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 >>>>>>> Stylistic adjustments
+=======
+../src/runnable_configurations/rtos_task_frequencies.c \
+>>>>>>> Merge idle and low power
 ../src/runnable_configurations/struct_tests.c \
 ../src/runnable_configurations/task_testing.c \
-../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
 ../src/stacks/idle_Stack.c \
-../src/stacks/low_power_Stack.c \
 ../src/stacks/Num_Stack.c \
 ../src/stacks/package_stack.c \
 ../src/stacks/Sensor_Structs.c \
@@ -1155,15 +1157,17 @@ src/radio/Stacks/stack_tests.o \
 src/radio/Stacks/State_Structs.o \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 >>>>>>> Stylistic adjustments
+=======
+src/runnable_configurations/rtos_task_frequencies.o \
+>>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
-src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
-src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
@@ -1237,6 +1241,7 @@ src/radio/Stacks/Data_Heap_Testing.o \
 >>>>>>> Wrote tests for Data_Heap custom malloc; few of them work yet
 src/radio/Stacks/Num_Stack.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 >>>>>>> commit issues
 =======
@@ -1254,14 +1259,15 @@ src/radio/Stacks/State_Structs.o \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> Stylistic adjustments
+=======
+src/runnable_configurations/rtos_task_frequencies.o \
+>>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
-src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
-src/stacks/low_power_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
@@ -1339,15 +1345,17 @@ src/radio/Stacks/stack_tests.d \
 src/radio/Stacks/State_Structs.d \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 >>>>>>> Stylistic adjustments
+=======
+src/runnable_configurations/rtos_task_frequencies.d \
+>>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
-src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
-src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
@@ -1411,6 +1419,7 @@ src/radio/Stacks/Data_Heap_Testing.d \
 src/radio/Stacks/Num_Stack.d \
 >>>>>>> Implemented basic malloc/free for data structs; removed timestamps from batches
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 <<<<<<< ab0505458ca48d400e7bd37e51a8c0924974fdef
 <<<<<<< 4b32649c4146f56390baaddd79cec7041e1a8727
 =======
@@ -1426,14 +1435,15 @@ src/radio/Stacks/State_Structs.d \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 >>>>>>> Stylistic adjustments
+=======
+src/runnable_configurations/rtos_task_frequencies.d \
+>>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
-src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
-src/stacks/low_power_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
@@ -1654,6 +1664,7 @@ LINKER_SCRIPT_DEP+=  \
 >>>>>>> Implemented the structures for errors
 =======
 
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 >>>>>>> Add data_array_tails reset; various equistack integrations
 =======
 
@@ -1665,6 +1676,8 @@ LINKER_SCRIPT_DEP+=  \
 =======
 
 >>>>>>> Finish changes up to build state
+=======
+>>>>>>> Merge idle and low power
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

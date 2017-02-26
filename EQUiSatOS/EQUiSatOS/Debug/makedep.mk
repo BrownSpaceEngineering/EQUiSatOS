@@ -153,10 +153,13 @@ src\radio\Stacks\Data_Heap.c
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 >>>>>>> Stylistic adjustments
 
+src\runnable_configurations\rtos_task_frequencies.c
+
 src\runnable_configurations\struct_tests.c
 
 src\runnable_configurations\task_testing.c
 
+<<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 src\stacks\boot_Stack.c
 
 <<<<<<< a80674390dc307fccd74b9c174b0b9c2490d0573
@@ -172,6 +175,8 @@ src\stacks\data_heap.c
 src\stacks\data_heap_testing.c
 >>>>>>> Stylistic adjustments
 =======
+=======
+>>>>>>> Merge idle and low power
 src\stacks\equistacks.c
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
 
@@ -186,8 +191,6 @@ src\radio\Stacks\State_Structs.c
 =======
 src\stacks\idle_Stack.c
 >>>>>>> Stylistic adjustments
-
-src\stacks\low_power_Stack.c
 
 src\stacks\Num_Stack.c
 
