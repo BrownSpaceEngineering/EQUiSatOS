@@ -27,8 +27,10 @@ void free_led(led_current_batch* lcb){
 	vPortFree(&lcb);
 }
 
-void free_gyro(gyro_batch* gb){
-	vPortFree(&(gb->values));
+void free_imu(imu_batch* gb){
+	vPortFree(&(gb->accelerometer));
+	vPortFree(&(gb->gyro));
+	vPortFree(&(gb->magnetometer));
 	vPortFree(&gb);
 }
 

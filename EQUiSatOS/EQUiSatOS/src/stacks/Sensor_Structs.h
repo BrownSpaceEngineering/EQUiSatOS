@@ -39,19 +39,21 @@ typedef struct led_current_batch
 } led_current_batch;
 void free_led(led_current_batch*);
 
-typedef struct gyro_batch
-{
-	// one for each axis
-	uint16_t values[3];
-} gyro_batch;
-void free_gyro(gyro_batch*);
-
 typedef struct magnetometer_batch
 {
 	// one for each axis
 	uint16_t values[3];
 } magnetometer_batch;
 void free_magnetometer(magnetometer_batch*);
+
+typedef struct imu_batch
+{
+	// one for each axis, for each sensor
+	uint16_t accelerometer[3];
+	uint16_t gyro[3];
+	uint16_t magnetometer[3];
+} imu_batch;
+void free_imu(imu_batch*);
 
 typedef struct charging_batch
 {

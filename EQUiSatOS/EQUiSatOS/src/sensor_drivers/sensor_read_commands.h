@@ -14,7 +14,7 @@ ir_batch read_ir_batch(void);
 temp_batch read_temp_batch(void);
 diode_batch read_diode_batch(void);
 led_current_batch read_led_current_batch(void);
-gyro_batch read_gyro_batch(void);
+imu_batch read_imu_batch(void);
 magnetometer_batch read_magnetometer_batch(void);
 charging_batch read_charging_batch(void);
 radio_temp_batch read_radio_temp_batch(void);

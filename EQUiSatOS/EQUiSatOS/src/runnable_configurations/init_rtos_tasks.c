@@ -13,10 +13,12 @@ void runit_2()
 {
 	//configure_i2c_master(SERCOM4);
 
+	// check that constants
+	assertConstantDefinitions();
+
 	// Initialize EQUiStacks
 	idle_readings_equistack = idle_Stack_Init();
 	flash_readings_equistack = flash_Stack_Init();
-
 
 	// Started at boot
 	xTaskCreate(battery_charging_task,
@@ -86,11 +88,11 @@ void runit_2()
 // 		suicide_test_handle);
 
 // 		xTaskCreate(task_stack_size_overflow_test,
-// 		"task stack size purpose test",
-// 		TASK_SENS_RD_IDLE_STACK_SIZE,
-// 		NULL,
-// 		TASK_SENS_RD_IDLE_PRIORITY,
-// 		suicide_test_handle);
+// 			"task stack size purpose test",
+// 			320/sizeof(portSTACK_TYPE), // 10 bytes of stack space
+// 			NULL,
+// 			tskIDLE_PRIORITY,
+// 			suicide_test_handle);
 
   /*xTaskCreate(test_free,
   		"Tests the freeing of structs",

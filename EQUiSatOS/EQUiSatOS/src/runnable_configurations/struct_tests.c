@@ -30,15 +30,12 @@ boot_data_t init_test_struct(void){
 	lcb.values[0] = 5;
 	BDT->led_current_data[0] = lcb;
 
-	gyro_batch gb;
+	imu_batch gb;
 	/*gb.timestamp = 65;*/
-	gb.values[0] = 5;
-	BDT->gyro_data[0] = gb;
-
-	magnetometer_batch mb;
-	/*mb.timestamp = 65;*/
-	mb.values[0] = 5;
-	BDT->magnetometer_data[0] = mb;
+	gb.accelerometer[0] = 5;
+	gb.gyro[0] = 5;
+	gb.magnetometer[0] = 5;
+	BDT->imu_data[0] = gb;
 
 	charging_batch cb;
 	/*cb.timestamp = 65;*/
