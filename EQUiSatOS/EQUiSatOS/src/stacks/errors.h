@@ -12,13 +12,14 @@
 #define ERRORS_H_
 
 #define ERROR_STACK_MAX 10
+#define ERROR_NUM_PER_STRUCT 5
 #include <asf.h>
 #include "../runnable_configurations/rtos_task_frequencies.h"
 
 typedef struct error_data_t
 {
 	uint32_t timestamp;
-	uint16_t errors[idle_MAX_READS_PER_LOG / idle_IR_READS_PER_LOG];
+	uint16_t errors[ERROR_NUM_PER_STRUCT];
 } error_data_t;
 
 typedef struct error_Stack

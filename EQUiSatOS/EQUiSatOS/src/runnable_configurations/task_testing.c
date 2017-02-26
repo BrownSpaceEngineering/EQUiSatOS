@@ -33,3 +33,21 @@ void task_suicide_test(void *pvParameters)
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );	
 }
+
+
+void task_stack_size_overflow_test(void *pvParameters)
+{
+	// initialize xNextWakeTime once
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+
+	for( ;; )
+	{
+		// block for a time
+		vTaskDelayUntil( &xNextWakeTime, 1000 / portTICK_PERIOD_MS);
+		
+		
+		
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}

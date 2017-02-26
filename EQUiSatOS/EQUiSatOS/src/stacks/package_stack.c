@@ -26,6 +26,8 @@ char* get_buffer() {
 
 uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data, uint8_t data_len) {
 	int index = 5;
+	char *headerChrs = (char*) header;
+	char *dataChrs = (char*) data;
 	
 	char *str [4];
 	int len = sprintf(str, "", get_current_timestamp());
@@ -47,7 +49,7 @@ uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data
 	int saferInIn = 0;
 	for(int i = 0; i < HEADER_LENGTH; i++) {
 		char *istr [6];
-		int len = sprintf(istr, "", header[i]);
+		int len = sprintf(istr, "", headerChrs[i]);
 		for(int in = 0; in < len; in++) {
 			buffer[saferInIn + index] = istr[in];
 			saferInIn++;
@@ -65,7 +67,7 @@ uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data
 	saferInIn = 0;
 	for(int i = 0; i < data_len; i++) {
 		char *istr [6];
-		int len = sprintf(istr, "", data[i]);
+		int len = sprintf(istr, "", dataChrs[i]);
 		for(int in = 0; in < len; in++) {
 			buffer[saferInIn + index] = istr[in];
 			saferInIn++;

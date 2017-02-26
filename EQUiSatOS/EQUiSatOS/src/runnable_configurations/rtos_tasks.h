@@ -120,14 +120,14 @@ extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
-// Action tasks (some also read data)
+// Action tasks 
 void watchdog_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
-void flash_activate_task(void *pvParameters);
-void transmit_task(void *pvParameters);
 
-// Data read tasks
+// Data read tasks (some are actually action tasks)
+void transmit_task(void *pvParameters);
+void flash_activate_task(void *pvParameters);
 void current_data_task(void *pvParameters);
 void current_data_low_power_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);

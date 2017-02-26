@@ -133,6 +133,7 @@ C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 ../src/runnable_configurations/struct_tests.c \
+../src/runnable_configurations/task_testing.c \
 ../src/stacks/boot_Stack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
@@ -204,6 +205,7 @@ OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
+src/runnable_configurations/task_testing.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
@@ -268,6 +270,7 @@ OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/struct_tests.o \
+src/runnable_configurations/task_testing.o \
 src/stacks/boot_Stack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
@@ -332,6 +335,7 @@ C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
+src/runnable_configurations/task_testing.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
@@ -396,6 +400,7 @@ C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/struct_tests.d \
+src/runnable_configurations/task_testing.d \
 src/stacks/boot_Stack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
@@ -471,6 +476,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
