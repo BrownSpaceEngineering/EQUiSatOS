@@ -159,6 +159,7 @@ src\runnable_configurations\struct_tests.c
 
 src\runnable_configurations\task_testing.c
 
+<<<<<<< 7217e1a9d836e30b58524d54454366ff41c7fde5
 <<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 src\stacks\boot_Stack.c
 
@@ -177,6 +178,10 @@ src\stacks\data_heap_testing.c
 =======
 =======
 >>>>>>> Merge idle and low power
+=======
+src\stacks\equistack.c
+
+>>>>>>> Create generic equistack (will it work?)
 src\stacks\equistacks.c
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
 

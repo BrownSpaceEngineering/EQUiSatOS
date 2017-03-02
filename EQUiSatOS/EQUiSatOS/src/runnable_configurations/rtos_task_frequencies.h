@@ -37,21 +37,21 @@
 // TODO: ADD more
 
 /* Current data reader reads per log */
-/* READS_PER_LOG for each sensor at each state - 
+/* LOOPS_PER_LOG for each sensor at each state - 
 	how often the data is logged in a equistack for transmission 
 	NOTE: because the actual HZ frequency entered here is only computed relative 
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
-#define idle_IR_READS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_TEMP_READS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_DIODE_READS_PER_LOG				1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_LED_CURRENT_READS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_IMU_READS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_MAGNETOMETER_READS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_CHARGING_DATA_READS_PER_LOG		1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_RADIO_TEMP_READS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_BAT_VOLTAGE_READS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_REG_VOLTAGE_READS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_IR_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_TEMP_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_DIODE_LOOPS_PER_LOG				1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_LED_CURRENT_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_IMU_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_MAGNETOMETER_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_CHARGING_DATA_LOOPS_PER_LOG		1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_RADIO_TEMP_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_BAT_VOLTAGE_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_REG_VOLTAGE_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
 
 /*
  * These may have data array lists longer than 1
@@ -64,14 +64,14 @@
 #define flash_BAT_VOLTAGE_DATA_ARR_LEN			1
 
 /* Flash action and data reader task reads per log */
-/* READS_PER_LOG for each sensor at each state - 
+/* LOOPS_PER_LOG for each sensor at each state - 
 	how often the data is logged in a equistack for transmission 
 	NOTE: because the actual HZ frequency entered here is only computed relative 
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
-#define flash_TEMP_READS_PER_LOG				(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
-#define flash_LED_CURRENT_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
-#define flash_BAT_VOLTAGE_READS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+#define flash_TEMP_LOOPS_PER_LOG				(2000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+#define flash_LED_CURRENT_LOOPS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
+#define flash_BAT_VOLTAGE_LOOPS_PER_LOG			(1000 / 1000) // = ms / FLASH_ACTIVATE_TASK_FREQ
 
 
 #define TRANSMIT_TASK_FREQ						1000
@@ -82,9 +82,9 @@
 
 /* Radio transmit and data read task reads per log */
 /* ibid */
-#define transmit_RADIO_TEMP_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
-#define transmit_LED_CURRENT_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
-#define transmit_BAT_VOLTAGE_READS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+#define transmit_RADIO_TEMP_LOOPS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+#define transmit_LED_CURRENT_LOOPS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
+#define transmit_BAT_VOLTAGE_LOOPS_PER_LOG		(1000 / 1000) // = ms / TRANSMIT_TASK_FREQ
 
 
 #define ATTITUDE_DATA_TASK_FREQ							1000
@@ -96,10 +96,10 @@
 
 /* Attitude data read task reads per log */
 /* ibid */
-#define attitute_data_IR_READS_PER_LOG					(2000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
-#define attitute_data_DIODE_READS_PER_LOG				(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
-#define attitute_data_IMU_READS_PER_LOG					(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
-#define attitute_data_MAGNETOMETER_READS_PER_LOG		(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_IR_LOOPS_PER_LOG					(2000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_DIODE_LOOPS_PER_LOG				(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_IMU_LOOPS_PER_LOG					(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
+#define attitute_data_MAGNETOMETER_LOOPS_PER_LOG		(1000 / 1000) // = ms / ATTITUDE_DATA__ACTIVATE_TASK_FREQ
 
 // TODO: Do this for:
 // Flash comparison?

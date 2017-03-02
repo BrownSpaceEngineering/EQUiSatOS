@@ -1060,6 +1060,7 @@ C_SRCS +=  \
 >>>>>>> Merge idle and low power
 ../src/runnable_configurations/struct_tests.c \
 ../src/runnable_configurations/task_testing.c \
+../src/stacks/equistack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
@@ -1164,6 +1165,7 @@ src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
+src/stacks/equistack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
@@ -1264,6 +1266,7 @@ src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
+src/stacks/equistack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
@@ -1352,6 +1355,7 @@ src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
+src/stacks/equistack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
@@ -1440,6 +1444,7 @@ src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
+src/stacks/equistack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
@@ -1675,9 +1680,14 @@ LINKER_SCRIPT_DEP+=  \
 >>>>>>> Post-flow meeting changes
 =======
 
+<<<<<<< 7217e1a9d836e30b58524d54454366ff41c7fde5
 >>>>>>> Finish changes up to build state
 =======
 >>>>>>> Merge idle and low power
+=======
+
+
+>>>>>>> Create generic equistack (will it work?)
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1
