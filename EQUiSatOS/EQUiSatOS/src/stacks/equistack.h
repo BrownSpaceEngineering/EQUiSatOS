@@ -8,8 +8,6 @@
 
 #ifndef EQUISTACK_H_
 #define EQUISTACK_H_
-
-#define IDLE_STACK_MAX 20
 #include "equistacks.h"
 
 typedef struct equistack

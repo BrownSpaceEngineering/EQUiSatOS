@@ -179,10 +179,67 @@ void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list,
 }
 
 /* Action Tasks */
-void watchdog_task(void *pvParameters) {};
-void antenna_deploy_task(void *pvParameters) {};
-void battery_charging_task(void *pvParameters) {};
-void flash_activate_task(void *pvParameters) {};
+void watchdog_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, WATCHDOG_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// TODO
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+void antenna_deploy_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// TODO
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+void battery_charging_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// TODO
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+/* Data Read Tasks */
+void flash_activate_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// TODO
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
 void transmit_task(void *pvParameters)
 {
 	// initialize xNextWakeTime once
@@ -198,13 +255,13 @@ void transmit_task(void *pvParameters)
 		do
 		{
 			// read the next state to transmit (pop something off state queue) 
-			int nextState = IDLE; // num_Stack_Top(last_state_read_equistack); 
+			int nextState = IDLE; // (int*) equistack_Top(last_state_read_equistack); 
 		
 			// based on what state we're in, compile a different message
 			switch(nextState)
 			{
 // 				case IDLE: ; // empty statement to allow definition
-// 					idle_data_t* idle_data_to_trans = idle_Stack_Get(idle_readings_equistack, 0);
+// 					idle_data_t* idle_data_to_trans = (idle_data_t*) equistack_Get(idle_readings_equistack, 0);
 // 					
 // 					//if (idle_data_to_trans != NULL) 
 // 					//{ 
@@ -226,7 +283,6 @@ void transmit_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-/* Data Read Tasks */
 void current_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
@@ -241,7 +297,7 @@ void current_data_task(void *pvParameters)
 	uint8_t data_array_tails[NUM_DATA_TYPES];
 	
 	// initialize first struct
-	idle_data_t *current_struct = idle_Stack_Initial_Stage(idle_readings_equistack);
+	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(idle_readings_equistack);
 	assert(current_struct != NULL); // TESTING
 	current_struct->timestamp = get_current_timestamp();
 		
@@ -263,11 +319,8 @@ void current_data_task(void *pvParameters)
 			idle_data_t* prev_cur_struct = current_struct;
 			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
-			current_struct = idle_Stack_Stage(idle_readings_equistack);
+			current_struct = (idle_data_t*) equistack_Stage(idle_readings_equistack);
 			current_struct->timestamp = get_current_timestamp();
-			
-			// log state read
-			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
@@ -275,7 +328,7 @@ void current_data_task(void *pvParameters)
 			// TESTING
 			assert(prev_cur_struct != current_struct);
 			assert(data_array_tails[0] == 0 && data_array_tails[1] == 0 && data_array_tails[2] == 0 && data_array_tails[3] == 0 && data_array_tails[4] == 0 && data_array_tails[NUM_DATA_TYPES-1] == 0);
-			assert(idle_Stack_Get(idle_readings_equistack, 0) == prev_cur_struct);
+			assert((idle_data_t*) equistack_Get(idle_readings_equistack, 0) == prev_cur_struct);
 		}
 		
 		
@@ -309,8 +362,49 @@ void current_data_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-void current_data_low_power_task(void *pvParameters) {};
-void attitude_data_task(void *pvParameters) {};
+void attitude_data_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	// current_data_task for extensive comments / testing
+		
+	// tracking arrays
+	uint8_t loops_since_last_log[NUM_DATA_TYPES];
+	uint8_t data_array_tails[NUM_DATA_TYPES];
+	
+	attitude_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(attitude_readings_equistack);
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// update current_struct if necessary
+		if (data_array_tails[IR_DATA] >= attitute_data_IR_DATA_ARR_LEN)
+		{
+			// validate previous stored value in stack, getting back the next staged address we can start adding to
+			current_struct = (attitude_data_t*) equistack_Stage(attitude_readings_equistack);
+			current_struct->timestamp = get_current_timestamp();
+			
+			// TODO: log state read
+			//equistack_Stage(last_reading_type_equistack, ATTITUDE_DATA);
+			
+			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+		}
+		
+		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, attitute_data_IR_LOOPS_PER_LOG);
+		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, attitute_data_DIODE_LOOPS_PER_LOG);
+		add_imu_batch_if_ready(&(current_struct->imu_data), data_array_tails, loops_since_last_log, attitute_data_IMU_LOOPS_PER_LOG);
+		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, attitute_data_MAGNETOMETER_LOOPS_PER_LOG);
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
 
 /* Helper Functions */
 uint32_t get_current_timestamp()
