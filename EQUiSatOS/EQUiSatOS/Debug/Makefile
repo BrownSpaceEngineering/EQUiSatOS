@@ -170,6 +170,7 @@ C_SRCS +=  \
 ../src/ASF/sam0/drivers/nvm/nvm.c \
 ../src/ASF/sam0/drivers/port/port.c \
 ../src/processor_drivers/ADC_Commands.c \
+../src/processor_drivers/Watchdog_Task.c \
 ../src/processor_drivers/Direct_Pin_Commands.c \
 ../src/processor_drivers/I2C_Commands.c \
 ../src/processor_drivers/PWM_Commands.c \
@@ -231,6 +232,7 @@ src/ASF/common/utils/unit_test/suite.o \
 src/ASF/sam0/drivers/nvm/nvm.o \
 src/ASF/sam0/drivers/port/port.o \
 src/processor_drivers/ADC_Commands.o \
+src/processor_drivers/Watchdog_Task.o \
 src/processor_drivers/Direct_Pin_Commands.o \
 src/processor_drivers/I2C_Commands.o \
 src/processor_drivers/PWM_Commands.o \
@@ -285,6 +287,7 @@ src/ASF/common/utils/unit_test/suite.o \
 src/ASF/sam0/drivers/nvm/nvm.o \
 src/ASF/sam0/drivers/port/port.o \
 src/processor_drivers/ADC_Commands.o \
+src/processor_drivers/Watchdog_Task.o \
 src/processor_drivers/Direct_Pin_Commands.o \
 src/processor_drivers/I2C_Commands.o \
 src/processor_drivers/PWM_Commands.o \
@@ -339,6 +342,7 @@ src/ASF/common/utils/unit_test/suite.d \
 src/ASF/sam0/drivers/nvm/nvm.d \
 src/ASF/sam0/drivers/port/port.d \
 src/processor_drivers/ADC_Commands.d \
+src/processor_drivers/Watchdog_Task.d \
 src/processor_drivers/Direct_Pin_Commands.d \
 src/processor_drivers/I2C_Commands.d \
 src/processor_drivers/PWM_Commands.d \
@@ -393,6 +397,7 @@ src/ASF/common/utils/unit_test/suite.d \
 src/ASF/sam0/drivers/nvm/nvm.d \
 src/ASF/sam0/drivers/port/port.d \
 src/processor_drivers/ADC_Commands.d \
+src/processor_drivers/Watchdog_Task.d \
 src/processor_drivers/Direct_Pin_Commands.d \
 src/processor_drivers/I2C_Commands.d \
 src/processor_drivers/PWM_Commands.d \
@@ -424,6 +429,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 

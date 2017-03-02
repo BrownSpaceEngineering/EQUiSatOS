@@ -76,6 +76,8 @@ src\ASF\sam0\drivers\port\port.c
 
 src\processor_drivers\ADC_Commands.c
 
+src\processor_drivers\Watchdog_Task.c
+
 src\processor_drivers\Direct_Pin_Commands.c
 
 src\processor_drivers\I2C_Commands.c

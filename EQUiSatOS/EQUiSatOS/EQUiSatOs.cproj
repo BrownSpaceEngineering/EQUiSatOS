@@ -1479,6 +1479,9 @@
     <Compile Include="src\processor_drivers\ADC_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\processor_drivers\Watchdog_Task.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\processor_drivers\Direct_Pin_Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1519,6 +1522,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\Watchdog_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\Watchdog_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.c">
