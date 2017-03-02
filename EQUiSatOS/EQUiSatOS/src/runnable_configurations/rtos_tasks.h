@@ -30,13 +30,11 @@
 #include "init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
-#include "stacks/equistacks.h" 
+#include "stacks/equistack.h" 
 
 /* Task Properties - see rtos_task_frequencies.h for frequencies */
-
-// Started at boot
-#define TASK_RADIO_TRANSMIT_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_RADIO_TRANSMIT_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_BATTERY_CHARGE_STACK_SIZE				(1024)/sizeof(portSTACK_TYPE)
+#define TASK_BATTERY_CHARGE_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
@@ -48,13 +46,19 @@
 #define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_BOOT_PRIORITY					(tskIDLE_PRIORITY)
+#define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
 
 #define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
+
+/* Data reading task stack sizes - how many they can store before overwriting */
+#define IDLE_STACK_MAX			2 // one stored (available for transmission), one staged
+#define FLASH_STACK_MAX			10  
+#define TRANSMIT_STACK_MAX		10
+#define ATTITUDE_STACK_MAX		10
 
 // Don't think we're going to need this due to generally static frequencies
 /* Enum for all tasks (to allow for array-wise referencing for freq, etc.) */
@@ -67,7 +71,7 @@
 // 	SENSOR_READ_BOOT,
 // 	SENSOR_READ_LOW_POWER,
 // 	NUM_TASKS
-// } task_type;
+// } task_type_t;
 
 /* Enum for all states
    NOTE:
@@ -85,9 +89,9 @@ typedef enum
 	HELLO_WORLD,
 	IDLE,
 	LOW_POWER
-} state_type;
+} state_type_t;
 
-/* Enum for all types of collected data (for consistency across sensor read functions) 
+/* Enum for all types of collected sensor readings (for consistency across sensor read functions) 
    Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
    NOTE:
 	If you add/remove a type of collected data, there are several things you must change:
@@ -107,7 +111,16 @@ typedef enum
 	BAT_VOLT_DATA,
 	REG_VOLT_DATA,
 	NUM_DATA_TYPES //= REG_VOLT_DATA + 1
-} data_types;
+} sensor_type_t;
+
+/* enum for all types of data that can be read 
+	(all types that will be in the 'data' section of a message packet */
+typedef enum
+{
+	ATTITUDE_DATA,
+	TRANSMIT_DATA,
+	FLASH_DATA
+} msg_data_type_t;
 
 /* Task headers */
 
@@ -129,10 +142,11 @@ void current_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
 
 /* Queue definitions */
-uint8_t *last_state_read_equistack;
-idle_Stack *idle_readings_equistack; // will have only two elements
-flash_Stack *flash_readings_equistack;
-/* attitude_Stack attitude_readings_equistack;*/
+equistack* last_reading_type_equistack; // of msg_data_type_t
+equistack* idle_readings_equistack; // of idle_data_t
+equistack* flash_readings_equistack; // of flash_data_t
+equistack* transmit_readings_equistack; // of transmit_data_t
+equistack* attitude_readings_equistack; // of attitude_data_t
 
 /* Individual sensor helpers for data reading tasks */
 void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);

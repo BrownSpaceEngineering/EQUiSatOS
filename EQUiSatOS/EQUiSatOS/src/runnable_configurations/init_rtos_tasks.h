@@ -11,7 +11,7 @@
 #include "rtos_tasks.h"
 #include "rtos_task_frequencies.h"
 #include "struct_tests.h"
-//#include "radio/Stacks/EquiStacks.h"
+#include "stacks/equistack.h"
 
 // /* Global task frequencies to allow for changing them in different states */
 // We shouldn't need to change more than a few of these... it might be better to just use variables

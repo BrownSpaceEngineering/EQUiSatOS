@@ -37,21 +37,16 @@
 // TODO: ADD more
 
 /* Current data reader reads per log */
-/* LOOPS_PER_LOG for each sensor at each state - 
-	how often the data is logged in a equistack for transmission 
-	NOTE: because the actual HZ frequency entered here is only computed relative 
-	to the execution frequency of the reading RTOS task, it must be less than that frequency.
-	*/
-#define idle_IR_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_TEMP_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_DIODE_LOOPS_PER_LOG				1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_LED_CURRENT_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_IMU_LOOPS_PER_LOG					1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_MAGNETOMETER_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_CHARGING_DATA_LOOPS_PER_LOG		1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_RADIO_TEMP_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_BAT_VOLTAGE_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
-#define idle_REG_VOLTAGE_LOOPS_PER_LOG			1 // ms freq == CURRENT_DATA_TASK_FREQ
+#define idle_IR_LOOPS_PER_LOG					1 // defined to be one?
+#define idle_TEMP_LOOPS_PER_LOG					1 // defined to be one?
+#define idle_DIODE_LOOPS_PER_LOG				1 // defined to be one?
+#define idle_LED_CURRENT_LOOPS_PER_LOG			1 // defined to be one?
+#define idle_IMU_LOOPS_PER_LOG					1 // defined to be one?
+#define idle_MAGNETOMETER_LOOPS_PER_LOG			1 // defined to be one?
+#define idle_CHARGING_DATA_LOOPS_PER_LOG		1 // defined to be one?
+#define idle_RADIO_TEMP_LOOPS_PER_LOG			1 // defined to be one?
+#define idle_BAT_VOLTAGE_LOOPS_PER_LOG			1 // defined to be one?
+#define idle_REG_VOLTAGE_LOOPS_PER_LOG			1 // defined to be one?
 
 /*
  * These may have data array lists longer than 1
@@ -65,7 +60,11 @@
 
 /* Flash action and data reader task reads per log */
 /* LOOPS_PER_LOG for each sensor at each state - 
-	how often the data is logged in a equistack for transmission 
+	How many times the whole sensor task loop must interate before the given sensor is logged 
+	in a equistack for transmission. Note that this has a relationship with the array length;
+	more frequent sensors (with fewer loops per log) must have longer arrays.
+	(see tests in rtos_task_frequencies.c)
+	
 	NOTE: because the actual HZ frequency entered here is only computed relative 
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
