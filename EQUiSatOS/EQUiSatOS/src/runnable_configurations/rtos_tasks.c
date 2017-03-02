@@ -8,9 +8,9 @@
 #include "rtos_tasks.h"
 
 /* Individual sensor helpers for data reading tasks */
-void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[IR_DATA] >= reads_per_log)
+	if (loops_since_last_log[IR_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		ir_batch batch = read_ir_batch();
@@ -30,13 +30,13 @@ void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *rea
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
-		reads_since_last_log[IR_DATA] = 0;
+		loops_since_last_log[IR_DATA] = 0;
 	}
 }
 
-void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[TEMP_DATA] >= reads_per_log)
+	if (loops_since_last_log[TEMP_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		temp_batch batch = read_temp_batch();
@@ -46,13 +46,13 @@ void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int 
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[TEMP_DATA] = data_array_tails[TEMP_DATA] + 1;
-		reads_since_last_log[TEMP_DATA] = 0;
+		loops_since_last_log[TEMP_DATA] = 0;
 	}
 }
 
-void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[DIODE_DATA] >= reads_per_log)
+	if (loops_since_last_log[DIODE_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		diode_batch batch = read_diode_batch();
@@ -62,13 +62,13 @@ void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, in
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[DIODE_DATA] = data_array_tails[DIODE_DATA] + 1;
-		reads_since_last_log[DIODE_DATA] = 0;
+		loops_since_last_log[DIODE_DATA] = 0;
 	}
 }
 
-void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[LED_CUR_DATA] >= reads_per_log)
+	if (loops_since_last_log[LED_CUR_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		led_current_batch batch = read_led_current_batch();
@@ -78,13 +78,13 @@ void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_arr
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[LED_CUR_DATA] = data_array_tails[LED_CUR_DATA] + 1;
-		reads_since_last_log[LED_CUR_DATA] = 0;
+		loops_since_last_log[LED_CUR_DATA] = 0;
 	}
 }
 
-void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[IMU_DATA] >= reads_per_log)
+	if (loops_since_last_log[IMU_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		imu_batch batch = read_imu_batch();
@@ -94,13 +94,13 @@ void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *r
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[IMU_DATA] = data_array_tails[IMU_DATA] + 1;
-		reads_since_last_log[IMU_DATA] = 0;
+		loops_since_last_log[IMU_DATA] = 0;
 	}
 }
 
-void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[MAGNETOMETER_DATA] >= reads_per_log)
+	if (loops_since_last_log[MAGNETOMETER_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		magnetometer_batch batch = read_magnetometer_batch();
@@ -110,13 +110,13 @@ void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_a
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[MAGNETOMETER_DATA] = data_array_tails[MAGNETOMETER_DATA] + 1;
-		reads_since_last_log[MAGNETOMETER_DATA] = 0;
+		loops_since_last_log[MAGNETOMETER_DATA] = 0;
 	}
 }
 
-void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[CHARGING_DATA] >= reads_per_log)
+	if (loops_since_last_log[CHARGING_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		charging_batch batch = read_charging_batch();
@@ -126,13 +126,13 @@ void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tai
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[CHARGING_DATA] = data_array_tails[CHARGING_DATA] + 1;
-		reads_since_last_log[CHARGING_DATA] = 0;
+		loops_since_last_log[CHARGING_DATA] = 0;
 	}
 }
 
-void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[RADIO_TEMP_DATA] >= reads_per_log)
+	if (loops_since_last_log[RADIO_TEMP_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		radio_temp_batch batch = read_radio_temp_batch();
@@ -142,13 +142,13 @@ void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[RADIO_TEMP_DATA] = data_array_tails[RADIO_TEMP_DATA] + 1;
-		reads_since_last_log[RADIO_TEMP_DATA] = 0;
+		loops_since_last_log[RADIO_TEMP_DATA] = 0;
 	}
 }
 
-void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[BAT_VOLT_DATA] >= reads_per_log)
+	if (loops_since_last_log[BAT_VOLT_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		battery_voltages_batch batch = read_battery_voltages_batch();
@@ -158,13 +158,13 @@ void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[BAT_VOLT_DATA] = data_array_tails[BAT_VOLT_DATA] + 1;
-		reads_since_last_log[BAT_VOLT_DATA] = 0;
+		loops_since_last_log[BAT_VOLT_DATA] = 0;
 	}
 }
 
-void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log)
+void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
 {
-	if (reads_since_last_log[REG_VOLT_DATA] >= reads_per_log)
+	if (loops_since_last_log[REG_VOLT_DATA] >= loops_per_log)
 	{
 		// read sensor and compile into batch
 		regulator_voltages_batch batch = read_regulator_voltages_batch();
@@ -174,7 +174,7 @@ void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list,
 		
 		// increment array tail marker and reset reads-per-log counter
 		data_array_tails[REG_VOLT_DATA] = data_array_tails[REG_VOLT_DATA] + 1;
-		reads_since_last_log[REG_VOLT_DATA] = 0;
+		loops_since_last_log[REG_VOLT_DATA] = 0;
 	}
 }
 
@@ -233,7 +233,7 @@ void current_data_task(void *pvParameters)
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	// tracking arrays
-	uint8_t reads_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
+	uint8_t loops_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
 												// one of the sensors, so the value in here keeps growing?
 												
 	// NOTE: data_array_tails should be this big for all data reading tasks 
@@ -269,7 +269,7 @@ void current_data_task(void *pvParameters)
 			// log state read
 			//num_Stack_Push(last_state_read_equistack, IDLE);
 			
-			// reset data array tails so we're writing at the start // TODO: reads_since_last_log = ...; ???
+			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
 			
 			// TESTING
@@ -283,27 +283,27 @@ void current_data_task(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, reads_since_last_log, idle_IR_READS_PER_LOG);
-// 		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, reads_since_last_log, idle_TEMP_READS_PER_LOG);
-// 		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, reads_since_last_log, idle_DIODE_READS_PER_LOG);
-// 		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, reads_since_last_log, idle_LED_CURRENT_READS_PER_LOG);
-// 		add_gyro_batch_if_ready(&(current_struct->gyro_data), data_array_tails, reads_since_last_log, idle_GYRO_READS_PER_LOG);
-// 		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, reads_since_last_log, idle_MAGNETOMETER_READS_PER_LOG);
-// 		add_charging_batch_if_ready(&(current_struct->charging_data), data_array_tails, reads_since_last_log, idle_CHARGING_DATA_READS_PER_LOG);
-// 		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), data_array_tails, reads_since_last_log, idle_RADIO_TEMP_READS_PER_LOG);
-// 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, reads_since_last_log, idle_BAT_VOLTAGE_READS_PER_LOG);
-// 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), data_array_tails, reads_since_last_log, idle_REG_VOLTAGE_READS_PER_LOG);
+		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, idle_IR_LOOPS_PER_LOG);
+// 		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, loops_since_last_log, idle_TEMP_LOOPS_PER_LOG);
+// 		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, idle_DIODE_LOOPS_PER_LOG);
+// 		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, idle_LED_CURRENT_LOOPS_PER_LOG);
+// 		add_gyro_batch_if_ready(&(current_struct->gyro_data), data_array_tails, loops_since_last_log, idle_GYRO_LOOPS_PER_LOG);
+// 		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, idle_MAGNETOMETER_LOOPS_PER_LOG);
+// 		add_charging_batch_if_ready(&(current_struct->charging_data), data_array_tails, loops_since_last_log, idle_CHARGING_DATA_LOOPS_PER_LOG);
+// 		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), data_array_tails, loops_since_last_log, idle_RADIO_TEMP_LOOPS_PER_LOG);
+// 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, idle_BAT_VOLTAGE_LOOPS_PER_LOG);
+// 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), data_array_tails, loops_since_last_log, idle_REG_VOLTAGE_LOOPS_PER_LOG);
 		
 		// FOR TESTING
-		int ir_reads_since = reads_since_last_log[0];
-		int last_sens_reads_since = reads_since_last_log[NUM_DATA_TYPES-1];
+		int ir_reads_since = loops_since_last_log[0];
+		int last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
 		
-		// increment reads in reads_since_last_log
-		increment_all(reads_since_last_log, NUM_DATA_TYPES);		
+		// increment reads in loops_since_last_log
+		increment_all(loops_since_last_log, NUM_DATA_TYPES);		
 		
 		// TESTING
-		assert(reads_since_last_log[0] == ir_reads_since + 1);
-		assert(reads_since_last_log[NUM_DATA_TYPES-1] == last_sens_reads_since + 1);
+		assert(loops_since_last_log[0] == ir_reads_since + 1);
+		assert(loops_since_last_log[NUM_DATA_TYPES-1] == last_sens_reads_since + 1);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

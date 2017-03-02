@@ -12,6 +12,8 @@ src\runnable_configurations\struct_tests.c
 
 src\runnable_configurations\task_testing.c
 
+src\stacks\equistack.c
+
 src\stacks\equistacks.c
 
 src\stacks\errors.c

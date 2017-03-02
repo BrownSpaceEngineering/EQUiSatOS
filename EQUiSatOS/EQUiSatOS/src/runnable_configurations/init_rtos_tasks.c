@@ -124,7 +124,6 @@ void set_state_idle()
 	
 	vTaskResume(current_data_task_handle);
 	vTaskResume(flash_activate_task_handle);
-	vTaskSuspend(current_data_low_power_task_handle);
 }
 
 void set_state_low_power()
@@ -133,6 +132,5 @@ void set_state_low_power()
 	
 	// TODO: ibid
 	vTaskResume(current_data_task_handle);
-	vTaskSuspend(current_data_task_handle);
 	vTaskSuspend(flash_activate_task_handle);
 }

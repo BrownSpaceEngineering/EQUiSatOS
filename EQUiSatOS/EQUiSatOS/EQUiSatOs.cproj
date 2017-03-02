@@ -811,6 +811,12 @@
     <Compile Include="src\runnable_configurations\task_testing.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\stacks\equistack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\equistack.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\stacks\equistacks.c">
       <SubType>compile</SubType>
     </Compile>

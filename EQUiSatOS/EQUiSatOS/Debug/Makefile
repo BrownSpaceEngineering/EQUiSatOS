@@ -135,6 +135,7 @@ C_SRCS +=  \
 ../src/runnable_configurations/rtos_task_frequencies.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/runnable_configurations/task_testing.c \
+../src/stacks/equistack.c \
 ../src/stacks/equistacks.c \
 ../src/stacks/errors.c \
 ../src/stacks/flash_Stack.c \
@@ -206,6 +207,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
+src/stacks/equistack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
@@ -270,6 +272,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
+src/stacks/equistack.o \
 src/stacks/equistacks.o \
 src/stacks/errors.o \
 src/stacks/flash_Stack.o \
@@ -334,6 +337,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
+src/stacks/equistack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
@@ -398,6 +402,7 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
+src/stacks/equistack.d \
 src/stacks/equistacks.d \
 src/stacks/errors.d \
 src/stacks/flash_Stack.d \
@@ -471,6 +476,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
