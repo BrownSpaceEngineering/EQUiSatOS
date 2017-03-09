@@ -859,16 +859,31 @@
     <Compile Include="src\stacks\Sensor_Structs.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\stack_tests.c">
+    <Compile Include="src\stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\stack_tests.h">
+    <Compile Include="src\stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\State_Structs.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\State_Structs.h">
+    <Compile Include="src\stacks\test_data.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\test_data.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\test_stacks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\test_stacks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\test_structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\stacks\test_structs.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="..\..\..\..\EquiSAT%2520Backup\EQUiSat_before_rename.zip">
