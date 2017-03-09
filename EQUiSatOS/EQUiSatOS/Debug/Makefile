@@ -1068,8 +1068,15 @@ C_SRCS +=  \
 ../src/stacks/Num_Stack.c \
 ../src/stacks/package_stack.c \
 ../src/stacks/Sensor_Structs.c \
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 ../src/stacks/stack_tests.c \
 ../src/stacks/State_Structs.c \
+=======
+../src/stacks/State_Structs.c \
+../src/stacks/test_data.c \
+../src/stacks/test_stacks.c \
+../src/stacks/test_structs.c \
+>>>>>>> Added v basic tests and found a bug in Equistack
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.c \
 ../src/ASF/sam0/boards/samd21_xplained_pro/board_init.c \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c \
@@ -1173,8 +1180,15 @@ src/stacks/idle_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
+=======
+src/stacks/State_Structs.o \
+src/stacks/test_data.o \
+src/stacks/test_stacks.o \
+src/stacks/test_structs.o \
+>>>>>>> Added v basic tests and found a bug in Equistack
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.o \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.o \
@@ -1274,8 +1288,15 @@ src/stacks/idle_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
 src/stacks/Sensor_Structs.o \
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
+=======
+src/stacks/State_Structs.o \
+src/stacks/test_data.o \
+src/stacks/test_stacks.o \
+src/stacks/test_structs.o \
+>>>>>>> Added v basic tests and found a bug in Equistack
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.o \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.o \
@@ -1363,8 +1384,15 @@ src/stacks/idle_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
+=======
+src/stacks/State_Structs.d \
+src/stacks/test_data.d \
+src/stacks/test_stacks.d \
+src/stacks/test_structs.d \
+>>>>>>> Added v basic tests and found a bug in Equistack
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.d \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.d \
@@ -1452,8 +1480,15 @@ src/stacks/idle_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
 src/stacks/Sensor_Structs.d \
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
+=======
+src/stacks/State_Structs.d \
+src/stacks/test_data.d \
+src/stacks/test_stacks.d \
+src/stacks/test_structs.d \
+>>>>>>> Added v basic tests and found a bug in Equistack
 src/ASF/common/utils/interrupt/interrupt_sam_nvic.d \
 src/ASF/sam0/boards/samd21_xplained_pro/board_init.d \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.d \

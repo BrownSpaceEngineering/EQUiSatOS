@@ -6,6 +6,6 @@ int main(void)
 {
 	// Initialize the SAM system
 	system_init();
-	runit_2();
-	//data_heap_tests();
+	// runit_2();
+	test_equistack();
 }

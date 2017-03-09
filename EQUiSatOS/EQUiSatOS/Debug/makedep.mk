@@ -203,10 +203,19 @@ src\stacks\package_stack.c
 
 src\stacks\Sensor_Structs.c
 
-src\stacks\stack_tests.c
-
 src\stacks\State_Structs.c
 
+<<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
+src\stacks\State_Structs.c
+
+=======
+src\stacks\test_data.c
+
+src\stacks\test_stacks.c
+
+src\stacks\test_structs.c
+
+>>>>>>> Added v basic tests and found a bug in Equistack
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
