@@ -15,11 +15,11 @@
 typedef struct idle_data_t
 {
 	uint32_t timestamp;
-	/* lists sizes are proportional to the max READS_PER_LOG
-	(because the higher the MAX number of READS_PER_LOG, the lower the 
+	/* lists sizes are proportional to the max LOOPS_PER_LOG
+	(because the higher the MAX number of LOOPS_PER_LOG, the lower the 
 	frequency of the least frequent task, and the larger our higher-frequency 
 	arrays need to be to get that one element of lower frequency data).
-	They are also inversely proportional to the READS_PER_LOG of each 
+	They are also inversely proportional to the LOOPS_PER_LOG of each 
 	corresponding sensor because if MORE reads are required for each log,
 	the data is of LOWER frequency and thus needs a SMALLER array. */
 	ir_batch ir_data								[idle_IR_DATA_ARR_LEN];
@@ -45,9 +45,30 @@ typedef struct flash_data_t
 	
 } flash_data_t;
 
+typedef struct transmit_data_t
+{
+	uint32_t timestamp;
+	/* ibid */
+	radio_temp_batch radio_temp_data				[transmit_RADIO_TEMP_DATA_ARR_LEN];
+	led_current_batch led_current_data				[transmit_LED_CURRENT_DATA_ARR_LEN];
+	battery_voltages_batch battery_voltages_data	[transmit_BAT_VOLTAGE_DATA_ARR_LEN];
+	
+} transmit_data_t;
+
+typedef struct attitude_data_t
+{
+	uint32_t timestamp;
+	/* ibid */
+	ir_batch ir_data								[attitute_data_IR_DATA_ARR_LEN];
+	diode_batch diode_data							[attitute_data_DIODE_DATA_ARR_LEN];
+	imu_batch imu_data								[attitute_data_IMU_DATA_ARR_LEN];
+	magnetometer_batch magnetometer_data			[attitute_data_MAGNETOMETER_DATA_ARR_LEN];
+	
+} attitude_data_t;
+
+// DEPRECATED
 void free_idle(idle_data_t* id);
 void free_flash(flash_data_t* fd);
 
-// TODO: MORE
 
 #endif
