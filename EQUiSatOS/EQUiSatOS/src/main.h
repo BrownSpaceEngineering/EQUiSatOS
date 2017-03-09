@@ -13,7 +13,8 @@
 #include "runnable_configurations/init_rtos_tasks.h"
 #include "stacks/equistacks.h"
 #include "stacks/package_stack.h"
-#include "testing_functions/testing_helper.h"
+#include "stacks/test_stacks.h"
+
 #include <asf.h>
 
 #endif /* MAIN_H */

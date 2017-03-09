@@ -13,7 +13,7 @@
 // TODO: Do we want a state struct?
 // TODO: Parity bits?
 // TODO: Make sure these are the batches we want
-// TODO: Does it make sense to wrap these arrays in structs?????
+// TODO: Does it make sense wrap these arrays in structs?????
 
 typedef struct ir_batch
 {

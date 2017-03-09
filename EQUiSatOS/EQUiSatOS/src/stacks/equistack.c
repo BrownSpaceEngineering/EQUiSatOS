@@ -4,10 +4,31 @@
  * Created: 3/1/2017 8:46:35 PM
  *  Author: mcken
  */ 
-// Basic implementation from
-// http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
+
+//////////////////////////////////////////////////////////////////////////
+// Equistacks are described here:
+// To the user, equistacks can be thought of as 'normal' stacks that hold 
+// some number of data structs except for a couple exceptions:
+// - When structs are added past the defined max length, they replace the
+//   oldest elements.
+// - The "get" method will return a pointer to the nth most recent data struct
+//   where n is user input.
+// - The stack supports a model of editing in which the user can only modify
+//   the stack by "staging." When the user stages, they get a pointer to the
+//   next element to be edited. This is the staged element; the user is free
+//   to edit it. The staged element, however, is not considered "part of the
+//   stack." When the user queries the stack, it will never be returned. But
+//   the element that was previously staged will become a "part of the stack"
+//   that can be accessed with "get."
+// - The "initial stage" method will return a pointer to the first element in
+//   the array of structs. It's only meant to be used when the user is first
+//   interacting with the equistack. 
+//////////////////////////////////////////////////////////////////////////
+
 #include "equistack.h"
 
+// Takes in the size of the structs the stack holds and the
+// maximum number of elements the stack will hold
 equistack* equistack_Init(size_t data_size, uint16_t max_size)
 {
 	equistack* S = pvPortMalloc(sizeof(equistack));
@@ -26,29 +47,32 @@ equistack* equistack_Init(size_t data_size, uint16_t max_size)
 	return S;
 }
 
+// Returns a pointer to the nth most recent element
 void* equistack_Get(equistack* S, int16_t n)
 {
 	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 
 	// We want to ignore the bottom index which is currently staged and maybe
 	// being overwritten
-	if (n < S->cur_size - 1)
+	if (n < S->cur_size)
 	{
+		xSemaphoreGive(S->mutex);
 		return S->data[(S->top_index - n) % S->max_size];
 	}
 	else
 	{
+		xSemaphoreGive(S->mutex);
 		return NULL;
 	}
-	
-	xSemaphoreGive(S->mutex);
 }
 
+// Only meant to be used when the stack is first being created
 void* equistack_Initial_Stage(equistack* S)
 {
 	return S->data[0];
 }
 
+// Returns the next pointer and "finalizes" the previous one (staging)
 // Overwrites the bottom value if need be
 void* equistack_Stage(equistack* S)
 {
