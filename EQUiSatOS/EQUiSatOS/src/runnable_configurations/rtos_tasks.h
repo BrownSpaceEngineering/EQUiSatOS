@@ -73,31 +73,36 @@
 // 	NUM_TASKS
 // } task_type_t;
 
-/* Enum for all states
-   NOTE:
-   If you add/remove a state, there are several things you must change:
-	   1. Actually implement the task (in this .h and the .c)
-	   2. Add the task to the tasks enum (above) AND update NUM_TASKS
-	   3. Specify a STACK_SIZE and PRIORITY for the task (above)
-	   4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
-	   5. Create new struct to store all data and add data arrays for all data
-	   6. Create new EQUIstack to store these structs
-	   7. Create copied versions of all stack functions for that stack type
-*/
+/************************************************************************/
+/* Enum for states that represent changes in which tasks are running	*/
+/************************************************************************/
 typedef enum 
 {
 	HELLO_WORLD,
 	IDLE,
 	LOW_POWER
-} state_type_t;
+} global_state_t;
 
-/* Enum for all types of collected sensor readings (for consistency across sensor read functions) 
-   Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
-   NOTE:
-	If you add/remove a type of collected data, there are several things you must change:
-		- Create a batch type definition
-		- Add a new array of data to ALL of the relevant state structs
- */
+/************************************************************************/
+/* Enum for states that represent different data logging practices		*/
+/************************************************************************/
+typedef enum
+{
+	FLASH_LOG,
+	ATTITUDE_LOG,
+	TRANSMIT_LOG
+} log_state_t;
+
+/************************************************************************/
+/*  Enum for all types of collected sensor readings						*/
+/* (for consistency across sensor read functions)						*/
+/* Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
+/*	NOTE:
+/*	If you add/remove a type of collected data, there are several		*/
+/*	things you must change:												*/
+/*		- Create a batch type definition								*/
+/*		- Add a new array of data to ALL of the relevant state structs	*/
+/************************************************************************/
 typedef enum
 {
 	IR_DATA,
@@ -113,15 +118,6 @@ typedef enum
 	NUM_DATA_TYPES //= REG_VOLT_DATA + 1
 } sensor_type_t;
 
-/* enum for all types of data that can be read 
-	(all types that will be in the 'data' section of a message packet */
-typedef enum
-{
-	ATTITUDE_DATA,
-	TRANSMIT_DATA,
-	FLASH_DATA
-} msg_data_type_t;
-
 /* Task headers */
 
 // ?
@@ -130,19 +126,29 @@ extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
+/* All main satellite tasks
+   NOTE:
+   If you add/remove a task, there are several things you must change:
+	   1. Actually implement the task (in this .h and the .c)
+	   2. Add the task to the tasks enum (above) AND update NUM_TASKS
+	   3. Specify a STACK_SIZE and PRIORITY for the task (above)
+	   4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
+	   5. (Maybe) Create new struct to store all data and add data arrays for all data
+	   6. (Maybe) Create new EQUIstack to store these structs
+*/
+
 // Action tasks 
 void watchdog_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
-
-// Data read tasks (some are actually action tasks)
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
+
+// Main data read task
 void current_data_task(void *pvParameters);
-void attitude_data_task(void *pvParameters);
 
 /* Queue definitions */
-equistack* last_reading_type_equistack; // of msg_data_type_t
+equistack* last_reading_type_equistack; // of log_state_t
 equistack* idle_readings_equistack; // of idle_data_t
 equistack* flash_readings_equistack; // of flash_data_t
 equistack* transmit_readings_equistack; // of transmit_data_t

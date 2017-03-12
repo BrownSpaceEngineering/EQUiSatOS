@@ -18,7 +18,8 @@
 // int taskFrequencies[6]; //NUM_TASKS - DONT KNOW WHY THIS DOESNT WORK
 
 /* Global satellite state - is this the best way to do this? */
-int CurrentState;
+int8_t CurrentState;
+int8_t CurrentLoggingState;
 
 void runit_2(void);
 
