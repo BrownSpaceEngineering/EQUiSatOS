@@ -61,6 +61,8 @@ void runit_2()
 		TASK_TRANSMIT_PRIORITY,
 		transmit_task_handle);
 			
+	/* Data tasks */
+			
 	xTaskCreate(current_data_task,
 		"current data reader task",
 		TASK_CURRENT_DATA_RD_STACK_SIZE,
@@ -68,6 +70,20 @@ void runit_2()
 		TASK_CURRENT_DATA_RD_PRIORITY,
 		current_data_task_handle);
 
+	xTaskCreate(flash_data_task,
+		"flash data reader task",
+		TASK_FLASH_DATA_RD_STACK_SIZE,
+		NULL,
+		TASK_FLASH_DATA_RD_PRIORITY,
+		flash_data_task_handle);
+
+	xTaskCreate(transmit_data_task,
+		"transmission data reader task",
+		TASK_TRANSMIT_DATA_RD_STACK_SIZE,
+		NULL,
+		TASK_TRANSMIT_DATA_RD_PRIORITY,
+		transmit_data_task_handle);
+		
 	xTaskCreate(attitude_data_task,
 		"attitude data reader task",
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
@@ -113,7 +129,8 @@ void set_state_hello_world()
 	vTaskSuspend(current_data_task_handle);
 	vTaskSuspend(flash_activate_task_handle);
 	vTaskSuspend(transmit_task_handle);
-	if (attitude_data_task_handle != NULL) { vTaskResume(attitude_data_task_handle); }
+	taskResumeIfSuspended(attitude_data_task_handle);
+		// TODO: Others
 }
 
 void set_state_idle()
@@ -123,10 +140,11 @@ void set_state_idle()
 	// TODO: we need to suspend the other tasks and somehow immediately add OR delete their interior structs and make a new one
 	// Maybe look for changes in state inside the rtos tasks?
 	// OR bring their current structs, etc. global so we can manually reset them? -> NOOOOO
-	if (current_data_task_handle != NULL) { vTaskResume(current_data_task_handle); }
-	if (flash_activate_task_handle != NULL) { vTaskResume(flash_activate_task_handle); }
-	if (transmit_task_handle != NULL) { vTaskResume(transmit_task_handle); }
-	if (attitude_data_task_handle != NULL) { vTaskResume(attitude_data_task_handle); }
+	taskResumeIfSuspended(current_data_task_handle);
+	taskResumeIfSuspended(flash_activate_task_handle);
+	taskResumeIfSuspended(transmit_task_handle);
+	taskResumeIfSuspended(attitude_data_task_handle);
+		// TODO: Others
 }
 
 void set_state_low_power()
@@ -134,8 +152,16 @@ void set_state_low_power()
 	CurrentState = LOW_POWER;
 	
 	// TODO: ibid
-	if (current_data_task_handle != NULL) { vTaskResume(current_data_task_handle); }
+	taskResumeIfSuspended(current_data_task_handle); 
 	vTaskSuspend(flash_activate_task_handle);
-	if (transmit_task_handle != NULL) { vTaskResume(transmit_task_handle); }
+	taskResumeIfSuspended(transmit_task_handle);
 	vTaskSuspend(attitude_data_task_handle); // TODO: Do this?
+	// TODO: Others
+}
+
+/************************************************************************/
+/* Helpers																*/
+/************************************************************************/
+void taskResumeIfSuspended(TaskHandle_t task_handle) {
+	if (task_handle != NULL) { vTaskResume(task_handle); }
 }
