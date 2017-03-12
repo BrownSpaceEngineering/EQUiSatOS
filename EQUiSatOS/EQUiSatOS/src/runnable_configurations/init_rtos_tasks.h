@@ -29,13 +29,18 @@ TaskHandle_t antenna_deploy_task_handle;
 TaskHandle_t battery_charging_task_handle; // Should we have this?
 TaskHandle_t flash_activate_task_handle;
 TaskHandle_t transmit_task_handle;
+
 TaskHandle_t current_data_task_handle;
 TaskHandle_t current_data_low_power_task_handle;
+TaskHandle_t flash_data_task_handle;
+TaskHandle_t transmit_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 
 // TODO: Do we need to change states?
 void set_state_hello_world(void);
 void set_state_idle(void);
 void set_state_low_power(void);
+
+void taskResumeIfSuspended(TaskHandle_t task_handle);
 
 #endif

@@ -32,7 +32,9 @@
 #include "stacks/State_Structs.h"
 #include "stacks/equistack.h" 
 
-/* Task Properties - see rtos_task_frequencies.h for frequencies */
+/************************************************************************/
+/* Task Properties - see rtos_task_frequencies.h for frequencies		*/
+/************************************************************************/
 #define TASK_BATTERY_CHARGE_STACK_SIZE				(1024)/sizeof(portSTACK_TYPE)
 #define TASK_BATTERY_CHARGE_PRIORITY				(tskIDLE_PRIORITY)
 
@@ -51,10 +53,18 @@
 #define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
+#define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
+
+#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
+
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
-/* Data reading task stack sizes - how many they can store before overwriting */
+/********************************************************************************/
+/* Data reading task stack sizes - how many they can store before overwriting	*/
+/********************************************************************************/
 #define IDLE_STACK_MAX			2 // one stored (available for transmission), one staged
 #define FLASH_STACK_MAX			10  
 #define TRANSMIT_STACK_MAX		10
@@ -84,16 +94,6 @@ typedef enum
 } global_state_t;
 
 /************************************************************************/
-/* Enum for states that represent different data logging practices		*/
-/************************************************************************/
-typedef enum
-{
-	FLASH_LOG,
-	ATTITUDE_LOG,
-	TRANSMIT_LOG
-} log_state_t;
-
-/************************************************************************/
 /*  Enum for all types of collected sensor readings						*/
 /* (for consistency across sensor read functions)						*/
 /* Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
@@ -117,6 +117,15 @@ typedef enum
 	REG_VOLT_DATA,
 	NUM_DATA_TYPES //= REG_VOLT_DATA + 1
 } sensor_type_t;
+
+/* enum for all types of data that can be read 
+	(all types that will be in the 'data' section of a message packet) */
+typedef enum
+{
+	ATTITUDE_DATA,
+	TRANSMIT_DATA,
+	FLASH_DATA
+} msg_data_type_t;
 
 /* Task headers */
 
@@ -144,11 +153,14 @@ void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
 
-// Main data read task
+// Data read tasks (some are actually action tasks)
 void current_data_task(void *pvParameters);
+void transmit_data_task(void *pvParameters);
+void flash_data_task(void *pvParameters);
+void attitude_data_task(void *pvParameters);
 
 /* Queue definitions */
-equistack* last_reading_type_equistack; // of log_state_t
+equistack* last_reading_type_equistack; // of msg_data_type_t
 equistack* idle_readings_equistack; // of idle_data_t
 equistack* flash_readings_equistack; // of flash_data_t
 equistack* transmit_readings_equistack; // of transmit_data_t

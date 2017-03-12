@@ -218,7 +218,7 @@ void battery_charging_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		// TODO
+		// TODO 
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -234,8 +234,11 @@ void flash_activate_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		// TODO
+		taskResumeIfSuspended(flash_data_task_handle);
 		
+		// TODO: actually flash leds
+	
+		vTaskSuspend(flash_data_task_handle);		
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -251,6 +254,10 @@ void transmit_task(void *pvParameters)
 		// block for a time based on this task's globally-set frequency
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		
+		taskResumeIfSuspended(transmit_data_task_handle);
+		
 		
 		bool validDataTransmitted = false; // we're cynical
 		do
@@ -279,6 +286,13 @@ void transmit_task(void *pvParameters)
 // 					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely) 				
 			};
 		} while (!validDataTransmitted);
+		
+		
+		
+		vTaskSuspend(transmit_data_task_handle);
+		
+		
+		
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -290,39 +304,26 @@ void current_data_task(void *pvParameters)
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	// tracking arrays
-	// TODO: what happens if one of the data read tasks never reads
-	// one of the sensors, so the value in here keeps growing?
-	uint8_t loops_since_last_idle_log[NUM_DATA_TYPES]; 
-	uint8_t loops_since_last_flash_log[NUM_DATA_TYPES]; 
-	uint8_t loops_since_last_transmit_log[NUM_DATA_TYPES]; 
-	uint8_t loops_since_last_attitude_log[NUM_DATA_TYPES]; 
+	uint8_t loops_since_last_log[NUM_DATA_TYPES]; // TODO: what happens if one of the data read tasks never reads
+												// one of the sensors, so the value in here keeps growing?
 												
 	// NOTE: data_array_tails should be this big for all data reading tasks 
 	// (this is just done for indexing consistency so that the add_*_batch_if_ready functions are universal) 
-	uint8_t idle_array_tails[NUM_DATA_TYPES];
-	uint8_t flash_array_tails[NUM_DATA_TYPES];
-	uint8_t transmit_array_tails[NUM_DATA_TYPES];
-	uint8_t attitude_array_tails[NUM_DATA_TYPES];
+	uint8_t data_array_tails[NUM_DATA_TYPES];
 	
-	// initialize initial structs
-	idle_data_t *cur_idle_struct = (idle_data_t*) equistack_Initial_Stage(idle_readings_equistack);
-	flash_data_t *cur_flash_struct = (flash_data_t*) equistack_Initial_Stage(flash_readings_equistack);
-	transmit_data_t *cur_transmit_struct = (transmit_data_t*) equistack_Initial_Stage(transmit_readings_equistack);
-	attitude_data_t *cur_attitude_struct = (attitude_data_t*) equistack_Initial_Stage(attitude_readings_equistack);
-	cur_idle_struct->timestamp = get_current_timestamp();
-	cur_flash_struct->timestamp = get_current_timestamp();
-	cur_transmit_struct->timestamp = get_current_timestamp();
-	cur_attitude_struct->timestamp = get_current_timestamp();
-	//	assert(current_struct != NULL); // TESTING
+	// initialize first struct
+	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(idle_readings_equistack);
+	assert(current_struct != NULL); // TESTING
+	current_struct->timestamp = get_current_timestamp();
 		
 	for( ;; )
 	{	
 		// block for a time based on a frequency, determined by whether we're in IDLE or LOW_POWER mode.
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		if (CurrentState == LOW_POWER) {
-			vTaskDelayUntil( &xNextWakeTime, DATA_LOW_POWER_TASK_FREQ / portTICK_PERIOD_MS);
+			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_LOW_POWER_TASK_FREQ / portTICK_PERIOD_MS);
 		} else {
-			vTaskDelayUntil( &xNextWakeTime, DATA_TASK_FREQ / portTICK_PERIOD_MS);
+			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
@@ -330,7 +331,7 @@ void current_data_task(void *pvParameters)
 		if (data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
 		{
 			// FOR TESTING
-//			idle_data_t* prev_cur_struct = current_struct;
+			idle_data_t* prev_cur_struct = current_struct;
 			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (idle_data_t*) equistack_Stage(idle_readings_equistack);
@@ -340,15 +341,16 @@ void current_data_task(void *pvParameters)
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
 			
 			// TESTING
-// 			assert(prev_cur_struct != current_struct);
-// 			assert(data_array_tails[0] == 0 && data_array_tails[1] == 0 && data_array_tails[2] == 0 && data_array_tails[3] == 0 && data_array_tails[4] == 0 && data_array_tails[NUM_DATA_TYPES-1] == 0);
-// 			assert((idle_data_t*) equistack_Get(idle_readings_equistack, 0) == prev_cur_struct);
+			assert(prev_cur_struct != current_struct);
+			assert(data_array_tails[0] == 0 && data_array_tails[1] == 0 && data_array_tails[2] == 0 && data_array_tails[3] == 0 && data_array_tails[4] == 0 && data_array_tails[NUM_DATA_TYPES-1] == 0);
+			assert((idle_data_t*) equistack_Get(idle_readings_equistack, 0) == prev_cur_struct);
 		}
 		
 		
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 		
-		// Try to log idle sensor data
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
 		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, idle_IR_LOOPS_PER_LOG);
 // 		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, loops_since_last_log, idle_TEMP_LOOPS_PER_LOG);
 // 		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, idle_DIODE_LOOPS_PER_LOG);
@@ -360,23 +362,102 @@ void current_data_task(void *pvParameters)
 // 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, idle_BAT_VOLTAGE_LOOPS_PER_LOG);
 // 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), data_array_tails, loops_since_last_log, idle_REG_VOLTAGE_LOOPS_PER_LOG);
 		
-		// only log additional data if we're not in low power
-		if (CurrentState != LOW_POWER) {
-			switch (CurrentLoggingState) {
-				case FLASH_LOG:
-	
-			}
-		}
 		// FOR TESTING
-// 		int ir_reads_since = loops_since_last_log[0];
-// 		int last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
+		int ir_reads_since = loops_since_last_log[0];
+		int last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
 		
 		// increment reads in loops_since_last_log
 		increment_all(loops_since_last_log, NUM_DATA_TYPES);		
 		
 		// TESTING
-// 		assert(loops_since_last_log[0] == ir_reads_since + 1);
-// 		assert(loops_since_last_log[NUM_DATA_TYPES-1] == last_sens_reads_since + 1);
+		assert(loops_since_last_log[0] == ir_reads_since + 1);
+		assert(loops_since_last_log[NUM_DATA_TYPES-1] == last_sens_reads_since + 1);
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+void transmit_data_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	// see current_data_task for extensive comments / testing
+	
+	// tracking arrays
+	uint8_t loops_since_last_log[NUM_DATA_TYPES];
+	uint8_t data_array_tails[NUM_DATA_TYPES];
+	
+	transmit_data_t *current_struct = (transmit_data_t*) equistack_Initial_Stage(flash_readings_equistack);
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// update current_struct if necessary
+		if (data_array_tails[LED_CUR_DATA] >= transmit_LED_CURRENT_DATA_ARR_LEN)
+		{
+			// validate previous stored value in stack, getting back the next staged address we can start adding to
+			current_struct = (transmit_data_t*) equistack_Stage(flash_readings_equistack);
+			current_struct->timestamp = get_current_timestamp();
+			
+			// TODO: log state read
+			//equistack_Stage(last_reading_type_equistack, TRANSMIT_DATA);
+			
+			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+		}
+		
+		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, transmit_LED_CURRENT_LOOPS_PER_LOG);
+		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), data_array_tails, loops_since_last_log, transmit_RADIO_TEMP_LOOPS_PER_LOG);
+		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, transmit_BAT_VOLTAGE_LOOPS_PER_LOG);
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+void flash_data_task(void *pvParameters)
+{
+	// initialize xNextWakeTime onces
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	// current_data_task for extensive comments / testing
+	
+	// tracking arrays
+	uint8_t loops_since_last_log[NUM_DATA_TYPES];
+	uint8_t data_array_tails[NUM_DATA_TYPES];
+	
+	flash_data_t *current_struct = (flash_data_t*) equistack_Initial_Stage(attitude_readings_equistack);
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// update current_struct if necessary
+		if (data_array_tails[TEMP_DATA] >= flash_TEMP_DATA_ARR_LEN)
+		{
+			// validate previous stored value in stack, getting back the next staged address we can start adding to
+			current_struct = (flash_data_t*) equistack_Stage(attitude_readings_equistack);
+			current_struct->timestamp = get_current_timestamp();
+			
+			// TODO: log state read
+			//equistack_Stage(last_reading_type_equistack, FLASH_DATA);
+			
+			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+		}
+		
+		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		
+		
+		// see if each sensor is ready to add a batch, and do so if we need to
+		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, loops_since_last_log, flash_TEMP_LOOPS_PER_LOG);
+		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, flash_LED_CURRENT_LOOPS_PER_LOG);
+		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, flash_BAT_VOLTAGE_LOOPS_PER_LOG);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -393,14 +474,14 @@ void attitude_data_task(void *pvParameters)
 	uint8_t loops_since_last_log[NUM_DATA_TYPES];
 	uint8_t data_array_tails[NUM_DATA_TYPES];
 	
-	attitude_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(attitude_readings_equistack);
+	attitude_data_t *current_struct = (attitude_data_t*) equistack_Initial_Stage(attitude_readings_equistack);
 	
 	for ( ;; )
 	{
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[IR_DATA] >= attitute_data_IR_DATA_ARR_LEN)
+		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(attitude_readings_equistack);
@@ -417,10 +498,10 @@ void attitude_data_task(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, attitute_data_IR_LOOPS_PER_LOG);
-		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, attitute_data_DIODE_LOOPS_PER_LOG);
-		add_imu_batch_if_ready(&(current_struct->imu_data), data_array_tails, loops_since_last_log, attitute_data_IMU_LOOPS_PER_LOG);
-		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, attitute_data_MAGNETOMETER_LOOPS_PER_LOG);
+		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, attitude_IR_LOOPS_PER_LOG);
+		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, attitude_DIODE_LOOPS_PER_LOG);
+		add_imu_batch_if_ready(&(current_struct->imu_data), data_array_tails, loops_since_last_log, attitude_IMU_LOOPS_PER_LOG);
+		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, attitude_MAGNETOMETER_LOOPS_PER_LOG);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
