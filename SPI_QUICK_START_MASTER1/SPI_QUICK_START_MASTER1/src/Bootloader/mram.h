@@ -30,13 +30,13 @@ uint8_t initialize_slave(struct spi_slave_inst *slave);
 /* Given master, slave number of bytes and initial address, the content */ 
 /* will be read to data                                                 */
 /************************************************************************/
-uint8_t read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
+status_code_genare_t read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
 
 /************************************************************************/
 /* Given master, slave number of bytes and initial address, the content */
 /* of data will be written                                              */
 /************************************************************************/
-void write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
+status_code_genare_t write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
 
 int test_mram(void);
 

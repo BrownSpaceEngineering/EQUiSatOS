@@ -8,8 +8,8 @@
 #include "mram.h"
 
 const uint8_t NUM_CONTROL_BYTES = 0x04;
-const uint8_t READ_COMMAND = 0x02;
-const uint8_t WRITE_COMMAND = 0x03;
+const uint8_t READ_COMMAND = 0x03;
+const uint8_t WRITE_COMMAND = 0x02;
 const uint8_t ENABLE_COMMAND = 0x06;
 
 void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
@@ -46,21 +46,41 @@ void enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst 
 	spi_select_slave(spi_master_instance, slave, false);
 }
 
-void write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address){
+// returns true (1) if stat is a STATUS_CATEGORY_OK
+uint8_t status_ok(status_code_genare_t stat) {
+	return (stat && stat < STATUS_CATEGORY_COMMON);
+}
+
+// returns a status code, and will fail partway through if the write fails
+status_code_genare_t write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address){
 	enable_write(spi_master_instance, slave);
 	uint8_t write_control[NUM_CONTROL_BYTES], temp_data[num_bytes], temp_control[NUM_CONTROL_BYTES];
 	copy_control_data(write_control, address, WRITE_COMMAND);
-	spi_select_slave(&spi_master_instance, &slave, true);
-	spi_transceive_buffer_wait(&spi_master_instance, write_control, &temp_control, num_bytes);
-	spi_transceive_buffer_wait(&spi_master_instance, data, &temp_data, num_bytes);
-	spi_select_slave(&spi_master_instance, &slave, false);	
+	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
+	if (!status_ok(s)) return s;
+	
+	s = spi_transceive_buffer_wait(spi_master_instance, write_control, &temp_control, num_bytes);
+	if (!status_ok(s)) return s;
+	
+	s = spi_transceive_buffer_wait(spi_master_instance, data, &temp_data, num_bytes);
+	if (!status_ok(s)) return s;
+	
+	s = spi_select_slave(spi_master_instance, slave, false);
+	return s;
 }
 
-uint8_t read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address){
+status_code_genare_t read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address){
 	uint8_t read_control[NUM_CONTROL_BYTES], temp_data[num_bytes], temp_control[NUM_CONTROL_BYTES];
 	copy_control_data(read_control, address, READ_COMMAND);
-	spi_select_slave(&spi_master_instance, &slave, true);
-	spi_transceive_buffer_wait(&spi_master_instance, read_control, &temp_control, NUM_CONTROL_BYTES);
-	spi_transceive_buffer_wait(&spi_master_instance, temp_data, &data, num_bytes);
-	spi_select_slave(&spi_master_instance, &slave, false);
+	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
+	if (!status_ok(s)) return s;
+	
+	s = spi_transceive_buffer_wait(spi_master_instance, read_control, &temp_control, NUM_CONTROL_BYTES);
+	if (!status_ok(s)) return s;
+	
+	s = spi_transceive_buffer_wait(spi_master_instance, temp_data, &data, num_bytes);
+	if (!status_ok(s)) return s;
+	
+	s = spi_select_slave(spi_master_instance, slave, false);
+	return s;
 }
