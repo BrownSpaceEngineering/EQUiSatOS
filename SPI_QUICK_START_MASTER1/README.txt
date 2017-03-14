@@ -9,3 +9,4 @@ Then, in the solution go in properties:
 Tool - set programming settings to erase only programming area.
 Toolchain -> Linker -> Memory Settings: add a FLASH segment .text=<app_start_address>
 It will make the program start at the address 0x3000, for example.
+ -- MAKE SURE TO REBUILD or the ELF won't have the offset properly configured
