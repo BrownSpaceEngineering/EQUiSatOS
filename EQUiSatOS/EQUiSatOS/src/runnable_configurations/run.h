@@ -25,6 +25,7 @@
 #include "sensor_drivers/MPU9250_9axis_Commands.h"
 #include "sensor_drivers/LTC1380_Multiplexer_Commands.h"
 #include "radio/Radio_Commands.h"
+#include "processor_drivers/Watchdog_Commands.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)

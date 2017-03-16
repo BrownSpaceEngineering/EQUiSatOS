@@ -28,7 +28,7 @@ void watchdog_task(void *pvParameters) {
 			is_running = 0;
 			// "kick" watchdog
 		} else {
-			// pet watchdog
+			pet_watchdog();
 			check_ins = 0;
 			is_running = 0;
 		}
@@ -38,7 +38,7 @@ void watchdog_task(void *pvParameters) {
 	vTaskDelete( NULL );
 }
 
-int watchdog_as_function(void) {
+bool watchdog_as_function(void) {
 	if (/*battery charing task isn't running*/0 == 1) {
 		watch_block = 1;
 	}
@@ -46,12 +46,12 @@ int watchdog_as_function(void) {
 		// "kick" watchdog
 		check_ins = 0;
 		is_running = 0;
-		return 0;
+		return false;
 	} else {
 		// pet watchdog
 		check_ins = 0;
 		is_running = 0;
-		return 1;
+		return true;
 	}
 }
 

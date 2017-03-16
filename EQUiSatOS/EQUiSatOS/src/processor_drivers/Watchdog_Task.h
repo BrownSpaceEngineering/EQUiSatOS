@@ -9,6 +9,7 @@
 #define WATCHDOG_TASK_H_
 
 #include "asf.h"
+#include "Watchdog_Commands.h"
 
 #define ANTENNA_DEPLOY_SHIFT 1
 #define BATTERY_CHARGING_SHIFT 2
@@ -23,6 +24,6 @@
 void watchdog_task(void *pvParameters);
 void check_in_task(uint8_t task_ind);
 void running_task(uint8_t task_ind);
-int watchdog_as_function(void);
+bool watchdog_as_function(void);
 
 #endif /* WATCHDOG_TASK_H_ */

@@ -12,7 +12,7 @@ void watch_test(void) {
 	running_task(ANTENNA_DEPLOY_SHIFT);
 	check_in_task(TRANSMIT_SHIFT);
 	running_task(TRANSMIT_SHIFT);
-	assert(watchdog_as_function() == 1);
+	assert(watchdog_as_function());
 	
 	check_in_task(ANTENNA_DEPLOY_SHIFT);
 	running_task(ANTENNA_DEPLOY_SHIFT);
@@ -26,7 +26,7 @@ void watch_test(void) {
 	running_task(CURRENT_DATA_SHIFT);
 	check_in_task(ATTITUDE_DATA_SHIFT);
 	running_task(ATTITUDE_DATA_SHIFT);
-	assert(watchdog_as_function() == 1);
+	assert(watchdog_as_function());
 	
 	check_in_task(ANTENNA_DEPLOY_SHIFT);
 	running_task(ANTENNA_DEPLOY_SHIFT);
@@ -39,14 +39,18 @@ void watch_test(void) {
 	check_in_task(CURRENT_DATA_SHIFT);
 	running_task(CURRENT_DATA_SHIFT);
 	check_in_task(ATTITUDE_DATA_SHIFT);
-	assert(watchdog_as_function() == 0);
+	assert(!watchdog_as_function());
 	
-	assert(watchdog_as_function() == 1);
+	assert(watchdog_as_function());
 	
 	check_in_task(ANTENNA_DEPLOY_SHIFT);
 	running_task(ANTENNA_DEPLOY_SHIFT);
-	assert(watchdog_as_function() == 1);
+	assert(watchdog_as_function());
 	
 	running_task(ANTENNA_DEPLOY_SHIFT);
-	assert(watchdog_as_function() == 1);
+	assert(!watchdog_as_function());
+	
+	check_in_task(ANTENNA_DEPLOY_SHIFT);
+	check_in_task(BATTERY_CHARGING_SHIFT);
+	assert(!watchdog_as_function());
 }
