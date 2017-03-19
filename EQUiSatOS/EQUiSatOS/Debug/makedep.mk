@@ -201,6 +201,7 @@ src\stacks\Num_Stack.c
 
 src\stacks\package_stack.c
 
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 src\stacks\Sensor_Structs.c
 
 src\stacks\State_Structs.c
@@ -209,6 +210,8 @@ src\stacks\State_Structs.c
 src\stacks\State_Structs.c
 
 =======
+=======
+>>>>>>> Refactored basically everything
 src\stacks\test_data.c
 
 src\stacks\test_stacks.c

@@ -1067,12 +1067,15 @@ C_SRCS +=  \
 ../src/stacks/idle_Stack.c \
 ../src/stacks/Num_Stack.c \
 ../src/stacks/package_stack.c \
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 ../src/stacks/Sensor_Structs.c \
 <<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 ../src/stacks/stack_tests.c \
 ../src/stacks/State_Structs.c \
 =======
 ../src/stacks/State_Structs.c \
+=======
+>>>>>>> Refactored basically everything
 ../src/stacks/test_data.c \
 ../src/stacks/test_stacks.c \
 ../src/stacks/test_structs.c \
@@ -1179,12 +1182,15 @@ src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 src/stacks/Sensor_Structs.o \
 <<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
 =======
 src/stacks/State_Structs.o \
+=======
+>>>>>>> Refactored basically everything
 src/stacks/test_data.o \
 src/stacks/test_stacks.o \
 src/stacks/test_structs.o \
@@ -1287,12 +1293,15 @@ src/stacks/flash_Stack.o \
 src/stacks/idle_Stack.o \
 src/stacks/Num_Stack.o \
 src/stacks/package_stack.o \
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 src/stacks/Sensor_Structs.o \
 <<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.o \
 src/stacks/State_Structs.o \
 =======
 src/stacks/State_Structs.o \
+=======
+>>>>>>> Refactored basically everything
 src/stacks/test_data.o \
 src/stacks/test_stacks.o \
 src/stacks/test_structs.o \
@@ -1383,12 +1392,15 @@ src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 src/stacks/Sensor_Structs.d \
 <<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
 =======
 src/stacks/State_Structs.d \
+=======
+>>>>>>> Refactored basically everything
 src/stacks/test_data.d \
 src/stacks/test_stacks.d \
 src/stacks/test_structs.d \
@@ -1479,12 +1491,15 @@ src/stacks/flash_Stack.d \
 src/stacks/idle_Stack.d \
 src/stacks/Num_Stack.d \
 src/stacks/package_stack.d \
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 src/stacks/Sensor_Structs.d \
 <<<<<<< 8cbb62e29bf7f8bdd28e8369fee79d69ae0976ad
 src/stacks/stack_tests.d \
 src/stacks/State_Structs.d \
 =======
 src/stacks/State_Structs.d \
+=======
+>>>>>>> Refactored basically everything
 src/stacks/test_data.d \
 src/stacks/test_stacks.d \
 src/stacks/test_structs.d \
@@ -1697,6 +1712,7 @@ LINKER_SCRIPT_DEP+=  \
 >>>>>>> changes to equistacks - untested
 =======
 
+<<<<<<< a494f1d5f3b0c3a293acdb42391f90442f899246
 
 
 <<<<<<< ec27dbfc6905ed50c843a132a6bcf9591765f3cf
@@ -1723,6 +1739,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 >>>>>>> Create generic equistack (will it work?)
+=======
+>>>>>>> Refactored basically everything
 src/ASF/sam0/drivers/adc/adc_sam_d_r/%.o: ../src/ASF/sam0/drivers/adc/adc_sam_d_r/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 5.3.1

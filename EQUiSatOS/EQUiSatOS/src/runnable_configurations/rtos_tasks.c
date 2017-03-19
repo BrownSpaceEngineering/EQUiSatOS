@@ -7,175 +7,16 @@
 
 #include "rtos_tasks.h"
 
-/* Individual sensor helpers for data reading tasks */
-void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[IR_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		ir_batch batch = read_ir_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[IR_DATA]] = batch;
-		
-		// TESTING
-		assert(batch_list[data_array_tails[IR_DATA]].values[0] == 0 &&
-			   batch_list[data_array_tails[IR_DATA]].values[1] == 1 && 
-			   batch_list[data_array_tails[IR_DATA]].values[2] == 2 && 
-			   batch_list[data_array_tails[IR_DATA]].values[3] == 3 &&
-			   batch_list[data_array_tails[IR_DATA]].values[4] == 4); // remove once implemented
-		assert(batch_list[data_array_tails[IR_DATA]].values[0] == batch.values[0]);
-		assert(batch_list[data_array_tails[IR_DATA]].values[1] == batch.values[1]); // TODO: is this task independent:
-		assert(batch_list[data_array_tails[IR_DATA]].values[idle_IR_DATA_ARR_LEN - 1] == batch.values[idle_IR_DATA_ARR_LEN - 1]);
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[IR_DATA] = data_array_tails[IR_DATA] + 1;
-		loops_since_last_log[IR_DATA] = 0;
-	}
-}
+void add_lion_volts_batch_if_ready(lion_volts_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_lion_current_batch_if_ready(lion_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_led_temps_batch_if_ready(led_temps_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void add_lifepo_current_batch_if_ready(lifepo_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 
-void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
+void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log)
 {
-	if (loops_since_last_log[TEMP_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		temp_batch batch = read_temp_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[TEMP_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[TEMP_DATA] = data_array_tails[TEMP_DATA] + 1;
-		loops_since_last_log[TEMP_DATA] = 0;
-	}
-}
-
-void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[DIODE_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		diode_batch batch = read_diode_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[DIODE_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[DIODE_DATA] = data_array_tails[DIODE_DATA] + 1;
-		loops_since_last_log[DIODE_DATA] = 0;
-	}
-}
-
-void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[LED_CUR_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		led_current_batch batch = read_led_current_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[LED_CUR_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[LED_CUR_DATA] = data_array_tails[LED_CUR_DATA] + 1;
-		loops_since_last_log[LED_CUR_DATA] = 0;
-	}
-}
-
-void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[IMU_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		imu_batch batch = read_imu_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[IMU_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[IMU_DATA] = data_array_tails[IMU_DATA] + 1;
-		loops_since_last_log[IMU_DATA] = 0;
-	}
-}
-
-void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[MAGNETOMETER_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		magnetometer_batch batch = read_magnetometer_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[MAGNETOMETER_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[MAGNETOMETER_DATA] = data_array_tails[MAGNETOMETER_DATA] + 1;
-		loops_since_last_log[MAGNETOMETER_DATA] = 0;
-	}
-}
-
-void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[CHARGING_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		charging_batch batch = read_charging_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[CHARGING_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[CHARGING_DATA] = data_array_tails[CHARGING_DATA] + 1;
-		loops_since_last_log[CHARGING_DATA] = 0;
-	}
-}
-
-void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[RADIO_TEMP_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		radio_temp_batch batch = read_radio_temp_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[RADIO_TEMP_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[RADIO_TEMP_DATA] = data_array_tails[RADIO_TEMP_DATA] + 1;
-		loops_since_last_log[RADIO_TEMP_DATA] = 0;
-	}
-}
-
-void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[BAT_VOLT_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		battery_voltages_batch batch = read_battery_voltages_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[BAT_VOLT_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[BAT_VOLT_DATA] = data_array_tails[BAT_VOLT_DATA] + 1;
-		loops_since_last_log[BAT_VOLT_DATA] = 0;
-	}
-}
-
-void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *loops_since_last_log, int loops_per_log)
-{
-	if (loops_since_last_log[REG_VOLT_DATA] >= loops_per_log)
-	{
-		// read sensor and compile into batch
-		regulator_voltages_batch batch = read_regulator_voltages_batch();
-		
-		// log sensor data to the appropriate array within the big struct
-		batch_list[data_array_tails[REG_VOLT_DATA]] = batch;
-		
-		// increment array tail marker and reset reads-per-log counter
-		data_array_tails[REG_VOLT_DATA] = data_array_tails[REG_VOLT_DATA] + 1;
-		loops_since_last_log[REG_VOLT_DATA] = 0;
-	}
+	// increment array tail marker and reset reads-per-log counter
+	data_array_tails[data_type] = data_array_tails[data_type] + 1;
+	loops_since_last_log[data_type] = 0;
 }
 
 /* Action Tasks */
@@ -328,7 +169,7 @@ void current_data_task(void *pvParameters)
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
-		if (data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
+		if (data_array_tails[IR_DATA] >= idle_IR_LOOPS_PER_LOG)
 		{
 			// FOR TESTING
 			idle_data_t* prev_cur_struct = current_struct;
@@ -351,16 +192,79 @@ void current_data_task(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, idle_IR_LOOPS_PER_LOG);
-// 		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, loops_since_last_log, idle_TEMP_LOOPS_PER_LOG);
-// 		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, idle_DIODE_LOOPS_PER_LOG);
-// 		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, idle_LED_CURRENT_LOOPS_PER_LOG);
-// 		add_gyro_batch_if_ready(&(current_struct->gyro_data), data_array_tails, loops_since_last_log, idle_GYRO_LOOPS_PER_LOG);
-// 		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, idle_MAGNETOMETER_LOOPS_PER_LOG);
-// 		add_charging_batch_if_ready(&(current_struct->charging_data), data_array_tails, loops_since_last_log, idle_CHARGING_DATA_LOOPS_PER_LOG);
-// 		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), data_array_tails, loops_since_last_log, idle_RADIO_TEMP_LOOPS_PER_LOG);
-// 		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, idle_BAT_VOLTAGE_LOOPS_PER_LOG);
-// 		add_regulator_voltages_batch_if_ready(&(current_struct->regulator_voltages_data), data_array_tails, loops_since_last_log, idle_REG_VOLTAGE_LOOPS_PER_LOG);
+		/**
+		 * Helpful regex: (\w*)_DATA, -> 
+		 * if (loops_since_last_log[$1_DATA] >= idle_$1_LOOPS_PER_LOG) { \n current_struct->$1_data[data_array_tails[$1_DATA]] = read_$1_batch(); \n increment_data_type($1_DATA, data_array_tails, loops_since_last_log);\n}
+		 */
+		if (loops_since_last_log[LION_VOLTS_DATA] >= idle_LION_VOLTS_LOOPS_PER_LOG) { 
+		 current_struct->lion_volts_data[data_array_tails[LION_VOLTS_DATA]] = read_lion_volts_batch(); 
+		 increment_data_type(LION_VOLTS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LION_CURRENT_DATA] >= idle_LION_CURRENT_LOOPS_PER_LOG) { 
+		 current_struct->lion_current_data[data_array_tails[LION_CURRENT_DATA]] = read_lion_current_batch(); 
+		 increment_data_type(LION_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LED_TEMPS_DATA] >= idle_LED_TEMPS_LOOPS_PER_LOG) { 
+		 current_struct->led_temps_data[data_array_tails[LED_TEMPS_DATA]] = read_led_temps_batch(); 
+		 increment_data_type(LED_TEMPS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LIFEPO_CURRENT_DATA] >= idle_LIFEPO_CURRENT_LOOPS_PER_LOG) { 
+		 current_struct->lifepo_current_data[data_array_tails[LIFEPO_CURRENT_DATA]] = read_lifepo_current_batch(); 
+		 increment_data_type(LIFEPO_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[IR_DATA] >= idle_IR_LOOPS_PER_LOG) { 
+		 current_struct->ir_data[data_array_tails[IR_DATA]] = read_ir_batch(); 
+		 increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[DIODE_DATA] >= idle_DIODE_LOOPS_PER_LOG) { 
+		 current_struct->diode_data[data_array_tails[DIODE_DATA]] = read_diode_batch(); 
+		 increment_data_type(DIODE_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[BAT_TEMP_DATA] >= idle_BAT_TEMP_LOOPS_PER_LOG) { 
+		 current_struct->bat_temp_data[data_array_tails[BAT_TEMP_DATA]] = read_bat_temp_batch(); 
+		 increment_data_type(BAT_TEMP_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[IR_TEMPS_DATA] >= idle_IR_TEMPS_LOOPS_PER_LOG) { 
+		 current_struct->ir_temps_data[data_array_tails[IR_TEMPS_DATA]] = read_ir_temps_batch(); 
+		 increment_data_type(IR_TEMPS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[RADIO_TEMP_DATA] >= idle_RADIO_TEMP_LOOPS_PER_LOG) { 
+		 current_struct->radio_temp_data[data_array_tails[RADIO_TEMP_DATA]] = read_radio_temp_batch(); 
+		 increment_data_type(RADIO_TEMP_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[IMU_DATA] >= idle_IMU_LOOPS_PER_LOG) { 
+		 current_struct->imu_data[data_array_tails[IMU_DATA]] = read_imu_batch(); 
+		 increment_data_type(IMU_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[MAGNETOMETER_DATA] >= idle_MAGNETOMETER_LOOPS_PER_LOG) { 
+		 current_struct->magnetometer_data[data_array_tails[MAGNETOMETER_DATA]] = read_magnetometer_batch(); 
+		 increment_data_type(MAGNETOMETER_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LED_CURRENT_DATA] >= idle_LED_CURRENT_LOOPS_PER_LOG) { 
+		 current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]] = read_led_current_batch(); 
+		 increment_data_type(LED_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[RADIO_VOLTS_DATA] >= idle_RADIO_VOLTS_LOOPS_PER_LOG) { 
+		 current_struct->radio_volts_data[data_array_tails[RADIO_VOLTS_DATA]] = read_radio_volts_batch(); 
+		 increment_data_type(RADIO_VOLTS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[BAT_CHARGE_VOLTS_DATA] >= idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG) { 
+		 current_struct->bat_charge_volts_data[data_array_tails[BAT_CHARGE_VOLTS_DATA]] = read_bat_charge_volts_batch(); 
+		 increment_data_type(BAT_CHARGE_VOLTS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[BAT_CHARGE_DIG_SIGS_DATA] >= idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG) { 
+		 current_struct->bat_charge_dig_sigs_data[data_array_tails[BAT_CHARGE_DIG_SIGS_DATA]] = read_bat_charge_dig_sigs_batch(); 
+		 increment_data_type(BAT_CHARGE_DIG_SIGS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[DIGITAL_OUT_DATA] >= idle_DIGITAL_OUT_LOOPS_PER_LOG) { 
+		 current_struct->digital_out_data[data_array_tails[DIGITAL_OUT_DATA]] = read_digital_out_batch(); 
+		 increment_data_type(DIGITAL_OUT_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[IR_DATA] >= idle_IR_LOOPS_PER_LOG) {
+			current_struct->ir_data[data_array_tails[IR_DATA]] = read_ir_batch();
+			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
+		}
+		
 		
 		// FOR TESTING
 		int ir_reads_since = loops_since_last_log[0];
@@ -395,7 +299,7 @@ void transmit_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[LED_CUR_DATA] >= transmit_LED_CURRENT_DATA_ARR_LEN)
+		if (data_array_tails[LION_CURRENT_DATA] >= transmit_LION_CURRENT_LOOPS_PER_LOG)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (transmit_data_t*) equistack_Stage(flash_readings_equistack);
@@ -412,9 +316,18 @@ void transmit_data_task(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, transmit_LED_CURRENT_LOOPS_PER_LOG);
-		add_radio_temp_batch_if_ready(&(current_struct->radio_temp_data), data_array_tails, loops_since_last_log, transmit_RADIO_TEMP_LOOPS_PER_LOG);
-		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, transmit_BAT_VOLTAGE_LOOPS_PER_LOG);
+		if (loops_since_last_log[RADIO_TEMP_DATA] >= transmit_RADIO_TEMP_LOOPS_PER_LOG) {
+			current_struct->radio_temp_data[data_array_tails[RADIO_TEMP_DATA]] = read_radio_temp_batch();
+			increment_data_type(RADIO_TEMP_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LION_VOLTS_DATA] >= transmit_LION_VOLTS_LOOPS_PER_LOG) {
+			current_struct->lion_volts_data[data_array_tails[LION_VOLTS_DATA]] = read_lion_volts_batch();
+			increment_data_type(LION_VOLTS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LION_CURRENT_DATA] >= transmit_LION_CURRENT_LOOPS_PER_LOG) {
+			current_struct->lion_current_data[data_array_tails[LION_CURRENT_DATA]] = read_lion_current_batch();
+			increment_data_type(LION_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -438,7 +351,7 @@ void flash_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[TEMP_DATA] >= flash_TEMP_DATA_ARR_LEN)
+		if (data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (flash_data_t*) equistack_Stage(attitude_readings_equistack);
@@ -454,10 +367,23 @@ void flash_data_task(void *pvParameters)
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 		
 		
-		// see if each sensor is ready to add a batch, and do so if we need to
-		add_temp_batch_if_ready(&(current_struct->temp_data), data_array_tails, loops_since_last_log, flash_TEMP_LOOPS_PER_LOG);
-		add_led_current_batch_if_ready(&(current_struct->led_current_data), data_array_tails, loops_since_last_log, flash_LED_CURRENT_LOOPS_PER_LOG);
-		add_battery_voltages_batch_if_ready(&(current_struct->battery_voltages_data), data_array_tails, loops_since_last_log, flash_BAT_VOLTAGE_LOOPS_PER_LOG);
+// 		// see if each sensor is ready to add a batch, and do so if we need to
+		if (loops_since_last_log[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {
+			current_struct->led_temps_data[data_array_tails[LED_TEMPS_DATA]] = read_led_temps_batch();
+			increment_data_type(LED_TEMPS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LIFEPO_VOLTS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {
+			current_struct->lifepo_current_data[data_array_tails[LIFEPO_VOLTS_DATA]] = read_lifepo_current_batch();
+			increment_data_type(LIFEPO_VOLTS_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LIFEPO_CURRENT_DATA] >= flash_LIFEPO_CURRENT_LOOPS_PER_LOG) {
+			current_struct->lifepo_volts_data[data_array_tails[LIFEPO_CURRENT_DATA]] = read_lifepo_volts_batch();
+			increment_data_type(LIFEPO_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[LED_CURRENT_DATA] >= idle_LED_CURRENT_LOOPS_PER_LOG) {
+			current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]] = read_led_current_batch();
+			increment_data_type(LED_CURRENT_DATA, data_array_tails, loops_since_last_log);
+		}
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
@@ -481,7 +407,7 @@ void attitude_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
+		if (data_array_tails[IR_DATA] >= attitude_IR_LOOPS_PER_LOG)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(attitude_readings_equistack);
@@ -498,10 +424,22 @@ void attitude_data_task(void *pvParameters)
 		
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
-		add_ir_batch_if_ready( &(current_struct->ir_data), data_array_tails, loops_since_last_log, attitude_IR_LOOPS_PER_LOG);
-		add_diode_batch_if_ready(&(current_struct->diode_data), data_array_tails, loops_since_last_log, attitude_DIODE_LOOPS_PER_LOG);
-		add_imu_batch_if_ready(&(current_struct->imu_data), data_array_tails, loops_since_last_log, attitude_IMU_LOOPS_PER_LOG);
-		add_magnetometer_batch_if_ready(&(current_struct->magnetometer_data), data_array_tails, loops_since_last_log, attitude_MAGNETOMETER_LOOPS_PER_LOG);
+		if (loops_since_last_log[IR_DATA] >= attitude_IR_LOOPS_PER_LOG) {
+			current_struct->ir_data[data_array_tails[IR_DATA]] = read_ir_batch();
+			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[DIODE_DATA] >= attitude_DIODE_LOOPS_PER_LOG) {
+			current_struct->diode_data[data_array_tails[DIODE_DATA]] = read_diode_batch();
+			increment_data_type(DIODE_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[IMU_DATA] >= attitude_IMU_LOOPS_PER_LOG) {
+			current_struct->imu_data[data_array_tails[IMU_DATA]] = read_imu_batch();
+			increment_data_type(IMU_DATA, data_array_tails, loops_since_last_log);
+		}
+		if (loops_since_last_log[MAGNETOMETER_DATA] >= attitude_MAGNETOMETER_LOOPS_PER_LOG) {
+			current_struct->magnetometer_data[data_array_tails[MAGNETOMETER_DATA]] = read_magnetometer_batch();
+			increment_data_type(MAGNETOMETER_DATA, data_array_tails, loops_since_last_log);
+		}
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

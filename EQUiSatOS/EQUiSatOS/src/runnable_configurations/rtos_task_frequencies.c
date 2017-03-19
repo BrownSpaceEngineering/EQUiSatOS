@@ -23,23 +23,51 @@ void assertConstantDefinitions() {
 	// (multiply this by something to not a change in the smallest size;
 	// i.e. x2 means the lowest frequency sensor has an array of size 2)
 	// So, we should check that this property holds for all array lengths and reads_per_log of the sensors:
-	int all_loops_per_log[] = {idle_IR_LOOPS_PER_LOG,
-								idle_TEMP_LOOPS_PER_LOG,
-								idle_DIODE_LOOPS_PER_LOG,
-								idle_LED_CURRENT_LOOPS_PER_LOG,
-								idle_IMU_LOOPS_PER_LOG,
-								idle_MAGNETOMETER_LOOPS_PER_LOG,
-								idle_CHARGING_DATA_LOOPS_PER_LOG,
-								idle_RADIO_TEMP_LOOPS_PER_LOG,
-								idle_BAT_VOLTAGE_LOOPS_PER_LOG,
-								idle_REG_VOLTAGE_LOOPS_PER_LOG};
+	int all_loops_per_log[] = {
+		idle_LION_VOLTS_LOOPS_PER_LOG,
+		idle_LION_CURRENT_LOOPS_PER_LOG,
+		idle_LED_TEMPS_LOOPS_PER_LOG,
+		idle_LIFEPO_CURRENT_LOOPS_PER_LOG,
+		idle_IR_LOOPS_PER_LOG,
+		idle_DIODE_LOOPS_PER_LOG,
+		idle_BAT_TEMP_LOOPS_PER_LOG,
+		idle_IR_TEMPS_LOOPS_PER_LOG,
+		idle_RADIO_TEMP_LOOPS_PER_LOG,
+		idle_IMU_LOOPS_PER_LOG,
+		idle_MAGNETOMETER_LOOPS_PER_LOG,
+		idle_LED_CURRENT_LOOPS_PER_LOG,
+		idle_RADIO_VOLTS_LOOPS_PER_LOG,
+		idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG,
+		idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG,
+		idle_DIGITAL_OUT_LOOPS_PER_LOG};
 	uint16_t idle_max_loops_per_log = arrMax(all_loops_per_log, 10); // max of the above (MAKE SURE TO UPDATE IF YOU ADD)
-	assert(idle_IR_DATA_ARR_LEN == idle_IR_LOOPS_PER_LOG/ idle_max_loops_per_log);
+	// helpful regex: #define idle_(.*)_DATA_ARR_LEN\s+1--> assert(idle_$1_DATA_ARR_LEN == idle_$1_LOOPS_PER_LOG / <SOMETHING>_max_loops_per_log);
+	
+	assert(idle_LION_VOLTS_DATA_ARR_LEN == idle_LION_VOLTS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_LION_CURRENT_DATA_ARR_LEN == idle_LION_CURRENT_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_LED_TEMPS_DATA_ARR_LEN == idle_LED_TEMPS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_LIFEPO_CURRENT_DATA_ARR_LEN == idle_LIFEPO_CURRENT_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_IR_DATA_ARR_LEN == idle_IR_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_DIODE_DATA_ARR_LEN == idle_DIODE_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_BAT_TEMP_DATA_ARR_LEN == idle_BAT_TEMP_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_IR_TEMPS_DATA_ARR_LEN == idle_IR_TEMPS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_RADIO_TEMP_DATA_ARR_LEN == idle_RADIO_TEMP_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_IMU_DATA_ARR_LEN == idle_IMU_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_MAGNETOMETER_DATA_ARR_LEN == idle_MAGNETOMETER_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_LED_CURRENT_DATA_ARR_LEN == idle_LED_CURRENT_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_RADIO_VOLTS_DATA_ARR_LEN == idle_RADIO_VOLTS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_BAT_CHARGE_VOLTS_DATA_ARR_LEN == idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_BAT_CHARGE_DIG_SIGS_DATA_ARR_LEN == idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG/idle_max_loops_per_log); 
+	assert(idle_DIGITAL_OUT_DATA_ARR_LEN == idle_DIGITAL_OUT_LOOPS_PER_LOG/idle_max_loops_per_log); 
+
 	
 	// We also want to make sure that any sensors' reads per log is no less than one,
 	// i.e. that the log frequency is greater than the read frequency
 	// (because we can't log faster than we're even reading)
 	assert(idle_IR_LOOPS_PER_LOG >= 1);
+	
+	
+	
 }
 
 /* Max of array values, of which there must be at least one */

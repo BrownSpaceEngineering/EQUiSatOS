@@ -97,25 +97,35 @@ typedef enum
 /*  Enum for all types of collected sensor readings						*/
 /* (for consistency across sensor read functions)						*/
 /* Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
-/*	NOTE:
+/*	NOTE:																*/
 /*	If you add/remove a type of collected data, there are several		*/
 /*	things you must change:												*/
 /*		- Create a batch type definition								*/
-/*		- Add a new array of data to ALL of the relevant state structs	*/
+/*		- Create the required frequencies								*/
+/*		- Add a new array of data to ALL of the relevant state structs  */
+/*		- Add an add_*_batch_if_ready function						    */
+/* NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*/
 /************************************************************************/
 typedef enum
 {
+	LION_VOLTS_DATA,
+	LION_CURRENT_DATA,
+	LED_TEMPS_DATA,
+	LIFEPO_CURRENT_DATA,
+	LIFEPO_VOLTS_DATA,
 	IR_DATA,
-	TEMP_DATA,
 	DIODE_DATA,
-	LED_CUR_DATA,
+	BAT_TEMP_DATA,
+	IR_TEMPS_DATA,
+	RADIO_TEMP_DATA,
 	IMU_DATA,
 	MAGNETOMETER_DATA,
-	CHARGING_DATA,
-	RADIO_TEMP_DATA,
-	BAT_VOLT_DATA,
-	REG_VOLT_DATA,
-	NUM_DATA_TYPES //= REG_VOLT_DATA + 1
+	LED_CURRENT_DATA,
+	RADIO_VOLTS_DATA,
+	BAT_CHARGE_VOLTS_DATA,
+	BAT_CHARGE_DIG_SIGS_DATA,
+	DIGITAL_OUT_DATA,
+	NUM_DATA_TYPES //= DIGITAL_OUT_D + 1
 } sensor_type_t;
 
 /* enum for all types of data that can be read 
@@ -166,17 +176,7 @@ equistack* flash_readings_equistack; // of flash_data_t
 equistack* transmit_readings_equistack; // of transmit_data_t
 equistack* attitude_readings_equistack; // of attitude_data_t
 
-/* Individual sensor helpers for data reading tasks */
-void add_ir_batch_if_ready(ir_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_temp_batch_if_ready(temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_diode_batch_if_ready(diode_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_led_current_batch_if_ready(led_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_imu_batch_if_ready(imu_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_magnetometer_batch_if_ready(magnetometer_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_charging_batch_if_ready(charging_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_radio_temp_batch_if_ready(radio_temp_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_battery_voltages_batch_if_ready(battery_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
-void add_regulator_voltages_batch_if_ready(regulator_voltages_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
+void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 
 /* Helper Functions */
 uint32_t get_current_timestamp(void);
