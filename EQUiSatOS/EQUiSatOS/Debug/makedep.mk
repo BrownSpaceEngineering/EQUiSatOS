@@ -2,8 +2,6 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
-src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
-
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
@@ -76,8 +74,6 @@ src\ASF\sam0\drivers\port\port.c
 
 src\processor_drivers\ADC_Commands.c
 
-src\processor_drivers\Watchdog_Task.c
-
 src\processor_drivers\Direct_Pin_Commands.c
 
 src\processor_drivers\I2C_Commands.c
@@ -98,6 +94,8 @@ src\runnable_configurations\flatsat.c
 
 src\runnable_configurations\scratch_testing.c
 
+src\sensor_drivers\AD7991_ADC.c
+
 src\sensor_drivers\LTC1380_Multiplexer_Commands.c
 
 src\sensor_drivers\MLX90614_IR_Sensor.c
@@ -105,6 +103,8 @@ src\sensor_drivers\MLX90614_IR_Sensor.c
 src\sensor_drivers\MPU9250_9axis_Commands.c
 
 src\sensor_drivers\switching_commands.c
+
+src\sensor_drivers\TCA9535_GPIO.c
 
 src\sensor_drivers\TEMD6200_Commands.c
 

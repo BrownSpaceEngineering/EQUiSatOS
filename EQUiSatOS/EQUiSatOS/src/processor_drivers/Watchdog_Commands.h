@@ -12,10 +12,10 @@
 #include <asf.h>
 
 void configure_watchdog(void);
-void watchdog_early_warning_callback(void);
-void configure_watchdog_callbacks(void);
-void reset_watchdog(void);
-bool did_watchdog_reset(void);
+//void watchdog_early_warning_callback(void);
+//void configure_watchdog_callbacks(void);
+void pet_watchdog(void);
+bool did_watchdog_kick(void);
 
 #define WATCHDOG_CLOCK GCLK_GENERATOR_2
 

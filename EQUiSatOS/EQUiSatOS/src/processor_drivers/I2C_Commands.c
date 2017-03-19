@@ -10,7 +10,7 @@
 /*
 	Configures I2C connection with standard settings and custom functions
 */
-void configure_i2c_master(Sercom* sercom, i2c_func _i2c_read_func, i2c_func _i2c_write_func,  i2c_func _i2c_write_no_stop_func)
+void configure_i2c_master(Sercom* sercom)
 {
 	/* Initialize config structure and software module. */
 	//! [init_conf]
@@ -35,11 +35,6 @@ void configure_i2c_master(Sercom* sercom, i2c_func _i2c_read_func, i2c_func _i2c
 	//! [enable_module]
 	i2c_master_enable(&i2c_master_instance);
 	//! [enable_module]
-	
-	//sets up internal functions to allow for emulated i2c functionality
-	used_i2c_read_func = _i2c_read_func;
-	used_i2c_write_func = _i2c_write_func;
-	used_i2c_write_no_stop_func = _i2c_write_no_stop_func;
 }
 
 /*
@@ -48,7 +43,7 @@ void configure_i2c_master(Sercom* sercom, i2c_func _i2c_read_func, i2c_func _i2c
 
 void configure_i2c_standard(Sercom* sercom)
 {
-	configure_i2c_master(sercom,i2c_read_command,i2c_write_command,i2c_write_command_nostop);
+	configure_i2c_master(sercom);
 }
 
 /*
@@ -58,6 +53,16 @@ void configure_i2c_standard(Sercom* sercom)
 void i2c_read_command(struct i2c_master_packet* packet_address)
 {
 	i2c_master_read_packet_wait(&i2c_master_instance, packet_address);
+	//i2c_master_read_packet_wait_no_nack(&i2c_master_instance, packet_address);
+}
+
+/*
+	Given a pointer to a packet, perform a read over I2C following the information
+	detailed in the packet without stopping
+*/
+void i2c_read_command_nostop(struct i2c_master_packet* packet_address)
+{
+	i2c_master_read_packet_wait_no_stop(&i2c_master_instance, packet_address);
 }
 
 /*
@@ -90,9 +95,9 @@ void writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should
 	};
 	
 	if(should_stop){
-		(used_i2c_write_func)(&write_packet);
+		i2c_write_command(&write_packet);
 	}else{
-		(used_i2c_write_no_stop_func)(&write_packet);
+		i2c_write_command_nostop(&write_packet);
 	}
 }
 
@@ -100,6 +105,16 @@ void writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should
 	Read data of length len into buffer buffer from address address at location memoryLocation on the i2c bus, using the corresponding stopping function
 */
 void readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation, bool should_stop){
+	uint8_t data[] = {memoryLocation};
+	
+	writeDataToAddress(data,1,address,should_stop);
+	readFromAddress(buffer,len,address,true);
+}
+
+/*
+	Read data of length len into buffer buffer from address address on the i2c bus, using the corresponding stopping function
+*/
+void readFromAddress(uint8_t* buffer, uint8_t len, uint8_t address, bool should_stop){
 	struct i2c_master_packet read_packet = {
 		.address     = address,
 		.data_length = len,
@@ -109,8 +124,9 @@ void readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t addr
 		.hs_master_code  = 0x0,
 	};
 	
-	uint8_t data[] = {memoryLocation};
-	
-	writeDataToAddress(data,1,address,should_stop);
-	(used_i2c_read_func)(&read_packet);
+	if(should_stop){
+		i2c_read_command(&read_packet);
+	}else{
+		i2c_read_command_nostop(&read_packet);
+	}
 }

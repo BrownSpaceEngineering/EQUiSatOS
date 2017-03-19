@@ -23,19 +23,36 @@ void watchdog_task(void *pvParameters) {
 		if (/*battery charing task isn't running*/0 == 1) {
 			watch_block = 1;
 		}
-		if (check_ins ^ is_running > 0 && watch_block == 0) {
-			// "kick" watchdog
-			print("indeed the stuff is greater than 0");
-		} else {
-			// pet watchdog
+		if ((check_ins ^ is_running) > 0 || watch_block == 1) {
 			check_ins = 0;
 			is_running = 0;
-			print("working fine");
+			// "kick" watchdog
+		} else {
+			pet_watchdog();
+			check_ins = 0;
+			is_running = 0;
 		}
 	}
 	
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
+}
+
+bool watchdog_as_function(void) {
+	if (/*battery charing task isn't running*/0 == 1) {
+		watch_block = 1;
+	}
+	if ((check_ins ^ is_running) > 0 || watch_block == 1) {
+		// "kick" watchdog
+		check_ins = 0;
+		is_running = 0;
+		return false;
+	} else {
+		// pet watchdog
+		check_ins = 0;
+		is_running = 0;
+		return true;
+	}
 }
 
 void check_in_task(uint8_t task_ind) {

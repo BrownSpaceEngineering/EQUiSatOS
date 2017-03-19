@@ -52,9 +52,8 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
-// From module: ADC - Analog-to-Digital Converter (Callback APIs)
+// From module: ADC - Analog-to-Digital Converter (Polled APIs)
 #include <adc.h>
-#include <adc_callback.h>
 
 // From module: Common SAM0 compiler driver
 #include <compiler.h>

@@ -6,7 +6,7 @@ int16_t xyzBuff[3] = {0, 0, 0};
 	
 void flatsat_init(void) {
 
-	configure_i2c_standard(SERCOM4);
+	configure_i2c_standard(SERCOM2);
 	//MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	//while(true){
 		//MPU9250_read();
@@ -16,9 +16,14 @@ void flatsat_init(void) {
 	//MLX90614_init();
 	//HMC5883L_init(*i2c_write_command, *i2c_read_command);	
 	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
-	//setup_pin(true,PIN_PA16); //init gpio pin for flashing
+	//setup_pin(true,PIN_PB17);
+	//setup_pin(true,PIN_PA12);
+	//setup_pin(true,PIN_PB11);
+	//set_output(true, PIN_PA12); //init gpio pin for flashing
 	//configure_watchdog();
-	LTC1380_init();
+	//LTC1380_init();
+	///setup_switching();
+	TCA9535_init();
 }
 
 float read_IR(void) {
@@ -33,17 +38,17 @@ MPU9250Reading read_IMU(void) {
 }
 
 void led_flash(void) {
-	set_output(true, PIN_PA16);
+	set_output(false, PIN_PA12);
+	delay_ms(10);
+	set_output(true, PIN_PA12);
+	delay_ms(990);
+	set_output(false, PIN_PA12);
+	delay_ms(10);
+	set_output(true, PIN_PA12);
+	delay_ms(990);
+	set_output(false, PIN_PA12);
 	delay_ms(100);
-	set_output(false, PIN_PA16);
-	delay_ms(900);
-	set_output(true, PIN_PA16);
-	delay_ms(100);
-	set_output(false, PIN_PA16);
-	delay_ms(900);
-	set_output(true, PIN_PA16);
-	delay_ms(100);
-	set_output(false, PIN_PA16);
+	set_output(true, PIN_PA12);
 	delay_ms(900);
 }
 
@@ -54,7 +59,27 @@ float read_temp(void) {
 
 void flatsat_run(void) {	
 	flatsat_init();
+	//set_output(true, PIN_PB11);
+	//set_output(true, PIN_PB17);
+
+	//while(true){
+		//led_flash();
+		//uint16_t x = AD7991_read(0x0);
+		//int y = 2;
+	//}
 	
+	
+	/*
+	pick_side(true);
+	pick_input(0x1);
+	struct adc_module temp_instance;
+	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+	
+	while(true){
+		float x = readVoltagemV(temp_instance);
+		int y = 0;
+	}
+	*/
 	/*
 	if(did_watchdog_reset()){
 		set_output(true,PIN_PB06);
@@ -78,8 +103,13 @@ void flatsat_run(void) {
 		
 	//}
 	
-	LTC1380_channel_select(0x5);
-	LTC1380_disable();
-	LTC1380_channel_select(0x6);
-	LTC1380_disable();
+	//LTC1380_channel_select(0x5);
+	//LTC1380_disable();
+	//LTC1380_channel_select(0x6);
+	//LTC1380_disable();
+	while(true){
+		uint16_t x = readTCA9535Levels();
+		
+		int y = 0;
+	}
 }

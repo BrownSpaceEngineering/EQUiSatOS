@@ -3,15 +3,11 @@
 //Target side: true for side 1, false for side 2
 void pick_side(bool targetSide){
 	if(targetSide){
+		set_output(false,SIDE_1_ENABLE);
 		set_output(true,SIDE_2_ENABLE);
 	}else{
-		set_output(true,SIDE_1_ENABLE);
-	}
-	
-	if(targetSide){
-		set_output(false,SIDE_1_ENABLE);
-	}else{
 		set_output(false,SIDE_2_ENABLE);
+		set_output(true,SIDE_1_ENABLE);
 	}
 }
 
