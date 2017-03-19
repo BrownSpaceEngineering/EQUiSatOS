@@ -15,10 +15,10 @@ idle_data_t init_test_struct(void){
 	ib.values[0] = 5; // ib->values[0] = 5;
 	IDT->ir_data[0] = ib; // BDT->ir_data[0] = *ib;
 	
-	temp_batch tb;
+	ir_temps_batch tb;
 	/*tb.timestamp = 65;*/
 	tb.values[0] = 5;
-	IDT->temp_data[0] = tb;
+	IDT->ir_temps_data[0] = tb;
 	
 	diode_batch db;
 	/*db.timestamp = 65;*/
@@ -37,36 +37,23 @@ idle_data_t init_test_struct(void){
 	gb.magnetometer[0] = 5;
 	IDT->imu_data[0] = gb;
 	
-	charging_batch cb;
+	bat_charge_volts_batch cb;
 	/*cb.timestamp = 65;*/
 	cb.values[0] = 5;
-	IDT->charging_data[0] = cb;
+	IDT->bat_charge_volts_data[0] = cb;
 	
 	radio_temp_batch rtb;
 	/*rtb.timestamp = 65;*/
 	rtb.value = 5;
 	IDT->radio_temp_data[0] = rtb;
 	
-	battery_voltages_batch bvb;
+	lion_volts_batch bvb;
 	/*bvb.timestamp = 65;*/
 	bvb.values[0] = 5;
-	IDT->battery_voltages_data[0] = bvb;
+	IDT->lion_volts_data[0] = bvb;
 	
-	regulator_voltages_batch rvb;
+	bat_charge_dig_sigs_batch rvb;
 	/*rvb.timestamp = 65;*/
-	rvb.values[0] = 5;
-	IDT->regulator_voltages_data[0] = rvb;
-}
-
-void test_free(void *pvParameters){
-	
-	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
-	for (;;)
-	{
-		vTaskDelayUntil( &xNextWakeTime, 1000 / portTICK_PERIOD_MS);
-		idle_data_t idt = init_test_struct();
-		free_idle(&idt);
-	}
-	int local_show = 5;
+	rvb.value = 0b00101001;
+	IDT->bat_charge_dig_sigs_data[0] = rvb;
 }
