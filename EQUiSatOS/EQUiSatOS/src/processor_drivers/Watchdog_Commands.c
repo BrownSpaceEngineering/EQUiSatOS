@@ -25,6 +25,7 @@ void configure_watchdog(void){
 	//configure_watchdog_callbacks();
 }
 
+/*
 //Only used for xplained pro
 void watchdog_early_warning_callback(void)
 {
@@ -42,11 +43,12 @@ void configure_watchdog_callbacks(void)
 	wdt_enable_callback(WDT_CALLBACK_EARLY_WARNING);
 	//! [setup_6]
 }
+*/
 
-void reset_watchdog(void){
+void pet_watchdog(void){
 	wdt_reset_count();
 }
 
-bool did_watchdog_reset(void){
+bool did_watchdog_kick(void){
 	return (system_get_reset_cause() == SYSTEM_RESET_CAUSE_WDT);
 }
