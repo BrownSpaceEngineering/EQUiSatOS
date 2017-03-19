@@ -23,7 +23,15 @@ void USART_init() {
 void SERCOM3_Handler()
 {		
 	if (SERCOM3->USART.INTFLAG.bit.RXC){		
-		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;
+		char curByte = SERCOM3->USART.DATA.reg;		
+		if (curByte == 0x01) {
+			memset(receivebuffer, 0, 16);
+			receiveIndex = 0;
+		}
+		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;		
+		if(curByte == 0xff) {
+			//TODO: Handle received packet
+		}
 		receiveIndex++;
 	}
 }
@@ -207,9 +215,7 @@ while(SERCOM3->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
 }
 
 void usart_send_string(const char *str_buf)
-{
-	memset(receivebuffer, 0, 16);
-	receiveIndex = 0;
+{	
 	while (*str_buf != '\0')
 	{
 		while(!SERCOM3->USART.INTFLAG.bit.DRE);

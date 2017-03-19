@@ -16,7 +16,7 @@
 #define SHIFT 32
 
 int receiveIndex;
-char receivebuffer[16];
+char receivebuffer[42];
 char sendbuffer[16];
 
 /* function prototype */
