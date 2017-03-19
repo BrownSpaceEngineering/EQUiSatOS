@@ -37,9 +37,9 @@
 	#define P_SCL			PIN_PB13
 	
 	//Radio
-	#define P_TX_EN			PIN_PA23
+	#define P_TX_EN			PIN_PA23 //active low
 	#define P_TX_DATA		PIN_PA24
-	#define P_RX_EN			PIN_PA22
+	#define P_RX_EN			PIN_PA22 //active low
 	#define P_RX_DATA		PIN_PA25
 	#define P_RAD_SHDN		PIN_PA21 //active low (to shutdown)
 	#define P_RAD_PWR_RUN	PIN_PA20
@@ -47,7 +47,7 @@
 	//Sensors
 	#define P_IR_PWR_CMD	PIN_PB17
 	#define P_TEMP_OUT		PIN_PB08
-	#define P_PD_OUT		
+	#define P_PD_OUT		PIN_PA02
 	
 	//MRAM
 	#define P_SO			PIN_PA16

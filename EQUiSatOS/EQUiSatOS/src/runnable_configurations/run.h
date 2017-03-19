@@ -12,6 +12,7 @@
 #include <asf.h>
 #include <inttypes.h>
 
+#include "config/proc_pins.h"
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"
 #include "processor_drivers/ADC_Commands.h"

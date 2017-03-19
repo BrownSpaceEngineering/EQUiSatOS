@@ -127,18 +127,25 @@ void runit(void){
 
 void radioTest(void) {	
 	USART_init();
-	setup_pin(true,PIN_PB01); //init shutdown pin
-	setup_pin(true,PIN_PB02); //init send enable pin
-	setup_pin(true,PIN_PB03); //init receive enable pin
+	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
+	setup_pin(true,P_RAD_SHDN); //init shutdown pin
+	setup_pin(true,P_TX_EN); //init send enable pin
+	setup_pin(true,P_RX_EN); //init receive enable pin
 	
-	set_output(true, PIN_PB01);
-	setSendEnable(false);
-	setReceiveEnable(false);
+	set_output(true, P_RAD_PWR_RUN);
+	set_output(true, P_RAD_SHDN);
+	set_output(false, P_TX_EN);
+	set_output(false, P_RX_EN);
 	
 	initializeRadio();	
 	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
 	while (true) {		
-		usart_send_string(toSend);
-		delay_ms(100);		
-	}		
+		usart_send_string("EQUiSat\n");
+		delay_ms(1500);		
+	}
+	/*while (true) {
+		delay_ms(500);
+		print(receivebuffer);	
+	}*/
+			
 }
