@@ -13,12 +13,7 @@ void free_one(one_batch* one){
 }
 
 void fill_one(one_batch* one, uint16_t val) {
-	int one_length = 0;
-	if (sizeof one > 0) {
-		one_length = sizeof one->values / sizeof one->values[0];
-	}
-	
-	for (int i = 0; i < one_length; i++) {
+	for (int i = 0; i < 12; i++) {
 		one->values[i] = val;
 	}
 }
@@ -29,12 +24,7 @@ void free_two(two_batch* two){
 }
 
 void fill_two(two_batch* two, uint16_t val) {
-	int two_length = 0;
-	if (sizeof two > 0) {
-		two_length = sizeof two->values / sizeof two->values[0];
-	}
-	
-	for (int i = 0; i < two_length; i++) {
+	for (int i = 0; i < 12; i++) {
 		two->values[i] = val;
 	}
 }
@@ -45,12 +35,7 @@ void free_three(three_batch* three){
 }
 
 void fill_three(three_batch* three, uint16_t val) {
-	int three_length = 0;
-	if (sizeof three > 0) {
-		three_length = sizeof three->values / sizeof three->values[0];
-	}
-	
-	for (int i = 0; i < three_length; i++) {
+	for (int i = 0; i < 12; i++) {
 		three->values[i] = val;
 	}
 }

@@ -9,19 +9,19 @@
 
 void free_test(test_data* id)
 {
-	for (int i = 0; i < sizeof(id->one_data); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		free_one(&(id->one_data[i]));
 	}
 	vPortFree(&(id->one_data));
 	
-	for (int i = 0; i < sizeof(id->two_data); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		free_two(&(id->two_data[i]));
 	}
 	vPortFree(&(id->two_data));
 	
-	for (int i = 0; i < sizeof(id->three_data); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		free_three(&(id->three_data[i]));
 	}
@@ -30,17 +30,17 @@ void free_test(test_data* id)
 
 void fill_test(test_data* id, uint16_t val) 
 {
-	for (int i = 0; i < sizeof(id->one_data) / sizeof(uint16_t); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		fill_one(&(id->one_data[i]), val);
 	}
 	
-	for (int i = 0; i < sizeof(id->two_data) / sizeof(uint16_t); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		fill_two(&(id->two_data[i]), val);
 	}
 	
-	for (int i = 0; i < sizeof(id->three_data) / sizeof(uint16_t); i++)
+	for (int i = 0; i < 6; i++)
 	{
 		fill_three(&(id->three_data[i]), val);
 	}
