@@ -26,10 +26,6 @@ src\stacks\Num_Stack.c
 
 src\stacks\package_stack.c
 
-src\stacks\Sensor_Structs.c
-
-src\stacks\State_Structs.c
-
 src\stacks\test_data.c
 
 src\stacks\test_stacks.c
