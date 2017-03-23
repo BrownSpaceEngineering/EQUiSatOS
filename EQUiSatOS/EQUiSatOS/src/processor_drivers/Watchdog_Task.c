@@ -12,7 +12,7 @@
 uint8_t check_ins = 0;
 uint8_t is_running = 0;
 
-static uint8_t watch_block = 0;
+static _Atomic uint8_t watch_block = 0;
 
 void watchdog_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();

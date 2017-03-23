@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\testing_functions\watchdog_task_test.c
+
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
@@ -87,6 +89,8 @@ src\processor_drivers\SPI_Commands.c
 src\processor_drivers\USART_Commands.c
 
 src\processor_drivers\Watchdog_Commands.c
+
+src\processor_drivers\Watchdog_Task.c
 
 src\radio\Radio_Commands.c
 
