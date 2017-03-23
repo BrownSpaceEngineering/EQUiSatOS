@@ -67,10 +67,10 @@
 
 #define FLASH_DATA_TASK_FREQ					500
 /* Data array lengths for flash action and data reader task */
-#define flash_LED_TEMPS_DATA_ARR_LEN			2
-#define flash_LIFEPO_CURRENT_DATA_ARR_LEN		1
-#define flash_LIFEPO_VOLTS_DATA_ARR_LEN			1 // currently exists only in flash
-#define flash_LED_CURRENT_DATA_ARR_LEN			1
+#define flash_LED_TEMPS_DATA_ARR_LEN			1
+#define flash_LIFEPO_CURRENT_DATA_ARR_LEN		2
+#define flash_LIFEPO_VOLTS_DATA_ARR_LEN			2 // currently exists only in flash
+#define flash_LED_CURRENT_DATA_ARR_LEN			2
 
 /* Flash action and data reader task reads per log */
 /* LOOPS_PER_LOG for each sensor at each state - 
@@ -89,9 +89,9 @@
 
 #define TRANSMIT_DATA_TASK_FREQ					500
 /* Data array lengths for radio transmit action and data reader task */
-#define transmit_RADIO_TEMP_DATA_ARR_LEN		1
-#define transmit_LION_VOLTS_DATA_ARR_LEN		2
-#define transmit_LION_CURRENT_DATA_ARR_LEN		2
+#define transmit_RADIO_TEMP_DATA_ARR_LEN		2
+#define transmit_LION_VOLTS_DATA_ARR_LEN		1
+#define transmit_LION_CURRENT_DATA_ARR_LEN		1
 
 /* Radio transmit and data read task reads per log */
 /* ibid */

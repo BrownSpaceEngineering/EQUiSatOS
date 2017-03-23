@@ -6,6 +6,7 @@
  */ 
 
 #include "rtos_tasks.h"
+#include "processor_drivers\USART_Commands.h"
 
 void add_lion_volts_batch_if_ready(lion_volts_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
 void add_lion_current_batch_if_ready(lion_current_batch *batch_list, int *data_array_tails, int *reads_since_last_log, int reads_per_log);
@@ -158,7 +159,7 @@ void current_data_task(void *pvParameters)
 	current_struct->timestamp = get_current_timestamp();
 		
 	for( ;; )
-	{	
+	{
 		// block for a time based on a frequency, determined by whether we're in IDLE or LOW_POWER mode.
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		if (CurrentState == LOW_POWER) {
@@ -167,9 +168,14 @@ void current_data_task(void *pvParameters)
 			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
 		
+		print(hex_str_of(idle_readings_equistack->cur_size, sizeof(idle_readings_equistack->cur_size)));
+		print(hex_str_of(idle_readings_equistack->top_index, sizeof(idle_readings_equistack->top_index)));
+		print(hex_str_of(idle_readings_equistack->bottom_index, sizeof(idle_readings_equistack->bottom_index)));
+		print("\n\r");
+		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
-		if (data_array_tails[IR_DATA] >= idle_IR_LOOPS_PER_LOG)
+		if (data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
 		{
 			// FOR TESTING
 			idle_data_t* prev_cur_struct = current_struct;
@@ -267,8 +273,8 @@ void current_data_task(void *pvParameters)
 		
 		
 		// FOR TESTING
-		int ir_reads_since = loops_since_last_log[0];
-		int last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
+		uint8_t ir_reads_since = loops_since_last_log[0];
+		uint8_t last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
 		
 		// increment reads in loops_since_last_log
 		increment_all(loops_since_last_log, NUM_DATA_TYPES);		
@@ -299,7 +305,7 @@ void transmit_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[LION_CURRENT_DATA] >= transmit_LION_CURRENT_LOOPS_PER_LOG)
+		if (data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (transmit_data_t*) equistack_Stage(flash_readings_equistack);
@@ -351,7 +357,7 @@ void flash_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG)
+		if (data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (flash_data_t*) equistack_Stage(attitude_readings_equistack);
@@ -407,7 +413,7 @@ void attitude_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[IR_DATA] >= attitude_IR_LOOPS_PER_LOG)
+		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(attitude_readings_equistack);
@@ -452,18 +458,26 @@ uint32_t get_current_timestamp()
 	return xTaskGetTickCount(); // represents the ms from vstartscheduler
 }
 
-void increment_all(int* int_arr, int length)
+void increment_all(uint8_t* int_arr, uint8_t length)
 {
-	for(int i = 0; i < length; i++)
+	for(uint8_t i = 0; i < length; i++)
 	{
 		int_arr[i] = int_arr[i] + 1;
 	}
 }
 
-void set_all(int* int_arr, int length, int value)
+void set_all(uint8_t* int_arr, uint8_t length, int value)
 {
-	for(int i = 0; i < length; i++)
+	for(uint8_t i = 0; i < length; i++)
 	{
 		int_arr[i] = value;
+	}
+}
+
+char* hex_str_of(void* data, int bytes) {
+	char output[bytes*2]; // byte represented by two hex digits
+	int i = 0;
+	while(i < bytes*2) {
+		output[++i] = ((char*) data)[i] & 0xf;
 	}
 }

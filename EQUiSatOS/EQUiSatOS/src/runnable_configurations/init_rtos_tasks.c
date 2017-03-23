@@ -7,6 +7,7 @@
 
 #include "init_rtos_tasks.h"
 #include "task_testing.h"
+#include "processor_drivers\USART_Commands.h"
 
 void runit_2()
 {
@@ -111,8 +112,6 @@ void runit_2()
   		NULL,
   		TASK_SENS_RD_IDLE_PRIORITY,
   		NULL);*/
-
-	/*print("hello, world");*/
 
   	// Make sure we define the first state
   	set_state_idle();
