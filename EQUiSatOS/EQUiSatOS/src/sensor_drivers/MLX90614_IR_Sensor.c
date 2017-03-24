@@ -1,4 +1,5 @@
 #include "MLX90614_IR_Sensor.h"
+#include "../config/proc_pins.h"
 
 void MLX90614_init() {
 	setup_pin(true,POWER_PIN); //init low power ir pin
@@ -42,7 +43,9 @@ float dataToTemp(uint16_t data){
 // Read target temperature in degrees Celsius
 // temp_target can be AMBIENT, OBJ1, OBJ2
 float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target) {
+	//irPower(true);
 	uint16_t data = MLX90614_read2ByteValue(addr, (uint8_t) temp_target);
+	//irPower(false);
 	return dataToTemp(data);
 }
 

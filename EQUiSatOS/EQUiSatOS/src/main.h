@@ -9,7 +9,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "runnable_configurations/scratch_testing.h"
+//#include "runnable_configurations/scratch_testing.h"
 #include <asf.h>
 
 #endif /* MAIN_H */

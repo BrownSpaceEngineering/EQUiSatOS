@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\runnable_configurations\intTesting.c
+
 src\testing_functions\watchdog_task_test.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
@@ -93,8 +95,6 @@ src\processor_drivers\Watchdog_Commands.c
 src\processor_drivers\Watchdog_Task.c
 
 src\radio\Radio_Commands.c
-
-src\runnable_configurations\flatsat.c
 
 src\runnable_configurations\scratch_testing.c
 

@@ -6,6 +6,7 @@
  */ 
 
 #include "I2C_Commands.h"
+#include "status_codes.h"
 
 /*
 	Configures I2C connection with standard settings and custom functions
@@ -78,7 +79,8 @@ void i2c_write_command(struct i2c_master_packet* packet_address)
 */
 void i2c_write_command_nostop(struct i2c_master_packet* packet_address)
 {
-	i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
+	enum status_code res = i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
+	int count = 0;
 }
 
 /*

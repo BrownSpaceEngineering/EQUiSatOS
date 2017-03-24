@@ -6,8 +6,9 @@
 
 #define MLX90614_DEFAULT_I2CADDR 0x5A
 #define MLX90614_TBOARD_IR2 0x5B // address IR2 on Processor Test Board
+#define MLX90614_FLASH_PANEL_B1 0X6C //ADRESS on flash panel v6.2 b1
 
-#define POWER_PIN PIN_PA17
+#define POWER_PIN P_IR_PWR_CMD
 
 #define MLX90614_SHOULD_STOP false
 
@@ -24,7 +25,8 @@
 #define MLX90614_SMBUS 0x2E
 
 typedef enum {DEFAULT = MLX90614_DEFAULT_I2CADDR,
-              TBOARD_IR2 = MLX90614_TBOARD_IR2
+              TBOARD_IR2 = MLX90614_TBOARD_IR2,
+			  FLASH_PANEL_B1 = MLX90614_FLASH_PANEL_B1
               /* TODO: add more members to this enum
                  as we get more IR sensors to talk to */
               } MLXDeviceAddr;
