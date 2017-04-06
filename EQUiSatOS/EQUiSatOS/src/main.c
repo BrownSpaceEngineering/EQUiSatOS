@@ -8,6 +8,6 @@ int main(void)
 	// Initialize the SAM system
 	system_init();
 	USART_init();
-	// runit_2();
-	test_equistack();
+	runit_2();
+	//test_equistack();
 }
