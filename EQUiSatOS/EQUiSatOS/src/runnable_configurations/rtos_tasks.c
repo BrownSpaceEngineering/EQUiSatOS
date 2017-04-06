@@ -66,7 +66,6 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-/* Data Read Tasks */
 void flash_activate_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
@@ -140,6 +139,7 @@ void transmit_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
+/* Data Read Tasks */
 void current_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
@@ -478,6 +478,7 @@ char* hex_str_of(void* data, int bytes) {
 	char output[bytes*2]; // byte represented by two hex digits
 	int i = 0;
 	while(i < bytes*2) {
-		output[++i] = ((char*) data)[i] & 0xf;
+		output[i] = ((char*) data)[i] & 0xf;
+		i++;
 	}
 }
