@@ -17,11 +17,11 @@ void runit_2()
 	assertConstantDefinitions();
 	
 	// Initialize EQUiStacks
-	idle_readings_equistack = equistack_Init(sizeof(idle_data_t), IDLE_STACK_MAX);
-	flash_readings_equistack = equistack_Init(sizeof(flash_data_t), FLASH_STACK_MAX);
- 	transmit_readings_equistack = equistack_Init(sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
- 	attitude_readings_equistack = equistack_Init(sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
-	
+	equistack_Init(last_reading_type_equistack, _last_reading_equistack_arr, sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX);
+	equistack_Init(idle_readings_equistack, _idle_equistack_arr, sizeof(idle_data_t), IDLE_STACK_MAX);
+	equistack_Init(flash_readings_equistack, _flash_equistack_arr, sizeof(flash_data_t), FLASH_STACK_MAX);
+ 	equistack_Init(transmit_readings_equistack, _transmit_equistack_arr, sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
+ 	equistack_Init(attitude_readings_equistack, _attitude_equistack_arr, sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
 	
 	// Started at boot
 	xTaskCreate(battery_charging_task,
@@ -29,14 +29,14 @@ void runit_2()
 		TASK_BATTERY_CHARGE_STACK_SIZE,
 		NULL,
 		TASK_BATTERY_CHARGE_PRIORITY,
-		battery_charging_task_handle);// TODO: Should handle be NULL?
+		battery_charging_task_handle); // TODO: Should handle be NULL?
 		
 	xTaskCreate(antenna_deploy_task,
 		"antenna deploy action task",
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
 		NULL,
 		TASK_ANTENNA_DEPLOY_PRIORITY,
-		antenna_deploy_task_handle);	// TODO: Should handle be NULL?
+		antenna_deploy_task_handle); // TODO: Should handle be NULL?
 	
 	xTaskCreate(watchdog_task,
 		"watchdog task",
