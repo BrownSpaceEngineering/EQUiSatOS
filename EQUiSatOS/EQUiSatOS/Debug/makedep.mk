@@ -181,14 +181,19 @@ src\stacks\data_heap_testing.c
 =======
 src\stacks\equistack.c
 
+<<<<<<< db42bed40dee83dbe7ae3a1c86f94d5368f0a0b6
 >>>>>>> Create generic equistack (will it work?)
 src\stacks\equistacks.c
 >>>>>>> Merge data_t_heap and equistacks into "staged" equistacks
+=======
+src\stacks\package_transmission.c
+>>>>>>> more tests (working now) and deleted unused files
 
-src\stacks\errors.c
+src\testing_functions\test_data.c
 
-src\stacks\flash_Stack.c
+src\testing_functions\test_stacks.c
 
+<<<<<<< db42bed40dee83dbe7ae3a1c86f94d5368f0a0b6
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 src\radio\Stacks\stack_tests.c
 
@@ -217,6 +222,9 @@ src\stacks\test_data.c
 src\stacks\test_stacks.c
 
 src\stacks\test_structs.c
+=======
+src\testing_functions\test_structs.c
+>>>>>>> more tests (working now) and deleted unused files
 
 >>>>>>> Added v basic tests and found a bug in Equistack
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c

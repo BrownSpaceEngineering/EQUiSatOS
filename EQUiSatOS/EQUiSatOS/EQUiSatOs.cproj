@@ -817,40 +817,10 @@
     <Compile Include="src\stacks\equistack.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\equistacks.c">
+    <Compile Include="src\stacks\package_transmission.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\equistacks.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\errors.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\errors.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\flash_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\flash_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\idle_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\idle_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\Num_Stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\Num_Stack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\package_stack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\package_stack.h">
+    <Compile Include="src\stacks\package_transmission.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\stacks\Sensor_Structs.h">
@@ -865,19 +835,22 @@
     <Compile Include="src\stacks\test_data.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\test_data.h">
+    <Compile Include="src\testing_functions\test_data.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\test_stacks.c">
+    <Compile Include="src\testing_functions\test_data.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\test_stacks.h">
+    <Compile Include="src\testing_functions\test_stacks.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\test_structs.c">
+    <Compile Include="src\testing_functions\test_stacks.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\test_structs.h">
+    <Compile Include="src\testing_functions\test_structs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\test_structs.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="..\..\..\..\EquiSAT%2520Backup\EQUiSat_before_rename.zip">
