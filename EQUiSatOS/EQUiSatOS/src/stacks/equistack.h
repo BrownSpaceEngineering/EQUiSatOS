@@ -21,7 +21,7 @@ typedef struct equistack
 	int16_t		max_size;
 	size_t		data_size;
 	SemaphoreHandle_t mutex;
-	void*		data[];
+	void*		data;
 } equistack;
 
 equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t max_size);
