@@ -1,10 +1,10 @@
 /*
-* package_stack.c
+* package_transmission.c
 *
 * Created: 12/6/2016 8:47:44 PM
-*  Author: jleiken
+* Author: jleiken
 */
-#include "package_stack.h"
+#include "package_transmission.h"
 
 // general structure of a transmission will be:
 //   call sign + state bit + data + checksum

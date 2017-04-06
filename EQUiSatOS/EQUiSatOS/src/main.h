@@ -11,9 +11,7 @@
 
 #include "runnable_configurations/scratch_testing.h"
 #include "runnable_configurations/init_rtos_tasks.h"
-#include "stacks/equistacks.h"
-#include "stacks/package_stack.h"
-#include "stacks/test_stacks.h"
+#include "testing_functions/test_stacks.h"
 
 #include <asf.h>
 

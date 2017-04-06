@@ -204,14 +204,15 @@ void big_case()
 		assert((((test_data*)equistack_Get(bigTest, 1))->one_data[0]).values[0] == i + 6);
 		assert(equistack_Get(bigTest, 2) != NULL);
 		assert((((test_data*)equistack_Get(bigTest, 2))->one_data[0]).values[0] == i + 5);
-		assert(equistack_Get(bigTest, 39) == NULL);
-		assert(equistack_Get(bigTest, 38) != NULL);	
 	}
 	
-	assert(equistack_Get(bigTest, 37) != NULL);
-	assert(equistack_Get(bigTest, 36) != NULL);
-	assert(equistack_Get(bigTest, 35) != NULL);
-	assert(equistack_Get(bigTest, 34) != NULL);
+	assert(equistack_Get(bigTest, 20) == NULL);
+	assert(equistack_Get(bigTest, 19) == NULL);
+	assert(equistack_Get(bigTest, 18) != NULL);	
+	assert(equistack_Get(bigTest, 17) != NULL);
+	assert(equistack_Get(bigTest, 16) != NULL);
+	assert(equistack_Get(bigTest, 15) != NULL);
+	assert(equistack_Get(bigTest, 14) != NULL);
 	return;
 }
 

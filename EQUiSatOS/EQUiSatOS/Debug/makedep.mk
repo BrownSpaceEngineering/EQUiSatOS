@@ -14,23 +14,13 @@ src\runnable_configurations\task_testing.c
 
 src\stacks\equistack.c
 
-src\stacks\equistacks.c
+src\stacks\package_transmission.c
 
-src\stacks\errors.c
+src\testing_functions\test_data.c
 
-src\stacks\flash_Stack.c
+src\testing_functions\test_stacks.c
 
-src\stacks\idle_Stack.c
-
-src\stacks\Num_Stack.c
-
-src\stacks\package_stack.c
-
-src\stacks\test_data.c
-
-src\stacks\test_stacks.c
-
-src\stacks\test_structs.c
+src\testing_functions\test_structs.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
