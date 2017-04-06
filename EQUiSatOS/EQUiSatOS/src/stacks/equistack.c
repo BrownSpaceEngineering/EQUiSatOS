@@ -50,10 +50,20 @@ void* equistack_Get(equistack* S, int16_t n)
 
 	// We want to ignore the bottom index which is currently staged and maybe
 	// being overwritten
+	// We also don't want to be able to get the oldest element if the stack
+	// is full because that will be the one that's being overwritten
 	if (n < S->cur_size)
 	{
 		xSemaphoreGive(S->mutex);
-		return S->data[(S->top_index - n) % S->max_size];
+		
+		// TODO: Remove this
+		int get_index = (S->top_index - n) % S->max_size;
+		if (get_index < 0) 
+		{
+			get_index = get_index += S->max_size;
+		}
+		 
+		return S->data[get_index];
 	}
 	else
 	{
@@ -76,13 +86,18 @@ void* equistack_Stage(equistack* S)
 	
 	S->top_index = (S->top_index + 1) % S->max_size;
 	
-	if (S->bottom_index == S->top_index)
+	if (S->bottom_index == (S->top_index + 1) % S->max_size)
 	{
 		S->bottom_index = (S->bottom_index + 1) % S->max_size;
 	}
 	else
 	{
-		S->cur_size++;
+		// It doesn't make sense for the current size to be the max size because
+		// at least one value is always being rewritten
+		if (S->cur_size < S->max_size - 1) 
+		{
+			S->cur_size++;
+		}
 		
 		if (S->bottom_index == -1)
 		{
@@ -90,7 +105,9 @@ void* equistack_Stage(equistack* S)
 		}
 	}
 	
-	equistack* staged_pointer = S->data[(S->top_index + 1) % S->max_size];
+	// TODO: Remove this
+	int staged_index = (S->top_index + 1) % S->max_size;
+	void* staged_pointer = S->data[(S->top_index + 1) % S->max_size];
 	clear_existing_data(staged_pointer, S->data_size);
 	
 	xSemaphoreGive(S->mutex);
