@@ -9,9 +9,10 @@
 
 void standard_case()
 {
-	equistack* test;
-	test_data* _data_arr[4];
-	equistack_Init(test, _data_arr, sizeof(test_data), 4);
+	equistack test_actual;
+	equistack* test = &test_actual;
+	test_data _data_arr[4];
+	equistack_Init(test, &_data_arr, sizeof(test_data), 4);
 	
 	assert(test->cur_size == 0);
 	assert(test->top_index == -1);
@@ -114,9 +115,10 @@ void standard_case()
 
 void big_case()
 {	
-	equistack* bigTest;
-	test_data* _data_arr[20];
-	equistack_Init(bigTest, _data_arr, sizeof(test_data), 20);
+	equistack bigTestActual;
+	equistack* bigTest = &bigTestActual;
+	test_data _data_arr[20];
+	equistack_Init(bigTest, &_data_arr, sizeof(test_data), 20);
 	
 	assert(bigTest->cur_size == 0);
 	assert(bigTest->top_index == -1);

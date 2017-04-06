@@ -40,6 +40,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 	S->max_size = max_size;
 	S->data_size = data_size;
 	S->mutex = xSemaphoreCreateMutex();
+	S->data = data;
 	return S;
 }
 
@@ -63,7 +64,7 @@ void* equistack_Get(equistack* S, int16_t n)
 			get_index = get_index += S->max_size;
 		}
 		 
-		return S->data[get_index];
+		return S->data + S->data_size * get_index;
 	}
 	else
 	{
@@ -75,7 +76,7 @@ void* equistack_Get(equistack* S, int16_t n)
 // Only meant to be used when the stack is first being created
 void* equistack_Initial_Stage(equistack* S)
 {
-	return S->data[0];
+	return S->data;
 }
 
 // Returns the next pointer and "finalizes" the previous one (staging)
@@ -105,9 +106,7 @@ void* equistack_Stage(equistack* S)
 		}
 	}
 	
-	// TODO: Remove this
-	int staged_index = (S->top_index + 1) % S->max_size;
-	void* staged_pointer = S->data[(S->top_index + 1) % S->max_size];
+	void* staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
 	clear_existing_data(staged_pointer, S->data_size);
 	
 	xSemaphoreGive(S->mutex);
