@@ -27,23 +27,19 @@
 
 #include "equistack.h"
 
-// Takes in the size of the structs the stack holds and the
-// maximum number of elements the stack will hold
-equistack* equistack_Init(size_t data_size, uint16_t max_size)
+/** 
+ * Takes in a pointer to an equistack to construct and a pointer to a data array to use, 
+ * as well as the size of the structs the stack holds and the maximum number of elements 
+ * the stack will hold.
+ */
+equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t max_size)
 {
-	equistack* S = pvPortMalloc(sizeof(equistack));
 	S->top_index = -1;
 	S->bottom_index = -1;
 	S->cur_size = 0;
 	S->max_size = max_size;
 	S->data_size = data_size;
 	S->mutex = xSemaphoreCreateMutex();
-	
-	for (int i = 0; i < max_size; i++)
-	{
-		S->data[i] = pvPortMalloc(data_size);
-	}
-	
 	return S;
 }
 

@@ -9,7 +9,9 @@
 
 void standard_case()
 {
-	equistack* test = equistack_Init(sizeof(test_data), 4);
+	equistack* test;
+	test_data* _data_arr[4];
+	equistack_Init(test, _data_arr, sizeof(test_data), 4);
 	
 	assert(test->cur_size == 0);
 	assert(test->top_index == -1);
