@@ -114,7 +114,9 @@ void standard_case()
 
 void big_case()
 {	
-	equistack* bigTest = equistack_Init(sizeof(test_data), 20);
+	equistack* bigTest;
+	test_data* _data_arr[20];
+	equistack_Init(bigTest, _data_arr, sizeof(test_data), 20);
 	
 	assert(bigTest->cur_size == 0);
 	assert(bigTest->top_index == -1);
