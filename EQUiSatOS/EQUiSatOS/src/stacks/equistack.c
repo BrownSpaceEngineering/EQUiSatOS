@@ -54,9 +54,7 @@ void* equistack_Get(equistack* S, int16_t n)
 	// We also don't want to be able to get the oldest element if the stack
 	// is full because that will be the one that's being overwritten
 	if (n < S->cur_size)
-	{
-		xSemaphoreGive(S->mutex);
-		
+	{	
 		// TODO: Remove this
 		int get_index = (S->top_index - n) % S->max_size;
 		if (get_index < 0) 
@@ -64,6 +62,7 @@ void* equistack_Get(equistack* S, int16_t n)
 			get_index = get_index += S->max_size;
 		}
 		 
+		xSemaphoreGive(S->mutex);
 		return S->data + S->data_size * get_index;
 	}
 	else
@@ -83,7 +82,7 @@ void* equistack_Initial_Stage(equistack* S)
 // Overwrites the bottom value if need be
 void* equistack_Stage(equistack* S)
 {
-	xSemaphoreTake(S->mutex, (TickType_t) 10);
+	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	
 	S->top_index = (S->top_index + 1) % S->max_size;
 	

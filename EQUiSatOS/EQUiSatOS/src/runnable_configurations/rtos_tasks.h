@@ -171,18 +171,18 @@ void flash_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
 
 /* Equistack definitions */
-equistack* last_reading_type_equistack; // of msg_data_type_t
-equistack* idle_readings_equistack; // of idle_data_t
-equistack* flash_readings_equistack; // of flash_data_t
-equistack* transmit_readings_equistack; // of transmit_data_t
-equistack* attitude_readings_equistack; // of attitude_data_t
+equistack last_reading_type_equistack; // of msg_data_type_t
+equistack idle_readings_equistack; // of idle_data_t
+equistack flash_readings_equistack; // of flash_data_t
+equistack transmit_readings_equistack; // of transmit_data_t
+equistack attitude_readings_equistack; // of attitude_data_t
 
 /* Global (but don't use them!) arrays used in equistack (put here as an alternative to mallocing) */
-msg_data_type_t* _last_reading_equistack_arr[LAST_READING_TYPE_STACK_MAX];
-idle_data_t* _idle_equistack_arr[IDLE_STACK_MAX];
-flash_data_t* _flash_equistack_arr[FLASH_STACK_MAX];
-transmit_data_t* _transmit_equistack_arr[TRANSMIT_STACK_MAX];
-attitude_data_t* _attitude_equistack_arr[ATTITUDE_STACK_MAX];
+msg_data_type_t _last_reading_equistack_arr[LAST_READING_TYPE_STACK_MAX];
+idle_data_t _idle_equistack_arr[IDLE_STACK_MAX];
+flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
+transmit_data_t _transmit_equistack_arr[TRANSMIT_STACK_MAX];
+attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
 
 void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 
