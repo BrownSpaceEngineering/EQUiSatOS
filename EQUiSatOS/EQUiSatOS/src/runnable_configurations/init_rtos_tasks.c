@@ -12,9 +12,7 @@
 void runit_2()
 {
 	//configure_i2c_master(SERCOM4);
-	
-	// check that constants 
-	assertConstantDefinitions();
+	TaskSuspendStates = 0; // no tasks suspended
 	
 	// Initialize EQUiStacks
 	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr, sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX);
@@ -128,7 +126,7 @@ void set_state_hello_world()
 	vTaskSuspend(current_data_task_handle);
 	vTaskSuspend(flash_activate_task_handle);
 	vTaskSuspend(transmit_task_handle);
-	taskResumeIfSuspended(attitude_data_task_handle);
+	taskResumeIfSuspended(attitude_data_task_handle, ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
 
@@ -139,10 +137,10 @@ void set_state_idle()
 	// TODO: we need to suspend the other tasks and somehow immediately add OR delete their interior structs and make a new one
 	// Maybe look for changes in state inside the rtos tasks?
 	// OR bring their current structs, etc. global so we can manually reset them? -> NOOOOO
-	taskResumeIfSuspended(current_data_task_handle);
-	taskResumeIfSuspended(flash_activate_task_handle);
-	taskResumeIfSuspended(transmit_task_handle);
-	taskResumeIfSuspended(attitude_data_task_handle);
+	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
+	taskResumeIfSuspended(flash_activate_task_handle, FLASH_DATA_TASK);
+	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
+	taskResumeIfSuspended(attitude_data_task_handle, ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
 
@@ -151,16 +149,9 @@ void set_state_low_power()
 	CurrentState = LOW_POWER;
 	
 	// TODO: ibid
-	taskResumeIfSuspended(current_data_task_handle); 
+	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK); 
 	vTaskSuspend(flash_activate_task_handle);
-	taskResumeIfSuspended(transmit_task_handle);
+	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
 	vTaskSuspend(attitude_data_task_handle); // TODO: Do this?
 	// TODO: Others
-}
-
-/************************************************************************/
-/* Helpers																*/
-/************************************************************************/
-void taskResumeIfSuspended(TaskHandle_t task_handle) {
-	if (task_handle != NULL) { vTaskResume(task_handle); }
 }

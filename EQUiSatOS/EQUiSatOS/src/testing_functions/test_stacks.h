@@ -10,6 +10,7 @@
 
 #include "stacks/equistack.h"
 #include "test_data.h"
+#include "processor_drivers/USART_Commands.h"
 #include <assert.h>
 
 void test_equistack();

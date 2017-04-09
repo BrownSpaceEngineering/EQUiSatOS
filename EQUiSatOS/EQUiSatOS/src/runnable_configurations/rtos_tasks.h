@@ -71,19 +71,6 @@
 #define TRANSMIT_STACK_MAX				10
 #define ATTITUDE_STACK_MAX				10
 
-// Don't think we're going to need this due to generally static frequencies
-/* Enum for all tasks (to allow for array-wise referencing for freq, etc.) */
-// typedef enum
-// {
-// 	LED_TASK,
-// 	RADIO_TRANSMIT_TASK,
-// 	SENSOR_READ_IDLE,
-// 	SENSOR_READ_FLASH,
-// 	SENSOR_READ_BOOT,
-// 	SENSOR_READ_LOW_POWER,
-// 	NUM_TASKS
-// } task_type_t;
-
 /************************************************************************/
 /* Enum for states that represent changes in which tasks are running	*/
 /************************************************************************/
@@ -129,14 +116,28 @@ typedef enum
 	NUM_DATA_TYPES //= DIGITAL_OUT_D + 1
 } sensor_type_t;
 
-/* enum for all types of data that can be read 
-	(all types that will be in the 'data' section of a message packet) */
+/************************************************************************/
+/* enum for all types of data that can be read							*/
+/* (all types that will be in the 'data' section of a message packet)   */
+/************************************************************************/
 typedef enum
 {
 	ATTITUDE_DATA,
 	TRANSMIT_DATA,
 	FLASH_DATA
 } msg_data_type_t;
+
+/************************************************************************/
+/* Enum for all tasks (for array-wise referencing for last_state, etc.) */
+/************************************************************************/
+ typedef enum
+ {
+	IDLE_DATA_TASK,
+	ATTITUDE_DATA_TASK,
+	TRANSMIT_DATA_TASK,
+	FLASH_DATA_TASK
+ } task_type_t;
+
 
 /* Task headers */
 
@@ -164,7 +165,7 @@ void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
 
-// Data read tasks (some are actually action tasks)
+// Data read tasks
 void current_data_task(void *pvParameters);
 void transmit_data_task(void *pvParameters);
 void flash_data_task(void *pvParameters);
@@ -184,9 +185,10 @@ flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
 transmit_data_t _transmit_equistack_arr[TRANSMIT_STACK_MAX];
 attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
 
-void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
-
 /* Helper Functions */
+void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
+bool pollSuspended(task_type_t taskId); // NOTE that this function resets TaskSuspendStates value for taskId after being called
+void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);

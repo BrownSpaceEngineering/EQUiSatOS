@@ -9,10 +9,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "runnable_configurations/scratch_testing.h"
-#include "runnable_configurations/init_rtos_tasks.h"
-#include "testing_functions/test_stacks.h"
-
 #include <asf.h>
+#include "runnable_configurations/init_rtos_tasks.h"
+#include "runnable_configurations/scratch_testing.h"
+#include "testing_functions/test_stacks.h"
 
 #endif /* MAIN_H */
