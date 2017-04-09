@@ -9,10 +9,18 @@
  */ 
 
 #include "Watchdog_Task.h"
-uint8_t check_ins = 0;
-uint8_t is_running = 0;
+static uint8_t check_ins;
+static uint8_t is_running;
 
-static _Atomic uint8_t watch_block = 0;
+static uint8_t watch_block;
+SemaphoreHandle_t mutex;
+
+void watchdog_init(void) {
+	check_ins = 0;
+	is_running = 0;
+	watch_block = 0;
+	mutex = xSemaphoreCreateMutex();
+}
 
 void watchdog_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();
@@ -20,18 +28,7 @@ void watchdog_task(void *pvParameters) {
 	for( ;; )
 	{
 		vTaskDelayUntil( &xNextWakeTime, WATCHDOG_TASK_FREQ / portTICK_PERIOD_MS);
-		if (/*battery charing task isn't running*/0 == 1) {
-			watch_block = 1;
-		}
-		if ((check_ins ^ is_running) > 0 || watch_block == 1) {
-			check_ins = 0;
-			is_running = 0;
-			// "kick" watchdog
-		} else {
-			pet_watchdog();
-			check_ins = 0;
-			is_running = 0;
-		}
+		watchdog_as_function();
 	}
 	
 	// delete this task if it ever breaks out
@@ -39,6 +36,7 @@ void watchdog_task(void *pvParameters) {
 }
 
 bool watchdog_as_function(void) {
+	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	if (/*battery charing task isn't running*/0 == 1) {
 		watch_block = 1;
 	}
@@ -46,19 +44,25 @@ bool watchdog_as_function(void) {
 		// "kick" watchdog
 		check_ins = 0;
 		is_running = 0;
+		xSemaphoreGive(mutex);
 		return false;
 	} else {
 		// pet watchdog
 		check_ins = 0;
 		is_running = 0;
+		xSemaphoreGive(mutex);
 		return true;
 	}
 }
 
 void check_in_task(uint8_t task_ind) {
+	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	check_ins = check_ins | (1 << task_ind);
+	xSemaphoreGive(mutex);
 }
 
 void running_task(uint8_t task_ind) {
+	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
+	xSemaphoreGive(mutex);
 }

@@ -20,7 +20,9 @@
 
 // This is just a placeholder before integration with rtos_tasks.c
 #define WATCHDOG_TASK_FREQ 10
+#define MUTEX_WAIT_TIME_TICKS 10
 
+void watchdog_init(void);
 void watchdog_task(void *pvParameters);
 void check_in_task(uint8_t task_ind);
 void running_task(uint8_t task_ind);

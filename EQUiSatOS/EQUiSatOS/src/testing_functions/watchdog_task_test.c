@@ -8,6 +8,8 @@
 #include "watchdog_task_test.h"
 
 void watch_test(void) {
+	watchdog_init();
+	
 	check_in_task(ANTENNA_DEPLOY_SHIFT);
 	running_task(ANTENNA_DEPLOY_SHIFT);
 	check_in_task(TRANSMIT_SHIFT);
