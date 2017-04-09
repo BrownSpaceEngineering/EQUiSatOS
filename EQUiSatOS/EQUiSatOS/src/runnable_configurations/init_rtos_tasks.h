@@ -13,10 +13,8 @@
 #include "struct_tests.h"
 #include "stacks/equistack.h"
 
-/* Global satellite state - is this the best way to do this? */
+/* Global satellite state */
 int8_t CurrentState;
-
-void runit_2(void);
 
 /* Task handles for starting and stopping */
 TaskHandle_t watchdog_task_handle; // Should we have this?
@@ -31,10 +29,13 @@ TaskHandle_t flash_data_task_handle;
 TaskHandle_t transmit_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 
+/* List (series of bits) of whether a given task is resuming from suspension */
+uint8_t TaskSuspendStates;
+
+void runit_2(void);
+
 void set_state_hello_world(void);
 void set_state_idle(void);
 void set_state_low_power(void);
-
-void taskResumeIfSuspended(TaskHandle_t task_handle);
 
 #endif

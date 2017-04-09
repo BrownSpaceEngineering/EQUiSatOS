@@ -75,7 +75,7 @@ void flash_activate_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		taskResumeIfSuspended(flash_data_task_handle);
+		taskResumeIfSuspended(flash_data_task_handle, FLASH_DATA_TASK);
 		
 		// TODO: actually flash leds
 	
@@ -97,7 +97,7 @@ void transmit_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		
-		taskResumeIfSuspended(transmit_data_task_handle);
+		taskResumeIfSuspended(transmit_data_task_handle, TRANSMIT_DATA_TASK);
 		
 		
 		bool validDataTransmitted = false; // we're cynical
@@ -175,7 +175,7 @@ void current_data_task(void *pvParameters)
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
-		if (data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
+		if (pollSuspended(IDLE_DATA_TASK) || data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
 		{
 			// FOR TESTING
 			idle_data_t* prev_cur_struct = current_struct;
@@ -305,7 +305,7 @@ void transmit_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
+		if (pollSuspended(TRANSMIT_DATA_TASK) || data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (transmit_data_t*) equistack_Stage(&flash_readings_equistack);
@@ -357,7 +357,7 @@ void flash_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
+		if (pollSuspended(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (flash_data_t*) equistack_Stage(&attitude_readings_equistack);
@@ -413,7 +413,7 @@ void attitude_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
+		if (pollSuspended(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
@@ -451,7 +451,25 @@ void attitude_data_task(void *pvParameters)
 	vTaskDelete( NULL );
 }
 
-/* Helper Functions */
+/************************************************************************/
+/* Helper Functions														*/
+/************************************************************************/
+void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId) 
+{
+	if (task_handle != NULL && eTaskGetState(task_handle) == eSuspended) 
+	{
+		TaskSuspendStates |= (1 << taskId);
+		vTaskResume(task_handle);
+	}
+}
+
+// NOTE that this function resets TaskSuspendStates value for taskId after being called
+bool pollSuspended(task_type_t taskId) {
+	bool val = TaskSuspendStates & (1 << taskId);
+	TaskSuspendStates &= ~(1 << taskId);
+	return val;
+}
+
 uint32_t get_current_timestamp()
 {
 	// TODO: get a more accurate and persistent timestamp (relative to an alive message)

@@ -224,7 +224,15 @@ void big_case()
 
 void test_equistack() 
 {
-	standard_case();
-	big_case();
-	return;
+	print("\n\r");
+	int num = 100;
+	for (int i = 0; i < num; i++) {
+		print("-");
+	}
+	print("\r");
+	for (int i = 0; i < num; i++) {
+		standard_case();
+		big_case();
+		print("|");
+	}
 }

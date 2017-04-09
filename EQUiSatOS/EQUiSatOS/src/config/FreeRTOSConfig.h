@@ -21,7 +21,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
-#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 9000 ) ) // 20000
+#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 12000 ) ) // 20000
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION		1
 #define configAPPLICATION_ALLOCATED_HEAP		1
@@ -64,7 +64,7 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetIdleTaskHandle          0
 #define INCLUDE_xTimerGetTimerDaemonTaskHandle  0
 #define INCLUDE_pcTaskGetTaskName               0
-#define INCLUDE_eTaskGetState                   0
+#define INCLUDE_eTaskGetState                   1
 
 
 /* Normal assert() semantics without relying on the provision of an assert.h

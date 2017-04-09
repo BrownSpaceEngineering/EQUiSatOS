@@ -8,6 +8,10 @@ int main(void)
 	// Initialize the SAM system
 	system_init();
 	USART_init();
+
+	/* TESTS */
+	/*test_equistack();*/
+	assertConstantDefinitions();
+
 	runit_2();
-	//test_equistack();
 }
