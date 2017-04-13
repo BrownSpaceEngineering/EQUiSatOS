@@ -12,11 +12,13 @@ ir_batch read_ir_batch()
 	ir_batch batch;
 	for (int i = 0; i < 12; i++)
 	{
-		batch.values[i] = i;
+		batch[i] = i;
 	}
 	return batch;
 }
-lion_volts_batch read_lion_volts_batch(void) {};
+lion_volts_batch read_lion_volts_batch(void) {
+	
+};
 lion_current_batch read_lion_current_batch(void) {};
 led_temps_batch read_led_temps_batch(void) {};
 lifepo_current_batch read_lifepo_current_batch(void) {};
