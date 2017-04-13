@@ -55,4 +55,11 @@ void watch_test(void) {
 	check_in_task(ANTENNA_DEPLOY_SHIFT);
 	check_in_task(BATTERY_CHARGING_SHIFT);
 	assert(!watchdog_as_function());
+	
+	for (int i = 0; i < 100000; i++) {
+		check_in_task(i % 6 + 1);
+		running_task(i % 6 + 1);
+		assert(watchdog_as_function());
+	}
+	int x = 0;
 }
