@@ -60,8 +60,10 @@ float read_temp(void) {
 
 void flatsat_run(void) {	
 	flatsat_init();
+	/*uint16_t a = 1324;
 	while (true) {
 		writeDataToAddress(&a, 2, 0x08, true);
+	}
 	//set_output(true, PIN_PB11);
 	//set_output(true, PIN_PB17);
 
