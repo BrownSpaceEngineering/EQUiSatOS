@@ -748,6 +748,9 @@
     <Folder Include="src\processor_drivers" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\global.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
       <SubType>compile</SubType>
     </Compile>

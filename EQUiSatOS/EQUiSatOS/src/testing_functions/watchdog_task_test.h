@@ -9,7 +9,7 @@
 #ifndef WATCHDOG_TASK_TEST_H_
 #define WATCHDOG_TASK_TEST_H_
 
-#include "asf.h"
+#include <global.h>
 #include <assert.h>
 #include "../processor_drivers/Watchdog_Task.h"
 

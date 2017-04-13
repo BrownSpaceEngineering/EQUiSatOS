@@ -9,7 +9,7 @@
 #ifndef TCA9535_GPIO_H_
 #define TCA9535_GPIO_H_
 
-#include <asf.h>
+#include <global.h>
 #include "../processor_drivers/I2C_Commands.h"
 
 #define TCA_ADDR 0b0100000

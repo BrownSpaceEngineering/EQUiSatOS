@@ -9,7 +9,7 @@
 #ifndef RUN_H_
 #define RUN_H_
 
-#include <asf.h>
+#include <global.h>
 #include <inttypes.h>
 
 #include "config/proc_pins.h"

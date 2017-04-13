@@ -9,7 +9,7 @@
 #ifndef LTC1380_MULTIPLEXER_COMMANDS_H_
 #define LTC1380_MULTIPLEXER_COMMANDS_H_
 
-#include <asf.h>
+#include <global.h>
 #include "../processor_drivers/I2C_Commands.h"
 
 #define MULTIPLEXER_I2C 0x48

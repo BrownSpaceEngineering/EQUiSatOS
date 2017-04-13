@@ -1,7 +1,7 @@
 #ifndef I2C_MOCK_H
 #define I2C_MOCK_H
 
-#include <asf.h>
+#include <global.h>
 
 // declare here (may want to use getters instead?)
 extern int no_stop_calls;

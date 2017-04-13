@@ -9,7 +9,7 @@
 #ifndef I2C_COMMANDS_H
 #define I2C_COMMANDS_H
 
-#include <asf.h>
+#include <global.h>
 
 #define TIMEOUT 65535
 

@@ -9,7 +9,7 @@
 #ifndef WATCHDOG_COMMANDS_H_
 #define WATCHDOG_COMMANDS_H_
 
-#include <asf.h>
+#include <global.h>
 
 void configure_watchdog(void);
 //void watchdog_early_warning_callback(void);

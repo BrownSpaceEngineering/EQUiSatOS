@@ -9,7 +9,7 @@
 #ifndef AD7991_ADC_H_
 #define AD7991_ADC_H_
 
-#include <asf.h>
+#include <global.h>
 #include "../processor_drivers/I2C_Commands.h"
 
 #define AD7991_ADDR 0b0101000

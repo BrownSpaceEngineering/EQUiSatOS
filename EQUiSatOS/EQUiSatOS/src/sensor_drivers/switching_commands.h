@@ -9,7 +9,7 @@
 #ifndef SWITCHING_COMMANDS_H
 #define SWITCHING_COMMANDS_H
 
-#include <asf.h>
+#include <global.h>
 #include "../processor_drivers/Direct_Pin_Commands.h"
 
 #define SIDE_1_ENABLE PIN_PA27
