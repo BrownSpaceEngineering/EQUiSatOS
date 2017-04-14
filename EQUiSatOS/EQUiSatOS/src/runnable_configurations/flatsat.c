@@ -6,7 +6,8 @@ int16_t xyzBuff[3] = {0, 0, 0};
 	
 void flatsat_init(void) {
 
-	configure_i2c_standard(SERCOM2);
+	configure_i2c_standard(SERCOM4);
+	
 	//MPU9250_init(i2c_write_command,i2c_read_command,i2c_write_command_no_stop);
 	//while(true){
 		//MPU9250_read();
@@ -23,7 +24,7 @@ void flatsat_init(void) {
 	//configure_watchdog();
 	//LTC1380_init();
 	///setup_switching();
-	TCA9535_init();
+	//TCA9535_init();
 }
 
 float read_IR(void) {
@@ -59,6 +60,10 @@ float read_temp(void) {
 
 void flatsat_run(void) {	
 	flatsat_init();
+	/*uint16_t a = 1324;
+	while (true) {
+		writeDataToAddress(&a, 2, 0x08, true);
+	}
 	//set_output(true, PIN_PB11);
 	//set_output(true, PIN_PB17);
 
@@ -107,9 +112,9 @@ void flatsat_run(void) {
 	//LTC1380_disable();
 	//LTC1380_channel_select(0x6);
 	//LTC1380_disable();
-	while(true){
+	/*while(true){
 		uint16_t x = readTCA9535Levels();
 		
 		int y = 0;
-	}
+	}*/
 }

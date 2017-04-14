@@ -9,6 +9,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+//BOARD TYPE
+//#define CNTRL_BRD_V3
+#define XPLAINED_PRO
+
 #include "runnable_configurations/scratch_testing.h"
 #include <asf.h>
 
