@@ -12,7 +12,8 @@
 #include <asf.h>
 #include "../processor_drivers/I2C_Commands.h"
 
-#define MULTIPLEXER_I2C 0x48
+#define TEMP_MULTIPLEXER_I2C 0x48
+#define PHOTO_MULTIPLEXER_I2C 0x49
 
 void LTC1380_init(void);
 void LTC1380_channel_select(uint8_t target);
