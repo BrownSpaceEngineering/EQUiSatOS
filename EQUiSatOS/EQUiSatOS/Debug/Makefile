@@ -131,7 +131,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
-../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
+../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c \
 ../src/runnable_configurations/rtos_task_frequencies.c \
 ../src/runnable_configurations/struct_tests.c \
 ../src/runnable_configurations/task_testing.c \
@@ -196,7 +196,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
-src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
 src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
@@ -254,7 +254,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
-src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
 src/runnable_configurations/rtos_task_frequencies.o \
 src/runnable_configurations/struct_tests.o \
 src/runnable_configurations/task_testing.o \
@@ -312,7 +312,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
-src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
 src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \
@@ -370,7 +370,7 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
-src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
 src/runnable_configurations/rtos_task_frequencies.d \
 src/runnable_configurations/struct_tests.d \
 src/runnable_configurations/task_testing.d \

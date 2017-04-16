@@ -8,7 +8,8 @@
 #include "struct_tests.h"
 
 idle_data_t init_test_struct(void){
-	idle_data_t *IDT = pvPortMalloc(sizeof(idle_data_t));
+	idle_data_t IDT_ORIG;
+	idle_data_t *IDT = &IDT_ORIG;
 
 	ir_batch ib; // ir_batch *ib = pvPortMalloc(sizeof(ir_batch));
 	ib[0] = 5; // ib->values[0] = 5;
