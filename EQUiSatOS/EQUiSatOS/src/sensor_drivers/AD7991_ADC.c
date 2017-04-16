@@ -13,7 +13,7 @@ void AD7991_init(){
 
 //change the channel of the external ADC
 void AD7991_change_channel(uint8_t channel){
-	int target[] = {0b10000000};
+	uint8_t target[] = {0b10000000};
 	/*
 	int target[] = {0x0};
 	switch(channel){
