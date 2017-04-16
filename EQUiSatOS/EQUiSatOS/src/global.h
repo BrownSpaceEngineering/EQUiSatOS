@@ -11,6 +11,11 @@
 
 #include <asf.h>
 
+typedef struct return_struct_float {
+	enum status_code return_status;
+	float return_value;
+} return_struct_float;
+
 typedef struct return_struct_16 {
 	enum status_code return_status;
 	uint16_t return_value;

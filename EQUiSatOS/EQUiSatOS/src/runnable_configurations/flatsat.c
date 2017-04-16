@@ -27,7 +27,7 @@ void flatsat_init(void) {
 }
 
 float read_IR(void) {
-	float data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,OBJ1);
+	float data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,OBJ1).return_value;
 	//float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,OBJ1);
 	return data;
 }
@@ -108,7 +108,7 @@ void flatsat_run(void) {
 	//LTC1380_channel_select(0x6);
 	//LTC1380_disable();
 	while(true){
-		uint16_t x = readTCA9535Levels();
+		uint16_t x = readTCA9535Levels().return_value;
 		
 		int y = 0;
 	}
