@@ -15,7 +15,7 @@
 #define MULTIPLEXER_I2C 0x48
 
 void LTC1380_init(void);
-void LTC1380_channel_select(uint8_t target);
-void LTC1380_disable(void);
+struct return_struct_8 LTC1380_channel_select(uint8_t target);
+struct return_struct_8 LTC1380_disable(void);
 
 #endif /* LTC1380_MULTIPLEXER_COMMANDS_H_ */

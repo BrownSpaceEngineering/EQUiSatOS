@@ -30,9 +30,9 @@
 #define IOMask1 0b00000000
 
 
-enum status_code TCA9535_init();
+struct return_struct_16 TCA9535_init();
 enum status_code setIOMask(uint8_t reg0, uint8_t reg1);
-return_struct_16 readTCA9535Levels(void);
+struct return_struct_16 readTCA9535Levels(void);
 enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel);
 
 #endif /* TCA9535_GPIO_H_ */

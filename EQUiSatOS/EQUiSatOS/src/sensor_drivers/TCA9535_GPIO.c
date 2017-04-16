@@ -7,9 +7,13 @@
 
 #include "TCA9535_GPIO.h"
 
-enum status_code TCA9535_init(void){
+return_struct_16 TCA9535_init(void){
 	uint16_t x = readTCA9535Levels().return_value;
-	return setIOMask(IOMask0,IOMask1);
+	
+	struct return_struct_16 rs;
+	rs.return_status = setIOMask(IOMask0,IOMask1);
+	rs.return_value = x;
+	return rs;
 }
 
 //Set the mask for the configuration register
@@ -24,7 +28,7 @@ enum status_code setIOMask(uint8_t reg0, uint8_t reg1){
 	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
 }
 
-return_struct_16 readTCA9535Levels(void){
+struct return_struct_16 readTCA9535Levels(void){
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);

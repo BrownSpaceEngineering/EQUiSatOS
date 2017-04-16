@@ -12,7 +12,7 @@ void AD7991_init(){
 }
 
 //change the channel of the external ADC
-return_struct_0 AD7991_change_channel(uint8_t channel){
+struct return_struct_0 AD7991_change_channel(uint8_t channel){
 	int target[] = {0b10000000};
 	/*
 	int target[] = {0x0};
@@ -39,7 +39,8 @@ return_struct_0 AD7991_change_channel(uint8_t channel){
 	
 	return rs;
 }
-return_struct_16 AD7991_read(uint8_t channel){
+
+struct return_struct_16 AD7991_read(uint8_t channel){
 	//AD7991_change_channel(channel);
 	uint8_t buffer[] = {0x0, 0x0};
 	struct return_struct_16 rs;

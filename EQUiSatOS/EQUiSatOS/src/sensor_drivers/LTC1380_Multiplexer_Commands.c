@@ -12,7 +12,7 @@ void LTC1380_init(void){
 };
 
 
-void LTC1380_channel_select(uint8_t target){
+struct return_struct_8 LTC1380_channel_select(uint8_t target){
 	if(target > 7){
 		return;
 	}
@@ -20,11 +20,19 @@ void LTC1380_channel_select(uint8_t target){
 	//add EN bit of 1 to position 4 with value 2^4
 	uint8_t bufferResult = target + 8;
 	
-	writeDataToAddress(&bufferResult,1,MULTIPLEXER_I2C,true);
+	struct return_struct_8 rs;
+	rs.return_status = writeDataToAddress(&bufferResult,1,MULTIPLEXER_I2C,true);
+	rs.return_value = bufferResult;
+	
+	return rs;
 }
 
-void LTC1380_disable(void){
+struct return_struct_8 LTC1380_disable(void){
 	uint8_t off = 0;
 	
-	writeDataToAddress(&off,1,MULTIPLEXER_I2C,true);
+	struct return_struct_8 rs;
+	rs.return_status = writeDataToAddress(&off,1,MULTIPLEXER_I2C,true);
+	rs.return_value = off;
+	
+	return rs;
 }

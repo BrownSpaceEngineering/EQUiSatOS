@@ -20,7 +20,7 @@ bool isIROn(){
 }
 
 // reads a 2 byte value which is sorted:
-return_struct_16 MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr) {
+struct return_struct_16 MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr) {
 	uint8_t read_buffer[2] = {
 		0x0, 0x0
 	};
@@ -31,7 +31,7 @@ return_struct_16 MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr) {
 }
 
 // Function to read raw IR data from sensor. chan can be IR1 or IR2
-return_struct_16 MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan) {
+struct return_struct_16 MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan) {
 	return MLX90614_read2ByteValue(addr, (uint8_t)chan);
 }
 
@@ -43,7 +43,7 @@ float dataToTemp(uint16_t data){
 
 // Read target temperature in degrees Celsius
 // temp_target can be AMBIENT, OBJ1, OBJ2
-return_struct_float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target) {
+struct return_struct_float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target) {
 	struct return_struct_16 rs = MLX90614_read2ByteValue(addr, (uint8_t) temp_target);
 	struct return_struct_float returner;
 	returner.return_status = rs.return_status;
@@ -52,7 +52,7 @@ return_struct_float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_tar
 }
 
 // sanity check, should always return the same value as device_addr
-return_struct_16 MLX90614_getAddress(MLXDeviceAddr addr) {
+struct return_struct_16 MLX90614_getAddress(MLXDeviceAddr addr) {
 	return MLX90614_read2ByteValue(addr, MLX90614_SMBUS);
 }
 

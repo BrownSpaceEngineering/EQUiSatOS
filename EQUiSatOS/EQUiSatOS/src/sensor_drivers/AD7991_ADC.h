@@ -16,7 +16,7 @@
 #define AD7991_SHOULD_STOP false
 
 void AD7991_init(void);
-return_struct_0 AD7991_change_channel(uint8_t channel);
-return_struct_16 AD7991_read(uint8_t channel);
+struct return_struct_0 AD7991_change_channel(uint8_t channel);
+struct return_struct_16 AD7991_read(uint8_t channel);
 
 #endif /* AD7991_ADC_H_ */

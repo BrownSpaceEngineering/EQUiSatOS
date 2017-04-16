@@ -37,12 +37,12 @@ typedef enum {AMBIENT = MLX90614_TA,
               OBJ2 = MLX90614_TOBJ2} IRTempTarget;
 
 void MLX90614_init(void);
-return_struct_16 MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr);
-return_struct_16 MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan);
+struct return_struct_16 MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr);
+struct return_struct_16 MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan);
 float dataToTemp(uint16_t data);
-return_struct_float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target);
+struct return_struct_float MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target);
 
-return_struct_16 MLX90614_getAddress(MLXDeviceAddr addr);
+struct return_struct_16 MLX90614_getAddress(MLXDeviceAddr addr);
 
 void irPower(bool trueIsOn);
 bool isIROn(void);
