@@ -19,7 +19,6 @@ typedef struct test_data
 	three_batch three_data [6];
 } test_data;
 
-void free_test(test_data*);
 void fill_test(test_data*, uint16_t);
 
 #endif

@@ -96,43 +96,51 @@ void transmit_task(void *pvParameters)
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		
 		taskResumeIfSuspended(transmit_data_task_handle, TRANSMIT_DATA_TASK);
+
+		// check that global buffer has not been broken (TODO: ERROR)
+		assert(get_msg_buffer()[0] == 'K' && get_msg_buffer()[1] == '1' && get_msg_buffer()[2] == 'A' && get_msg_buffer()[3] == 'D');
 		
-		
+		// TODO: Do we need this loop? Can we just assume we'll always have data??
 		bool validDataTransmitted = false; // we're cynical
 		do
 		{
-			// read the next state to transmit (pop something off state queue) 
-			int nextState = IDLE; // (int*) equistack_Top(&last_state_read_equistack); 
-		
+			// read the next state to transmit (get first off state queue) 
+			int nextState = (int*) equistack_Get(&last_reading_type_equistack, 0); 
+			
+			// grab idle data and write to header
+			idle_data_t* cur_data = equistack_Get(&idle_readings_equistack, 0);
+			assert(MSG_HEADER_LENGTH == sizeof(idle_data_t));
+			// TODO: like to have a get_msg_buffer_header() that returns the pointer to the header section of the buffer
+			//memcpy(get_msg_buffer_header(), cur_data, HEADER_LENGTH); 
+			
+			// TOOD: Get errors and add them (would also like to get an address of the error section)
+			
 			// based on what state we're in, compile a different message
 			switch(nextState)
 			{
-// 				case IDLE: ; // empty statement to allow definition
-// 					idle_data_t* idle_data_to_trans = (idle_data_t*) equistack_Get(&idle_readings_equistack, 0);
-// 					
-// 					//if (idle_data_to_trans != NULL) 
-// 					//{ 
-// 					//	validDataTransmitted = true;
-// 					//}
-// 					break;
-// 				case FLASH: ; // empty statement to allow definition
-// 					break;
-// 				case BOOT: ; // empty statement to allow definition
-// 					break;
-// 				case LOW_POWER: ; // empty statement to allow definition
-// 					break;
-// 				default:
-// 					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely) 				
+				case ATTITUDE_DATA: ; // empty statement to allow definition
+					// TODO: like to have a get_msg_buffer_data() that returns the pointer to the data section of the buffer
+					attitude_data_t* attitude_data_trans = NULL; // (attitude_data_t*) get_msg_buffer_data();
+					
+					assert(ATTITUDE_DATA_PACKETS <= ATTITUDE_STACK_MAX);
+					for (uint8_t i = 0; i < ATTITUDE_DATA_PACKETS; i++) {
+						// TODO: What's with first arg?
+						memcpy(&(attitude_data_trans[i]), equistack_Get(&attitude_readings_equistack, 0), sizeof(attitude_data_t));
+					}
+					
+					//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
+					break;
+				case TRANSMIT_DATA: ; // empty statement to allow definition
+					break;
+				case FLASH_DATA: ; // empty statement to allow definition
+					break;
+				default:
+					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely)
 			};
 		} while (!validDataTransmitted);
 		
-		
-		
 		vTaskSuspend(transmit_data_task_handle);
-		
-		
 		
 	}
 	// delete this task if it ever breaks out
@@ -311,8 +319,9 @@ void transmit_data_task(void *pvParameters)
 			current_struct = (transmit_data_t*) equistack_Stage(&flash_readings_equistack);
 			current_struct->timestamp = get_current_timestamp();
 			
-			// TODO: log state read
-			//equistack_Stage(&last_reading_type_equistack, TRANSMIT_DATA);
+			// log state read
+			msg_data_type_t* next_state_ptr = equistack_Stage(&last_reading_type_equistack);
+			*next_state_ptr = TRANSMIT_DATA;
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
@@ -363,8 +372,9 @@ void flash_data_task(void *pvParameters)
 			current_struct = (flash_data_t*) equistack_Stage(&attitude_readings_equistack);
 			current_struct->timestamp = get_current_timestamp();
 			
-			// TODO: log state read
-			//equistack_Stage(&last_reading_type_equistack, FLASH_DATA);
+			// log state read
+			msg_data_type_t* next_state_ptr = equistack_Stage(&last_reading_type_equistack);
+			*next_state_ptr = FLASH_DATA;
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
@@ -419,8 +429,9 @@ void attitude_data_task(void *pvParameters)
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
 			current_struct->timestamp = get_current_timestamp();
 			
-			// TODO: log state read
-			//equistack_Stage(&last_reading_type_equistack, ATTITUDE_DATA);
+			// log state read
+			msg_data_type_t* next_state_ptr = equistack_Stage(&last_reading_type_equistack);
+			*next_state_ptr = ATTITUDE_DATA;
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);

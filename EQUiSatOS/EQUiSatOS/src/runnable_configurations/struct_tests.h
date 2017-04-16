@@ -14,6 +14,5 @@
 #include "../stacks/Sensor_Structs.h"
 
 idle_data_t init_test_struct(void);
-void test_free(void *pvParameters);
 
 #endif /* STRUCT_TESTS_H_ */

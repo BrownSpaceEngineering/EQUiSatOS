@@ -10,7 +10,7 @@ int main(void)
 	USART_init();
 
 	/* TESTS */
-	/*test_equistack();*/
+	test_equistack();
 	assertConstantDefinitions();
 
 	runit_2();

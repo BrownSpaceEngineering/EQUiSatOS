@@ -144,6 +144,7 @@ src\sensor_drivers\TEMD6200_Commands.c
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
@@ -152,6 +153,9 @@ src\radio\Stacks\Data_Heap.c
 =======
 src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
 >>>>>>> Stylistic adjustments
+=======
+src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 
 src\runnable_configurations\rtos_task_frequencies.c
 

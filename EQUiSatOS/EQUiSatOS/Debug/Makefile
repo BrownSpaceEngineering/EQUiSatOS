@@ -1021,6 +1021,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
@@ -1056,6 +1057,9 @@ C_SRCS +=  \
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.c \
 >>>>>>> Stylistic adjustments
 =======
+=======
+../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c \
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 ../src/runnable_configurations/rtos_task_frequencies.c \
 >>>>>>> Merge idle and low power
 ../src/runnable_configurations/struct_tests.c \
@@ -1143,6 +1147,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
@@ -1178,6 +1183,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 <<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 >>>>>>> Stylistic adjustments
 =======
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
@@ -1258,6 +1266,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 8c339200b01c4353a5918920019edb8fbed8e882
@@ -1296,6 +1305,9 @@ src/radio/Stacks/State_Structs.o \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 >>>>>>> Stylistic adjustments
 =======
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
@@ -1376,6 +1388,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
@@ -1402,6 +1415,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 <<<<<<< 09ea68c79a4b3a9e249dd6f6919dae03fa1173fc
 >>>>>>> Stylistic adjustments
 =======
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
@@ -1482,6 +1498,7 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
 <<<<<<< 307ec729d99c6bb04a01794d9132ba9106009929
@@ -1508,6 +1525,9 @@ src/radio/Stacks/State_Structs.d \
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 >>>>>>> Stylistic adjustments
 =======
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
+>>>>>>> Convert to using heap_1.c; stencil for transmission code
 src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \

@@ -15,7 +15,6 @@ typedef struct one_batch
 	uint16_t values[12];
 } one_batch;
 
-void free_one(one_batch*);
 void fill_one(one_batch*, uint16_t); 
 
 typedef struct two_batch
@@ -23,7 +22,6 @@ typedef struct two_batch
 	uint16_t values[16];	
 } two_batch;
 
-void free_two(two_batch*);
 void fill_two(two_batch*, uint16_t);
 
 typedef struct three_batch
@@ -31,7 +29,6 @@ typedef struct three_batch
 	uint16_t values[12];	
 } three_batch;
 
-void free_three(three_batch*);
 void fill_three(three_batch*, uint16_t);
 
 #endif
