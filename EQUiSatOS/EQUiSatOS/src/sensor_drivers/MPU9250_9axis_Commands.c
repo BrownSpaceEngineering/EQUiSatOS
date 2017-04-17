@@ -109,7 +109,7 @@ MPU9250Reading MPU9250_read(void){
 	
 	MPU9250_read_acc(&output);
 	MPU9250_read_gyro(&output);
-	MPU9250_read_mag(&output);
+	//MPU9250_read_mag(&output);
 	
 	HumanReading reading = humanReadableOutput(output);
 	

@@ -8,7 +8,7 @@ int main(void)
 	system_init();
 	
 	//watch_test();
-	flatsat_run();	
+	flatsat_run();
 	//radioTest();
 	
 }

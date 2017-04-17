@@ -3,11 +3,18 @@
 
 #include "../processor_drivers/I2C_Commands.h"
 #include "../processor_drivers/Direct_Pin_Commands.h"
+#include "../config/proc_pins.h"
 
-#define MLX90614_DEFAULT_I2CADDR 0x5A
-#define MLX90614_TBOARD_IR2 0x5B // address IR2 on Processor Test Board
-
-#define POWER_PIN PIN_PA17
+//Test Sensors
+#define MLX90614_DEFAULT_I2CADDR	0x5A
+#define MLX90614_TBOARD_IR2			0x5B // address IR2 on Processor Test Board
+//Flight Sensors
+#define MLX90614_FLASHPANEL_V6_2_1	0x6C
+#define MLX90614_TOPPANEL_V4_2		0x6B
+#define MLX90614_ACCESSPANEL_V3_1	0x5C
+#define MLX90614_SIDEPANEL_V4_2		0x5D
+#define MLX90614_SIDEPANEL_V4_3		0x5F
+#define MLX90614_SIDEPANEL_V4_4		0x6D
 
 #define MLX90614_SHOULD_STOP false
 

@@ -9,7 +9,10 @@ MPU9250Reading read_IMU(void);
 float read_temp(void);
 void led_flash(void);
 void flatsat_run(void);
+void sendToArduino(uint8_t* data, uint8_t length);
 
-#define LEN_IR 1
+#define LEN_IR 6
+#define ARDUINO_ADDR 0x08
+#define LEN_ADC 4
 
 #endif /* SCRATCH_TESTING_2_H_ */

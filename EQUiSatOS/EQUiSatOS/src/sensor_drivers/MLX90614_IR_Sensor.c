@@ -1,7 +1,7 @@
 #include "MLX90614_IR_Sensor.h"
 
 void MLX90614_init() {
-	setup_pin(true,POWER_PIN); //init low power ir pin
+	setup_pin(true,P_IR_PWR_CMD); //init low power ir pin
 	irPower(true);
 }
 
@@ -9,14 +9,14 @@ void MLX90614_init() {
 	Powers on or off the ir sensor.  True is on, false is off.
 */
 void irPower(bool trueIsOn){
-	set_output(trueIsOn, POWER_PIN);	
+	set_output(trueIsOn, P_IR_PWR_CMD);	
 };
 
 /*
 	returns if the ir is powered on
 */
 bool isIROn(){
-	return get_output(POWER_PIN);
+	return get_output(P_IR_PWR_CMD);
 }
 
 // reads a 2 byte value which is sorted:

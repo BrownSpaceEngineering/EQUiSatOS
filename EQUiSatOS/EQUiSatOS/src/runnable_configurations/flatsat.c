@@ -4,41 +4,45 @@ struct adc_module temp_instance;
 struct adc_module pd_instance;
 uint8_t magReadBuff[6] = {0, 0, 0, 0, 0, 0};
 int16_t xyzBuff[3] = {0, 0, 0};
-	
-enum adc_positive_input adc_pins[14] = {
-ADC_POSITIVE_INPUT_PIN11, //LED1SNS
-ADC_POSITIVE_INPUT_PIN10, //LED2SNS
-ADC_POSITIVE_INPUT_PIN9,  //LED3SNS
-ADC_POSITIVE_INPUT_PIN8,  //LED4SNS
-ADC_POSITIVE_INPUT_PIN19, //LFB1OSNS
-ADC_POSITIVE_INPUT_PIN18, //LFB1SNS
-ADC_POSITIVE_INPUT_PIN16, //LFB2OSNS
-ADC_POSITIVE_INPUT_PIN17, //LFB2SNS
-ADC_POSITIVE_INPUT_PIN6,  //LF1REF
-ADC_POSITIVE_INPUT_PIN5,  //LF2REF
-ADC_POSITIVE_INPUT_PIN3,  //LF3REF
-ADC_POSITIVE_INPUT_PIN4,  //LF4REF
-ADC_POSITIVE_INPUT_PIN1,  //L1_REF
-ADC_POSITIVE_INPUT_PIN7,  //L2_REF
+
+struct adc_module modules[LEN_ADC];
+
+enum adc_positive_input adc_pins[LEN_ADC] = {
+P_AI_LED1SNS,
+P_AI_LED2SNS,
+P_AI_LED3SNS,
+P_AI_LED4SNS,
+P_AI_LFB1OSNS,
+P_AI_LFB1SNS,
+P_AI_LFB2OSNS,
+P_AI_LFB2SNS,
+P_AI_LF1REF,
+P_AI_LF2REF,
+P_AI_LF3REF,
+P_AI_LF4REF,
+P_AI_L1_REF,
+P_AI_L2_REF,
 };
 
-
-struct adc_module modules[14];
-
 //TODO: FILL WITH SENSOR LIST, make LEN_IR the list length
-uint8_t irs[LEN_IR] = {MLX90614_DEFAULT_I2CADDR};
-
+uint8_t irs[LEN_IR] = {
+	MLX90614_FLASHPANEL_V6_2_1, 
+	MLX90614_TOPPANEL_V4_2, 
+	MLX90614_ACCESSPANEL_V3_1,
+	MLX90614_SIDEPANEL_V4_2,
+	MLX90614_SIDEPANEL_V4_3,
+	MLX90614_SIDEPANEL_V4_4 };
 	
 void flatsat_init(void) {
 
 	configure_i2c_standard(SERCOM4);
 	//temperature
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN2);
+	configure_adc(&temp_instance,P_AI_TEMP_OUT);
 	//pd
-	configure_adc(&pd_instance, ADC_POSITIVE_INPUT_PIN0);
+	configure_adc(&pd_instance, P_AI_PD_OUT);
 	
 	//other adc
-	for (int i=0; i<14; i++){
+	for (int i=0; i<LEN_ADC; i++){
 		configure_adc(&modules[i], adc_pins[i]);
 	}
 	
@@ -57,25 +61,24 @@ void flatsat_init(void) {
 }
 
 
- void readMuxs(float* buffer1, float* buffer2){
+ void readMuxs(float* tempBuffer, float* pdBuffer){
 	 for (int i=0; i<8; i++){
 		 LTC1380_channel_select(0x48, i);
-		 buffer1[i] = readVoltagemV(temp_instance);
+		 tempBuffer[i] = readVoltagemV(temp_instance);
 	 }
 	 
 	 for (int i=0; i<6; i++){
 		LTC1380_channel_select(0x49, i); 
-		buffer2[i] = readVoltagemV(pd_instance);
+		pdBuffer[i] = readVoltagemV(pd_instance);
 	 }
  }
  
  
  void readOtherADC(float* buffer){
-	 for (int i=0; i<14; i++){
+	 for (int i=0; i<LEN_ADC; i++){
 		buffer[i] = readVoltagemV(modules[i]) ;
 	 }
  }
-
 
 void read_IR(uint16_t* buffer) {
 	for (int i = 0; i < LEN_IR; i++)
@@ -89,46 +92,28 @@ MPU9250Reading read_IMU(void) {
 	return data;
 }
 
-
+void sendToArduino(uint8_t* data, uint8_t length) {
+	writeDataToAddress(data, length, ARDUINO_ADDR, true);
+}
 
 void flatsat_run(void) {	
-	flatsat_init();
-<<<<<<< HEAD
-	/*uint16_t a = 124;
-	while (true) {
-		writeDataToAddress(&a, 1, 0x08, true);
-	}*/
-	//set_output(true, PIN_PB11);
-	//set_output(true, PIN_PB17);
-
-	//while(true){
-		//led_flash();
-		//uint16_t x = AD7991_read(0x0);
-		//int y = 2;
-	//}
-	
-	
-	/*
-	pick_side(true);
-	pick_input(0x1);
-	struct adc_module temp_instance;
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
-=======
->>>>>>> origin/master
+	flatsat_init();	
 	
 	/************************************************************************/
 	/* EDIT THIS LOOP                                                       */
 	/************************************************************************/
+	uint8_t arduinoBuffer[70];
+	
 	while(true){
-		float mux1Buffer[8];
-		float mux2Buffer[6];
-		float otherADCBuffer[14];
+		float tempBuffer[8];
+		float pdBuffer[6];
+		float otherADCBuffer[LEN_ADC];
 		uint16_t irBuffer[LEN_IR];
 		MPU9250Reading mpuReading;
 		
-		readMuxs(mux1Buffer, mux2Buffer);
+		readMuxs(tempBuffer, pdBuffer);
 		readOtherADC(otherADCBuffer);
 		read_IR(irBuffer);
-		mpuReading = read_IMU();
+		mpuReading = read_IMU();		
 	}
 }
