@@ -1021,6 +1021,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c \
+<<<<<<< e05ca557dbb5b50a03c378771fb7f6d97019f5c6
 <<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
@@ -1060,6 +1061,9 @@ C_SRCS +=  \
 =======
 ../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c \
 >>>>>>> Convert to using heap_1.c; stencil for transmission code
+=======
+../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c \
+>>>>>>> static mutexes (currently not building)
 ../src/runnable_configurations/rtos_task_frequencies.c \
 >>>>>>> Merge idle and low power
 ../src/runnable_configurations/struct_tests.c \
@@ -1147,6 +1151,7 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< e05ca557dbb5b50a03c378771fb7f6d97019f5c6
 <<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
@@ -1186,6 +1191,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
 >>>>>>> Convert to using heap_1.c; stencil for transmission code
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
+>>>>>>> static mutexes (currently not building)
 src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
@@ -1266,6 +1274,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.o \
+<<<<<<< e05ca557dbb5b50a03c378771fb7f6d97019f5c6
 <<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
@@ -1308,6 +1317,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.o \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
 >>>>>>> Convert to using heap_1.c; stencil for transmission code
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.o \
+>>>>>>> static mutexes (currently not building)
 src/runnable_configurations/rtos_task_frequencies.o \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.o \
@@ -1388,6 +1400,7 @@ src/sensor_drivers/TEMD6200_Commands.o
 
 C_DEPS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< e05ca557dbb5b50a03c378771fb7f6d97019f5c6
 <<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
@@ -1418,6 +1431,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
 >>>>>>> Convert to using heap_1.c; stencil for transmission code
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
+>>>>>>> static mutexes (currently not building)
 src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
@@ -1498,6 +1514,7 @@ src/sensor_drivers/TEMD6200_Commands.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.d \
+<<<<<<< e05ca557dbb5b50a03c378771fb7f6d97019f5c6
 <<<<<<< 41baf7d09593025b1c7293477c977e5ec22effca
 <<<<<<< 1a8ab1dd96a07475594f52d35aebd85603a331b5
 <<<<<<< 462bf27d0672cf75135b22b37336eeed3798a9f8
@@ -1528,6 +1545,9 @@ src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_4.d \
 =======
 src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
 >>>>>>> Convert to using heap_1.c; stencil for transmission code
+=======
+src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.d \
+>>>>>>> static mutexes (currently not building)
 src/runnable_configurations/rtos_task_frequencies.d \
 >>>>>>> Merge idle and low power
 src/runnable_configurations/struct_tests.d \
