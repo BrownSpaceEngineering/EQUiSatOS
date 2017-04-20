@@ -9,7 +9,7 @@
 #ifndef PWM_COMMANDS_H_
 #define PWM_COMMANDS_H_
 
-#include <asf.h>
+#include <global.h>
 
 void configure_pwm(void);
 bool setPulseWidthFraction(int numerator, int denominator);

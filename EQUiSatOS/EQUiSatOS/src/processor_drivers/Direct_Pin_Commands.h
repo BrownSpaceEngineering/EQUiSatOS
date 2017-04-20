@@ -9,7 +9,7 @@
 #ifndef DIRECT_PIN_COMMANDS
 #define DIRECT_PIN_COMMANDS
 
-#include <asf.h>
+#include <global.h>
 
 /*
 dir is a boolean, true if write, false if read

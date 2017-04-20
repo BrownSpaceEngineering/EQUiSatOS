@@ -3,21 +3,21 @@
 void MPU9250_init(void) {
 	uint8_t address = 0;
 	
-	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc1 = readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_2000_DPS};
 	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
 	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
 	
-	writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc2 = writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc3 = writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc4 = writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
 void MPU9250_read_mag(MPU9250Reading* toFill){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
-	writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc1 = writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	// Check if measurement is ready
 	uint8_t status[1] = {!MAG_DATA_READY};
@@ -27,7 +27,7 @@ void MPU9250_read_mag(MPU9250Reading* toFill){
 	
 	//Read data
 	uint8_t data[6] = {0,0,0,0,0,0};
-	readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc2 = readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->mag.x = -(data[3]<<8 | data[2]);
@@ -35,26 +35,30 @@ void MPU9250_read_mag(MPU9250Reading* toFill){
 	toFill->mag.z = -(data[5]<<8 | data[4]);
 }
 
-void MPU9250_read_acc(MPU9250Reading* toFill){	
+enum status_code MPU9250_read_acc(MPU9250Reading* toFill){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
-	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->accel.x=-(data[0]<<8 | data[1]);
 	toFill->accel.y=-(data[2]<<8 | data[3]);
 	toFill->accel.z=data[4]<<8 | data[5];
+	
+	return statc;
 }
 
-void MPU9250_read_gyro(MPU9250Reading* toFill){	
+enum status_code MPU9250_read_gyro(MPU9250Reading* toFill){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
-	readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill->gyro.x=-(data[0]<<8 | data[1]);
 	toFill->gyro.y=-(data[2]<<8 | data[3]);
 	toFill->gyro.z=data[4]<<8 | data[5];
+	
+	return statc;
 }
 
 void initReading(MPU9250Reading* toFill){
@@ -107,8 +111,8 @@ MPU9250Reading MPU9250_read(void){
 	
 	initReading(&output);
 	
-	MPU9250_read_acc(&output);
-	MPU9250_read_gyro(&output);
+	enum status_code statc1 = MPU9250_read_acc(&output);
+	enum status_code statc2 = MPU9250_read_gyro(&output);
 	//MPU9250_read_mag(&output);
 	
 	HumanReading reading = humanReadableOutput(output);

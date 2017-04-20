@@ -9,7 +9,7 @@
 #ifndef ADC_COMMANDS_H
 #define ADC_COMMANDS_H
 
-#include <asf.h>
+#include <global.h>
 //#include "conf_uart_serial.h"
 #include <inttypes.h>
 

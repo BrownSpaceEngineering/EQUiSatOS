@@ -9,7 +9,7 @@
 #ifndef USART_COMMANDS_H_
 #define USART_COMMANDS_H_
 
-#include <asf.h>
+#include <global.h>
 
 #define USART_BAUD_RATE 38400
 #define USART_SAMPLE_NUM 16

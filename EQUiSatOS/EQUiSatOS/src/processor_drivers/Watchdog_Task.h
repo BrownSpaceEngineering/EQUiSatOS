@@ -8,7 +8,7 @@
 #ifndef WATCHDOG_TASK_H_
 #define WATCHDOG_TASK_H_
 
-#include "asf.h"
+#include <global.h>
 #include "Watchdog_Commands.h"
 
 #define ANTENNA_DEPLOY_SHIFT 1

@@ -14,6 +14,6 @@
 #define XPLAINED_PRO
 
 #include "runnable_configurations/scratch_testing.h"
-#include <asf.h>
+#include <global.h>
 
 #endif /* MAIN_H */

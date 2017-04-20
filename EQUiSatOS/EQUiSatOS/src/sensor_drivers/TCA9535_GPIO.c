@@ -7,35 +7,58 @@
 
 #include "TCA9535_GPIO.h"
 
-void TCA9535_init(void){
-	uint16_t x = readTCA9535Levels();
-	setIOMask(IOMask0,IOMask1);
+struct return_struct_16 TCA9535_init(void){
+	uint16_t x = readTCA9535Levels().return_value;
+	
+	struct return_struct_16 rs;
+	rs.return_status = setIOMask(IOMask0,IOMask1);
+	rs.return_value = x;
+	return rs;
 }
 
 //Set the mask for the configuration register
-void setIOMask(uint8_t reg0, uint8_t reg1){
+enum status_code setIOMask(uint8_t reg0, uint8_t reg1){
 	uint8_t data0[2] = {CONFIG_REGISTER_0, reg0};
 	uint8_t data1[2] = {CONFIG_REGISTER_1, reg1};
 	
-	writeDataToAddress(data0, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
-	writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
+	enum status_code statc = writeDataToAddress(data0, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
+	if (statc & 0xf0 != 0) {
+		return statc;
+	}
+	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
 }
 
-uint16_t readTCA9535Levels(void){
+struct return_struct_16 readTCA9535Levels(void){
 	uint8_t data[2] = {0x0, 0x0};
 	
-	readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);
-	readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, INPUTS_REGISTER_1, TCA_SHOULD_STOP_READ);
+	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);
+	if (statc1 & 0xf0 != 0) {
+		struct return_struct_16 rs;
+		rs.return_status = statc1;
+		// PLACEHOLDER
+		rs.return_value = -1;
+		return rs;
+	}
+	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, INPUTS_REGISTER_1, TCA_SHOULD_STOP_READ);
 	
-	return (((uint16_t) data[0]) << 8) + data[1];	
+	struct return_struct_16 rs;
+	rs.return_status = statc2;
+	rs.return_value = (((uint16_t) data[0]) << 8) + data[1];
+	return rs;	
 }
 
 //Set the mask value in array indicated by isArray1 (where arrays have indices 1 and 0) and index char_index_in_register to targetLevel
-void setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel){
+enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel){
 	uint8_t data[2] = {0x0, 0x0};
 	
-	readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, CONFIG_REGISTER_0, TCA_SHOULD_STOP_READ);
-	readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, CONFIG_REGISTER_1, TCA_SHOULD_STOP_READ);
+	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, CONFIG_REGISTER_0, TCA_SHOULD_STOP_READ);
+	if (statc1 & 0xf0 != 0) {
+		return statc1;
+	}
+	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, CONFIG_REGISTER_1, TCA_SHOULD_STOP_READ);
+	if (statc2 & 0xf0 != 0) {
+		return statc2;
+	}
 	
 	//left shift by character index to move target to far left, right shift by 7 to convert to 0/1 based on current position
 	uint8_t currentVal = (data[isArray1] << char_index_in_register) >> 7;
@@ -45,5 +68,5 @@ void setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel){
 		data[isArray1] = data[isArray1] ^ xorMask;
 	}
 	
-	setIOMask(data[0],data[1]);
+	return setIOMask(data[0],data[1]);
 }

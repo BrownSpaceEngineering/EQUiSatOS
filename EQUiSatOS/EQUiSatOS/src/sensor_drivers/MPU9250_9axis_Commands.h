@@ -49,8 +49,8 @@ typedef struct {
 
 void MPU9250_init(void);
 void MPU9250_read_mag(MPU9250Reading* toFill);
-void MPU9250_read_acc(MPU9250Reading* toFill);
-void MPU9250_read_gyro(MPU9250Reading* toFill);
+enum status_code MPU9250_read_acc(MPU9250Reading* toFill);
+enum status_code MPU9250_read_gyro(MPU9250Reading* toFill);
 MPU9250Reading MPU9250_read(void);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 

@@ -60,7 +60,6 @@ void flatsat_init(void) {
 	//TCA9535_init();
 }
 
-
  void readMuxs(float* tempBuffer, float* pdBuffer){
 	 for (int i=0; i<8; i++){
 		 LTC1380_channel_select(0x48, i);
@@ -83,7 +82,7 @@ void flatsat_init(void) {
 void read_IR(uint16_t* buffer) {
 	for (int i = 0; i < LEN_IR; i++)
 	{
-		buffer[i] = MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1);
+		buffer[i] = MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1).return_value;
 	}
 }
 
