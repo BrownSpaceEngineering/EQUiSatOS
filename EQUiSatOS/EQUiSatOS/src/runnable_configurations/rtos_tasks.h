@@ -187,6 +187,13 @@ flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
 transmit_data_t _transmit_equistack_arr[TRANSMIT_STACK_MAX];
 attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
 
+/* Global (but don't use them!) mutexes used inside equistacks (alt. to malloc) */
+StaticSemaphore_t _last_reading_type_equistack_mutex_d;
+StaticSemaphore_t _idle_equistack_mutex_d;
+StaticSemaphore_t _flash_equistack_mutex_d;
+StaticSemaphore_t _transmit_equistack_mutex_d;
+StaticSemaphore_t _attitude_equistack_mutex_d;
+
 /* Helper Functions */
 void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
 bool pollSuspended(task_type_t taskId); // NOTE that this function resets TaskSuspendStates value for taskId after being called
