@@ -11,7 +11,7 @@ void standard_case()
 {
 	equistack test_actual;
 	equistack* test = &test_actual;
-	Static_Semaphore_t inner_mutex;
+	StaticSemaphore_t inner_mutex;
 	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
 	test_data _data_arr[4];
 	equistack_Init(test, &_data_arr, sizeof(test_data), 4, &mutex);

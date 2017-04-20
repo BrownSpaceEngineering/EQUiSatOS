@@ -4,7 +4,31 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\croutine.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\event_groups.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\croutine.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\event_groups.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\list.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\queue.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\tasks.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\timers.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\list.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\port.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\queue.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\tasks.c
+
+src\ASF\thirdparty\freertos\freertos-9.0.0\Source\timers.c
 
 src\runnable_configurations\rtos_task_frequencies.c
 
@@ -57,20 +81,6 @@ src\ASF\sam0\drivers\sercom\spi\spi.c
 src\ASF\sam0\utils\stdio\read.c
 
 src\ASF\sam0\utils\stdio\write.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\croutine.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\event_groups.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\list.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\queue.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\tasks.c
-
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\timers.c
 
 src\ASF\sam0\drivers\sercom\usart\usart.c
 

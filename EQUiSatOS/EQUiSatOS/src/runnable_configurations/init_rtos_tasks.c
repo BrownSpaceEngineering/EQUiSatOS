@@ -12,37 +12,44 @@ void runit_2()
 	//configure_i2c_master(SERCOM4);
 	TaskSuspendStates = 0; // no tasks suspended
 	
+	// Initialize EQUiStack mutexes
+	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
+	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
+	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
+	_transmit_equistack_mutex = xSemaphoreCreateMutexStatic(&_transmit_equistack_mutex_d);
+	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
+	
 	// Initialize EQUiStacks
 	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr, 
-		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, xSemaphoreCreateMutexStatic(_last_reading_type_equistack_mutex_d));
+		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, &_last_reading_type_equistack_mutex);
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr, 
-		sizeof(idle_data_t), IDLE_STACK_MAX);
+		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
 	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr, 
-		sizeof(flash_data_t), FLASH_STACK_MAX);
+		sizeof(flash_data_t), FLASH_STACK_MAX, &_flash_equistack_mutex);
  	equistack_Init(&transmit_readings_equistack, &_transmit_equistack_arr, 
-		sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
+		sizeof(transmit_data_t), TRANSMIT_STACK_MAX, &_transmit_equistack_mutex);
  	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr, 
-		sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
+		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
 	
 	// init global radio buffer
 	init_msg_buffer();
 	
 	// Started at boot
-	xTaskCreate(battery_charging_task,
+	xTaskCreateStatic(battery_charging_task,
 		"battery charging action task",
 		TASK_BATTERY_CHARGE_STACK_SIZE,
 		NULL,
 		TASK_BATTERY_CHARGE_PRIORITY,
 		battery_charging_task_handle); // TODO: Should handle be NULL?
 		
-	xTaskCreate(antenna_deploy_task,
+	xTaskCreateStatic(antenna_deploy_task,
 		"antenna deploy action task",
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
 		NULL,
 		TASK_ANTENNA_DEPLOY_PRIORITY,
 		antenna_deploy_task_handle); // TODO: Should handle be NULL?
 	
-	xTaskCreate(watchdog_task,
+	xTaskCreateStatic(watchdog_task,
 		"watchdog task",
 		TASK_WATCHDOG_STACK_SIZE,
 		NULL,
@@ -52,14 +59,14 @@ void runit_2()
 	// TODO: Will these not be created here?
 	// i.e. would they be created when they need to be started?
 	// Would that work after the scheduler has been started?
-	xTaskCreate(flash_activate_task,
+	xTaskCreateStatic(flash_activate_task,
 		"flash action task",
 		TASK_FLASH_ACTIVATE_STACK_SIZE,
 		NULL,
 		TASK_FLASH_ACTIVATE_PRIORITY,
 		flash_activate_task_handle);
 			
-	xTaskCreate(transmit_task,
+	xTaskCreateStatic(transmit_task,
 		"transmit action task",
 		TASK_TRANSMIT_STACK_SIZE,
 		NULL,
@@ -68,28 +75,28 @@ void runit_2()
 			
 	/* Data tasks */
 			
-	xTaskCreate(current_data_task,
+	xTaskCreateStatic(current_data_task,
 		"current data reader task",
 		TASK_CURRENT_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_CURRENT_DATA_RD_PRIORITY,
 		current_data_task_handle);
 
-	xTaskCreate(flash_data_task,
+	xTaskCreateStatic(flash_data_task,
 		"flash data reader task",
 		TASK_FLASH_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_FLASH_DATA_RD_PRIORITY,
 		flash_data_task_handle);
 
-	xTaskCreate(transmit_data_task,
+	xTaskCreateStatic(transmit_data_task,
 		"transmission data reader task",
 		TASK_TRANSMIT_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_TRANSMIT_DATA_RD_PRIORITY,
 		transmit_data_task_handle);
 		
-	xTaskCreate(attitude_data_task,
+	xTaskCreateStatic(attitude_data_task,
 		"attitude data reader task",
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
 		NULL,

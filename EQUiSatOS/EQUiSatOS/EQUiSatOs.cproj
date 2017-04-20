@@ -294,9 +294,6 @@
         <project id="common.applications.user_application.xplained_pro2.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
-      <file path="src/ASF/sam0/utils/cmsis/samd21/include/samd21e15b.h" framework="" version="" source="sam0/utils/cmsis/samd21/include/samd21e15b.h" changed="False" content-id="Atmel.ASF" />
-      <file path="src/ASF/sam0/utils/cmsis/samd21/include/samd21e15bu.h" framework="" version="" source="sam0/utils/cmsis/samd21/include/samd21e15bu.h" changed="False" content-id="Atmel.ASF" />
-      <file path="src/ASF/sam0/utils/cmsis/samd21/include/samd21e15l.h" framework="" version="" source="sam0/utils/cmsis/samd21/include/samd21e15l.h" changed="False" content-id="Atmel.ASF" />
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800056157</avrtoolserialnumber>
@@ -564,8 +561,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -590,6 +585,8 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
@@ -788,13 +785,13 @@
     <Folder Include="src\ASF\thirdparty\CMSIS\Lib\" />
     <Folder Include="src\ASF\thirdparty\CMSIS\Lib\GCC\" />
     <Folder Include="src\ASF\thirdparty\freertos\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\" />
-    <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\" />
+    <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
     <Folder Include="src\stacks" />
@@ -807,7 +804,88 @@
     <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c">
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\croutine.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\event_groups.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\croutine.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\croutine.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\deprecated_definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\event_groups.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\event_groups.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\FreeRTOS.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\list.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\list.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\mpu_prototypes.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\mpu_wrappers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\portable.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\projdefs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\semphr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\StackMacros.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\timers.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\timers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\list.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\port.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\portmacro.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\timers.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\rtos_task_frequencies.c">
@@ -868,7 +946,25 @@
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\a00111.html">
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\stdint.readme">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\a00111.html">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\ReadMe.url">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\readme.txt">
       <SubType>compile</SubType>
     </None>
     <None Include="src\config\conf_clocks.h">
@@ -1390,72 +1486,9 @@
     <Compile Include="src\ASF\sam0\utils\stdio\write.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\croutine.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\event_groups.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\readme.txt">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\config\FreeRTOSConfig.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\event_groups.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\timers.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\list.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\projdefs.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\semphr.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\croutine.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\task.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\StackMacros.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\queue.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\portable.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\FreeRTOS.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\include\mpu_wrappers.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\list.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\queue.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\tasks.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\timers.c">
-      <SubType>compile</SubType>
-    </Compile>
     <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start_dma\qs_usart_dma_use.h">
       <SubType>compile</SubType>
     </None>
@@ -1682,12 +1715,6 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\asf.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\readme.txt">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\readme.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>

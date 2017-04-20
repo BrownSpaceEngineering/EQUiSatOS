@@ -12,7 +12,7 @@
 
 #include <asf.h>
 #include <inttypes.h>
-#include "FreeRTOS.h"
+#include "ASF/thirdparty/freertos/freertos-9.0.0/Source/include/FreeRTOS.h"
 #include "task.h"
 #include <assert.h>
 
@@ -187,12 +187,17 @@ flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
 transmit_data_t _transmit_equistack_arr[TRANSMIT_STACK_MAX];
 attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
 
-/* Global (but don't use them!) mutexes used inside equistacks (alt. to malloc) */
+/* Global (but don't use them!) mutexe data and mutex handles used inside equistacks (alt. to malloc) */
 StaticSemaphore_t _last_reading_type_equistack_mutex_d;
+SemaphoreHandle_t _last_reading_type_equistack_mutex;
 StaticSemaphore_t _idle_equistack_mutex_d;
+SemaphoreHandle_t _idle_equistack_mutex;
 StaticSemaphore_t _flash_equistack_mutex_d;
+SemaphoreHandle_t _flash_equistack_mutex;
 StaticSemaphore_t _transmit_equistack_mutex_d;
+SemaphoreHandle_t _transmit_equistack_mutex;
 StaticSemaphore_t _attitude_equistack_mutex_d;
+SemaphoreHandle_t _attitude_equistack_mutex;
 
 /* Helper Functions */
 void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
