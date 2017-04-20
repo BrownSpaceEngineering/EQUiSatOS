@@ -24,6 +24,9 @@ void runit_2()
  	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
 		sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
 
+	// init global radio buffer
+	init_msg_buffer();
+
 	// Started at boot
 	xTaskCreate(battery_charging_task,
 		"battery charging action task",
