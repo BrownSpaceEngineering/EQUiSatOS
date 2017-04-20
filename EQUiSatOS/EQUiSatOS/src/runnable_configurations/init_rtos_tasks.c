@@ -15,11 +15,16 @@ void runit_2()
 	TaskSuspendStates = 0; // no tasks suspended
 	
 	// Initialize EQUiStacks
-	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr, sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX);
-	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr, sizeof(idle_data_t), IDLE_STACK_MAX);
-	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr, sizeof(flash_data_t), FLASH_STACK_MAX);
- 	equistack_Init(&transmit_readings_equistack, &_transmit_equistack_arr, sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
- 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr, sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
+	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr, 
+		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, xSemaphoreCreateMutexStatic(_last_reading_type_equistack_mutex_d));
+	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr, 
+		sizeof(idle_data_t), IDLE_STACK_MAX);
+	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr, 
+		sizeof(flash_data_t), FLASH_STACK_MAX);
+ 	equistack_Init(&transmit_readings_equistack, &_transmit_equistack_arr, 
+		sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
+ 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr, 
+		sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
 	
 	// Started at boot
 	xTaskCreate(battery_charging_task,

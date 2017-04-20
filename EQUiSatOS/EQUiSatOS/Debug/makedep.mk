@@ -4,7 +4,7 @@
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
-src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_4.c
+src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c
 
 src\runnable_configurations\rtos_task_frequencies.c
 
