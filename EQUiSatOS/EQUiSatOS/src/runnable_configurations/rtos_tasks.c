@@ -176,9 +176,9 @@ void current_data_task(void *pvParameters)
 			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
 		
-		print(hex_str_of(&idle_readings_equistack.cur_size, sizeof(&idle_readings_equistack.cur_size)));
-		print(hex_str_of(&idle_readings_equistack.top_index, sizeof(&idle_readings_equistack.top_index)));
-		print(hex_str_of(&idle_readings_equistack.bottom_index, sizeof(&idle_readings_equistack.bottom_index)));
+		print(from_numeric(&idle_readings_equistack.cur_size));
+		print(from_numeric(&idle_readings_equistack.top_index));
+		print(from_numeric(&idle_readings_equistack.bottom_index));
 		print("\n\r");
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
@@ -503,11 +503,9 @@ void set_all(uint8_t* int_arr, uint8_t length, int value)
 	}
 }
 
-char* hex_str_of(void* data, int bytes) {
-	char output[bytes*2]; // byte represented by two hex digits
-	int i = 0;
-	while(i < bytes*2) {
-		output[i] = ((char*) data)[i] & 0xf;
-		i++;
-	}
+char* from_numeric(long* data) 
+{
+	char* str = "";
+	sprintf(str, "%d", data);
+	return str;
 }
