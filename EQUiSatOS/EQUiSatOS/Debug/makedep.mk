@@ -42,6 +42,8 @@ src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samd21_xplained_pro\board_init.c
 
+src\ASF\sam0\drivers\adc\adc_sam_d_r\adc.c
+
 src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c
 
 src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c

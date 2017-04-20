@@ -33,11 +33,11 @@
     <option id="common.services.ioport" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.utils.unit_test" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common2.services.delay" value="Add" config="systick" content-id="Atmel.ASF" />
-    <option id="sam0.drivers.adc" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="sam0.drivers.nvm" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.drivers.rtc" value="Add" config="calendar_callback" content-id="Atmel.ASF" />
     <option id="sam0.drivers.sercom.i2c.master" value="Add" config="polled" content-id="Atmel.ASF" />
+    <option id="sam0.drivers.sercom.i2c.slave" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="sam0.drivers.sercom.spi" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.sercom.usart" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
@@ -45,7 +45,7 @@
     <option id="sam0.drivers.tcc" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
     <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
-    <option id="sam0.drivers.sercom.i2c.slave" value="Add" config="callback" content-id="Atmel.ASF" />
+    <option id="sam0.drivers.adc" value="Add" config="callback" content-id="Atmel.ASF" />
     <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -281,7 +281,6 @@
     <file path="src/ASF/thirdparty/CMSIS/Lib/license.txt" framework="" version="" source="thirdparty/CMSIS/Lib/license.txt" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/CMSIS/README.txt" framework="" version="" source="thirdparty/CMSIS/README.txt" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_callback.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/tcc/tcc_callback.c" framework="" version="3.31.0" source="sam0\drivers\tcc\tcc_callback.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/tcc/tcc.c" framework="" version="3.31.0" source="sam0\drivers\tcc\tcc.c" changed="False" content-id="Atmel.ASF" />
@@ -294,10 +293,6 @@
     <file path="src/ASF/sam0/drivers/tcc/quick_start_callback/qs_tcc_callback.h" framework="" version="3.31.0" source="sam0\drivers\tcc\quick_start_callback\qs_tcc_callback.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/tcc/quick_start/qs_tcc_basic.h" framework="" version="3.31.0" source="sam0\drivers\tcc\quick_start\qs_tcc_basic.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/tcc/tcc_callback.h" framework="" version="3.31.0" source="sam0\drivers\tcc\tcc_callback.h" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/sam0/drivers/adc/adc_callback.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_callback.h" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/sam0/drivers/adc/adc.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc.h" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc.c" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_feature.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_feature.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/sercom/sercom_interrupt.c" framework="" version="3.31.0" source="sam0\drivers\sercom\sercom_interrupt.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/sercom/sercom_interrupt.h" framework="" version="3.31.0" source="sam0\drivers\sercom\sercom_interrupt.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/sercom/i2c/quick_start_slave_callback/qs_i2c_slave_callback.h" framework="" version="3.31.0" source="sam0\drivers\sercom\i2c\quick_start_slave_callback\qs_i2c_slave_callback.h" changed="False" content-id="Atmel.ASF" />
@@ -307,6 +302,11 @@
     <file path="src/ASF/sam0/drivers/sercom/i2c/quick_start_slave/qs_i2c_slave_basic_use.h" framework="" version="3.31.0" source="sam0\drivers\sercom\i2c\quick_start_slave\qs_i2c_slave_basic_use.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/sercom/i2c/i2c_sam0/i2c_slave.c" framework="" version="3.31.0" source="sam0\drivers\sercom\i2c\i2c_sam0\i2c_slave.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/sam0/drivers/sercom/i2c/i2c_sam0/i2c_slave_interrupt.c" framework="" version="3.31.0" source="sam0\drivers\sercom\i2c\i2c_sam0\i2c_slave_interrupt.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/sam0/drivers/adc/adc_callback.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_callback.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/sam0/drivers/adc/adc.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_callback.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_callback.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc_feature.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc_feature.h" changed="False" content-id="Atmel.ASF" />
   </files>
   <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
   <offline-documentation help="" />
@@ -381,8 +381,8 @@
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0PLUS=true</Value>
       <Value>TCC_ASYNC=true</Value>
-      <Value>ADC_CALLBACK_MODE=true</Value>
       <Value>I2C_SLAVE_CALLBACK_MODE=true</Value>
+      <Value>ADC_CALLBACK_MODE=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -496,7 +496,7 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=true -DADC_CALLBACK_MODE=true -DI2C_SLAVE_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=true -DI2C_SLAVE_CALLBACK_MODE=true -DADC_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -569,8 +569,8 @@
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0PLUS=true</Value>
       <Value>TCC_ASYNC=true</Value>
-      <Value>ADC_CALLBACK_MODE=true</Value>
       <Value>I2C_SLAVE_CALLBACK_MODE=true</Value>
+      <Value>ADC_CALLBACK_MODE=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -686,7 +686,7 @@
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=true -DADC_CALLBACK_MODE=true -DI2C_SLAVE_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=true -DI2C_SLAVE_CALLBACK_MODE=true -DADC_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -865,21 +865,6 @@
     <None Include="src\ASF\sam0\drivers\tcc\quick_start\qs_tcc_basic.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\adc\adc.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_feature.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\drivers\sercom\i2c\quick_start_slave_callback\qs_i2c_slave_callback.h">
       <SubType>compile</SubType>
     </None>
@@ -893,6 +878,21 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\drivers\sercom\i2c\quick_start_slave\qs_i2c_slave_basic_use.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\adc\adc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_feature.h">
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\sam0\drivers\sercom\i2c\i2c_sam0\i2c_slave.c">
@@ -982,6 +982,9 @@
     <None Include="..\..\..\..\EquiSAT%2520Backup\EQUiSat_before_rename.zip">
       <SubType>compile</SubType>
       <Link>EQUiSatOS\src\stacks\EQUiSat_before_rename.zip</Link>
+    </None>
+    <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
+      <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\a00111.html">
       <SubType>compile</SubType>
@@ -1376,6 +1379,9 @@
     <Compile Include="src\ASF\sam0\boards\samd21_xplained_pro\board_init.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1608,6 +1614,12 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\drivers\rtc\rtc_calendar.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_feature.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\adc\adc.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\common2\services\delay\sam0\systick_counter.h">
