@@ -6,8 +6,6 @@
  */ 
 
 #include "init_rtos_tasks.h"
-#include "task_testing.h"
-#include "processor_drivers\USART_Commands.h"
 
 void runit_2()
 {
@@ -25,6 +23,9 @@ void runit_2()
 		sizeof(transmit_data_t), TRANSMIT_STACK_MAX);
  	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr, 
 		sizeof(attitude_data_t), ATTITUDE_STACK_MAX);
+	
+	// init global radio buffer
+	init_msg_buffer();
 	
 	// Started at boot
 	xTaskCreate(battery_charging_task,

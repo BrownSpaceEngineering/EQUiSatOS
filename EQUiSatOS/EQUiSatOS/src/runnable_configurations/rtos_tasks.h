@@ -31,6 +31,7 @@
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
 #include "stacks/equistack.h" 
+#include "stacks/package_transmission.h"
 
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
@@ -65,7 +66,8 @@
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
 /********************************************************************************/
-#define LAST_READING_TYPE_STACK_MAX		100
+// it doesn't make sense of this to be greater than the sum of the other _MAXs
+#define LAST_READING_TYPE_STACK_MAX		32
 #define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged
 #define FLASH_STACK_MAX					10  
 #define TRANSMIT_STACK_MAX				10

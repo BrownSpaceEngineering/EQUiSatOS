@@ -11,20 +11,20 @@
 // Call sign: K1AD
 // decide on which state is which int
 // also return state
-char *buffer [BUFFER_SIZE];
+char *buffer [MSG_BUFFER_SIZE];
 
-void init_buffer() {
+void init_msg_buffer() {
 	buffer[0] = 'K';
 	buffer[1] = '1';
 	buffer[2] = 'A';
 	buffer[3] = 'D';
 }
 
-char* get_buffer() {
+char* get_msg_buffer() {
 	return buffer;
 }
 
-uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data, uint8_t data_len) {
+uint8_t package_msg_arr(void *header, uint8_t *errors, uint8_t error_len, void *data, uint8_t data_len) {
 	int index = 5;
 	char *headerChrs = (char*) header;
 	char *dataChrs = (char*) data;
@@ -47,7 +47,7 @@ uint8_t package_arr(void *header, uint8_t *errors, uint8_t error_len, void *data
 	
 	// Add header
 	int saferInIn = 0;
-	for(int i = 0; i < HEADER_LENGTH; i++) {
+	for(int i = 0; i < MSG_HEADER_LENGTH; i++) {
 		char *istr [6];
 		int len = sprintf(istr, "", headerChrs[i]);
 		for(int in = 0; in < len; in++) {

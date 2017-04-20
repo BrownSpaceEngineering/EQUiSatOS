@@ -10,8 +10,12 @@
 
 #include "rtos_tasks.h"
 #include "rtos_task_frequencies.h"
-#include "struct_tests.h"
+#include "processor_drivers\USART_Commands.h"
 #include "stacks/equistack.h"
+#include "stacks/package_transmission.h"
+
+#include "struct_tests.h"
+#include "task_testing.h"
 
 /* Global satellite state */
 int8_t CurrentState;

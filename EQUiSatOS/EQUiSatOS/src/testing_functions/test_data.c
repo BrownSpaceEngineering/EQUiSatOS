@@ -7,27 +7,6 @@
 
 #include "test_data.h"
 
-void free_test(test_data* id)
-{
-	for (int i = 0; i < 6; i++)
-	{
-		free_one(&(id->one_data[i]));
-	}
-	vPortFree(&(id->one_data));
-	
-	for (int i = 0; i < 6; i++)
-	{
-		free_two(&(id->two_data[i]));
-	}
-	vPortFree(&(id->two_data));
-	
-	for (int i = 0; i < 6; i++)
-	{
-		free_three(&(id->three_data[i]));
-	}
-	vPortFree(&(id->three_data));
-}
-
 void fill_test(test_data* id, uint16_t val) 
 {
 	for (int i = 0; i < 6; i++)
