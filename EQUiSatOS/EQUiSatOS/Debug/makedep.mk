@@ -142,18 +142,6 @@ src\ASF\thirdparty\freertos\freertos-9.0.0\Source\croutine.c
 
 src\ASF\thirdparty\freertos\freertos-9.0.0\Source\event_groups.c
 
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\croutine.c
-
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\event_groups.c
-
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\list.c
-
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\queue.c
-
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\tasks.c
-
-src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\timers.c
-
 src\ASF\thirdparty\freertos\freertos-9.0.0\Source\list.c
 
 src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\port.c
