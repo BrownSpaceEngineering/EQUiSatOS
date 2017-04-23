@@ -21,28 +21,26 @@ enum status_code setIOMask(uint8_t reg0, uint8_t reg1){
 	uint8_t data0[2] = {CONFIG_REGISTER_0, reg0};
 	uint8_t data1[2] = {CONFIG_REGISTER_1, reg1};
 	
-	enum status_code statc = writeDataToAddress(data0, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
-	if (statc & 0xf0 != 0) {
-		return statc;
+	enum status_code statc1 = writeDataToAddress(data0, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
+	enum status_code statc2 = writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
+	if (statc1 & 0xf0 != 0) {
+		return statc1;
+	} else {
+		return statc2;
 	}
-	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
 }
 
 struct return_struct_16 readTCA9535Levels(void){
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);
-	if (statc1 & 0xf0 != 0) {
-		struct return_struct_16 rs;
-		rs.return_status = statc1;
-		// PLACEHOLDER
-		rs.return_value = -1;
-		return rs;
-	}
 	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, INPUTS_REGISTER_1, TCA_SHOULD_STOP_READ);
 	
 	struct return_struct_16 rs;
 	rs.return_status = statc2;
+	if (statc1 & 0xf0 != 0) {
+		rs.return_status = statc1;
+	}
 	rs.return_value = (((uint16_t) data[0]) << 8) + data[1];
 	return rs;	
 }
@@ -52,13 +50,7 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, CONFIG_REGISTER_0, TCA_SHOULD_STOP_READ);
-	if (statc1 & 0xf0 != 0) {
-		return statc1;
-	}
 	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, CONFIG_REGISTER_1, TCA_SHOULD_STOP_READ);
-	if (statc2 & 0xf0 != 0) {
-		return statc2;
-	}
 	
 	//left shift by character index to move target to far left, right shift by 7 to convert to 0/1 based on current position
 	uint8_t currentVal = (data[isArray1] << char_index_in_register) >> 7;
@@ -68,5 +60,12 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 		data[isArray1] = data[isArray1] ^ xorMask;
 	}
 	
-	return setIOMask(data[0],data[1]);
+	enum status_code statc3 = setIOMask(data[0],data[1]);
+	if (statc1 & 0xf0 != 0) {
+		return statc1;
+	} else if (statc2 & 0xf0 != 0) {
+		return statc2;
+	} else {
+		return statc3;
+	}
 }

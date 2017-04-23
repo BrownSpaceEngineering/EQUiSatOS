@@ -1,20 +1,21 @@
 #include "MPU9250_9axis_Commands.h"
 
-void MPU9250_init(void) {
-	uint8_t address = 0;
-	
-	enum status_code statc1 = readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
-	
+enum status_code MPU9250_gyro_init(void) {
 	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_2000_DPS};
-	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
-	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
-	
-	enum status_code statc2 = writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	enum status_code statc3 = writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	enum status_code statc4 = writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	return writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
-void MPU9250_read_mag(MPU9250Reading* toFill){
+enum status_code MPU9250_acc_init() {
+	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
+	return writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+}
+
+enum status_code MPU9250_mag_init() {
+	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
+	return writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+}
+
+enum status_code MPU9250_read_mag(MPU9250Reading* toFill){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
 	enum status_code statc1 = writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
@@ -33,6 +34,12 @@ void MPU9250_read_mag(MPU9250Reading* toFill){
 	toFill->mag.x = -(data[3]<<8 | data[2]);
 	toFill->mag.y = -(data[1]<<8 | data[0]);
 	toFill->mag.z = -(data[5]<<8 | data[4]);
+	
+	if (statc1 & 0xf0 != 0) {
+		return statc1;
+	} else {
+		return statc2;
+	}
 }
 
 enum status_code MPU9250_read_acc(MPU9250Reading* toFill){	

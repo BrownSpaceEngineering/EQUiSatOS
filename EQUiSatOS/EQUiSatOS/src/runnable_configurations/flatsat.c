@@ -48,7 +48,9 @@ void flatsat_init(void) {
 	
 	MLX90614_init();
 	
-	MPU9250_init();
+	MPU9250_gyro_init();
+	MPU9250_acc_init();
+	MPU9250_mag_init();
 	
 	//setup_pin(true,PIN_PB17);
 	//setup_pin(true,PIN_PA12);

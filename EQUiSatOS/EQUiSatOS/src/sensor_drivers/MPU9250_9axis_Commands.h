@@ -47,8 +47,10 @@ typedef struct {
 	ThreeAxisReading mag, accel, gyro;
 } MPU9250Reading;
 
-void MPU9250_init(void);
-void MPU9250_read_mag(MPU9250Reading* toFill);
+enum status_code MPU9250_acc_init(void);
+enum status_code MPU9250_gyro_init(void);
+enum status_code MPU9250_mag_init(void);
+enum status_code MPU9250_read_mag(MPU9250Reading* toFill);
 enum status_code MPU9250_read_acc(MPU9250Reading* toFill);
 enum status_code MPU9250_read_gyro(MPU9250Reading* toFill);
 MPU9250Reading MPU9250_read(void);
