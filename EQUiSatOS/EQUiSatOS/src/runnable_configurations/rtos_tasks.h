@@ -68,7 +68,7 @@
 /********************************************************************************/
 // it doesn't make sense of this to be greater than the sum of the other _MAXs
 #define LAST_READING_TYPE_STACK_MAX		32
-#define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged
+#define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
 #define FLASH_STACK_MAX					10  
 #define TRANSMIT_STACK_MAX				10
 #define ATTITUDE_STACK_MAX				10
