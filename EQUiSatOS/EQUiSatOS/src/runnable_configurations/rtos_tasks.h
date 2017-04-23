@@ -36,8 +36,8 @@
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
 /************************************************************************/
-#define TASK_BATTERY_CHARGE_STACK_SIZE				(1024)/sizeof(portSTACK_TYPE)
-#define TASK_BATTERY_CHARGE_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
+#define TASK_BATTERY_CHARGING_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
@@ -149,16 +149,17 @@ extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
+/************************************************************************************/ 
 /* All main satellite tasks
-   NOTE:
-   If you add/remove a task, there are several things you must change:
-	   1. Actually implement the task (in this .h and the .c)
-	   2. Add the task to the tasks enum (above) AND update NUM_TASKS
-	   3. Specify a STACK_SIZE and PRIORITY for the task (above)
-	   4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
-	   5. (Maybe) Create new struct to store all data and add data arrays for all data
-	   6. (Maybe) Create new EQUIstack to store these structs
-*/
+	NOTE:
+	If you add/remove a task, there are several things you must change:
+	1. Actually implement the task (in this .h and the .c)
+	2. Add the task to the tasks enum (above) AND update NUM_TASKS
+	3. Specify a STACK_SIZE and PRIORITY for the task (above)
+	4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
+	5. (Maybe) Create new struct to store all data and add data arrays for all data
+	6. (Maybe) Create new EQUIstack to store these structs							*/
+/************************************************************************************/ 
 
 // Action tasks 
 void watchdog_task(void *pvParameters);
@@ -173,7 +174,31 @@ void transmit_data_task(void *pvParameters);
 void flash_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
 
-/* Equistack definitions */
+/******************************************************************************/
+/* Global static memory allocated for tasks; stack and data structure holding */
+/******************************************************************************/
+StaticTask_t watchdog_task_buffer;
+StackType_t watchdog_task_stack					[TASK_WATCHDOG_STACK_SIZE];
+StaticTask_t antenna_deploy_task_buffer;
+StackType_t antenna_deploy_task_stack			[TASK_ANTENNA_DEPLOY_STACK_SIZE];
+StaticTask_t battery_charging_task_buffer;
+StackType_t battery_charging_task_stack			[TASK_BATTERY_CHARGING_STACK_SIZE];
+StaticTask_t transmit_task_buffer;
+StackType_t transmit_task_stack					[TASK_TRANSMIT_STACK_SIZE];
+StaticTask_t flash_activate_task_buffer;
+StackType_t flash_activate_task_stack			[TASK_FLASH_ACTIVATE_STACK_SIZE];
+StaticTask_t current_data_task_buffer;
+StackType_t current_data_task_stack				[TASK_CURRENT_DATA_RD_STACK_SIZE];
+StaticTask_t transmit_data_task_buffer;
+StackType_t transmit_data_task_stack			[TASK_TRANSMIT_DATA_RD_STACK_SIZE];
+StaticTask_t flash_data_task_buffer;
+StackType_t flash_data_task_stack				[TASK_FLASH_DATA_RD_STACK_SIZE];
+StaticTask_t attitude_data_task_buffer;
+StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
+
+/************************************************************************/
+/* Equistack definitions                                                */
+/************************************************************************/
 equistack last_reading_type_equistack; // of msg_data_type_t
 equistack idle_readings_equistack; // of idle_data_t
 equistack flash_readings_equistack; // of flash_data_t
@@ -187,7 +212,7 @@ flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
 transmit_data_t _transmit_equistack_arr[TRANSMIT_STACK_MAX];
 attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
 
-/* Global (but don't use them!) mutexe data and mutex handles used inside equistacks (alt. to malloc) */
+/* Global (but don't use them!) mutex data and mutex handles used inside equistacks (alt. to malloc) */
 StaticSemaphore_t _last_reading_type_equistack_mutex_d;
 SemaphoreHandle_t _last_reading_type_equistack_mutex;
 StaticSemaphore_t _idle_equistack_mutex_d;

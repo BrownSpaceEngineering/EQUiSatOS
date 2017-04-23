@@ -35,73 +35,82 @@ void runit_2()
 	init_msg_buffer();
 
 	// Started at boot
-	xTaskCreateStatic(battery_charging_task,
+	// TODO: Should we even store this handle?
+	battery_charging_task_handle = xTaskCreateStatic(battery_charging_task,
 		"battery charging action task",
-		TASK_BATTERY_CHARGE_STACK_SIZE,
+		TASK_BATTERY_CHARGING_STACK_SIZE,
 		NULL,
-		TASK_BATTERY_CHARGE_PRIORITY,
-		battery_charging_task_handle); // TODO: Should handle be NULL?
+		TASK_BATTERY_CHARGING_PRIORITY,
+		&battery_charging_task_stack,
+		&battery_charging_task_buffer);
 
-	xTaskCreateStatic(antenna_deploy_task,
+	// TODO: Should we even store this handle?
+	antenna_deploy_task_handle = xTaskCreateStatic(antenna_deploy_task,
 		"antenna deploy action task",
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
 		NULL,
 		TASK_ANTENNA_DEPLOY_PRIORITY,
-		antenna_deploy_task_handle); // TODO: Should handle be NULL?
+		&antenna_deploy_task_stack,
+		&antenna_deploy_task_buffer);
 
-	xTaskCreateStatic(watchdog_task,
+	 // TODO: Should we even store this handle?
+	watchdog_task_handle = xTaskCreateStatic(watchdog_task,
 		"watchdog task",
 		TASK_WATCHDOG_STACK_SIZE,
 		NULL,
 		TASK_WATCHDOG_STACK_PRIORITY,
-		watchdog_task_handle); // TODO: Should handle be NULL?
+		&watchdog_task_stack,
+		&watchdog_task_buffer);
 
-	// TODO: Will these not be created here?
-	// i.e. would they be created when they need to be started?
-	// Would that work after the scheduler has been started?
-	xTaskCreateStatic(flash_activate_task,
+	flash_activate_task_handle = xTaskCreateStatic(flash_activate_task,
 		"flash action task",
 		TASK_FLASH_ACTIVATE_STACK_SIZE,
 		NULL,
 		TASK_FLASH_ACTIVATE_PRIORITY,
-		flash_activate_task_handle);
+		&flash_activate_task_stack,
+		&flash_activate_task_buffer);
 
-	xTaskCreateStatic(transmit_task,
+	transmit_task_handle = xTaskCreateStatic(transmit_task,
 		"transmit action task",
 		TASK_TRANSMIT_STACK_SIZE,
 		NULL,
 		TASK_TRANSMIT_PRIORITY,
-		transmit_task_handle);
+		&transmit_task_stack,
+		&transmit_task_buffer);
 
 	/* Data tasks */
 
-	xTaskCreateStatic(current_data_task,
+	current_data_task_handle = xTaskCreateStatic(current_data_task,
 		"current data reader task",
 		TASK_CURRENT_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_CURRENT_DATA_RD_PRIORITY,
-		current_data_task_handle);
+		&current_data_task_stack,
+		&current_data_task_buffer);
 
-	xTaskCreateStatic(flash_data_task,
+	flash_data_task_handle = xTaskCreateStatic(flash_data_task,
 		"flash data reader task",
 		TASK_FLASH_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_FLASH_DATA_RD_PRIORITY,
-		flash_data_task_handle);
+		&flash_data_task_stack,
+		&flash_data_task_buffer);
 
-	xTaskCreateStatic(transmit_data_task,
+	transmit_data_task_handle = xTaskCreateStatic(transmit_data_task,
 		"transmission data reader task",
 		TASK_TRANSMIT_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_TRANSMIT_DATA_RD_PRIORITY,
-		transmit_data_task_handle);
+		&transmit_data_task_stack,
+		&transmit_data_task_buffer);
 
-	xTaskCreateStatic(attitude_data_task,
+	attitude_data_task_handle = xTaskCreateStatic(attitude_data_task,
 		"attitude data reader task",
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_ATTITUDE_DATA_DATA_RD_PRIORITY,
-		attitude_data_task_handle);
+		&attitude_data_task_stack,
+		&attitude_data_task_buffer);
 
 // 		xTaskCreate(task_suicide_test,
 // 		"task suicide testing",
