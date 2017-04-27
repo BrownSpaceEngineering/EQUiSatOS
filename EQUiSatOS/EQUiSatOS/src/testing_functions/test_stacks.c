@@ -230,7 +230,7 @@ void big_case()
 
 void multi_add()
 {
-	int n = 1000000;
+	int n = 30000;
 	
 	equistack bigTestActual;
 	equistack* bigTest = &bigTestActual;
@@ -364,6 +364,8 @@ void multi_create()
 }
 
 void test_equistack() {
+	standard_case();
+	big_case();
 	multi_add();
 	multi_create();
 	return;
