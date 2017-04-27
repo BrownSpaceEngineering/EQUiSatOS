@@ -231,6 +231,6 @@ void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_s
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);
-char* from_numeric(long* data);
+char* from_numeric(long* data, uint16_t expectedChars);
 
 #endif

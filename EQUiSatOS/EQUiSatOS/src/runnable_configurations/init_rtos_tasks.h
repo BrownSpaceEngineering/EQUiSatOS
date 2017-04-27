@@ -42,4 +42,12 @@ void set_state_hello_world(void);
 void set_state_idle(void);
 void set_state_low_power(void);
 
+
+/* Required functions for FreeRTOS 9 static allocation */
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
+									StackType_t **ppxIdleTaskStackBuffer,
+									uint32_t *pulIdleTaskStackSize );
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
+									 StackType_t **ppxTimerTaskStackBuffer,
+									 uint32_t *pulTimerTaskStackSize );
 #endif
