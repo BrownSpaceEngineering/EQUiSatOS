@@ -751,6 +751,9 @@
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\global.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
       <SubType>compile</SubType>
     </Compile>
