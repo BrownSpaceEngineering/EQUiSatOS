@@ -641,6 +641,8 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/thirdparty/TraceRecorder/config</Value>
+      <Value>../src/ASF/thirdparty/TraceRecorder/include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>

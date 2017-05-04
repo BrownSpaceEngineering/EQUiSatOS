@@ -5,6 +5,9 @@ int main(void)
 {
 	system_init();
 	USART_init();
+	
+	/* Start and init tracing */
+	vTraceEnable(TRC_START);
 
 	/* TESTS */
 	//test_equistack();

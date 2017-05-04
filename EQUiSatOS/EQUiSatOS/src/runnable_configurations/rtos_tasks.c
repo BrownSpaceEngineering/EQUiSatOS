@@ -176,10 +176,10 @@ void current_data_task(void *pvParameters)
 			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
 		
-		print(from_numeric(&idle_readings_equistack.cur_size, 10));
-		print(from_numeric(&idle_readings_equistack.top_index, 10));
-		print(from_numeric(&idle_readings_equistack.bottom_index, 10));
-		print("\n\r");
+		//print(from_numeric(&idle_readings_equistack.cur_size, 10));
+		//print(from_numeric(&idle_readings_equistack.top_index, 10));
+		//print(from_numeric(&idle_readings_equistack.bottom_index, 10));	
+		//print("\n\r");
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
