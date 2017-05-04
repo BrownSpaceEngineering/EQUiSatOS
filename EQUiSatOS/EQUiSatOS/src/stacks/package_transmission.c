@@ -7,7 +7,7 @@
 #include "package_transmission.h"
 
 // general structure of a transmission will be:
-//   call sign + state bit + data + checksum
+//   call sign + state stuff + data + checksum
 // Call sign: K1AD
 // decide on which state is which int
 // also return state
@@ -30,7 +30,7 @@ uint8_t package_msg_arr(void *header, uint8_t *errors, uint8_t error_len, void *
 	char *dataChrs = (char*) data;
 	
 	char *str [4];
-	int len = sprintf(str, "", get_current_timestamp());
+	int len = sprintf(str, "%f", get_current_timestamp());
 	for(int i = 0; i < len; i++) {
 		buffer[i + index] = str[i];
 	}
@@ -48,12 +48,15 @@ uint8_t package_msg_arr(void *header, uint8_t *errors, uint8_t error_len, void *
 	// Add header
 	int saferInIn = 0;
 	for(int i = 0; i < MSG_HEADER_LENGTH; i++) {
-		char *istr [6];
-		int len = sprintf(istr, "", headerChrs[i]);
+		buffer[index + i] = headerChrs[i];
+		saferInIn++;
+		// what was I doing here?
+		/*char *istr [6];
+		int len = sprintf(istr, "%f", headerChrs[i]);
 		for(int in = 0; in < len; in++) {
 			buffer[saferInIn + index] = istr[in];
 			saferInIn++;
-		}
+		}*/
 	}
 	index += saferInIn;
 	
@@ -66,12 +69,15 @@ uint8_t package_msg_arr(void *header, uint8_t *errors, uint8_t error_len, void *
 	// Add the data batch
 	saferInIn = 0;
 	for(int i = 0; i < data_len; i++) {
-		char *istr [6];
+		buffer[index + i] = dataChrs[i];
+		saferInIn++;
+		// seriously wtf was I doing
+		/*char *istr [6];
 		int len = sprintf(istr, "", dataChrs[i]);
 		for(int in = 0; in < len; in++) {
 			buffer[saferInIn + index] = istr[in];
 			saferInIn++;
-		}
+		}*/
 	}
 	index += saferInIn;
 	
