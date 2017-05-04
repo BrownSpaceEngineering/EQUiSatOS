@@ -18,6 +18,12 @@ src\ASF\thirdparty\freertos\freertos-9.0.0\Source\tasks.c
 
 src\ASF\thirdparty\freertos\freertos-9.0.0\Source\timers.c
 
+src\ASF\thirdparty\TraceRecorder\trcKernelPort.c
+
+src\ASF\thirdparty\TraceRecorder\trcSnapshotRecorder.c
+
+src\ASF\thirdparty\TraceRecorder\trcStreamingRecorder.c
+
 src\runnable_configurations\rtos_task_frequencies.c
 
 src\runnable_configurations\struct_tests.c

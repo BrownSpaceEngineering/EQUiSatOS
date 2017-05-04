@@ -36,31 +36,31 @@
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
 /************************************************************************/
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
 #define TASK_BATTERY_CHARGING_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
 
-#define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_CURRENT_DATA_RD_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
 #define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_DATA_RD_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
 
-#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
 /********************************************************************************/
