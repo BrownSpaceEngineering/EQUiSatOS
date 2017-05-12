@@ -1,5 +1,5 @@
 //#include "runnable_configurations/flatsat.h"
-#include "runnable_configurations/isItOn.c"
+#include "runnable_configurations/isItOn.h"
 #include "testing_functions/watchdog_task_test.h"
 #include "main.h"
 
@@ -9,6 +9,10 @@ int main(void)
 	//system_init();
 	
 	//watch_test();
-	flatsat_run();
+	//flatsat_run();
+	isItOnInit();
+	resetCount();
+	readCount();
 	//radioTest();
+	return 0;
 }
