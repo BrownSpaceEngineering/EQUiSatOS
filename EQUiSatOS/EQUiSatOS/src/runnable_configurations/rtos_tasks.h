@@ -226,11 +226,11 @@ SemaphoreHandle_t _attitude_equistack_mutex;
 
 /* Helper Functions */
 void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
-bool pollSuspended(task_type_t taskId); // NOTE that this function resets TaskSuspendStates value for taskId after being called
+bool checkIfSuspendedAndUpdate(task_type_t taskId); /* Checks and returns whether this task was suspended, AND report that it is not suspended */
+
 void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);
-char* from_numeric(long* data, uint16_t expectedChars);
 
 #endif
