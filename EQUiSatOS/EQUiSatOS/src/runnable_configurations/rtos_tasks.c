@@ -175,16 +175,12 @@ void current_data_task(void *pvParameters)
 		} else {
 			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
-		
-		print(from_numeric(&idle_readings_equistack.cur_size, 10));
-		print(from_numeric(&idle_readings_equistack.top_index, 10));
-		print(from_numeric(&idle_readings_equistack.bottom_index, 10));
-		print("\n\r");
-		
+
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
-		if (pollSuspended(IDLE_DATA_TASK) || data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
+		if (checkIfSuspendedAndUpdate(IDLE_DATA_TASK) || data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
 		{
+			
 			// FOR TESTING
 			idle_data_t* prev_cur_struct = current_struct;
 			
@@ -278,7 +274,6 @@ void current_data_task(void *pvParameters)
 			current_struct->ir_data[data_array_tails[IR_DATA]] = read_ir_batch();
 			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
 		}
-		
 		
 		// FOR TESTING
 		uint8_t ir_reads_since = loops_since_last_log[0];
@@ -423,7 +418,7 @@ void attitude_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (pollSuspended(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
+		if (checkIfSuspendedAndUpdate(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
@@ -469,15 +464,15 @@ void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId)
 {
 	if (task_handle != NULL && eTaskGetState(task_handle) == eSuspended) 
 	{
-		TaskSuspendStates |= (1 << taskId);
-		vTaskResume(task_handle);
+		vTaskResume(task_handle); // actually resume task
+		TaskSuspendedStates |= (1 << taskId); // note we WERE suspended
 	}
 }
 
-// NOTE that this function resets TaskSuspendStates value for taskId after being called
-bool pollSuspended(task_type_t taskId) {
-	bool val = TaskSuspendStates & (1 << taskId);
-	TaskSuspendStates &= ~(1 << taskId);
+/* Checks and returns whether this task was suspended, AND report that it is not suspended */
+bool checkIfSuspendedAndUpdate(task_type_t taskId) {
+	bool val = TaskSuspendedStates & (1 << taskId); // check the state (>0 if was suspended)
+	TaskSuspendedStates &= ~(1 << taskId); // set our suspended bit to 0
 	return val;
 }
 
@@ -501,11 +496,4 @@ void set_all(uint8_t* int_arr, uint8_t length, int value)
 	{
 		int_arr[i] = value;
 	}
-}
-
-char* from_numeric(long* data, uint16_t expectedChars) 
-{
-	char str[expectedChars];
-	sprintf(str, "%d", data);
-	return str;
 }

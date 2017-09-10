@@ -10,7 +10,7 @@
 void runit_2()
 {
 	//configure_i2c_master(SERCOM4);
-	TaskSuspendStates = 0; // no tasks suspended
+	TaskSuspendedStates = 0; // no tasks suspended
 	
 	// Initialize EQUiStack mutexes
 	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
