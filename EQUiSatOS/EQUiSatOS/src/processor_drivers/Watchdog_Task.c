@@ -10,6 +10,7 @@
 
 #include "Watchdog_Task.h"
 static uint8_t check_ins;
+static uint8_t check_outs;
 static uint8_t is_running;
 
 static uint8_t watch_block;
@@ -17,6 +18,7 @@ SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
 	check_ins = 0;
+	check_outs = 0;
 	is_running = 0;
 	watch_block = 0;
 	mutex = xSemaphoreCreateMutex();
@@ -40,15 +42,17 @@ bool watchdog_as_function(void) {
 	if (/*battery charing task isn't running*/0 == 1) {
 		watch_block = 1;
 	}
-	if ((check_ins ^ is_running) > 0 || watch_block == 1) {
+	if ((check_ins ^ check_outs) > 0 || (is_running ^ check_outs) > 0 || (is_running ^ check_ins) > 0 || watch_block == 1) {
 		// "kick" watchdog
 		check_ins = 0;
+		check_outs = 0;
 		is_running = 0;
 		xSemaphoreGive(mutex);
 		return false;
 	} else {
 		// pet watchdog
 		check_ins = 0;
+		check_outs = 0;
 		is_running = 0;
 		xSemaphoreGive(mutex);
 		return true;
@@ -64,5 +68,11 @@ void check_in_task(uint8_t task_ind) {
 void running_task(uint8_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
+	xSemaphoreGive(mutex);
+}
+
+void check_out_task(uint8_t task_ind) {
+	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	check_outs = check_outs | (1 << task_ind);
 	xSemaphoreGive(mutex);
 }

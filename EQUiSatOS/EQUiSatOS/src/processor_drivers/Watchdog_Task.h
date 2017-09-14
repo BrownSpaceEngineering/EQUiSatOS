@@ -27,5 +27,6 @@ void watchdog_task(void *pvParameters);
 void check_in_task(uint8_t task_ind);
 void running_task(uint8_t task_ind);
 bool watchdog_as_function(void);
+void check_out_task(uint8_t task_ind);
 
 #endif /* WATCHDOG_TASK_H_ */
