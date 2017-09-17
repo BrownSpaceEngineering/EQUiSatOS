@@ -3,7 +3,7 @@
  *
  * Created: 10/2/2016 1:47:37 PM
  *  Author: mckenna
- */ 
+ */
 
 #ifndef RTOS_TASKS_H_
 #define RTOS_TASKS_H_
@@ -21,7 +21,7 @@
 #include "processor_drivers/ADC_Commands.h"
 #include "processor_drivers/Direct_Pin_Commands.h"
 
-#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
+//#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
@@ -30,37 +30,42 @@
 #include "init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
-#include "stacks/equistack.h" 
+#include "stacks/equistack.h"
 #include "stacks/package_transmission.h"
+
+/*
+ * Individual task files
+ */
+#include "processor_drivers/Watchdog_Task.h"
 
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
 /************************************************************************/
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
 #define TASK_BATTERY_CHARGING_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_TRANSMIT_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
 
-#define TASK_CURRENT_DATA_RD_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
+#define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_FLASH_DATA_RD_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
 
-#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(512/sizeof(portSTACK_TYPE))
+#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
 /********************************************************************************/
@@ -69,14 +74,14 @@
 // it doesn't make sense of this to be greater than the sum of the other _MAXs
 #define LAST_READING_TYPE_STACK_MAX		32
 #define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
-#define FLASH_STACK_MAX					10  
+#define FLASH_STACK_MAX					10
 #define TRANSMIT_STACK_MAX				10
 #define ATTITUDE_STACK_MAX				10
 
 /************************************************************************/
 /* Enum for states that represent changes in which tasks are running	*/
 /************************************************************************/
-typedef enum 
+typedef enum
 {
 	HELLO_WORLD,
 	IDLE,
@@ -149,7 +154,7 @@ extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
-/************************************************************************************/ 
+/************************************************************************************/
 /* All main satellite tasks
 	NOTE:
 	If you add/remove a task, there are several things you must change:
@@ -159,9 +164,9 @@ extern void vApplicationTickHook(void);
 	4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
 	5. (Maybe) Create new struct to store all data and add data arrays for all data
 	6. (Maybe) Create new EQUIstack to store these structs							*/
-/************************************************************************************/ 
+/************************************************************************************/
 
-// Action tasks 
+// Action tasks
 void watchdog_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
@@ -226,11 +231,11 @@ SemaphoreHandle_t _attitude_equistack_mutex;
 
 /* Helper Functions */
 void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
-bool pollSuspended(task_type_t taskId); // NOTE that this function resets TaskSuspendStates value for taskId after being called
+bool checkIfSuspendedAndUpdate(task_type_t taskId); /* Checks and returns whether this task was suspended, AND report that it is not suspended */
+
 void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);
-char* from_numeric(long* data, uint16_t expectedChars);
 
 #endif

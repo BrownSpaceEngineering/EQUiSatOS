@@ -8,14 +8,27 @@
 #include "run.h"
 #include "scratch_testing.h"
 
-void runit(){	
-	configure_i2c_master(SERCOM2);
+void runit(void){	
+	configure_i2c_standard(SERCOM4);
+	MLX90614_init();
+	//float data = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+	//int a = 3;
 	
-	while(true){
-		uint16_t data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
-		uint16_t data2 = MLX90614_readTempC(MLX90614_TBOARD_IR2,false);
+	/*
+	uint8_t addr = 0x01;
+	
+	while(addr != 0x00){
+		float data = MLX90614_readTempC(MLX90614_DEFAULT_I2CADDR,false);
+		float data2 = MLX90614_readTempC(0x5B,false);
 		int a = 2;
+		int b = a+1;
+		if(data2 > -273){
+			int a=1;
+		}
+		addr = addr + 1;
 	}
+	**/
+	/**
 	//READ FROM MAGNETOMETER
 	HMC5883L_init(*i2c_write_command, *i2c_read_command);
 	for (int j = 0; j < 15; j++) {
@@ -32,6 +45,7 @@ void runit(){
 		float heading = HMC5883L_computeCompassDir(xyzBuff[0], xyzBuff[1], xyzBuff[2]);	
 		int a = 0;
 	}
+	**/
 
 	/*
 	uint16_t val1 = MLX90614_getAddress(MLX90614_DEFAULT_I2CADDR);
@@ -45,7 +59,7 @@ void runit(){
 	*/
 	setup_switching();
  	pick_side(true);
-	bool x =get_input(SIDE_1_ENABLE);
+	//bool x =get_input(SIDE_1_ENABLE);
 	pick_input(0x00);
 	pick_input(0x01);
 	pick_input(0x02);
@@ -109,4 +123,29 @@ void runit(){
 
 	// Will only get here if there was insufficient memory to create the idle task.
 	*/
+}
+
+void radioTest(void) {	
+	USART_init();
+	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
+	setup_pin(true,P_RAD_SHDN); //init shutdown pin
+	setup_pin(true,P_TX_EN); //init send enable pin
+	setup_pin(true,P_RX_EN); //init receive enable pin
+	
+	set_output(true, P_RAD_PWR_RUN);
+	set_output(true, P_RAD_SHDN);
+	set_output(false, P_TX_EN);
+	set_output(false, P_RX_EN);
+	
+	initializeRadio();	
+	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
+	while (true) {		
+		usart_send_string("EQUiSat\n");
+		delay_ms(1500);		
+	}
+	/*while (true) {
+		delay_ms(500);
+		print(receivebuffer);	
+	}*/
+			
 }

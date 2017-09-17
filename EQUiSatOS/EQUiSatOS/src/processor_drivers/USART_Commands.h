@@ -9,18 +9,18 @@
 #ifndef USART_COMMANDS_H_
 #define USART_COMMANDS_H_
 
-#include <asf.h>
+#include <global.h>
 
 #define USART_BAUD_RATE 38400
 #define USART_SAMPLE_NUM 16
 #define SHIFT 32
 
 int receiveIndex;
-char receivebuffer[16];
+char receivebuffer[42];
 char sendbuffer[16];
 
 /* function prototype */
-void USART_init();
+void USART_init(void);
 void edbg_usart_clock_init(void);
 void edbg_usart_pin_init(void);
 void edbg_usart_init(void);

@@ -9,18 +9,26 @@
 #ifndef RUN_H_
 #define RUN_H_
 
-#include <asf.h>
+#include <global.h>
 #include <inttypes.h>
 
+#include "config/proc_pins.h"
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"
 #include "processor_drivers/ADC_Commands.h"
 #include "processor_drivers/Direct_Pin_Commands.h"
-
-#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
+#include "processor_drivers/USART_Commands.h"
+#include "processor_drivers/PWM_Commands.h"
+#include "processor_drivers/Watchdog_Commands.h"
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
+#include "sensor_drivers/MPU9250_9axis_Commands.h"
+#include "sensor_drivers/LTC1380_Multiplexer_Commands.h"
+#include "sensor_drivers/AD7991_ADC.h"
+#include "sensor_drivers/TCA9535_GPIO.h"
+#include "radio/Radio_Commands.h"
+#include "processor_drivers/Watchdog_Commands.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
@@ -28,9 +36,6 @@
 #define TASK_LED_STACK_PRIORITY            (tskIDLE_PRIORITY)
 #define TASK_ADC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
 #define TASK_ADC_STACK_PRIORITY	           (tskIDLE_PRIORITY)
-
-
-static struct usart_module cdc_uart_module;
 
 extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
 signed char *pcTaskName);

@@ -9,18 +9,21 @@
 #ifndef I2C_COMMANDS_H
 #define I2C_COMMANDS_H
 
-#include <asf.h>
+#include <global.h>
 
 #define TIMEOUT 65535
 
 struct i2c_master_module i2c_master_instance;
 struct i2c_master_config config_i2c_master;
 void configure_i2c_master(Sercom* sercom);
-void i2c_write_command(struct i2c_master_packet* packet_address);
-void i2c_write_command_no_stop(struct i2c_master_packet* packet_address);
-void i2c_read_command(struct i2c_master_packet* packet_address);
-void i2c_writer_helper(struct i2c_master_packet* packet_address, bool should_stop);
+void configure_i2c_standard(Sercom* sercom);
+enum status_code i2c_read_command(struct i2c_master_packet* packet_address);
+enum status_code i2c_read_command_nostop(struct i2c_master_packet* packet_address);
+enum status_code i2c_write_command(struct i2c_master_packet* packet_address);
+enum status_code i2c_write_command_nostop(struct i2c_master_packet* packet_address);
 
-typedef void (*i2c_func)(struct i2c_master_packet*);
+enum status_code writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should_stop);
+enum status_code readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation, bool should_stop);
+enum status_code readFromAddress(uint8_t* buffer, uint8_t len, uint8_t address, bool should_stop);
 
 #endif /* INCFILE1_H_ */

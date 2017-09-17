@@ -52,9 +52,8 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
-// From module: ADC - Analog-to-Digital Converter (Callback APIs)
+// From module: ADC - Analog-to-Digital Converter (Polled APIs)
 #include <adc.h>
-#include <adc_callback.h>
 
 // From module: Common SAM0 compiler driver
 #include <compiler.h>
@@ -63,7 +62,7 @@
 // From module: Delay routines
 #include <delay.h>
 
-// From module: FreeRTOS - kernel 8.0.1
+// From module: FreeRTOS - kernel 9.0.0
 #include <FreeRTOS.h>
 #include <StackMacros.h>
 #include <croutine.h>
@@ -135,10 +134,17 @@
 // From module: Standard serial I/O (stdio)
 #include <stdio_serial.h>
 
+// From module: TCC - Timer Counter for Control Applications (Polled APIs)
+#include <tcc.h>
+
 // From module: USART - Serial interface- SAM implementation for devices with only USART
 #include <serial.h>
 
 // From module: Unit test framework - SAM0 implementation
 #include <unit_test/suite.h>
+
+// From module: WDT - Watchdog Timer (Callback APIs)
+#include <wdt.h>
+#include <wdt_callback.h>
 
 #endif // ASF_H

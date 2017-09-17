@@ -8,7 +8,7 @@
 #include "I2C_Commands.h"
 
 /*
-	Configures I2C connection with standard settings
+	Configures I2C connection with standard settings and custom functions
 */
 void configure_i2c_master(Sercom* sercom)
 {
@@ -25,10 +25,10 @@ void configure_i2c_master(Sercom* sercom)
 	/* Initialize and enable device with config. */
 	//! [init_module]
 	int init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
-	printf("I2C master init status: %d\r\n", init_status);
+	//printf("I2C master init status: %d\r\n", init_status);
 	while(init_status != STATUS_OK) {
 		init_status = i2c_master_init(&i2c_master_instance, sercom, &config_i2c_master);
-		printf("I2C master init error status: %d\r\n", init_status);
+		//printf("I2C master init error status: %d\r\n", init_status);
 	}
 	//! [init_module]
 
@@ -38,47 +38,99 @@ void configure_i2c_master(Sercom* sercom)
 }
 
 /*
-	Given a pointer to a packet, perform a write over I2C following the information
-	detailed in the packet.
-	
-	Modified to take a boolean to determine stop/nostop instead of passing function pointers
+	Configure I2C with standard settings and standard functions
 */
-void i2c_writer_helper(struct i2c_master_packet* packet_address, bool should_stop)
+
+void configure_i2c_standard(Sercom* sercom)
 {
-	if(should_stop) {
-		i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
-	} else {
-		i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
-	}
-}
-
-/*
-	Given a pointer to a packet, perform a write over I2C following the information
-	detailed in the packet
-*/
-void i2c_write_command(struct i2c_master_packet* packet_address){
-  i2c_writer_helper(packet_address, true);
-}
-
-/*
-	Given a pointer to a packet, perform a write over I2C following the information
-	detailed in the packet
-*/
-void i2c_write_command_no_stop(struct i2c_master_packet* packet_address){
-  i2c_writer_helper(packet_address, false);
+	configure_i2c_master(sercom);
 }
 
 /*
 	Given a pointer to a packet, perform a read over I2C following the information
 	detailed in the packet
 */
-void i2c_read_command(struct i2c_master_packet* packet_address){
-	uint16_t timeout = 0;
-	while ((i2c_master_read_packet_wait(&i2c_master_instance, packet_address)) != STATUS_OK) {
-		if (timeout++ == TIMEOUT) {
-			break;
-			printf("timeout");
-		}
+enum status_code i2c_read_command(struct i2c_master_packet* packet_address)
+{
+	return i2c_master_read_packet_wait(&i2c_master_instance, packet_address);
+	//i2c_master_read_packet_wait_no_nack(&i2c_master_instance, packet_address);
+}
+
+/*
+	Given a pointer to a packet, perform a read over I2C following the information
+	detailed in the packet without stopping
+*/
+enum status_code i2c_read_command_nostop(struct i2c_master_packet* packet_address)
+{
+	return i2c_master_read_packet_wait_no_stop(&i2c_master_instance, packet_address);
+}
+
+/*
+	Given a pointer to a packet, perform a write over I2C in standard fashion
+*/
+enum status_code i2c_write_command(struct i2c_master_packet* packet_address)
+{
+	return i2c_master_write_packet_wait(&i2c_master_instance, packet_address);
+}
+
+/*
+	Given a pointer to a packet, perform a write over I2C without stopping
+*/
+enum status_code i2c_write_command_nostop(struct i2c_master_packet* packet_address)
+{
+	return i2c_master_write_packet_wait_no_stop(&i2c_master_instance, packet_address);
+}
+
+/*
+	Write data of length len to address address on the i2c bus
+*/
+enum status_code writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should_stop){
+	struct i2c_master_packet write_packet = {
+		.address     = address,
+		.data_length = len,
+		.data        = data,
+		.ten_bit_address = false,
+		.high_speed      = false,
+		.hs_master_code  = 0x0,
+	};
+	
+	if(should_stop){
+		return i2c_write_command(&write_packet);
+	} else {
+		return i2c_write_command_nostop(&write_packet);
 	}
 }
 
+/*
+	Read data of length len into buffer buffer from address address at location memoryLocation on the i2c bus, using the corresponding stopping function
+*/
+enum status_code readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation, bool should_stop){
+	uint8_t data[] = {memoryLocation};
+	
+	enum status_code statc = writeDataToAddress(data,1,address,should_stop);
+	// checks if the error is STATUS_CATEGORY_OK
+	if (statc & 0xf0 != 0) {
+		return statc;
+	}
+	return readFromAddress(buffer,len,address,true);
+}
+
+/*
+	Read data of length len into buffer buffer from address address on the i2c bus, using the corresponding stopping function
+*/
+enum status_code readFromAddress(uint8_t* buffer, uint8_t len, uint8_t address, bool should_stop){
+	struct i2c_master_packet read_packet = {
+		.address     = address,
+		.data_length = len,
+		.data        = buffer,
+		.ten_bit_address = false,
+		.high_speed      = false,
+		.hs_master_code  = 0x0,
+	};
+	
+	if(should_stop){
+		return i2c_read_command(&read_packet);
+	} else {
+		return i2c_read_command_nostop(&read_packet);
+	}
+}

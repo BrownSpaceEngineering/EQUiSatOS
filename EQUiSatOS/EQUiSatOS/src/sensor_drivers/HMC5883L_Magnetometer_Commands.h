@@ -9,7 +9,8 @@
 #ifndef HMC5883L_MAGNETOMETER_COMMANDS_H
 #define HMC5883L_MAGNETOMETER_COMMANDS_H
 #include "../processor_drivers/I2C_Commands.h"
-#include <asf.h>
+#include <global.h>
+#include <math.h>
 
 #define HMC5883L_ADDRESS 0x1E
 

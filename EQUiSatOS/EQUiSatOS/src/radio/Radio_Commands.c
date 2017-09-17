@@ -1,18 +1,20 @@
-/*
- * Radio_Commands.c
- *
- * Created: 9/20/2016 9:49:53 PM
- *  Author: Tyler
- */ 
 #include "Radio_Commands.h"
+#include "../processor_drivers/Direct_Pin_Commands.h"
 
+char dealer_response[4] = {1, 196, 0, 59};
+char txFreq_response[4] = {1, 183, 0, 72};
+char rxFreq_response[4] = {1, 185, 0, 70};
+char channel_response[4] = {0x01, 0x83, 0x00, 0x7c};
+char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
-void setCommandMode() {
+int working = 1;
+
+void setCommandMode(void) {
 	usart_send_string("+++");
 	delay_ms(300);
 }
 
-void setDealerMode() {
+void setDealerMode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -35,7 +37,7 @@ void setTxFreq() {
 	usart_send_string(sendbuffer);
 }
 
-void setRxFreq() {
+void setRxFreq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x39;
@@ -49,7 +51,7 @@ void setRxFreq() {
 	usart_send_string(sendbuffer);
 }
 
-void setChannel() {
+void setChannel(void) {
 	//index 2 is byte to set channel
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x03;
@@ -59,7 +61,7 @@ void setChannel() {
 	usart_send_string(sendbuffer);
 }
 
-void warmReset(){
+void warmReset(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x1d;
 	sendbuffer[2] = 0x01; //warm
@@ -68,7 +70,7 @@ void warmReset(){
 	usart_send_string(sendbuffer);
 }
 
-void setModulationFormat(){
+void setModulationFormat(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x2B;
 	sendbuffer[2] = 0x01;
@@ -77,7 +79,7 @@ void setModulationFormat(){
 	usart_send_string(sendbuffer);
 }
 
-void setLinkSpeed(){
+void setLinkSpeed(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x05;
 	sendbuffer[2] = 0x03;
@@ -101,42 +103,48 @@ int responseCheck(char arr[]){
 	return 1;
 }
 
+void setSendEnable(bool level) {
+	set_output(level, PIN_PB02);
+}
+
+void setReceiveEnable(bool level) {
+	set_output(level, PIN_PB03);
+}
+
 void initializeRadio() {
+	delay_ms(1500);
 	setCommandMode();
-	delay_ms(100); //remember to put delay, because the MCU is faster than the USART
+	delay_ms(1500); //remember to put delay, because the MCU is faster than the USART
 	
 	setDealerMode();
 	delay_ms(100);
 	working = responseCheck(dealer_response);
 	print(receivebuffer);
 	
-	
 	setTxFreq();
 	delay_ms(100);
-	working = responseCheck(txFreq_response);
+	working = responseCheck(txFreq_response);	
 	print(receivebuffer);
 	
 	setRxFreq();
 	delay_ms(100);
-	working = responseCheck(rxFreq_response);
+	working = responseCheck(rxFreq_response);	
 	print(receivebuffer);
 	
 	setModulationFormat();
-	delay_ms(400);
-	print(receivebuffer);
+	delay_ms(400);	
+	
 	
 	setLinkSpeed();
-	delay_ms(100);
-	print(receivebuffer);
+	delay_ms(100);	
 	
 	setChannel();
 	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
-	working = responseCheck(channel_response);
+	working = responseCheck(channel_response);	
 	print(receivebuffer);
 	
 	warmReset();
 	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
-	working = responseCheck(warmReset_response);
+	working = responseCheck(warmReset_response);	
 	print(receivebuffer);
-	
 }

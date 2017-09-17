@@ -11,12 +11,9 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 	// setup_config_defaults
 	adc_get_config_defaults(&config_adc);
 
-	config_adc.gain_factor = ADC_GAIN_FACTOR_1X;
-	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
-	config_adc.reference = ADC_REFERENCE_INT1V;
-	config_adc.positive_input = pin;
-	config_adc.resolution = ADC_RESOLUTION_12BIT;
+	config_adc.resolution = ADC_RESOLUTION_10BIT;
 
+	config_adc.positive_input = pin;
 	//setup_set_config
 	adc_init(adc_instance, ADC, &config_adc);
 	adc_enable(adc_instance);
@@ -44,13 +41,5 @@ float readVoltagemV(struct adc_module adc_instance) {
 }
 
 float readVoltageV(struct adc_module adc_instance){
-	return readVoltagemV(adc_instance)/1000;
+	return readVoltagemV(adc_instance)/1000.0;
 } 
-
-float resultToVoltage(float result) {
-	return 5.599744685 + 0.4909903275 * result;
-}
-
-float voltageToTemp(float voltage) {
-	return 0.1*voltage - 50;
-}

@@ -18,3 +18,7 @@ void set_output(bool output, uint8_t pin){
 bool get_input(uint8_t pin){
 	return port_pin_get_input_level(pin);
 }
+
+bool get_output(uint8_t pin){
+	return port_pin_get_output_level(pin);
+}

@@ -33,10 +33,26 @@ TaskHandle_t flash_data_task_handle;
 TaskHandle_t transmit_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 
+<<<<<<< HEAD
 /* List (series of bits) of whether a given task is resuming from suspension */
 uint8_t TaskSuspendStates;
 
 void runit_2(void);
+=======
+/* List (series of bits) of whether a given task is RESUMING from suspension.
+ * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
+ * 
+ *				|---suspended----|       | task reports unsuspended
+ * task bit:  0   0   0   0   0    1   1   0   0   0   ...
+ * 
+ * This was put here to allow tasks to immediately write old data to their
+ * equistacks when resuming from suspend.
+ * NOTE: We WILL merge this with the watchdog check in / check out indicators.
+ */
+uint8_t TaskSuspendedStates;
+
+void run_rtos(void);
+>>>>>>> origin/master
 
 void set_state_hello_world(void);
 void set_state_idle(void);

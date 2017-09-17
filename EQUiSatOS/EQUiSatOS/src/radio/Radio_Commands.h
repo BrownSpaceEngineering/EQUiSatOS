@@ -11,24 +11,18 @@
 
 #include "../processor_drivers/USART_Commands.h"
 
-char dealer_response[4] = {1, 196, 0, 59};
-char txFreq_response[4] = {1, 183, 0, 72};
-char rxFreq_response[4] = {1, 185, 0, 70};
-char channel_response[4] = {0x01, 0x83, 0x00, 0x7c};
-char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
-	
-int working = 1;
-
-void setCommandMode();
-void setDealerMode();
-void setTxFreq();
-void setRxFreq();
-void setChannel();
-void warmReset();
-void setModulationFormat();
-void setLinkSpeed();
+void setCommandMode(void);
+void setDealerMode(void);
+void setTxFreq(void);
+void setRxFreq(void);
+void setChannel(void);
+void warmReset(void);
+void setModulationFormat(void);
+void setLinkSpeed(void);
 unsigned char calculateChecksum(char* data, int dataLen);
 int responseCheck(char arr[]);
-void initializeRadio();
+void initializeRadio(void);
+void setSendEnable(bool level);
+void setReceiveEnable(bool level);
 
 #endif /* RADIO_COMMANDS_H_ */
