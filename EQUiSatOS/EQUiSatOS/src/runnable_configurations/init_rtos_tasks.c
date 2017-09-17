@@ -7,7 +7,7 @@
 
 #include "init_rtos_tasks.h"
 
-void runit_2()
+void run_rtos()
 {
 	//configure_i2c_master(SERCOM4);
 	TaskSuspendedStates = 0; // no tasks suspended

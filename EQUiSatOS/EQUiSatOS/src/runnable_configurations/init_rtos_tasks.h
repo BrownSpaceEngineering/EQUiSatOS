@@ -45,7 +45,7 @@ TaskHandle_t attitude_data_task_handle;
  */
 uint8_t TaskSuspendedStates;
 
-void runit_2(void);
+void run_rtos(void);
 
 void set_state_hello_world(void);
 void set_state_idle(void);

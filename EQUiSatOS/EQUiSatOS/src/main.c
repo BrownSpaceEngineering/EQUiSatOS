@@ -11,7 +11,7 @@ int main(void)
 
 	/* TESTS */
 	//test_equistack();
-	assertConstantDefinitions();
+	//assertConstantDefinitions();
 
-	runit_2();
+	run_rtos();
 }
