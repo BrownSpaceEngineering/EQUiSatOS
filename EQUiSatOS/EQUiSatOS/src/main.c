@@ -12,6 +12,9 @@ int main(void)
 	/* TESTS */
 	//test_equistack();
 	//assertConstantDefinitions();
+	
+	/* Start and init tracing */
+	vTraceEnable(TRC_START);
 
 	run_rtos();
 }

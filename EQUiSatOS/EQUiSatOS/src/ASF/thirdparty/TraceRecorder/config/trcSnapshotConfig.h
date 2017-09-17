@@ -122,13 +122,13 @@
  * check the actual usage by selecting View menu -> Trace Details -> 
  * Resource Usage -> Object Table. 
  ******************************************************************************/
-#define TRC_CFG_NTASK			20
-#define TRC_CFG_NISR			5
-#define TRC_CFG_NQUEUE			10
-#define TRC_CFG_NSEMAPHORE		10
-#define TRC_CFG_NMUTEX			10
-#define TRC_CFG_NTIMER			5
-#define TRC_CFG_NEVENTGROUP		5
+#define TRC_CFG_NTASK			8 // 20 (trying to reduce ram usage)
+#define TRC_CFG_NISR			1 // 5
+#define TRC_CFG_NQUEUE			1 // 10
+#define TRC_CFG_NSEMAPHORE		1 // 10
+#define TRC_CFG_NMUTEX			1 // 10
+#define TRC_CFG_NTIMER			0 // 5
+#define TRC_CFG_NEVENTGROUP		0 // 5
 
 /******************************************************************************
  * TRC_CFG_INCLUDE_MEMMANG_EVENTS

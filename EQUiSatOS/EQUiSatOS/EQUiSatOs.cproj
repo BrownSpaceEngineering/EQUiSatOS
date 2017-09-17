@@ -658,6 +658,7 @@
       <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize most (-O3)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
@@ -917,6 +918,9 @@
     <None Include="src\ASF\sam0\drivers\wdt\wdt_callback.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\config\FreeRTOSConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1144,6 +1148,8 @@
       <Link>EQUiSatOS\src\stacks\EQUiSat_before_rename.zip</Link>
     </None>
     <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
+      <SubType>compile</SubType>
+    </None>
     <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\readme.txt">
       <SubType>compile</SubType>
     </None>

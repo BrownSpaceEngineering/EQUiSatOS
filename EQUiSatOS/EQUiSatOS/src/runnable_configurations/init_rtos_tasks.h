@@ -33,12 +33,6 @@ TaskHandle_t flash_data_task_handle;
 TaskHandle_t transmit_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 
-<<<<<<< HEAD
-/* List (series of bits) of whether a given task is resuming from suspension */
-uint8_t TaskSuspendStates;
-
-void runit_2(void);
-=======
 /* List (series of bits) of whether a given task is RESUMING from suspension.
  * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
  * 
@@ -52,7 +46,6 @@ void runit_2(void);
 uint8_t TaskSuspendedStates;
 
 void run_rtos(void);
->>>>>>> origin/master
 
 void set_state_hello_world(void);
 void set_state_idle(void);
