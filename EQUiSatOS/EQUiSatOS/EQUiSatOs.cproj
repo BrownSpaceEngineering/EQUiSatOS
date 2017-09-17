@@ -42,10 +42,9 @@
     <option id="sam0.drivers.sercom.usart" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.drivers.system.clock" value="Add" config="" content-id="Atmel.ASF" />
-    <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
-    <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
     <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
     <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
+    <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
     <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -109,7 +108,6 @@
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include/list.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\include\list.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include/timers.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\include\timers.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include/event_groups.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\include\event_groups.h" changed="False" content-id="Atmel.ASF" />
-    <file path="src/Config/FreeRTOSConfig.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\module_config\FreeRTOSConfig.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/readme.txt" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\readme.txt" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/port.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\port.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0/portmacro.h" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\portmacro.h" changed="False" content-id="Atmel.ASF" />
@@ -418,7 +416,6 @@
       <Value>RTC_CALENDAR_ASYNC=true</Value>
       <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
       <Value>USART_CALLBACK_MODE=false</Value>
-      <Value>__FREERTOS__</Value>
       <Value>SPI_CALLBACK_MODE=false</Value>
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
@@ -443,8 +440,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -509,8 +504,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -557,8 +550,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -609,7 +600,6 @@
       <Value>RTC_CALENDAR_ASYNC=true</Value>
       <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
       <Value>USART_CALLBACK_MODE=false</Value>
-      <Value>__FREERTOS__</Value>
       <Value>SPI_CALLBACK_MODE=false</Value>
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
@@ -1652,9 +1642,6 @@
     <Compile Include="src\ASF\sam0\utils\stdio\write.c">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\config\FreeRTOSConfig.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start_dma\qs_usart_dma_use.h">
       <SubType>compile</SubType>
     </None>
