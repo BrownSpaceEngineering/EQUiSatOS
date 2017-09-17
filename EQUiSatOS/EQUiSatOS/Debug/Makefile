@@ -163,7 +163,6 @@ C_SRCS +=  \
 ../src/sensor_drivers/TCA9535_GPIO.c \
 ../src/stacks/equistack.c \
 ../src/stacks/package_transmission.c \
-../src/stacks/State_Structs.c \
 ../src/testing_functions/test_data.c \
 ../src/testing_functions/test_stacks.c \
 ../src/testing_functions/test_structs.c \
@@ -239,7 +238,6 @@ src/sensor_drivers/MPU9250_9axis_Commands.o \
 src/sensor_drivers/TCA9535_GPIO.o \
 src/stacks/equistack.o \
 src/stacks/package_transmission.o \
-src/stacks/State_Structs.o \
 src/testing_functions/test_data.o \
 src/testing_functions/test_stacks.o \
 src/testing_functions/test_structs.o \
@@ -308,7 +306,6 @@ src/sensor_drivers/MPU9250_9axis_Commands.o \
 src/sensor_drivers/TCA9535_GPIO.o \
 src/stacks/equistack.o \
 src/stacks/package_transmission.o \
-src/stacks/State_Structs.o \
 src/testing_functions/test_data.o \
 src/testing_functions/test_stacks.o \
 src/testing_functions/test_structs.o \
@@ -377,7 +374,6 @@ src/sensor_drivers/MPU9250_9axis_Commands.d \
 src/sensor_drivers/TCA9535_GPIO.d \
 src/stacks/equistack.d \
 src/stacks/package_transmission.d \
-src/stacks/State_Structs.d \
 src/testing_functions/test_data.d \
 src/testing_functions/test_stacks.d \
 src/testing_functions/test_structs.d \
@@ -446,7 +442,6 @@ src/sensor_drivers/MPU9250_9axis_Commands.d \
 src/sensor_drivers/TCA9535_GPIO.d \
 src/stacks/equistack.d \
 src/stacks/package_transmission.d \
-src/stacks/State_Structs.d \
 src/testing_functions/test_data.d \
 src/testing_functions/test_stacks.d \
 src/testing_functions/test_structs.d \
@@ -503,8 +498,6 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 

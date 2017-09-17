@@ -10,6 +10,7 @@
 
 #include <global.h>
 #include "Watchdog_Commands.h"
+#include "../runnable_configurations/rtos_tasks.h"
 
 #define ANTENNA_DEPLOY_SHIFT 1
 #define BATTERY_CHARGING_SHIFT 2
@@ -18,9 +19,10 @@
 #define CURRENT_DATA_SHIFT 5
 #define ATTITUDE_DATA_SHIFT 6
 
-// This is just a placeholder before integration with rtos_tasks.c
-#define WATCHDOG_TASK_FREQ 10
-#define MUTEX_WAIT_TIME_TICKS 10
+#define WATCHDOG_MUTEX_WAIT_TIME_TICKS 10
+
+// static memory for watchdog task mutex
+StaticSemaphore_t _watchdog_task_mutex_d;
 
 void watchdog_init(void);
 void watchdog_task(void *pvParameters);

@@ -54,8 +54,6 @@ src\stacks\equistack.c
 
 src\stacks\package_transmission.c
 
-src\stacks\State_Structs.c
-
 src\testing_functions\test_data.c
 
 src\testing_functions\test_stacks.c

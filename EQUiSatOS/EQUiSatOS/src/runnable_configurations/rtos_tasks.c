@@ -21,21 +21,6 @@ void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_s
 }
 
 /* Action Tasks */
-void watchdog_task(void *pvParameters)
-{
-	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
-	
-	for ( ;; )
-	{
-		vTaskDelayUntil( &xNextWakeTime, WATCHDOG_TASK_FREQ / portTICK_PERIOD_MS);
-		
-		// TODO
-	}
-	// delete this task if it ever breaks out
-	vTaskDelete( NULL );
-}
-
 void antenna_deploy_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
@@ -308,7 +293,7 @@ void transmit_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (pollSuspended(TRANSMIT_DATA_TASK) || data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
+		if (checkIfSuspendedAndUpdate(TRANSMIT_DATA_TASK) || data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (transmit_data_t*) equistack_Stage(&flash_readings_equistack);
@@ -361,7 +346,7 @@ void flash_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (pollSuspended(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
+		if (checkIfSuspendedAndUpdate(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (flash_data_t*) equistack_Stage(&attitude_readings_equistack);
