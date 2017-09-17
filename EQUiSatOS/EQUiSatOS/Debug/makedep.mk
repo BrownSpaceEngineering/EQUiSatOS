@@ -4,6 +4,12 @@
 
 src\runnable_configurations\isItOn.c
 
+src\tasks\Antenna_Deploy_Task.c
+
+src\tasks\Watchdog_Commands.c
+
+src\tasks\Watchdog_Task.c
+
 src\testing_functions\watchdog_task_test.c
 
 src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
@@ -89,10 +95,6 @@ src\processor_drivers\RTC_Commands.c
 src\processor_drivers\SPI_Commands.c
 
 src\processor_drivers\USART_Commands.c
-
-src\processor_drivers\Watchdog_Commands.c
-
-src\processor_drivers\Watchdog_Task.c
 
 src\radio\Radio_Commands.c
 

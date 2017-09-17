@@ -741,6 +741,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\GCC\ARM_CM0\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
+    <Folder Include="src\tasks" />
     <Folder Include="src\radio" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
@@ -761,6 +762,24 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\isItOn.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Antenna_Deploy_Task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Antenna_Deploy_Task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Watchdog_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Watchdog_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Watchdog_Task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\tasks\Watchdog_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
@@ -1507,9 +1526,6 @@
     <Compile Include="src\processor_drivers\I2C_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\processor_drivers\PWM_Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1532,15 +1548,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\USART_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\radio\Radio_Commands.c">

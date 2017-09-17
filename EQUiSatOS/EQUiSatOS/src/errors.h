@@ -7,6 +7,12 @@
  * Errors should be constructed by combining the location and the code
  * i.e. if TEMP_5 was observing a dangerous temperature, the code would be: 16,27
  * where each number is one byte. It would then be transmitted as 00010000 00011011
+ *
+ * If you're adding new errors, follow the naming conventions:
+ *   - Location byte definitions should start with ELOC_ (error location)
+ *   - Error code byte definitions should start with ECODE_ (error definition)
+ *   - All caps, words separated by _, preferably tab to the right indentation
+ *   - Numbers can't go past 255 so they stay in one byte
  */ 
 
 

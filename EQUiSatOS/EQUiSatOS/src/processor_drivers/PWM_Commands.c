@@ -7,7 +7,7 @@
 
 #include "PWM_Commands.h"
 
-void configure_pwm(void)
+void configure_pwm(int pwm_pin, int pwm_mux)
 {
 	struct tcc_config config_tcc;
 	tcc_get_config_defaults(&config_tcc, CONF_PWM_MODULE);
@@ -18,8 +18,8 @@ void configure_pwm(void)
 	config_tcc.compare.match[CONF_PWM_CHANNEL] = PWM_ON_PERIOD; //when to change output
 	
 	config_tcc.pins.enable_wave_out_pin[CONF_PWM_OUTPUT] = true;
-	config_tcc.pins.wave_out_pin[CONF_PWM_OUTPUT]        = CONF_PWM_OUT_PIN;
-	config_tcc.pins.wave_out_pin_mux[CONF_PWM_OUTPUT]    = CONF_PWM_OUT_MUX;
+	config_tcc.pins.wave_out_pin[CONF_PWM_OUTPUT]        = pwm_pin;
+	config_tcc.pins.wave_out_pin_mux[CONF_PWM_OUTPUT]    = pwm_mux;
 
 	tcc_init(&tcc_instance, CONF_PWM_MODULE, &config_tcc);
 
@@ -29,7 +29,7 @@ void configure_pwm(void)
 /*
 	Set 
 */
-bool setPulseWidthFraction(int numerator, int denominator){
+bool set_pulse_width_fraction(int numerator, int denominator){
 	if(numerator > denominator){
 		return false;
 	}else{

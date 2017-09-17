@@ -19,7 +19,6 @@
 #include "processor_drivers/Direct_Pin_Commands.h"
 #include "processor_drivers/USART_Commands.h"
 #include "processor_drivers/PWM_Commands.h"
-#include "processor_drivers/Watchdog_Commands.h"
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"
@@ -28,7 +27,7 @@
 #include "sensor_drivers/AD7991_ADC.h"
 #include "sensor_drivers/TCA9535_GPIO.h"
 #include "radio/Radio_Commands.h"
-#include "processor_drivers/Watchdog_Commands.h"
+#include "tasks/Watchdog_Commands.h"
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
 #define TASK_MONITOR_STACK_PRIORITY        (tskIDLE_PRIORITY)
