@@ -33,6 +33,11 @@
 #include "stacks/equistack.h" 
 #include "stacks/package_transmission.h"
 
+/*
+ * Individual task files
+ */
+#include "processor_drivers/Watchdog_Task.h"
+
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
 /************************************************************************/

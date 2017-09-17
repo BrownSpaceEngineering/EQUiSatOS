@@ -81,6 +81,7 @@ void transmit_task(void *pvParameters)
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 		
+		// start up the data collection task so that its records data while we're transmitting
 		taskResumeIfSuspended(transmit_data_task_handle, TRANSMIT_DATA_TASK);
 
 		// check that global buffer has not been broken (TODO: ERROR)

@@ -156,9 +156,6 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 
-	// TODO: we need to suspend the other tasks and somehow immediately add OR delete their interior structs and make a new one
-	// Maybe look for changes in state inside the rtos tasks?
-	// OR bring their current structs, etc. global so we can manually reset them? -> NOOOOO
 	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
 	taskResumeIfSuspended(flash_activate_task_handle, FLASH_DATA_TASK);
 	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
@@ -170,7 +167,6 @@ void set_state_low_power()
 {
 	CurrentState = LOW_POWER;
 
-	// TODO: ibid
 	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
 	vTaskSuspend(flash_activate_task_handle);
 	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
