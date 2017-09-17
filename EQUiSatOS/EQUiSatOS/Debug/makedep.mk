@@ -2,6 +2,12 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\sam0\drivers\tcc\tcc.c
+
+src\ASF\sam0\drivers\wdt\wdt.c
+
+src\ASF\sam0\drivers\wdt\wdt_callback.c
+
 src\processor_drivers\PWM_Commands.c
 
 src\processor_drivers\Watchdog_Commands.c
@@ -15,8 +21,6 @@ src\runnable_configurations\isItOn.c
 src\testing_functions\watchdog_task_test.c
 
 src\ASF\sam0\drivers\adc\adc_sam_d_r\adc.c
-
-src\ASF\sam0\drivers\adc\adc_sam_d_r\adc_callback.c
 
 src\ASF\thirdparty\freertos\freertos-9.0.0\Source\croutine.c
 
