@@ -1,0 +1,983 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+<META name="description" content="Describes the memory management options in the FreeRTOS small footprint real time kernel.  FreeRTOS is a portable, open source, mini Real Time kernel.  A free RTOS for small embedded systems">
+<META name="keywords" content="RTOS memory management, RTOS memory allocation, memory allocator, FreeRTOS memory, FreeRTOS memory allocator, FreeRTOS malloc, pvPortMalloc, vPortFree, RTOS memory allocation options, microcontroller, ARM7, ARM9, Cortex-M3, 8051, 8052, Free RTOS, royalty free, RTOS, free, RTOS free, open source, real time, embedded, FreeRTOS, source code, AVR, GNU, PIC, PIC18, development tools">
+<title>FreeRTOS - Memory management options for the FreeRTOS small footprint, professional grade, real time kernel (scheduler)</title><link rel="stylesheet" href="doxygen.css"><style type="text/css"></style>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript" src="/banners.js"></script>
+<script type="text/javascript" src="/stlib.js"></script>
+<script type="text/javascript" src="/left_menu.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+<script type="text/javascript">
+	window.onload = function()
+	{
+		var rect1 = document.getElementById( 'td_right_side_bar' ).getBoundingClientRect();
+
+		if( rect1.right >= window.innerWidth )
+		{
+			document.getElementById( 'td_right_side_bar' ).style.display = 'none';
+			document.getElementById( 'td_right_side_bar' ).style.width = '0';
+		}
+	};
+</script>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6086815-2']);
+  _gaq.push(['_setDomainName', 'freertos.org']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+<script type="text/javascript">
+	function check_left_image_clash()
+	{
+		var rect1 = document.getElementById( 'left_banner_image' ).getBoundingClientRect();
+		var rect2 = document.getElementById( 'id_tree_menu' ).getBoundingClientRect();
+
+		if ( rect1.right >= rect2.left ) {
+			document.getElementById( 'td_left_side_bar' ).style.display = 'none';
+			document.getElementById( 'td_left_side_bar' ).style.width = '0';
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function check_right_image_clash()
+	{
+		var rect1 = document.getElementById( 'td_right_side_bar' ).getBoundingClientRect();
+
+		if( rect1.right >= window.innerWidth )
+		{
+			document.getElementById( 'td_right_side_bar' ).style.display = 'none';
+			document.getElementById( 'td_right_side_bar' ).style.width = '0';
+		}
+	}
+</script>
+
+
+<script type="text/javascript">
+	$( document ).ready( function()
+						{
+							window.setTimeout("blindDownMenuHint();", 5000);
+							window.setTimeout("blindUpMenuHint();", 12000);
+						}
+	)
+
+	function blindDownMenuHint()
+	{
+		if( window.name != "done" )
+		{
+			$( "#menu_hint").show( "blind", "slow" );
+			window.name = "done";
+		}
+	}
+
+	function blindUpMenuHint()
+	{
+		$( "#menu_hint").hide( "blind", "slow" );
+	}
+
+</script>
+
+
+</head>
+<body>
+<font face="Arial">
+
+<a name="page_top"></a>
+
+<table>
+	<tr>
+		<td valign="top">
+			<!-- Content area - the other td is the side bar area. -->
+			<table style="height:100%;background:white; border-left:solid 1px #f0f0f0; border-right:solid 1px #f0f0f0;" cellpadding="5" cellspacing="0" align="center">
+				<tr valign="top">
+					<td colspan="3" style="height:100px;"> <!-- Spans the left menu, blank line, and main content columns of the next row. -->
+						<font face="Arial, Helvetica">
+							<table style="width:100%;" cellspacing="2" cellpadding="0" border="0"> <!-- Rows for logos and banners, blue lines with menu. -->
+
+								<tr  style="padding: 0px 0px 0px 0px;"> <!-- Top row, banner and logo. -->
+									<td>
+										<table width="100%" cellpadding="0" cellspacing="5px" style="table-layout:fixed;">
+											<tr>
+												<td style="line-height:normal;" valign="middle" width="174px" id="logo_column">
+													<div style="float:left;">
+														<a href="/index.html">
+															<img src="/logo.jpg" alt="Free RTOS logo" width="164px" border="0" style="padding: 0 0 0 5px;">
+														</a>
+													</div>
+												</td>
+												<td style="width:5px; border-top:solid 2px #e6e6e6; border-left:solid 2px #e6e6e6; border-bottom:solid 2px #e6e6e6;">
+													&nbsp;
+												</td>
+												<td valign="middle" style="line-height:normal; width:324px;" id="page_heading_largerx">
+													<h3>
+														Quality RTOS &amp; Embedded Software
+														<br>
+														<small>
+															<small>
+																<div id="logo_links">
+																	<a href="/RTOS.html"><u>About</u></a>
+																	<font size="1">&nbsp;</font>
+																	<a href="/RTOS-contact-and-support.html"><u>Contact</u></a></u>
+																	<font size="1">&nbsp;</font>
+																	<a href="/FreeRTOS_Support_Forum_Archive/freertos_support_forum_archive_index.html"><u>Support</u></a></u>
+																	<font size="1">&nbsp;</font>
+																	<a href="/FAQ.html"><u>FAQ</u></a></u>
+																	<font size="1">&nbsp;</font>
+																	<a href="/a00104.html"><u>Download</u></a></u>
+																</div>
+																<div id="logo_sitemap_link">
+																	<a href="/static_menu.html"><u>Static Menu</u></a>
+																	<font size="1">&nbsp;</font>
+																</div>
+															</small>
+														</small>
+													</h3>
+												</td>
+												<td>
+													<div id="banner_div" style="float:right; padding: 0px 0px 3px 0px; max-width:100%;"> <!-- Pad the bottom of the image slightly to keep it away from blue bar. -->
+														<a href="/RTOS-contact-and-support.html">Advertise here?</a>
+													</div>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr style="height:5px;" bgcolor="#7095d3"> <!-- Blank line. -->
+									<td>
+									</td>
+								</tr>
+								<tr style="height:19px;" bgcolor="#b6cffe"> <!-- Horizontal menu. -->
+									<td valign="middle" bgcolor="#b6cffe"> <!-- Top menu with social media icons. -->
+										<div id="Email_icon" style="float:right; padding: 1px 0px 0px 0px; line-height:0em;">
+											&nbsp;<a href="/RSS/FreeRTOS.xml"><img style="padding: 0px 0px 0px 0px; height:20px;" border="0" src="/RSS/rss_logo.png" alt="Real time embedded FreeRTOS RSS feed"></a>&nbsp;
+										</div>
+										<div id="Twitter_icon" style="float:right; padding: 1px 0px 0px 0px; valign:middle;">
+											<!-- Twitter -->
+											<a href="https://twitter.com/intent/follow?screen_name=real_FreeRTOS"><img src="/Twitter_Follow.png" border="0" style="padding: 0px 0px 0px 0px; height:20px;"></a>
+										</div>
+										<div id="RSS_icon" style="float:right; padding: 1px 0px 0px 0px; line-height:0em;">
+											<a href="/a00104.html#mailing_list"><img style="padding: 0px 0px 0px 0px; width:60px;" border="0" src="/RSS/mailinglist.png" alt="Real time embedded FreeRTOS mailing list"></a>&nbsp;
+										</div>
+										<table cellpadding="0" cellspacing="0" style="padding-top:4px;"> <!-- Top horizontal menu. -->
+											<tr>
+												<td width="4px">
+													<!-- Just brings the first white menu spacing bar in from the left of the blue bar. -->
+												</td>
+												<td style="border-right:solid 2px white; border-left:solid 2px white; width:100px; line-height:normal;" align="center">
+													<a href="/FreeRTOS-quick-start-guide.html" class="blue_menu">
+														Quick Start
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:112px; line-height:normal;" align="center">
+													<a href="/RTOS_ports.html" class="blue_menu">
+														Supported MCUs
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:104px; line-height:normal;" align="center">
+													<a href="http://shop.freertos.org/RTOS_primer_books_and_manual_s/1819.htm" target="_blank" class="blue_menu">
+														Books &amp; Kits
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:94px; line-height:normal;" align="center">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml" target="_blank" class="blue_menu">
+														Trace Tools
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:94px; line-height:normal;" align="center">
+													<a href="/FreeRTOS-Plus/index.shtml" target="_blank" class="blue_menu">
+														Ecosystem
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:90px; line-height:normal;" align="center">
+													<a href="/FreeRTOS-Labs/index.shtml" class="blue_menu" target="_blank">
+														TCP &amp; FAT
+													</a>
+												</td>
+												<td style="border-right:solid 2px white; width:90px; line-height:normal;" align="center">
+													<a href="/FreeRTOS-Plus/Instructor_Led_FreeRTOS_Training/FreeRTOS_Training.shtml" class="blue_menu">
+														Training
+													</a>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</font>
+					</td>
+				</tr>
+				<tr valign="top"> <!-- Main content row with menu and content area columns. -->
+					<td style="width:180px; border:none;" id="id_tree_menu_column"> <!-- LHS menu -->
+						<table cellpadding="0" cellspacing="0" style="padding-right:15px;"> <!-- LHS menu -->
+							<tr> <!-- Tree menu. -->
+								<td class="div_tree_menu" id="id_tree_menu"> <!-- ID is used to detect clash with left banner. -->
+									<p>
+									<script type="text/javascript" language="JavaScript">
+										show_left_menu();
+									</script>
+									<noscript>
+										This site required JavaScript
+										<br>
+										to be enabled. <a href="/static_menu.html">Click here</a> to
+										<br>
+										view a static menu.
+									</noscript>
+								</td>
+							</tr>
+							<tr> <!-- FreeRTOS+ links table. -->
+								<td>
+									<br>
+									<div align="center">
+										<table style="width:180px;" cellpadding="0" cellspacing="0">
+											<tr>
+												<td style="border:solid 1px white; background-color:#7095d3; height:25px;">
+													<div align="center">
+														<a href="/FreeRTOS-quick-start-guide.html#page_top" style="color:white; line-height:1.3em;" class="underline_on_hover">
+															<b>Quick Start Guide</b>
+														</a>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td style="border:solid 1px white; background-color:#7095d3; height:25px;">
+													<div align="center">
+														<a href="/a00104.html" target="_blank" style="color:white; line-height:1.3em;" class="underline_on_hover">
+															<b>&dArr; Download Source &dArr;</b>
+														</a>
+													</div>
+												</td>
+											</tr>
+										</table>
+										<p>
+										<table style="width:180px;" cellpadding="0" cellspacing="0">
+											<tr>
+												<td style="border:solid 1px white; background-color:#7095d3; height:25px;">
+													<div align="center">
+														<a href="/FreeRTOS-Labs/index.shtml" target="_blank" style="color:white; line-height:1.3em;" class="underline_on_hover">
+															<b>FreeRTOS+ Lab Projects</b>
+														</a>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_TCP/index.html" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>FreeRTOS+TCP:</b>
+														<br>
+														<font size="2">
+															&nbsp;Thread safe TCP/IP stack
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>FreeRTOS+FAT:</b>
+														<br>
+														<font size="2">
+															&nbsp;Thread aware file system
+														</font>
+													</a>
+												</td>
+											</tr>
+										</table>
+										<p>
+										<table style="width:180px;" cellpadding="0" cellspacing="0">
+											<tr>
+												<td style="border:solid 1px white; background-color:#7095d3; height:25px;">
+													<div align="center">
+														<a href="/FreeRTOS-Plus" target="_blank" style="color:white; line-height:1.3em;" class="underline_on_hover">
+															<b>FreeRTOS+ Ecosystem</b>
+														</a>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/Nabto/Nabto.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>Internet of Things:</b>
+														<br>
+														<font size="2">
+															&nbsp;Innovative complete solution
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/Fail_Safe_File_System/Reliance_Edge_Fail_Safe_File_System.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>Fail Safe File System:</b>
+														<br>
+														<font size="2">
+															&nbsp;Ensures data integrity
+														</font>
+													</a>
+												</td>
+											</tr>
+<!--											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/embTCP/FreeRTOS_Plus_TCP.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>InterNiche TCP/IP:</b>
+														<br>
+														<font size="2">
+															&nbsp;Low cost pre-ported libraries
+														</font>
+													</a>
+												</td>
+											</tr>
+-->
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/BSP_Solutions/FreeRTOS_BSP.html" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>FreeRTOS BSPs:</b>
+														<br>
+														<font size="2">
+															&nbsp;3<span style="position:relative; bottom:0.5em; font-size:0.8em;">rd</span> party driver packages
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_FAT_SL/FreeRTOS_Plus_FAT_SL.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>FAT SL File System:</b>
+														<br>
+														<font size="2">
+															&nbsp;Super lean FAT FS
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_UDP/FreeRTOS_Plus_UDP.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>UDP/IP:</b>
+														<br>
+														<font size="2">
+															&nbsp;Thread aware UDP stack
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>Trace &amp; Visualisation:</b>
+														<br>
+														<font size="2">
+															&nbsp;Tracealyzer for FreeRTOS
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_CLI/FreeRTOS_Plus_Command_Line_Interface.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>CLI:</b>
+														<br>
+														<font size="2">
+															&nbsp;Command line interface
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/WolfSSL/WolfSSL.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>WolfSSL SSL / TLS:</b>
+														<br>
+														<font size="2">
+															&nbsp;Networking security protocols
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/Safety_Critical_Certified/SafeRTOS.shtml" target="_top" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>Safety:</b>
+														<br>
+														<font size="2">
+															&nbsp;TUV certified RTOS
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/Instructor_Led_FreeRTOS_Training/FreeRTOS_Training.shtml" target="_top" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>RTOS Training:</b>
+														<br>
+														<font size="2">
+															&nbsp;Delivered online or on-site
+														</font>
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="menu_cell_body">
+													<a href="/FreeRTOS-Plus/FreeRTOS_Plus_IO/FreeRTOS_Plus_IO.shtml" target="_blank" style="line-height:1.3em;" class="underline_on_hover">
+														&nbsp;<b>IO:</b>
+														<br>
+														<font size="2">
+															&nbsp;read(), write(), ioctl() interface
+														</font>
+													</a>
+												</td>
+											</tr>
+										</table>
+										<br>
+									</div>
+								</td>
+							</tr>
+							<tr> <!-- Search box. -->
+								<td>
+									<p>
+									<br>
+									<form action="http://www.google.com/cse" id="cse-search-box" target="_blank">
+									  <div>
+										<input type="hidden" name="cx" value="partner-pub-1432383574659805:z8fglgeedjr" />
+										<input type="hidden" name="ie" value="ISO-8859-1" />
+										<input type="text" name="q" size="20" />
+										<input type="submit" name="sa" value="Search" />
+									  </div>
+									</form>
+									<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
+									<p>
+									<br>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td style="width:2px; padding-right:0; padding-left:0;"> <!-- Blank column. -->
+						<!-- Just to move the main text away from the silver verticle line slightly. -->
+					</td>
+					<td id="td_main_content_column"> <!-- Main content area. -->
+						<table id="menu_hint" style="height:30px; background:#ffff99; display:none;" cellspacing="0" cellpadding="0" border="0">
+							<tr valign="middle">
+								<td width="5px">
+								</td>
+								<td width="30px">
+									<img src="/menu_hint_arrow.png" style="padding:0;" border="0" height="25px">
+								</td>
+								<td valign="middle" valign="middle">
+									Hint: Use the tree menu to navigate groups of related pages &nbsp;
+								</td>
+							</tr>
+						</table>
+
+
+
+
+
+
+
+
+<h1>Memory Management<br><small>
+[<a class="el" href="static_menu.html#more_advanced">More Advanced</a>]</small></h1>
+<p>
+<div style="line-height:normal;">
+	<small>
+		[Also see the <a href="/Static_Vs_Dynamic_Memory_Allocation.html">Static Vs Dynamic
+		Memory Allocation</a> page, which describes the pros and cons of allocating RTOS
+		objects statically (without using the FreeRTOS heap) or dynamically,
+		the description of the <a href="/a00110.html#configAPPLICATION_ALLOCATED_HEAP">configAPPLICATION_ALLOCATED_HEAP</a>
+		constant, which can be defined in FreeRTOSConfig.h, and the
+		<a href="/freertos-static-allocation-demo.html">reference project
+		that demonstrates how to use FreeRTOS without a heap implementation</a>.]
+	</small>
+</div>
+<p>
+The RTOS kernel needs RAM each time a task, queue, mutex, software timer,
+semaphore or event group is created.  The RAM can be automatically dynamically
+allocated from the RTOS heap within the RTOS API object creation functions, or it
+can be <a href="/Static_Vs_Dynamic_Memory_Allocation.html">provided by the application writer</a>.
+<p>
+If RTOS objects are created dynamically then the standard C library
+malloc() and free() functions can sometimes be used for the purpose, but <b>...</b>
+<ol>
+	<li>they are not always available on embedded systems,<p></li>
+	<li>they take up valuable code space,<p></li>
+	<li>they are not thread safe, and<p></li>
+	<li>they are not deterministic (the amount of time taken to execute the
+	function will differ from call to call)<p></li>
+</ol>
+<b>...</b> so more often than not an alternative memory allocation implementation is required.
+<p>
+One embedded / real time system can have very different RAM and timing requirements to another - so a single RAM allocation
+algorithm will only ever be appropriate for a subset of applications.
+<p>
+To get around this problem, FreeRTOS keeps the memory allocation API in its
+portable layer.  The portable layer is outside of the source files that implement the core
+RTOS functionality, allowing an application specific implementation appropriate for the
+real time system being developed to be provided.  When the RTOS kernel requires
+RAM, instead of calling malloc(), it instead calls pvPortMalloc().  When RAM is
+being freed, instead of calling free(), the RTOS kernel calls vPortFree().
+<p>
+FreeRTOS offers several heap management schemes that range in complexity and
+features.  It is also possible to provide your own heap implementation, and even
+to use two heap implementations simultaneously.  Using two heap implementations
+simultaneously permits task stacks and other RTOS objects to be placed in fast
+internal RAM, and application data to be placed in slower external RAM.
+<p>
+<br>
+
+<h2>Memory allocation implementations included in the RTOS source code download</h2>
+The FreeRTOS download includes five sample memory allocation implementations, each of
+which are described in the following subsections.  The subsections also include
+information on when each of the provided implementations might be the most appropriate
+to select.
+<p>
+Each provided implementation is contained in a separate source file (heap_1.c,
+heap_2.c, heap_3.c, heap_4.c and heap_5.c respectively) which are located in the
+<tt>Source/Portable/MemMang</tt> directory of the main RTOS source code download.
+Other implementations can be added as needed.  Exactly one of these source files
+should be included in a project at a time [the heap defined by these portable
+layer functions will be used by the RTOS kernel even if the application that is
+using the RTOS opts to use its own heap implementation].
+<p>
+Following below:
+<ul>
+	<li>
+		<a href="#heap_1">heap_1</a> - the very simplest, does not permit memory to be freed
+	</li>
+	<li>
+		<a href="#heap_2">heap_2</a> - permits memory to be freed, but not does coalescence adjacent free blocks.
+	</li>
+	<li>
+		<a href="#heap_3">heap_3</a> - simply wraps the standard malloc() and free() for thread safety
+	</li>
+	<li>
+		<a href="#heap_4">heap_4</a> - coalescences adjacent free blocks to avoid fragmentation.  Includes absolute address placement option
+	</li>
+	<li>
+		<a href="#heap_5">heap_5</a> - as per heap_4, with the ability to span the heap across multiple non-adjacent memory areas
+	</li>
+</ul>
+<br>
+<hr>
+<a name="heap_1">
+	<h3>heap_1.c</h3>
+</a>
+This is the simplest implementation of all.  It does <i>not</i> permit memory to
+be freed once it has been allocated.  Despite this, heap_1.c is appropriate
+for a large number of embedded applications.  This is because many small and
+deeply embedded applications create all the tasks, queues, semaphores, etc. required
+when the system boots, and then use all of these objects for the lifetime of
+program (until the application is switched off again, or is rebooted).  Nothing
+ever gets deleted.
+<p>
+The implementation simply subdivides a single array into smaller blocks as RAM
+is requested.  The total size of the array (the total size of the heap) is set
+by configTOTAL_HEAP_SIZE - which is defined in FreeRTOSConfig.h.
+The <a href="/a00110.html#configAPPLICATION_ALLOCATED_HEAP">configAPPLICATION_ALLOCATED_HEAP</a>
+FreeRTOSConfig.h configuration constant is provided to allow the heap to be placed
+at a specific address in memory.
+<p>
+The xPortGetFreeHeapSize() API function returns the total amount of heap space
+that remains unallocated, allowing the configTOTAL_HEAP_SIZE setting to be
+optimised.
+<p>
+The heap_1 implementation:
+<ul>
+	<li>
+		Can be used if your application never deletes a task, queue, semaphore, mutex, etc.
+		(which actually covers the majority of applications in which FreeRTOS
+		gets used).
+	<p></li>
+	<li>
+		Is always deterministic (always takes the same amount of time to execute)
+		and cannot result in memory fragmentation.
+	<p></li>
+	<li>
+		Is very simple and allocated memory from a statically allocated array,
+		meaning it is often suitable for use in applications that do not permit
+		true dynamic memory allocation.
+	<p></li>
+</ul>
+<p>
+<hr>
+<a name="heap_2">
+	<h3>heap_2.c</h3>
+</a>
+This scheme uses a best fit algorithm and, unlike scheme 1, allows previously allocated blocks to be freed.
+It does <i>not</i> combine adjacent free blocks into a single large block.
+See heap_4.c for an implementation that does coalescence free blocks.
+<p>
+The total amount of available heap space is set by configTOTAL_HEAP_SIZE - which is
+defined in FreeRTOSConfig.h.
+The <a href="/a00110.html#configAPPLICATION_ALLOCATED_HEAP">configAPPLICATION_ALLOCATED_HEAP</a>
+FreeRTOSConfig.h configuration constant is provided to allow the heap to be placed
+at a specific address in memory.
+<p>
+The xPortGetFreeHeapSize() API function returns the total amount of heap space
+that remains unallocated,  (allowing the configTOTAL_HEAP_SIZE setting to be
+optimised), but does not provided information on how the unallocated
+memory is fragmented into smaller blocks.
+<p>
+This implementation:
+<ul>
+	<li>
+		Can be used even when the application repeatedly deletes tasks, queues,
+		semaphores, mutexes, etc., with the caveat below regarding memory
+		fragmentation.<p></li>
+	<li>
+		Should <i>not</i> be used if the memory being allocated and freed is of
+		a random size.  For example:
+		<ul>
+			<li>
+				If an application dynamically creates and
+				deletes tasks, and the size of the stack allocated to the tasks
+				being created is always
+				the same, then heap2.c can be used in most cases.  However, if the
+				size of the stack allocated to the tasks being created was
+				not always the same, then the available free memory
+				might become fragmented into many small blocks, eventually
+				resulting in allocation failures.  heap_4.c would be a better
+				choise in this case.
+			<p></li>
+			<li>
+				If an application dynamically creates and deletes queues, and
+				the queue storage area is the same in each case (the queue
+				storage area is the queue item size multiplied by the length
+				of the queue), then heap_2.c can be used in most cases.  However,
+				if the queue storage area were not the same in each case, then
+				the available free memory
+				might become fragmented into many small blocks, eventually
+				resulting in allocation failures.  heap_4.c would be a better
+				choise in this case.
+			<p></li>
+			<li>
+				The application called pvPortMalloc() and vPortFree() directly,
+				rather than just indirectly through other FreeRTOS API functions.
+			<p></li>
+		</ul>
+	<p></li>
+	<li>
+		Could possible result in memory fragmentation problems if your application
+		queues, tasks, semaphores, mutexes, etc. in an unpredictable order.  This
+		would be unlikely for nearly all applications but should be kept in mind.
+	<p></li>
+	<li>
+		Is not deterministic - but is much more efficient that most standard C library malloc implementations.
+	<p></li>
+</ul>
+
+heap_2.c is suitable for many small real time systems that have to dynamically
+create objects.  See heap_4 for a similar implementation that combines free
+memory blocks into single larger blocks.
+<p>
+<hr>
+<a name="heap_3">
+	<h3>heap_3.c</h3>
+</a>
+This implements a simple wrapper for the standard C library malloc() and free()
+functions that will, in most cases, be supplied with your chosen compiler.  The
+wrapper simply makes the malloc() and free() functions thread safe.
+<p>
+This implementation:
+<ul>
+	<li>Requires the linker to setup a heap, and the compiler library to provide
+	malloc() and free() implementations.<p></li>
+	<li>Is not deterministic.<p></li>
+	<li>Will probably considerably increase the RTOS kernel code size.<p></li>
+</ul>
+
+Note that the configTOTAL_HEAP_SIZE setting in FreeRTOSConfig.h has no effect
+when heap_3 is used.
+<p>
+<hr>
+<a name="heap_4">
+	<h3>heap_4.c</h3>
+</a>
+This scheme uses a first fit algorithm and, unlike scheme 2, it does combine adjacent
+free memory blocks into a single large block (it does include a coalescence
+algorithm).
+<p>
+The total amount of available heap space is set by
+configTOTAL_HEAP_SIZE - which is defined in FreeRTOSConfig.h.
+The <a href="/a00110.html#configAPPLICATION_ALLOCATED_HEAP">configAPPLICATION_ALLOCATED_HEAP</a>
+FreeRTOSConfig.h configuration constant is provided to allow the heap to be placed
+at a specific address in memory.
+<p>
+The xPortGetFreeHeapSize() API function returns the total amount of heap space
+that remains unallocated when the function is called, and the xPortGetMinimumEverFreeHeapSize()
+API function returns lowest amount of free heap space that has existed system the
+FreeRTOS application booted.  Neither function provides information on how the unallocated
+memory is fragmented into smaller blocks.
+<p>
+This implementation:
+<ul>
+	<li>
+		Can be used even when the application repeatedly deletes tasks, queues,
+		semaphores, mutexes, etc..<p></li>
+	<li>
+		Is much less likely than the heap_2 implementation to result in a heap
+		space that is badly fragmented into multiple small blocks - even when
+		the memory being allocated and freed is of random size.
+	<p></li>
+	<li>
+		Is not deterministic - but is much more efficient that most standard C library malloc implementations.
+	<p></li>
+</ul>
+
+heap_4.c is particularly useful for applications that want to use the portable
+layer memory allocation schemes directly in the application code (rather than
+just indirectly by calling API functions that themselves call
+pvPortMalloc() and vPortFree()).
+<p>
+<hr>
+<a name="heap_5">
+	<h3>heap_5.c</h3>
+</a>
+This scheme uses the same first fit and memory coalescence algorithms as
+heap_4, and allows the heap to span multiple non adjacent (non-contiguous)
+memory regions.
+<p>
+Heap_5 is initialised by calling vPortDefineHeapRegions(), and <b>cannot be used</b>
+until after vPortDefineHeapRegions() has executed.  Creating
+an RTOS object (task, queue, semaphore, etc.) will implicitly call pvPortMalloc()
+so it is essential that, when using heap_5, vPortDefineHeapRegions() is called
+before the creation of any such object.
+<p>
+vPortDefineHeapRegions() takes a single parameter.  The parameter is an array
+of HeapRegion_t structures.  HeapRegion_t is defined in portable.h as
+		<div align="center">
+			<table bgcolor="#f3f3f3">
+				<tr>
+					<td style='border:none; border-left:solid 1px silver; border-right:solid 1px silver; padding:0cm 10pt 0cm 10pt;'>
+						<pre>
+
+typedef struct HeapRegion
+{
+    <font color="green">/* Start address of a block of memory that will be part of the heap.*/</font>
+    uint8_t *pucStartAddress;
+
+    <font color="green">/* Size of the block of memory. */</font>
+    size_t xSizeInBytes;
+} HeapRegion_t;
+						</pre>
+						<div align="center">
+							<span  class="image_caption">
+
+The HeapRegion_t type definition
+							</span>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+<p>
+<br>
+The array is terminated using a NULL zero sized region definition, and the
+memory regions defined in the array <b>must</b> appear in address order, from
+low address to high address.  The following source code snippets provide an
+example.  The
+<a href="/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html">MSVC Win32 simulator demo</a>
+also uses heap_5 so can be used as a reference.
+<p>
+		<div align="center">
+			<table bgcolor="#f3f3f3">
+				<tr>
+					<td style='border:none; border-left:solid 1px silver; border-right:solid 1px silver; padding:0cm 10pt 0cm 10pt;'>
+						<pre>
+
+<font color="green">/* Allocate two blocks of RAM for use by the heap.  The first is a block of
+0x10000 bytes starting from address 0x80000000, and the second a block of
+0xa0000 bytes starting from address 0x90000000.  The block starting at
+0x80000000 has the lower start address so appears in the array fist. */</font>
+const HeapRegion_t xHeapRegions[] =
+{
+    { ( uint8_t * ) 0x80000000UL, 0x10000 },
+    { ( uint8_t * ) 0x90000000UL, 0xa0000 },
+    { NULL, 0 } <font color="green">/* Terminates the array. */</font>
+};
+
+<font color="green">/* Pass the array into vPortDefineHeapRegions(). */</font>
+vPortDefineHeapRegions( xHeapRegions );
+						</pre>
+						<div align="center">
+							<span  class="image_caption">
+
+Initialising heap_5 after defining the memory blocks to be used by the heap
+							</span>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+<p>
+The xPortGetFreeHeapSize() API function returns the total amount of heap space
+that remains unallocated when the function is called, and the xPortGetMinimumEverFreeHeapSize()
+API function returns lowest amount of free heap space that has existed system the
+FreeRTOS application booted.  Neither function provides information on how the unallocated
+memory is fragmented into smaller blocks.
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+</font>
+						<p>
+						<br>
+						<div align="center">
+							<a href="#page_top"><small>[ Back to the top ]</small></a>
+							&nbsp;&nbsp;
+							<a href="/RTOS.html"><small>[ About FreeRTOS ]</small></a>
+							&nbsp;&nbsp;
+							<a href="/static_menu.html"><small>[ Sitemap ]</small></a>
+							&nbsp;&nbsp;
+							<small>[
+							<script type='text/javascript'><!--
+							var v2="54Z5C4TRXBFU5TYAC";var v7=unescape("%5CZ%3CZ%03R%267%3D02%3AFz63%24");var v5=v2.length;var v1="";for(var v4=0;v4<v5;v4++){v1+=String.fromCharCode(v2.charCodeAt(v4)^v7.charCodeAt(v4));}document.write('<a href="javascript:void(0)" onclick="window.location=\'mail\u0074o\u003a'+v1+'?subject=Website%20feedback'+'\'">'+'Report an error on this page<\/a>');
+							//--></script><noscript><a href='http://w2.syronex.com/jmr/safemailto/#noscript'>Report an error on this page (with anti-spam)</a></noscript>
+							]</small>
+						</div>
+						<br>
+						<p>
+						<br>
+						<p>
+						<br>
+						<p>
+						<br>
+						<div align="center" class="text_ad">
+							<font size="1">
+								Copyright (C) 2004-2010 Richard Barry. Copyright (C) 2010-2016 Real Time Engineers Ltd.<BR>
+								Any and all data, files, source code, html content and documentation included in the FreeRTOS<SMALL><SUP>TM</SUP></SMALL> distribution or available on this site are the exclusive property of Real Time Engineers Ltd..
+								See the files license.txt (included in the distribution) and this <a href="/copyright.html">copyright notice</a> for more information.  FreeRTOS<sup>TM</sup> and FreeRTOS.org<sup>TM</sup> are trade marks of Real Time Engineers Ltd.				</font>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td style="width:240px; float:right; padding-left:0px; padding-right:0px; line-height:normal;" align="center" id="td_right_side_bar">
+			<!-- Right side bar ads. -->
+			<p>
+			<small>
+				<b>
+					<u>
+						Latest News:
+					</u>
+					<p>
+					FreeRTOS <a href="/FreeRTOS-V9.html">V9.0.0</a> is now available for <a href="/a00104.html">download</a>.
+				</b>
+			</small>
+			<p>
+			<br>
+			<a href="/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_FAT_demo_projects.html" style="line-height:normal;">
+				<img src="/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_FAT_Demo_Projects.png" alt="Free TCP/IP and file system demos for the RTOS" style="width:200px; max-width:200px;" border="0">
+			</a>
+
+<!--
+			<small>
+				<div style="width:192px; line-height:normal; padding:8px; border-radius: 10px 10px 10px 10px; border: 2px solid #1A3065;" align="justify">
+					Receive a complimentary <u>pre-release</u> pdf
+					of our up-coming book "<a href="http://www.realtimeengineers.com/ReferencedDownloads/Table-Of-Contents-Mastering-the-FreeRTOS-Real-Time-Kernel.pdf">Mastering
+					the FreeRTOS Real Time Kernel</a>, a Hands-On Tutorial Guide" with every
+					<a href="http://shop.freertos.org/RTOS_primer_books_and_manual_s/1819.htm">purchased copy</a>
+					of the existing "Using the FreeRTOS Real Time Kernel" book.
+					<hr>
+					The 64-bit Zynq UltraScale+ Cortex-A53 RTOS port, originally
+					released as part of the Xilinx SDK, is now also
+					<a href="/RTOS-Xilinx-UltraScale_MPSoC_64-bit.html">available
+					directly</a>.
+				</div>
+			</small>
+-->
+			<p>
+			<br>
+			<small><b><u>Sponsored Links</u></b></small>
+			<p>
+			<a href="http://www.atollic.com/truestudio" target="_blank" onclick="_gaq.push(['_trackEvent','Banner','Atollic_120x60',this.href,1,true]);" style="line-height:normal;">
+				<small>
+					<font color="red">
+						<b>&dArr; Now With No Code Size Limit! &dArr;</b>
+					</font>
+				</small>
+				<img src="/banner-images/Atollic_220x220.jpg" style="width:220px; max-width:220px;" border="0">
+				<br>
+				<small>
+					<font color="red">
+						<b>&uArr; Free Download Without Registering &uArr;</b>
+					</font>
+				</small>
+			</a>
+			<p>
+			<a href="https://www.highintegritysystems.com/safertos/" target="_blank">
+				<img src="/banner-images/WHIS_SafeRTOS.png" style="width:220px; max-width:220px;" border="0">
+			</a>
+			<p>
+			<a href="/FreeRTOS-Plus/Fail_Safe_File_System/Reliance_Edge_Fail_Safe_File_System.shtml" target="_blank" onclick="_gaq.push(['_trackEvent','Banner','Datalight_120x60',this.href,1,true]);">
+				<img src="/banner-images/fail_safe_file_system_240x240.jpg" width="220px" style="border: 1px solid silver; max-width:220px;">
+			</a>
+			<p>
+			<br>
+			<small><b><u>FreeRTOS Partners</u></b></small>
+			<p>
+			<img src="/FreeRTOS-partners/ARM-connected.png" alt="ARM Connected RTOS partner for all ARM microcontroller cores">
+			<p>
+			<a href="http://www.renesas.eu/" target="_blank"><img src="/FreeRTOS-partners/Renesas-Electronics-Gold-Alliance-Partner.jpg" border="0" alt="Renesas Electronics Gold Alliance RTOS Partner.jpg"></a>
+			<p>
+			<a href="http://www.microchip.com/" target="_blank"><img src="/FreeRTOS-partners/Microchip-Premier-Third-Party-Partner.jpg" border="0" alt="Microchip Premier RTOS Partner"></a>
+			<p>
+			<img src="/FreeRTOS-partners/Partner-of-NXP.jpg" alt="RTOS partner of NXP for all NXP ARM microcontrollers">
+			<p>
+			<img src="/FreeRTOS-partners/Atmel-logo.jpg" alt="Atmel RTOS partner supporting ARM Cortex-M3 and AVR32 microcontrollers">
+			<p>
+			<img src="/FreeRTOS-partners/STmicro-logo.jpg" alt="STMicro RTOS partner supporting ARM7, ARM Cortex-M3, ARM Cortex-M4 and ARM Cortex-M0">
+			<p>
+			<img src="/FreeRTOS-partners/Xilinx.jpg" alt="Xilinx Microblaze and Zynq partner">
+			<p>
+			<img src="/FreeRTOS-partners/silicon-labs-logo.png" alt="Silicon Labs low power RTOS partner">
+			<p>
+			<img src="/FreeRTOS-partners/Altera.jpg" alt="Altera RTOS partner for Nios II and Cortex-A9 SoC">
+			<p>
+			<img src="/FreeRTOS-partners/Freescale-alliance-member.jpg" alt="Freescale Alliance RTOS Member supporting ARM and ColdFire microcontrollers">
+			<p>
+			<img src="/FreeRTOS-partners/Infineon.png" alt="Infineon ARM Cortex-M microcontrollers">
+			<p>
+			<img src="/FreeRTOS-partners/Texas-Instruments-MCU-Developer-Network.jpg" alt="Texas Instruments MCU Developer Network RTOS partner for ARM and MSP430 microcontrollers">
+			<p>
+			<img src="/FreeRTOS-partners/Cypress-logo.jpg" alt="Cypress RTOS partner supporting ARM Cortex-M3">
+			<p>
+			<img src="/FreeRTOS-partners/fujitsu.png" alt="Fujitsu RTOS partner supporting ARM Cortex-M3 and FM3">
+			<p>
+			<img src="/FreeRTOS-partners/microsemi.jpg" alt="Microsemi (previously Actel) RTOS partner supporting ARM Cortex-M3">
+			<p>
+			<a href="http://www.atollic.com" target="_blank"><img src="/FreeRTOS-partners/Atollic.png" alt="Atollic Partner" border="0"></a>
+			<p>
+			<img src="/FreeRTOS-partners/IAR.jpg" alt="IAR Partner">
+			<p>
+			<img src="/FreeRTOS-partners/Keil.gif" alt="Keil ARM Partner">
+			<p>
+			<img src="/FreeRTOS-partners/Embedded-Artists.jpg" alt="Embedded Artists">
+			<p>
+		</td>
+	</tr>
+</table>
+<script type="text/javascript" language="JavaScript"><!--
+	document.getElementById('banner_div').innerHTML = show_banners2();
+//--></script>
+
+
+</body></html>

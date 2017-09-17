@@ -62,7 +62,7 @@
 // From module: Delay routines
 #include <delay.h>
 
-// From module: FreeRTOS - kernel 8.0.1
+// From module: FreeRTOS - kernel 9.0.0
 #include <FreeRTOS.h>
 #include <StackMacros.h>
 #include <croutine.h>
