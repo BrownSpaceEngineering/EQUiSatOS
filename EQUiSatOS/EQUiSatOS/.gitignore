@@ -1,0 +1,4 @@
+# Atmel build locations
+../.vs
+./Debug/
+./Release/
