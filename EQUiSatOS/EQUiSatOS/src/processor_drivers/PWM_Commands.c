@@ -7,8 +7,7 @@
 
 #include "PWM_Commands.h"
 
-void configure_pwm(int pwm_pin, int pwm_mux)
-{
+void configure_pwm(int pwm_pin, int pwm_mux) {
 	struct tcc_config config_tcc;
 	tcc_get_config_defaults(&config_tcc, CONF_PWM_MODULE);
 	
@@ -29,7 +28,7 @@ void configure_pwm(int pwm_pin, int pwm_mux)
 /*
 	Set 
 */
-bool set_pulse_width_fraction(int numerator, int denominator){
+bool set_pulse_width_fraction(int numerator, int denominator) {
 	if(numerator > denominator){
 		return false;
 	}else{

@@ -21,7 +21,7 @@ void watchdog_init(void) {
 	check_outs = 0;
 	is_running = 0;
 	watch_block = 0;
-	mutex = xSemaphoreCreateMutex();
+	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
 }
 
 void watchdog_task(void *pvParameters) {
@@ -38,7 +38,7 @@ void watchdog_task(void *pvParameters) {
 }
 
 bool watchdog_as_function(void) {
-	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(mutex, (TickType_t) WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 	if (/*battery charing task isn't running*/0 == 1) {
 		watch_block = 1;
 	}

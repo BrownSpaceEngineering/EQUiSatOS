@@ -3,7 +3,7 @@
  *
  * \brief SAM TCC - Timer Counter for Control Applications Driver
  *
- * Copyright (C) 2013-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2013-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -151,7 +151,7 @@ uint8_t _tcc_get_inst_index(
  *
  * The default configuration is as follows:
  *  \li Don't run in standby
- *  \li When setting top,compare or pattern by API, do double buffering write
+ *  \li When setting top, compare, or pattern by API, do double buffering write
  *  \li The base timer/counter configurations:
  *     - GCLK generator 0 clock source
  *     - No prescaler
@@ -483,11 +483,11 @@ static inline enum status_code _tcc_build_waves(
  * \return Status of the initialization procedure.
  *
  * \retval STATUS_OK           The module was initialized successfully
- * \retval STATUS_BUSY         Hardware module was busy when the
+ * \retval STATUS_BUSY         The hardware module was busy when the
  *                             initialization procedure was attempted
  * \retval STATUS_INVALID_ARG  An invalid configuration option or argument
  *                             was supplied
- * \retval STATUS_ERR_DENIED   Hardware module was already enabled
+ * \retval STATUS_ERR_DENIED   The hardware module was already enabled
  */
 enum status_code tcc_init(
 		struct tcc_module *const module_inst,
@@ -969,6 +969,9 @@ uint32_t tcc_get_count_value(
 		if (TCC_CTRLBSET_CMD_NONE == last_cmd) {
 			/* Issue read command and break */
 			tcc_module->CTRLBSET.bit.CMD = TCC_CTRLBSET_CMD_READSYNC_Val;
+			while (tcc_module->SYNCBUSY.bit.CTRLB) {
+				/* Wait for sync */
+			}
 			break;
 		} else if (TCC_CTRLBSET_CMD_READSYNC == last_cmd) {
 			/* Command have been issued */
