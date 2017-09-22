@@ -10,8 +10,8 @@
 
 /* Includes */
 
-#include <asf.h>
 #include <inttypes.h>
+#include <global.h>
 #include "ASF/thirdparty/freertos/freertos-9.0.0/Source/include/FreeRTOS.h"
 #include "task.h"
 #include <assert.h>

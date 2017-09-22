@@ -9,7 +9,7 @@
 #ifndef PACKAGE_TRANSMISSION_H_
 #define PACKAGE_TRANSMISSION_H_
 
-#include <asf.h>
+#include <global.h>
 #include "../runnable_configurations/rtos_tasks.h"
 
 /************************************************************************/

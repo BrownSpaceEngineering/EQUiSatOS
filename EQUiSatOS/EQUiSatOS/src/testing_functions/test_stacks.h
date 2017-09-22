@@ -8,7 +8,7 @@
 #ifndef TEST_STACKS_H
 #define TEST_STACKS_H
 
-#include <asf.h>
+#include <global.h>
 #include <assert.h>
 #include "stacks/equistack.h"
 #include "test_data.h"

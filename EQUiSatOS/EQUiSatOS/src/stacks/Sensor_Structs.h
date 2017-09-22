@@ -8,7 +8,7 @@
 #ifndef SENSOR_STRUCTS_H
 #define SENSOR_STRUCTS_H
 
-#include <asf.h>
+#include <global.h>
 
 typedef uint16_t* lion_volts_batch;				// array of size 2
 typedef uint16_t* lion_current_batch;			// array of size 2

@@ -9,7 +9,7 @@
 #ifndef STRUCT_TESTS_H_
 #define STRUCT_TESTS_H_
 
-#include <asf.h>
+#include <global.h>
 #include "../stacks/State_Structs.h"
 #include "../stacks/Sensor_Structs.h"
 
