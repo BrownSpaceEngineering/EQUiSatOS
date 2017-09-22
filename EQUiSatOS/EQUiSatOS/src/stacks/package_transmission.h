@@ -10,7 +10,7 @@
 #define PACKAGE_TRANSMISSION_H_
 
 #include <global.h>
-#include "../runnable_configurations/rtos_tasks.h"
+#include "../rtos_tasks/rtos_tasks.h"
 
 /************************************************************************/
 /* MESSAGE FORMAT CONSTANTS												*/

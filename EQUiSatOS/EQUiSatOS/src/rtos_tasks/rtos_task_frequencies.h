@@ -120,6 +120,5 @@
  * A function to make sure that the constants defined here are internally consistent.
  */
 void assertConstantDefinitions(void);
-int arrMax(int* arr, uint8_t len);
 
 #endif

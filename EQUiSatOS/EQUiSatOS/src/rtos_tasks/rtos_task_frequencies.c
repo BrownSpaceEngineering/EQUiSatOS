@@ -9,6 +9,17 @@
 
 #include "rtos_task_frequencies.h"
 
+/* Max of array values, of which there must be at least one */
+int arrMax(int* arr, uint8_t len) {
+	int maxVal = arr[0];
+	for (uint8_t i = 1; i < len; i++) {
+		if (arr[i] > maxVal) {
+			maxVal = arr[i];
+		}
+	}
+	return maxVal;
+}
+
 void assertConstantDefinitions() {
 	// The MOST reads per log corresponding to the LOWEST log frequency, 
 	// and the lowest log frequency should have a list of size 1 
@@ -129,15 +140,4 @@ void assertConstantDefinitions() {
 	assert(attitude_DIODE_LOOPS_PER_LOG >= 1);
 	assert(attitude_IMU_LOOPS_PER_LOG >= 1);
 	assert(attitude_MAGNETOMETER_LOOPS_PER_LOG >= 1);
-}
-
-/* Max of array values, of which there must be at least one */
-int arrMax(int* arr, uint8_t len) {
-	int maxVal = arr[0];
-	for (uint8_t i = 1; i < len; i++) {
-		if (arr[i] > maxVal) {
-			maxVal = arr[i];
-		}
-	}
-	return maxVal;
 }

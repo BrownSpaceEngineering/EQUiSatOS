@@ -671,6 +671,7 @@
         <armgcc.linker.libraries.LibrarySearchPaths>
           <ListValues>
             <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+            <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
           </ListValues>
         </armgcc.linker.libraries.LibrarySearchPaths>
         <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
@@ -871,8 +872,8 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
-    <Folder Include="src\tasks" />
     <Folder Include="src\radio" />
+    <Folder Include="src\rtos_tasks\" />
     <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
@@ -913,7 +914,13 @@
     <None Include="src\ASF\sam0\drivers\wdt\wdt_callback.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\config\FreeRTOSConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\proc_pins.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\errors.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\global.h">
@@ -923,6 +930,54 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\PWM_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\Watchdog_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\Watchdog_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\antenna_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\antenna_deploy_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\battery_charging_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\current_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\flash_activate_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\flash_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_task_frequencies.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_task_frequencies.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\transmit_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\transmit_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\watchdog_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\watchdog_task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\flatsat.c">
@@ -935,18 +990,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\isItOn.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\tasks\Watchdog_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\tasks\Watchdog_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\tasks\Watchdog_Task.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\tasks\Watchdog_Task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
@@ -1028,9 +1071,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\timers.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_task_frequencies.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\struct_tests.c">
@@ -1787,19 +1827,10 @@
     <Compile Include="src\runnable_configurations\init_rtos_tasks.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\rtos_tasks.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_tasks.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">

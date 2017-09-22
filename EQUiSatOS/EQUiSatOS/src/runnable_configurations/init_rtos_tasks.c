@@ -156,7 +156,7 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 
-	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
+	taskResumeIfSuspended(current_data_task_handle, CURRENT_DATA_TASK);
 	taskResumeIfSuspended(flash_activate_task_handle, FLASH_DATA_TASK);
 	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
 	taskResumeIfSuspended(attitude_data_task_handle, ATTITUDE_DATA_TASK);
@@ -167,7 +167,7 @@ void set_state_low_power()
 {
 	CurrentState = LOW_POWER;
 
-	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
+	taskResumeIfSuspended(current_data_task_handle, CURRENT_DATA_TASK);
 	vTaskSuspend(flash_activate_task_handle);
 	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
 	vTaskSuspend(attitude_data_task_handle); // TODO: Do this?

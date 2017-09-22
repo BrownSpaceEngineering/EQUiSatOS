@@ -12,34 +12,15 @@
 
 #include <inttypes.h>
 #include <global.h>
-#include "ASF/thirdparty/freertos/freertos-9.0.0/Source/include/FreeRTOS.h"
+#include <FreeRTOS.h>
 #include "task.h"
 #include <assert.h>
 
-#include "processor_drivers/I2C_Commands.h"
-#include "processor_drivers/SPI_Commands.h"
-#include "processor_drivers/ADC_Commands.h"
-#include "processor_drivers/PWM_Commands.h"
-#include "processor_drivers/Direct_Pin_Commands.h"
-
-//#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
-#include "sensor_drivers/MLX90614_IR_Sensor.h"
-#include "sensor_drivers/TEMD6200_Commands.h"
-#include "sensor_drivers/switching_commands.h"
-#include "sensor_drivers/sensor_read_commands.h"
-
-#include "init_rtos_tasks.h"
+#include "runnable_configurations/init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
 #include "stacks/equistack.h" 
-#include "stacks/package_transmission.h"
-#include "../config/proc_pins.h"
-
-
-/*
- * Individual task files
- */
-#include "tasks/Watchdog_Task.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 /************************************************************************/
 /* Task Properties - see rtos_task_frequencies.h for frequencies		*/
@@ -142,12 +123,15 @@ typedef enum
 /************************************************************************/
  typedef enum
  {
-	IDLE_DATA_TASK,
+	ANTENNA_DEPLOY_TASK,
+	BATTERY_CHARGING_TASK,
+	TRANSMIT_TASK,
+	FLASH_ACTIVATE_TASK,
+	CURRENT_DATA_TASK,
 	ATTITUDE_DATA_TASK,
 	TRANSMIT_DATA_TASK,
 	FLASH_DATA_TASK
  } task_type_t;
-
 
 /* Task headers */
 

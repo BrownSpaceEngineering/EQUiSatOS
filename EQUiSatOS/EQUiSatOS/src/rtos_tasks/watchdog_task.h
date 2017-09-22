@@ -9,15 +9,8 @@
 #define WATCHDOG_TASK_H_
 
 #include <global.h>
-#include "Watchdog_Commands.h"
-#include "../runnable_configurations/rtos_tasks.h"
-
-#define ANTENNA_DEPLOY_SHIFT 1
-#define BATTERY_CHARGING_SHIFT 2
-#define TRANSMIT_SHIFT 3
-#define FLASH_ACTIVATE_SHIFT 4
-#define CURRENT_DATA_SHIFT 5
-#define ATTITUDE_DATA_SHIFT 6
+#include "../processor_drivers/Watchdog_Commands.h"
+#include "../rtos_tasks/rtos_tasks.h"
 
 #define WATCHDOG_MUTEX_WAIT_TIME_TICKS 10
 
