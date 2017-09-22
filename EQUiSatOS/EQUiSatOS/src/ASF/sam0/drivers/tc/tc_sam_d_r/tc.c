@@ -44,7 +44,7 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#include "tc.h"
+#include "../tc.h"
 
 #if TC_ASYNC == true
 #  include "tc_interrupt.h"
