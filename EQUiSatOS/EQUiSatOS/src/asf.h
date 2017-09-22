@@ -134,6 +134,9 @@
 // From module: Standard serial I/O (stdio)
 #include <stdio_serial.h>
 
+// From module: TC - Timer Counter (Polled APIs)
+#include <tc.h>
+
 // From module: TCC - Timer Counter for Control Applications (Polled APIs)
 #include <tcc.h>
 

@@ -45,6 +45,7 @@
           <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.tc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -279,6 +280,7 @@
           <file path="src/ASF/thirdparty/CMSIS/Lib/license.txt" framework="" version="" source="thirdparty/CMSIS/Lib/license.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/README.txt" framework="" version="" source="thirdparty/CMSIS/README.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
+<<<<<<< HEAD
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/MemMang/heap_1.c" framework="" version="3.31.0" source="thirdparty\freertos\freertos-8.0.1\Source\portable\MemMang\heap_1.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/adc/adc.h" framework="" version="3.31.0" source="sam0\drivers\adc\adc.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/adc/adc_sam_d_r/adc.c" framework="" version="3.31.0" source="sam0\drivers\adc\adc_sam_d_r\adc.c" changed="False" content-id="Atmel.ASF" />
@@ -294,6 +296,21 @@
           <file path="src/ASF/sam0/drivers/wdt/wdt.h" framework="" version="3.31.0" source="sam0\drivers\wdt\wdt.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start/qs_wdt_basic.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start\qs_wdt_basic.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+=======
+          <file path="src/ASF/sam0/drivers/tcc/tcc.c" framework="" version="3.28.1" source="sam0\drivers\tcc\tcc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_buffering/qs_tcc_buffering.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_dma/qs_tcc_dma.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start_dma\qs_tcc_dma.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/tcc.h" framework="" version="3.28.1" source="sam0\drivers\tcc\tcc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start/qs_tcc_basic.h" framework="" version="3.28.1" source="sam0\drivers\tcc\quick_start\qs_tcc_basic.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/wdt.c" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/wdt.h" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/quick_start/qs_wdt_basic.h" framework="" version="3.28.1" source="sam0\drivers\wdt\quick_start\qs_wdt_basic.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/wdt_callback.c" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt_callback.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/wdt_callback.h" framework="" version="3.28.1" source="sam0\drivers\wdt\wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.28.1" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc.h" framework="" version="3.28.1" source="sam0\drivers\tc\tc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c" framework="" version="3.28.1" source="sam0\drivers\tc\tc_sam_d_r\tc.c" changed="False" content-id="Atmel.ASF" />
+>>>>>>> added timer driver
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -304,8 +321,13 @@
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
+<<<<<<< HEAD
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800056157</avrtoolserialnumber>
+=======
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>ATML2130021800009084</avrtoolserialnumber>
+>>>>>>> added timer driver
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
@@ -402,6 +424,7 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
       <ArmGcc>
+<<<<<<< HEAD
         <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
         <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
         <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
@@ -581,11 +604,167 @@
           </ListValues>
         </armgcc.preprocessingassembler.general.IncludePaths>
       </ArmGcc>
+=======
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>NDEBUG</Value>
+      <Value>TEST_SUITE_DEFINE_ASSERT_MACRO</Value>
+      <Value>_ASSERT_ENABLE_</Value>
+      <Value>SYSTICK_MODE</Value>
+      <Value>RTC_CALENDAR_ASYNC=true</Value>
+      <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
+      <Value>USART_CALLBACK_MODE=false</Value>
+      <Value>__FREERTOS__</Value>
+      <Value>SPI_CALLBACK_MODE=false</Value>
+      <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
+      <Value>__SAMD21J18A__</Value>
+      <Value>ARM_MATH_CM0PLUS=true</Value>
+      <Value>TCC_ASYNC=false</Value>
+      <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>ADC_CALLBACK_MODE=false</Value>
+      <Value>TC_ASYNC=false</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/nvm</Value>
+      <Value>../src/ASF/sam0/drivers/port</Value>
+      <Value>../src/ASF/sam0/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/common/services/ioport</Value>
+      <Value>../src/ASF/common/services/serial</Value>
+      <Value>../src/ASF/common2/services/delay</Value>
+      <Value>../src/ASF/common2/services/delay/sam0</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/rtc</Value>
+      <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/sercom</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
+      <Value>../src/ASF/sam0/utils/header_files</Value>
+      <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
+      <Value>../src/ASF/common/utils</Value>
+      <Value>../src/ASF/sam0/drivers/system/pinmux</Value>
+      <Value>../src/ASF/sam0/drivers/system/power</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset/reset_sam_d_r</Value>
+      <Value>../src/ASF/common/boards</Value>
+      <Value>../src/ASF/sam0/boards</Value>
+      <Value>../src/ASF/sam0/utils</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Include</Value>
+      <Value>../src/config</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21</Value>
+      <Value>../src/ASF/sam0/boards/samd21_xplained_pro</Value>
+      <Value>../src</Value>
+      <Value>../src/ASF/sam0/utils/preprocessor</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/include</Value>
+      <Value>../src/ASF/sam0/drivers/system</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/sam0/drivers/tcc</Value>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
+  <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libarm_cortexM0l_math</Value>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.libraries.LibrarySearchPaths>
+    <ListValues>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+    </ListValues>
+  </armgcc.linker.libraries.LibrarySearchPaths>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/nvm</Value>
+      <Value>../src/ASF/sam0/drivers/port</Value>
+      <Value>../src/ASF/sam0/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/common/services/ioport</Value>
+      <Value>../src/ASF/common/services/serial</Value>
+      <Value>../src/ASF/common2/services/delay</Value>
+      <Value>../src/ASF/common2/services/delay/sam0</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/rtc</Value>
+      <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/sercom</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
+      <Value>../src/ASF/sam0/utils/header_files</Value>
+      <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
+      <Value>../src/ASF/common/utils</Value>
+      <Value>../src/ASF/sam0/drivers/system/pinmux</Value>
+      <Value>../src/ASF/sam0/drivers/system/power</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset/reset_sam_d_r</Value>
+      <Value>../src/ASF/common/boards</Value>
+      <Value>../src/ASF/sam0/boards</Value>
+      <Value>../src/ASF/sam0/utils</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Include</Value>
+      <Value>../src/config</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21</Value>
+      <Value>../src/ASF/sam0/boards/samd21_xplained_pro</Value>
+      <Value>../src</Value>
+      <Value>../src/ASF/sam0/utils/preprocessor</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/include</Value>
+      <Value>../src/ASF/sam0/drivers/system</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/sam0/drivers/tcc</Value>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+</ArmGcc>
+>>>>>>> added timer driver
     </ToolchainSettings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <ArmGcc>
+<<<<<<< HEAD
         <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
         <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
         <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
@@ -774,6 +953,163 @@
         </armgcc.preprocessingassembler.general.IncludePaths>
         <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
       </ArmGcc>
+=======
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>TEST_SUITE_DEFINE_ASSERT_MACRO</Value>
+      <Value>_ASSERT_ENABLE_</Value>
+      <Value>SYSTICK_MODE</Value>
+      <Value>RTC_CALENDAR_ASYNC=true</Value>
+      <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
+      <Value>USART_CALLBACK_MODE=false</Value>
+      <Value>__FREERTOS__</Value>
+      <Value>SPI_CALLBACK_MODE=false</Value>
+      <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
+      <Value>__SAMD21J18A__</Value>
+      <Value>ARM_MATH_CM0PLUS=true</Value>
+      <Value>TCC_ASYNC=false</Value>
+      <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>ADC_CALLBACK_MODE=false</Value>
+      <Value>TC_ASYNC=false</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/nvm</Value>
+      <Value>../src/ASF/sam0/drivers/port</Value>
+      <Value>../src/ASF/sam0/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/common/services/ioport</Value>
+      <Value>../src/ASF/common/services/serial</Value>
+      <Value>../src/ASF/common2/services/delay</Value>
+      <Value>../src/ASF/common2/services/delay/sam0</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/rtc</Value>
+      <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/sercom</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
+      <Value>../src/ASF/sam0/utils/header_files</Value>
+      <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
+      <Value>../src/ASF/common/utils</Value>
+      <Value>../src/ASF/sam0/drivers/system/pinmux</Value>
+      <Value>../src/ASF/sam0/drivers/system/power</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset/reset_sam_d_r</Value>
+      <Value>../src/ASF/common/boards</Value>
+      <Value>../src/ASF/sam0/boards</Value>
+      <Value>../src/ASF/sam0/utils</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Include</Value>
+      <Value>../src/config</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21</Value>
+      <Value>../src/ASF/sam0/boards/samd21_xplained_pro</Value>
+      <Value>../src</Value>
+      <Value>../src/ASF/sam0/utils/preprocessor</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/include</Value>
+      <Value>../src/ASF/sam0/drivers/system</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/sam0/drivers/tcc</Value>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
+  <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
+  <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libarm_cortexM0l_math</Value>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.libraries.LibrarySearchPaths>
+    <ListValues>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+    </ListValues>
+  </armgcc.linker.libraries.LibrarySearchPaths>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
+  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DADC_CALLBACK_MODE=false -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>../src/ASF/sam0/drivers/nvm</Value>
+      <Value>../src/ASF/sam0/drivers/port</Value>
+      <Value>../src/ASF/sam0/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/common/services/ioport</Value>
+      <Value>../src/ASF/common/services/serial</Value>
+      <Value>../src/ASF/common2/services/delay</Value>
+      <Value>../src/ASF/common2/services/delay/sam0</Value>
+      <Value>../src/ASF/sam0/drivers/adc</Value>
+      <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/rtc</Value>
+      <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/sercom</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
+      <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
+      <Value>../src/ASF/sam0/utils/header_files</Value>
+      <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
+      <Value>../src/ASF/common/utils</Value>
+      <Value>../src/ASF/sam0/drivers/system/pinmux</Value>
+      <Value>../src/ASF/sam0/drivers/system/power</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset/reset_sam_d_r</Value>
+      <Value>../src/ASF/common/boards</Value>
+      <Value>../src/ASF/sam0/boards</Value>
+      <Value>../src/ASF/sam0/utils</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Include</Value>
+      <Value>../src/config</Value>
+      <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/system/reset</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21</Value>
+      <Value>../src/ASF/sam0/boards/samd21_xplained_pro</Value>
+      <Value>../src</Value>
+      <Value>../src/ASF/sam0/utils/preprocessor</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/include</Value>
+      <Value>../src/ASF/sam0/drivers/system</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da</Value>
+      <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
+      <Value>../src/ASF/sam0/drivers/system/clock</Value>
+      <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
+      <Value>../src/ASF/sam0/drivers/tcc</Value>
+      <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
+</ArmGcc>
+>>>>>>> added timer driver
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
@@ -835,6 +1171,8 @@
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_dma\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start_callback\" />
@@ -880,6 +1218,7 @@
     <Folder Include="src\processor_drivers" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <None Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h">
       <SubType>compile</SubType>
     </None>
@@ -902,6 +1241,15 @@
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\sam0\drivers\wdt\wdt.c">
+=======
+    <None Include="src\ASF\sam0\drivers\tc\tc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\tc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\config\proc_pins.h">
+>>>>>>> added timer driver
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam0\drivers\wdt\wdt.h">
@@ -919,6 +1267,7 @@
     <Compile Include="src\global.h">
       <SubType>compile</SubType>
     </Compile>
+<<<<<<< HEAD
     <Compile Include="src\processor_drivers\PWM_Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -929,6 +1278,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\flatsat.h">
+=======
+    <Compile Include="src\processor_drivers\TC_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\TC_Commands.h">
+>>>>>>> added timer driver
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\isItOn.c">
