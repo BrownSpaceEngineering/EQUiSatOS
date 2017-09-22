@@ -8,7 +8,7 @@
 #ifndef RTOS_TASK_FREQ_H
 #define RTOS_TASK_FREQ_H
 
-#include <asf.h>
+#include <global.h>
 #include <assert.h>
 
 /* action frequency periods in MS (some that actually have data collection are below) */

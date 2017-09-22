@@ -10,7 +10,7 @@
 
 #include "Sensor_Structs.h"
 #include "../runnable_configurations/rtos_task_frequencies.h"
-#include <asf.h>
+#include <global.h>
 
 typedef struct idle_data_t
 {

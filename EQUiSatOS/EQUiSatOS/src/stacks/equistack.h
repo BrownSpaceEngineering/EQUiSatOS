@@ -11,7 +11,7 @@
 
 #define MUTEX_WAIT_TIME_TICKS 10
 
-#include <asf.h>
+#include <global.h>
 
 typedef struct equistack
 {
