@@ -8,6 +8,9 @@
 #include "PWM_Commands.h"
 
 void configure_pwm(int pwm_pin, int pwm_mux) {
+	if (tcc_instance.hw) {
+		tcc_reset(&tcc_instance);
+	}
 	struct tcc_config config_tcc;
 	tcc_get_config_defaults(&config_tcc, CONF_PWM_MODULE);
 	
@@ -25,15 +28,12 @@ void configure_pwm(int pwm_pin, int pwm_mux) {
 	tcc_enable(&tcc_instance);
 }
 
-/*
-	Set 
-*/
 bool set_pulse_width_fraction(int numerator, int denominator) {
 	if(numerator > denominator){
 		return false;
 	}else{
-		int toSet = (PWM_PERIOD*numerator)/denominator;
-		tcc_set_compare_value(&tcc_instance,CONF_PWM_CHANNEL,toSet);
+		int toSet = (PWM_PERIOD * numerator) / denominator;
+		tcc_set_compare_value(&tcc_instance, CONF_PWM_CHANNEL, toSet);
 		return true;
 	}
 }
