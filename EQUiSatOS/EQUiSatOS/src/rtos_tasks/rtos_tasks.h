@@ -16,128 +16,20 @@
 #include "task.h"
 #include "semphr.h"
 
-#include "runnable_configurations/init_rtos_tasks.h"
+#include "rtos_tasks_config.h"
+#include "./runnable_configurations/init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
 #include "stacks/equistack.h" 
 #include "sensor_drivers/sensor_read_commands.h"
+#include "watchdog_task.h"
 
 /************************************************************************/
-/* Task Properties - see rtos_task_frequencies.h for frequencies		*/
+/* TASK HEADERS                                                         */
 /************************************************************************/
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
-#define TASK_BATTERY_CHARGING_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_WATCHDOG_STACK_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
-
-#define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
-
-#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
-
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
-
-/********************************************************************************/
-/* Data reading task stack sizes - how many they can store before overwriting	*/
-/********************************************************************************/
-// it doesn't make sense of this to be greater than the sum of the other _MAXs
-#define LAST_READING_TYPE_STACK_MAX		32
-#define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
-#define FLASH_STACK_MAX					10  
-#define TRANSMIT_STACK_MAX				10
-#define ATTITUDE_STACK_MAX				10
-
-/************************************************************************/
-/* Enum for states that represent changes in which tasks are running	*/
-/************************************************************************/
-typedef enum 
-{
-	HELLO_WORLD,
-	IDLE,
-	LOW_POWER
-} global_state_t;
-
-/************************************************************************/
-/*  Enum for all types of collected sensor readings						*/
-/* (for consistency across sensor read functions)						*/
-/* Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
-/*	NOTE:																*/
-/*	If you add/remove a type of collected data, there are several		*/
-/*	things you must change:												*/
-/*		- Create a batch type definition								*/
-/*		- Create the required frequencies								*/
-/*		- Add a new array of data to ALL of the relevant state structs  */
-/*		- Add an add_*_batch_if_ready function						    */
-/* NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*/
-/************************************************************************/
-typedef enum
-{
-	LION_VOLTS_DATA,
-	LION_CURRENT_DATA,
-	LED_TEMPS_DATA,
-	LIFEPO_CURRENT_DATA,
-	LIFEPO_VOLTS_DATA,
-	IR_DATA,
-	DIODE_DATA,
-	BAT_TEMP_DATA,
-	IR_TEMPS_DATA,
-	RADIO_TEMP_DATA,
-	IMU_DATA,
-	MAGNETOMETER_DATA,
-	LED_CURRENT_DATA,
-	RADIO_VOLTS_DATA,
-	BAT_CHARGE_VOLTS_DATA,
-	BAT_CHARGE_DIG_SIGS_DATA,
-	DIGITAL_OUT_DATA,
-	NUM_DATA_TYPES //= DIGITAL_OUT_D + 1
-} sensor_type_t;
-
-/************************************************************************/
-/* enum for all types of data that can be read							*/
-/* (all types that will be in the 'data' section of a message packet)   */
-/************************************************************************/
-typedef enum
-{
-	ATTITUDE_DATA,
-	TRANSMIT_DATA,
-	FLASH_DATA
-} msg_data_type_t;
-
-/************************************************************************/
-/* Enum for all tasks (for array-wise referencing for last_state, etc.) */
-/************************************************************************/
- typedef enum
- {
-	ANTENNA_DEPLOY_TASK,
-	BATTERY_CHARGING_TASK,
-	TRANSMIT_TASK,
-	FLASH_ACTIVATE_TASK,
-	CURRENT_DATA_TASK,
-	ATTITUDE_DATA_TASK,
-	TRANSMIT_DATA_TASK,
-	FLASH_DATA_TASK
- } task_type_t;
-
-/* Task headers */
-
 // ?
 extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
-	signed char *pcTaskName);
+signed char *pcTaskName);
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
@@ -216,13 +108,60 @@ SemaphoreHandle_t _transmit_equistack_mutex;
 StaticSemaphore_t _attitude_equistack_mutex_d;
 SemaphoreHandle_t _attitude_equistack_mutex;
 
-/* Helper Functions */
-void taskResumeIfSuspended(TaskHandle_t task_handle, task_type_t taskId);
-bool checkIfSuspendedAndUpdate(task_type_t taskId); /* Checks and returns whether this task was suspended, AND report that it is not suspended */
+/************************************************************************/
+/* TASK STATE MANAGEMENT                                               */
+/************************************************************************/
+/* List of task handles, indexed by the task id enum value 
+   (essentially a map) */
+TaskHandle_t task_handles[NUM_TASKS];
 
+/* Task handles for starting and stopping */
+TaskHandle_t watchdog_task_handle; // Should we have this?
+TaskHandle_t antenna_deploy_task_handle;
+TaskHandle_t battery_charging_task_handle; // Should we have this?
+TaskHandle_t flash_activate_task_handle;
+TaskHandle_t transmit_task_handle;
+TaskHandle_t current_data_task_handle;
+TaskHandle_t flash_data_task_handle;
+TaskHandle_t transmit_data_task_handle;
+TaskHandle_t attitude_data_task_handle;
+
+/* List (series of bits) of whether a given task is RESUMING from suspension.
+ * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
+ * 
+ *				|---suspended----|       | task reports unsuspended
+ * task bit:  0   0   0   0   0    1   1   0   0   0   ...
+ * 
+ * This was put here to allow tasks to immediately write old data to their
+ * equistacks when resuming from suspend.
+ * NOTE: We WILL merge this with the watchdog check in / check out indicators.
+ */
+uint8_t task_suspended_states; // no tasks suspended
+
+/************************************************************************/
+/* Task Control Functions                                               */
+/************************************************************************/
+void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
+void task_suspend(task_type_t task_id);
+void task_resume_if_suspended(task_type_t taskId);
+bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
+
+/************************************************************************/
+/* Helper Functions                                                     */
+/************************************************************************/
 void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);
+
+/************************************************************************/
+/*  Required functions for FreeRTOS 9 static allocation                 */
+/************************************************************************/
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
+	StackType_t **ppxIdleTaskStackBuffer,
+	uint32_t *pulIdleTaskStackSize );
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
+	StackType_t **ppxTimerTaskStackBuffer,
+	uint32_t *pulTimerTaskStackSize );
 
 #endif

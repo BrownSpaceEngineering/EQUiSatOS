@@ -16,7 +16,7 @@ void flash_activate_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
 		
-		taskResumeIfSuspended(flash_data_task_handle, FLASH_DATA_TASK);
+		task_resume_if_suspended(FLASH_DATA_TASK);
 		
 		// TODO: actually flash leds
 		

@@ -1,13 +1,13 @@
 /*
- * rtos_task_frequencies.c
+ * rtos_tasks_config.c
  *
- * Responsible for making sure that the constants defined in rtos_task_frequencies.h are internally consistent.
+ * Responsible for making sure that the constants defined in rtos_tasks_config.h are internally consistent.
  *
  * Created: 2/26/2017 2:57:52 PM
  *  Author: mckenna
  */ 
 
-#include "rtos_task_frequencies.h"
+#include "rtos_tasks_config.h"
 
 /* Max of array values, of which there must be at least one */
 int arrMax(int* arr, uint8_t len) {

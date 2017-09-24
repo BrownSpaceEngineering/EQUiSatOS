@@ -25,7 +25,7 @@ void transmit_data_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
-		if (checkIfSuspendedAndUpdate(TRANSMIT_DATA_TASK) || data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
+		if (check_if_suspended_and_update(TRANSMIT_DATA_TASK) || data_array_tails[LION_CURRENT_DATA] >= transmit_LION_VOLTS_DATA_ARR_LEN)
 		{
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (transmit_data_t*) equistack_Stage(&flash_readings_equistack);

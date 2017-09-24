@@ -38,7 +38,7 @@ void current_data_task(void *pvParameters)
 
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list -> if one is, all should be)
-		if (checkIfSuspendedAndUpdate(CURRENT_DATA_TASK) || data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
+		if (check_if_suspended_and_update(CURRENT_DATA_TASK) || data_array_tails[IR_DATA] >= idle_IR_DATA_ARR_LEN)
 		{
 			
 			// FOR TESTING

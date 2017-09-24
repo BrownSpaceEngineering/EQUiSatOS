@@ -20,7 +20,7 @@ void transmit_task(void *pvParameters)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// start up the data collection task so that its records data while we're transmitting
-		taskResumeIfSuspended(transmit_data_task_handle, TRANSMIT_DATA_TASK);
+		task_resume_if_suspended(TRANSMIT_DATA_TASK);
 
 		// check that global buffer has not been broken (TODO: ERROR)
 		assert(get_msg_buffer()[0] == 'K' && get_msg_buffer()[1] == '1' && get_msg_buffer()[2] == 'A' && get_msg_buffer()[3] == 'D');

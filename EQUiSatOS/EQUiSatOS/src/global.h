@@ -12,6 +12,9 @@
 #include <asf.h>
 #include "errors.h"
 
+/* Global satellite state */
+int8_t CurrentState;
+
 typedef struct return_struct_float {
 	enum status_code return_status;
 	float return_value;

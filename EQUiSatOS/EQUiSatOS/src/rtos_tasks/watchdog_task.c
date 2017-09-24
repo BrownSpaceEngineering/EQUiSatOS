@@ -59,19 +59,19 @@ bool watchdog_as_function(void) {
 	}
 }
 
-void check_in_task(uint8_t task_ind) {
+void check_in_task(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	check_ins = check_ins | (1 << task_ind);
 	xSemaphoreGive(mutex);
 }
 
-void running_task(uint8_t task_ind) {
+void running_task(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
 	xSemaphoreGive(mutex);
 }
 
-void check_out_task(uint8_t task_ind) {
+void check_out_task(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	check_outs = check_outs | (1 << task_ind);
 	xSemaphoreGive(mutex);

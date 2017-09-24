@@ -995,10 +995,10 @@
     <Compile Include="src\rtos_tasks\rtos_tasks.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\rtos_tasks\rtos_task_frequencies.c">
+    <Compile Include="src\rtos_tasks\rtos_tasks_config.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\rtos_tasks\rtos_task_frequencies.h">
+    <Compile Include="src\rtos_tasks\rtos_tasks_config.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\transmit_data_task.c">
