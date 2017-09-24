@@ -45,6 +45,7 @@
           <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.tc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -294,6 +295,8 @@
           <file path="src/ASF/sam0/drivers/wdt/wdt.h" framework="" version="3.31.0" source="sam0\drivers\wdt\wdt.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start/qs_wdt_basic.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start\qs_wdt_basic.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc.h" framework="" version="3.31.0" source="sam0\drivers\tc\tc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c" framework="" version="3.31.0" source="sam0\drivers\tc\tc_sam_d_r\tc.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -423,6 +426,7 @@
       <Value>ADC_CALLBACK_MODE=false</Value>
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>TC_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -468,6 +472,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -532,9 +538,11 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -578,6 +586,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -607,6 +617,7 @@
       <Value>ADC_CALLBACK_MODE=false</Value>
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>TC_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -654,6 +665,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
@@ -671,7 +684,9 @@
   <armgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
       <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
       <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
@@ -692,8 +707,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -722,10 +735,14 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -771,6 +788,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -836,6 +855,8 @@
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_dma\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start_callback\" />
@@ -902,6 +923,12 @@
     <None Include="src\ASF\sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\ASF\sam0\drivers\tc\tc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\tc.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam0\drivers\wdt\wdt.c">
       <SubType>compile</SubType>
     </Compile>

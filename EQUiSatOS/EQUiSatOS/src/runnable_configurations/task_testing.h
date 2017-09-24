@@ -8,7 +8,9 @@
 #ifndef TASK_TESTING_H_
 #define TASK_TESTING_H_
 
-#include "asf.h"
+#include <global.h>
+#include "task.h"
+#include "semphr.h"
 
 TaskHandle_t suicide_test_handle;
 

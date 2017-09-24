@@ -52,6 +52,9 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// MANUALLY ADDED: FreeRTOS 9.0.0 (make sure it's not overwritten by ASF Wizard!)
+#include <FreeRTOS.h>
+
 // From module: ADC - Analog-to-Digital Converter (Polled APIs)
 #include <adc.h>
 
@@ -61,20 +64,6 @@
 
 // From module: Delay routines
 #include <delay.h>
-
-// From module: FreeRTOS - kernel 9.0.0
-#include <FreeRTOS.h>
-#include <StackMacros.h>
-#include <croutine.h>
-#include <event_groups.h>
-#include <list.h>
-#include <mpu_wrappers.h>
-#include <portable.h>
-#include <projdefs.h>
-#include <queue.h>
-#include <semphr.h>
-#include <task.h>
-#include <timers.h>
 
 // From module: Generic board support
 #include <board.h>
@@ -135,8 +124,7 @@
 #include <stdio_serial.h>
 
 // From module: TC - Timer Counter (Polled APIs)
-// TODO: Change this
-#include "ASF/sam0/drivers/tc/tc.h"
+#include <tc.h>
 
 // From module: TCC - Timer Counter for Control Applications (Polled APIs)
 #include <tcc.h>

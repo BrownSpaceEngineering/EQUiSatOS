@@ -44,7 +44,7 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#include "../tc.h"
+#include "tc.h"
 
 #if TC_ASYNC == true
 #  include "tc_interrupt.h"
@@ -638,7 +638,7 @@ enum status_code tc_reset(
  * any other purpose.
  *
  * \note This function is designed to be used in PWM or frequency
- *       match modes only. When the counter is set to 16- or 32-bit counter
+ *       match modes only, when the counter is set to 16- or 32-bit counter
  *       size. In 8-bit counter size it will always be possible to change the
  *       top value even in normal mode.
  *

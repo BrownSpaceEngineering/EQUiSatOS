@@ -201,7 +201,7 @@
  * generation match mode.
  *
  * When using 32-bit counter size, two 16-bit counters are chained together
- * in a cascade formation. Except in SAM D09/D10/D11, Even numbered TC modules
+ * in a cascade formation. Except in SAM D09/D10/D11. Even numbered TC modules
  * (e.g. TC0, TC2) can be configured as 32-bit counters. The odd numbered
  * counters will act as slaves to the even numbered masters, and will not
  * be reconfigurable until the master timer is disabled. The pairing of timer
@@ -212,8 +212,8 @@
  * <table>
  *   <caption>TC Master and Slave Module Pairings</caption>
  *   <tr>
- *     <th>Master TC Module</th>
- *     <th>Slave TC Module</th>
+ *     <th>Master TC module</th>
+ *     <th>Slave TC module</th>
  *   </tr>
  *   <tr>
  *     <td>TC0</td>
@@ -234,7 +234,7 @@
  * </table>
  *
  * In SAM D09/D10/D11, odd numbered TC modules (e.g. TC1) can be configured as 32-bit
- * counters. The even numbered(e.g. TC2) counters will act as slaves to the odd
+ * counters. The even numbered (e.g. TC2) counters will act as slaves to the odd
  * numbered masters.
  *
  * \subsection asfdoc_sam0_tc_module_overview_clock Clock Settings
@@ -244,7 +244,7 @@
  * (Generic Clock) channel. The GCLK channel connects to any of the GCLK
  * generators. The GCLK generators are configured to use one of the available
  * clock sources on the system such as internal oscillator, external crystals,
- * etc. see the \ref asfdoc_sam0_system_clock_group "Generic Clock driver"
+ * etc. See the \ref asfdoc_sam0_system_clock_group "Generic Clock driver"
  *for
  * more information.
  *
@@ -315,7 +315,7 @@
  *
  * \subsubsection asfdoc_sam0_tc_module_overview_compare_match_timer Basic Timer
  *
- * A Basic Timer is a simple application where compare match operations is used
+ * A Basic Timer is a simple application where compare match operations are used
  * to determine when a specific period has elapsed. In Basic Timer operations,
  * one or more values in the module's Compare/Capture registers are used to
  * specify the time (as a number of prescaled GCLK cycles) when an action should
@@ -337,7 +337,7 @@
  *
  * Often PWM is used to communicate a control or information parameter to an
  * external circuit or component. Differing impedances of the source generator
- * and sink receiver circuits is less of an issue when using PWM compared to
+ * and sink receiver circuits are less of an issue when using PWM compared to
  * using an analog voltage value, as noise will not generally affect the
  * signal's integrity to a meaningful extent.
  *
@@ -360,7 +360,7 @@
  * change the TOP value when running in PWM match mode.
  *
  * \anchor asfdoc_sam0_tc_module_pwm_match_diag
- * \image html pwm_match_ex.svg "Example of PWM in Match Mode, and Different Counter Operations"
+ * \image html pwm_match_ex.svg "Example of PWM in Match Mode and Different Counter Operations"
  *
  * \subsubsection asfdoc_sam0_tc_module_overview_compare_match_wg_freq Waveform Generation - Frequency
  *
@@ -407,7 +407,7 @@
  * Pulse Width Period (PWP) and Period Pulse Width (PPW). In PWP mode, capture
  * channel 0 is used for storing the pulse width and capture channel 1 stores
  * the observed period. While in PPW mode, the roles of the two capture channels
- * is reversed.
+ * are reversed.
  *
  * As in the above example it is necessary to poll on interrupt flags to see
  * if a new capture has happened and check that a capture overflow error has
@@ -608,18 +608,31 @@ enum tc_compare_capture_channel {
 	TC_COMPARE_CAPTURE_CHANNEL_1,
 };
 
-/** TC wave generation mode. */
+/**
+ * \name TC Wave Generation Mode
+ *
+ * @{
+ */
 #if SAML21 || SAML22 || SAMC20 || SAMC21
+/** TC wave generation mode: normal frequency. */
 #define TC_WAVE_GENERATION_NORMAL_FREQ_MODE TC_WAVE_WAVEGEN_NFRQ
+/** TC wave generation mode: match frequency. */
 #define TC_WAVE_GENERATION_MATCH_FREQ_MODE  TC_WAVE_WAVEGEN_MFRQ
+/** TC wave generation mode: normal PWM. */
 #define TC_WAVE_GENERATION_NORMAL_PWM_MODE  TC_WAVE_WAVEGEN_NPWM
+/** TC wave generation mode: match PWM. */
 #define TC_WAVE_GENERATION_MATCH_PWM_MODE   TC_WAVE_WAVEGEN_MPWM
 #else
+/** TC wave generation mode: normal frequency. */
 #define TC_WAVE_GENERATION_NORMAL_FREQ_MODE TC_CTRLA_WAVEGEN_NFRQ
+/** TC wave generation mode: match frequency. */
 #define TC_WAVE_GENERATION_MATCH_FREQ_MODE  TC_CTRLA_WAVEGEN_MFRQ
+/** TC wave generation mode: normal PWM. */
 #define TC_WAVE_GENERATION_NORMAL_PWM_MODE  TC_CTRLA_WAVEGEN_NPWM
+/** TC wave generation mode: match PWM. */
 #define TC_WAVE_GENERATION_MATCH_PWM_MODE   TC_CTRLA_WAVEGEN_MPWM
 #endif
+/** @} */
 
 /**
  * \brief TC wave generation mode enum.
@@ -736,12 +749,20 @@ enum tc_count_direction {
 	TC_COUNT_DIRECTION_DOWN,
 };
 
-/** Waveform inversion mode */
+/**
+ * \name Waveform Inversion Mode
+ *
+ * @{
+ */
 #if SAML21 || SAML22 || SAMC20 || SAMC21
+/** Waveform inversion CC0 mode. */
 #define TC_WAVEFORM_INVERT_CC0_MODE  TC_DRVCTRL_INVEN(1)
+/** Waveform inversion CC1 mode. */
 #define TC_WAVEFORM_INVERT_CC1_MODE  TC_DRVCTRL_INVEN(2)
 #else
+/** Waveform inversion CC0 mode. */
 #define TC_WAVEFORM_INVERT_CC0_MODE  TC_CTRLC_INVEN(1)
+/** Waveform inversion CC1 mode. */
 #define TC_WAVEFORM_INVERT_CC1_MODE  TC_CTRLC_INVEN(2)
 #endif
 
@@ -886,7 +907,7 @@ struct tc_config {
 	enum tc_reload_action reload_action;
 
 	/** Specifies which channel(s) to invert the waveform on.
-		For SAM L21/L22/C20/C21, it's also used to invert IO input pin. */
+		For SAM L21/L22/C20/C21, it's also used to invert I/O input pin. */
 	uint8_t waveform_invert_output;
 
 	/** Specifies which channel(s) to enable channel capture
@@ -911,7 +932,7 @@ struct tc_config {
 	/** Specifies the PWM channel for TC */
 	struct tc_pwm_channel pwm_channel[NUMBER_OF_COMPARE_CAPTURE_CHANNELS];
 
-	/** Access the different counter size settings though this configuration member */
+	/** Access the different counter size settings through this configuration member. */
 	union {
 		/** Struct for 8-bit specific timer configuration */
 		struct tc_8bit_config counter_8_bit;
@@ -933,10 +954,10 @@ struct tc_config {
 };
 
 #if TC_ASYNC == true
-/** Forward Declaration for the device instance */
+/** Forward Declaration for the device instance. */
 struct tc_module;
 
-/** Type of the callback functions */
+/** Type of the callback functions. */
 typedef void (*tc_callback_t)(struct tc_module *const module);
 #endif
 
@@ -1702,7 +1723,7 @@ static inline void tc_clear_status(
  *          module when a timer is initialized in 32-bit mode</td>
  *	</tr>
  *	<tr>
- *		<td>Initial Release</td>
+ *		<td>Initial release</td>
  *	</tr>
  * </table>
  */
@@ -1734,8 +1755,8 @@ static inline void tc_clear_status(
  *	</tr>
  *	<tr>
  *		<td>42123E</td>
- *		<td>10/2015</td>
- *		<td>Added support for SAM L21/L22, SAM DA1, and SAM C21</td>
+ *		<td>12/2015</td>
+ *		<td>Added support for SAM L21/L22, SAM DA1, SAM D09, and SAM C21</td>
  *	</tr>
  *	<tr>
  *		<td>42123D</td>
@@ -1756,7 +1777,7 @@ static inline void tc_clear_status(
  *	<tr>
  *		<td>42123A</td>
  *		<td>06/2013</td>
- *		<td>Initial release</td>
+ *		<td>Initial document release</td>
  *	</tr>
  * </table>
  */

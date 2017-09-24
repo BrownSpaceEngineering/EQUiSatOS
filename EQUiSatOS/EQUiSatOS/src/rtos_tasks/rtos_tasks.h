@@ -11,10 +11,10 @@
 /* Includes */
 
 #include <inttypes.h>
-#include <global.h>
-#include <FreeRTOS.h>
-#include "task.h"
 #include <assert.h>
+#include <global.h>
+#include "task.h"
+#include "semphr.h"
 
 #include "runnable_configurations/init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
