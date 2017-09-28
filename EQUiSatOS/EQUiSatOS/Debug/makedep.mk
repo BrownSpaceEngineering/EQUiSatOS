@@ -30,7 +30,7 @@ src\rtos_tasks\flash_data_task.c
 
 src\rtos_tasks\rtos_tasks.c
 
-src\rtos_tasks\rtos_task_frequencies.c
+src\rtos_tasks\rtos_tasks_config.c
 
 src\rtos_tasks\transmit_data_task.c
 

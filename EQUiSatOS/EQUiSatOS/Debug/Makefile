@@ -154,7 +154,7 @@ C_SRCS +=  \
 ../src/rtos_tasks/flash_activate_task.c \
 ../src/rtos_tasks/flash_data_task.c \
 ../src/rtos_tasks/rtos_tasks.c \
-../src/rtos_tasks/rtos_task_frequencies.c \
+../src/rtos_tasks/rtos_tasks_config.c \
 ../src/rtos_tasks/transmit_data_task.c \
 ../src/rtos_tasks/transmit_task.c \
 ../src/rtos_tasks/watchdog_task.c \
@@ -239,7 +239,7 @@ src/rtos_tasks/current_data_task.o \
 src/rtos_tasks/flash_activate_task.o \
 src/rtos_tasks/flash_data_task.o \
 src/rtos_tasks/rtos_tasks.o \
-src/rtos_tasks/rtos_task_frequencies.o \
+src/rtos_tasks/rtos_tasks_config.o \
 src/rtos_tasks/transmit_data_task.o \
 src/rtos_tasks/transmit_task.o \
 src/rtos_tasks/watchdog_task.o \
@@ -317,7 +317,7 @@ src/rtos_tasks/current_data_task.o \
 src/rtos_tasks/flash_activate_task.o \
 src/rtos_tasks/flash_data_task.o \
 src/rtos_tasks/rtos_tasks.o \
-src/rtos_tasks/rtos_task_frequencies.o \
+src/rtos_tasks/rtos_tasks_config.o \
 src/rtos_tasks/transmit_data_task.o \
 src/rtos_tasks/transmit_task.o \
 src/rtos_tasks/watchdog_task.o \
@@ -395,7 +395,7 @@ src/rtos_tasks/current_data_task.d \
 src/rtos_tasks/flash_activate_task.d \
 src/rtos_tasks/flash_data_task.d \
 src/rtos_tasks/rtos_tasks.d \
-src/rtos_tasks/rtos_task_frequencies.d \
+src/rtos_tasks/rtos_tasks_config.d \
 src/rtos_tasks/transmit_data_task.d \
 src/rtos_tasks/transmit_task.d \
 src/rtos_tasks/watchdog_task.d \
@@ -473,7 +473,7 @@ src/rtos_tasks/current_data_task.d \
 src/rtos_tasks/flash_activate_task.d \
 src/rtos_tasks/flash_data_task.d \
 src/rtos_tasks/rtos_tasks.d \
-src/rtos_tasks/rtos_task_frequencies.d \
+src/rtos_tasks/rtos_tasks_config.d \
 src/rtos_tasks/transmit_data_task.d \
 src/rtos_tasks/transmit_task.d \
 src/rtos_tasks/watchdog_task.d \

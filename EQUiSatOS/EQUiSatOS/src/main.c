@@ -11,8 +11,9 @@ int main(void)
 	//USART_init();
 
 	/* TESTS */
-	configure_pwm(P_ANT_DRV2, P_ANT_DRV2_MUX);
-	configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
+	configure_pwm(P_ANT_DRV3, P_ANT_DRV3_MUX);
+	set_pulse_width_fraction(3, 4);
+	disable_pwm();
 	//test_equistack();
 	//assertConstantDefinitions();
 

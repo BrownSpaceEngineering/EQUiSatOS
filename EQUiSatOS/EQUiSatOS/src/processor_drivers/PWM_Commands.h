@@ -13,6 +13,7 @@
 
 void configure_pwm(int pwm_pin, int pwm_mux);
 bool set_pulse_width_fraction(int numerator, int denominator);
+void disable_pwm(void);
 
 struct tcc_module tcc_instance;
 

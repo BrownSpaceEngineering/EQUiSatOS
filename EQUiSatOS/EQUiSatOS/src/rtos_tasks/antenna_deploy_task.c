@@ -32,10 +32,8 @@ void antenna_deploy_task(void *pvParameters) {
 				num_tries++;
 				if (mod_tries == 1) {
 					configure_pwm(P_ANT_DRV2, P_ANT_DRV2_MUX);
-					set_pulse_width_fraction(3, 4);
-					} else {
+				} else {
 					configure_pwm(P_ANT_DRV3, P_ANT_DRV3_MUX);
-					set_pulse_width_fraction(3, 4);
 				}
 			}
 		}

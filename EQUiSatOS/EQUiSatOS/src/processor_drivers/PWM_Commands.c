@@ -29,11 +29,15 @@ void configure_pwm(int pwm_pin, int pwm_mux) {
 }
 
 bool set_pulse_width_fraction(int numerator, int denominator) {
-	if(numerator > denominator){
+	if (numerator > denominator) {
 		return false;
-	}else{
+	} else {
 		int toSet = (PWM_PERIOD * numerator) / denominator;
 		tcc_set_compare_value(&tcc_instance, CONF_PWM_CHANNEL, toSet);
 		return true;
 	}
+}
+
+void disable_pwm(void) {
+	tcc_disable(&tcc_instance);
 }
