@@ -144,6 +144,7 @@ C_SRCS +=  \
 ../src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c \
 ../src/ASF/sam0/drivers/wdt/wdt.c \
 ../src/ASF/sam0/drivers/wdt/wdt_callback.c \
+../src/processor_drivers/Flash_Commands.c \
 ../src/processor_drivers/PWM_Commands.c \
 ../src/processor_drivers/TC_Commands.c \
 ../src/processor_drivers/Watchdog_Commands.c \
@@ -229,6 +230,7 @@ src/ASF/sam0/drivers/tcc/tcc.o \
 src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.o \
 src/ASF/sam0/drivers/wdt/wdt.o \
 src/ASF/sam0/drivers/wdt/wdt_callback.o \
+src/processor_drivers/Flash_Commands.o \
 src/processor_drivers/PWM_Commands.o \
 src/processor_drivers/TC_Commands.o \
 src/processor_drivers/Watchdog_Commands.o \
@@ -307,6 +309,7 @@ src/ASF/sam0/drivers/tcc/tcc.o \
 src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.o \
 src/ASF/sam0/drivers/wdt/wdt.o \
 src/ASF/sam0/drivers/wdt/wdt_callback.o \
+src/processor_drivers/Flash_Commands.o \
 src/processor_drivers/PWM_Commands.o \
 src/processor_drivers/TC_Commands.o \
 src/processor_drivers/Watchdog_Commands.o \
@@ -385,6 +388,7 @@ src/ASF/sam0/drivers/tcc/tcc.d \
 src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.d \
 src/ASF/sam0/drivers/wdt/wdt.d \
 src/ASF/sam0/drivers/wdt/wdt_callback.d \
+src/processor_drivers/Flash_Commands.d \
 src/processor_drivers/PWM_Commands.d \
 src/processor_drivers/TC_Commands.d \
 src/processor_drivers/Watchdog_Commands.d \
@@ -463,6 +467,7 @@ src/ASF/sam0/drivers/tcc/tcc.d \
 src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.d \
 src/ASF/sam0/drivers/wdt/wdt.d \
 src/ASF/sam0/drivers/wdt/wdt_callback.d \
+src/processor_drivers/Flash_Commands.d \
 src/processor_drivers/PWM_Commands.d \
 src/processor_drivers/TC_Commands.d \
 src/processor_drivers/Watchdog_Commands.d \
@@ -551,6 +556,8 @@ LINKER_SCRIPT_DEP+=  \
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
