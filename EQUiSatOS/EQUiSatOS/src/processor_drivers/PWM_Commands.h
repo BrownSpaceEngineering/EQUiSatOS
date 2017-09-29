@@ -19,7 +19,7 @@ struct tcc_module tcc_instance;
 
 //Config parameters
 #define CONF_PWM_MODULE      TCC0
-#define CONF_PWM_CHANNEL     2 
+#define CONF_PWM_CHANNEL     3 
 #define CONF_PWM_OUTPUT      6
 
 //period configuration
