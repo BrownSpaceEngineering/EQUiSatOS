@@ -146,9 +146,11 @@ void set_state_hello_world()
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK); // right
 	task_suspend(CURRENT_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK);
-	task_suspend(TRANSMIT_DATA_TASK);
+	task_suspend(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
@@ -157,9 +159,11 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
 	task_resume_if_suspended(CURRENT_DATA_TASK);
-	task_resume_if_suspended(FLASH_DATA_TASK);
-	task_resume_if_suspended(TRANSMIT_DATA_TASK);
+	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
+	task_resume_if_suspended(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
@@ -168,9 +172,11 @@ void set_state_low_power()
 {
 	CurrentState = LOW_POWER;
 
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
 	task_resume_if_suspended(CURRENT_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK);
-	task_resume_if_suspended(TRANSMIT_DATA_TASK);
+	task_resume_if_suspended(TRANSMIT_TASK);
 	task_suspend(ATTITUDE_DATA_TASK); // TODO: Do this?
 	// TODO: Others
 }

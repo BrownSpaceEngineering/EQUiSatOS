@@ -17,7 +17,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_TICK_HOOK                     0
 #define configPRIO_BITS                         2
 #define configCPU_CLOCK_HZ                      ( 8000000 )
-#define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 )
+#define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 ) // so portTICK_PERIOD_MS = 1
 #define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */

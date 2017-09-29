@@ -10,6 +10,8 @@ src\ASF\sam0\drivers\wdt\wdt.c
 
 src\ASF\sam0\drivers\wdt\wdt_callback.c
 
+src\processor_drivers\Flash_Commands.c
+
 src\processor_drivers\PWM_Commands.c
 
 src\processor_drivers\TC_Commands.c

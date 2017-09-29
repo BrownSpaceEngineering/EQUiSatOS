@@ -64,8 +64,7 @@ void transmit_task(void *pvParameters)
 			};
 		} while (!validDataTransmitted);
 		
-		vTaskSuspend(transmit_data_task_handle);
-		
+		task_suspend(TRANSMIT_DATA_TASK);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
