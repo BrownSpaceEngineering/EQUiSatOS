@@ -977,7 +977,7 @@
     <Compile Include="src\processor_drivers\Watchdog_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\rtos_tasks\antenna_data_task.c">
+    <Compile Include="src\rtos_tasks\attitude_data_task.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\antenna_deploy_task.c">

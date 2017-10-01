@@ -24,6 +24,64 @@ char* get_msg_buffer() {
 	return buffer;
 }
 
+/**
+ * Writes the given data to the preamble of the message buffer.
+ */
+void write_preamble(uint32_t timestamp, uint32_t states, uint8_t data_len) {
+	uint8_t index = START_PREAMBLE; // start off end of callsign
+	write_bytes_and_shift(buffer, timestamp, sizeof(timestamp), &index); // 4 byte timestamp
+	write_bytes_and_shift(buffer, states, sizeof(states), &index); // 4 byte state string
+	write_bytes_and_shift(buffer, ERROR_PACKETS, 1, &index); // 1 byte error packet #
+	write_bytes_and_shift(buffer, data_len, sizeof(data_len), &index); // 1 byte data packet #
+	assert(index == START_HEADER);
+}
+
+void write_header(idle_data_t *idle_data) {
+	uint8_t index = START_HEADER;
+	//write_bytes_and_shift(buffer, idle_data);
+	
+	
+	// TODO
+	
+	
+	assert(index == START_ERRORS);
+}
+
+void write_errors(equistack* error_stack) {
+	uint8_t index = START_ERRORS;
+	
+	// TODO
+	
+	
+	assert(index == START_DATA);
+}
+
+void write_attitude_data(equistack* attitude_stack) {
+	uint8_t index = START_DATA;
+	// TODO
+	assert(index == START_DATA + ATTITUDE_DATA_PACKET_SIZE * ATTITUDE_DATA_PACKETS);
+}
+
+void write_transmit_data(equistack* transmit_stack) {
+	uint8_t index = START_DATA;
+	// TODO
+	assert(index == START_DATA + TRANSMIT_DATA_PACKET_SIZE * TRANSMIT_DATA_PACKETS);
+}
+
+void write_flash_data(equistack* flash_stack) {
+	uint8_t index = START_DATA;
+	// TODO
+	assert(index == START_DATA + FLASH_DATA_PACKET_SIZE * FLASH_DATA_PACKETS);
+}
+
+void write_bytes_and_shift(char *data, void *input, size_t num_bytes, uint8_t *index) {
+	memcpy(data[*index], (char*) input, num_bytes);
+	*index += num_bytes;
+}
+
+
+
+
 uint8_t package_msg_arr(void *header, uint8_t *errors, uint8_t error_len, void *data, uint8_t data_len) {
 	int index = 5;
 	char *headerChrs = (char*) header;

@@ -100,4 +100,6 @@
 #define ECODE_TEMP_LOW					28
 #define ECODE_SIGNAL_LOST				29
 
+typedef uint8_t error_sat_t;
+
 #endif /* ERRORS_H_ */

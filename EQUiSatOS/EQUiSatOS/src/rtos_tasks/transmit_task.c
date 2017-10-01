@@ -8,6 +8,20 @@
 #include "rtos_tasks.h"
 #include "stacks/package_transmission.h"
 
+
+void write_message_top(uint8_t num_data, size_t size_data) {
+	// write preamble
+	write_preamble(get_current_timestamp(), CurrentState, 
+		num_data * size_data);
+	
+	// grab idle data and write to header
+	idle_data_t* cur_data = equistack_Get(&idle_readings_equistack, 0);
+	write_header(cur_data);
+				
+	// TOOD: grab errors and write to section
+	//write_errors(&errors_equistack);
+}
+
 void transmit_task(void *pvParameters)
 {
 	// initialize xNextWakeTime once
@@ -32,35 +46,40 @@ void transmit_task(void *pvParameters)
 			// read the next state to transmit (get first off state queue)
 			int nextState = (int*) equistack_Get(&last_reading_type_equistack, 0);
 			
-			// grab idle data and write to header
-			idle_data_t* cur_data = equistack_Get(&idle_readings_equistack, 0);
-			assert(MSG_HEADER_LENGTH == sizeof(idle_data_t));
-			// TODO: like to have a get_msg_buffer_header() that returns the pointer to the header section of the buffer
-			//memcpy(get_msg_buffer_header(), cur_data, HEADER_LENGTH);
-			
-			// TOOD: Get errors and add them (would also like to get an address of the error section)
-			
 			// based on what state we're in, compile a different message
 			switch(nextState)
 			{
 				case ATTITUDE_DATA: ; // empty statement to allow definition
-				// TODO: like to have a get_msg_buffer_data() that returns the pointer to the data section of the buffer
-				attitude_data_t* attitude_data_trans = NULL; // (attitude_data_t*) get_msg_buffer_data();
 				
-				assert(ATTITUDE_DATA_PACKETS <= ATTITUDE_STACK_MAX);
-				for (uint8_t i = 0; i < ATTITUDE_DATA_PACKETS; i++) {
-					// TODO: What's with first arg?
-					memcpy(&(attitude_data_trans[i]), equistack_Get(&attitude_readings_equistack, 0), sizeof(attitude_data_t));
-				}
+					write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
+					write_attitude_data(&attitude_readings_equistack);
+					break;
+					
+					// TODO: like to have a get_msg_buffer_data() that returns the pointer to the data section of the buffer
+					// attitude_data_t* attitude_data_trans = NULL; // (attitude_data_t*) get_msg_buffer_data();
 				
-				//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
-				break;
+					// assert(ATTITUDE_DATA_PACKETS <= ATTITUDE_STACK_MAX);
+					// for (uint8_t i = 0; i < ATTITUDE_DATA_PACKETS; i++) {
+					//	// TODO: What's with first arg?
+					//	memcpy(&(attitude_data_trans[i]), equistack_Get(&attitude_readings_equistack, 0), sizeof(attitude_data_t));
+					//}
+				
+					//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
+					
 				case TRANSMIT_DATA: ; // empty statement to allow definition
-				break;
+					
+					write_message_top(TRANSMIT_DATA_PACKETS, TRANSMIT_DATA_PACKET_SIZE);
+					write_transmit_data(&transmit_readings_equistack);
+					break;
+					
 				case FLASH_DATA: ; // empty statement to allow definition
-				break;
+				
+					write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
+					write_flash_data(&flash_readings_equistack);
+					break;
+					
 				default:
-				validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely)
+					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely)
 			};
 		} while (!validDataTransmitted);
 		
