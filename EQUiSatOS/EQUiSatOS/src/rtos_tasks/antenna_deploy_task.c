@@ -22,20 +22,30 @@ void antenna_deploy_task(void *pvParameters) {
 		// or kill it if it's run more than 5 times because it's a lost cause
 		if (get_input(P_DET_RTN) || num_tries >= 5) {
 			vTaskDelete(NULL);
-			} else {
+		} else {
 			int mod_tries = num_tries % 3;
 			if (mod_tries == 0 && true /* LiON is sufficiently charged and enough time has passed*/) {
-				num_tries++;
 				configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
-				set_pulse_width_fraction(3, 4);
-				} else if (mod_tries != 0 && true /*LiFePO is sufficiently charged and enough time has passed*/){
-				num_tries++;
+				int start = get_count();
+				while (get_count() < start + 3) {
+					set_pulse_width_fraction(3, 4);
+				}
+			} else if (mod_tries != 0 && true /*LiFePO is sufficiently charged and enough time has passed*/){
 				if (mod_tries == 1) {
 					configure_pwm(P_ANT_DRV2, P_ANT_DRV2_MUX);
+					int start = get_count();
+					while (get_count() < start + 3) {
+						set_pulse_width_fraction(3, 4);
+					}
 				} else {
 					configure_pwm(P_ANT_DRV3, P_ANT_DRV3_MUX);
+					int start = get_count();
+					while (get_count() < start + 3) {
+						set_pulse_width_fraction(3, 4);
+					}
 				}
 			}
+			num_tries++;
 		}
 	}
 	

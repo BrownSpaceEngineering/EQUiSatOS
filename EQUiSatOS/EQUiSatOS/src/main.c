@@ -13,9 +13,10 @@ int main(void)
 
 	/* TESTS */
 	configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
-	for (int i=0; i < 10000; i++) {		
+	init_tc();
+	while(get_count() < 3) {
 			set_pulse_width_fraction(3, 4);		
-	}		
+	}
 	disable_pwm();		
 	//test_equistack();
 	//assertConstantDefinitions();
