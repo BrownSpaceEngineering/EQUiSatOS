@@ -5,7 +5,7 @@
  *  Author: Daniel
  */ 
 
-#include "run.h"
+#include "global.h"
 #include "scratch_testing.h"
 
 void runit(void){	

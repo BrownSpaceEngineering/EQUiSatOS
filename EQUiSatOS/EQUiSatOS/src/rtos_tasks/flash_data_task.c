@@ -32,8 +32,8 @@ void flash_data_task(void *pvParameters)
 			current_struct->timestamp = get_current_timestamp();
 			
 			// log state read
-			msg_data_type_t* next_state_ptr = equistack_Stage(&last_reading_type_equistack);
-			*next_state_ptr = FLASH_DATA;
+			msg_data_type_t last_reading = FLASH_DATA; // need a stack pointer to memcpy from
+			equistack_Push(&last_reading_type_equistack, &last_reading);
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);

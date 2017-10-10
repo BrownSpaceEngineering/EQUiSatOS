@@ -947,6 +947,9 @@
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\errors.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\errors.h">
       <SubType>compile</SubType>
     </Compile>

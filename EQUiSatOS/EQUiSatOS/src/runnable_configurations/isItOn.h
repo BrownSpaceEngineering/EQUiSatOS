@@ -9,7 +9,7 @@
 #ifndef ISITON_H_
 #define ISITON_H_
 
-#include "run.h"
+#include "global.h"
 
 void isItOnInit(void);
 uint8_t readCount(void);

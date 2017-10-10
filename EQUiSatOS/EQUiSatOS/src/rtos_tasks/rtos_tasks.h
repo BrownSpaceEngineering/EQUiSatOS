@@ -17,10 +17,10 @@
 #include "semphr.h"
 
 #include "rtos_tasks_config.h"
-#include "./runnable_configurations/init_rtos_tasks.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
 #include "stacks/equistack.h" 
+#include "./runnable_configurations/init_rtos_tasks.h"
 #include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
 

@@ -19,6 +19,12 @@
 #ifndef ERRORS_H_
 #define ERRORS_H_
 
+#include <global.h>
+#include "stacks/equistack.h"
+
+/* Error code that signified there is no error - "null error"; used in transmission */
+#define ECODE_NO_ERROR					0 
+
 /******************** LOCATIONS ********************/
 #define ELOC_IR_1						0
 #define ELOC_IR_2						1
@@ -100,6 +106,23 @@
 #define ECODE_TEMP_LOW					28
 #define ECODE_SIGNAL_LOST				29
 
-typedef uint8_t error_sat_t;
+#define ECODE_TRANS_CONFIRM_TIMEOUT		30
+#define ECODE_NULL_IMU_DATA				31
+#define ECODE_NULL_IDLE_DATA			32
+
+
+/* Error storage and interfaces */
+#define ERROR_STACK_MAX		40
+
+typedef uint8_t sat_error_t;
+equistack error_equistack; // of sat_error_t
+
+// static data used inside error equistack
+sat_error_t _error_equistack_arr[ERROR_STACK_MAX];
+StaticSemaphore_t _error_equistack_mutex_d;
+SemaphoreHandle_t _error_equistack_mutex;
+
+void init_errors(void);
+void log_error(sat_error_t error);
 
 #endif /* ERRORS_H_ */

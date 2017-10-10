@@ -14,7 +14,6 @@ void run_rtos()
 	/************************************************************************/
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
-	init_msg_buffer(); // init global radio buffer
 
 	// Initialize EQUiStack mutexes
 	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
@@ -34,6 +33,10 @@ void run_rtos()
 		sizeof(transmit_data_t), TRANSMIT_STACK_MAX, &_transmit_equistack_mutex);
  	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
 		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
+
+	/************************************************************************/
+	/* TASK CREATION                                                        */
+	/************************************************************************/
 
 	// Started at boot
 	// TODO: Should we even store this handle?

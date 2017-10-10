@@ -10,6 +10,7 @@ int main(void)
 	// Initialize the SAM system
 	system_init();
 	//USART_init();
+	init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 
 	/* TESTS */
 	configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
@@ -19,7 +20,8 @@ int main(void)
 	}
 	disable_pwm();		
 	//test_equistack();
-	//assertConstantDefinitions();
+	//assert_rtos_constants();
+	//assert_transmission_constants();
 
 	run_rtos();
 }

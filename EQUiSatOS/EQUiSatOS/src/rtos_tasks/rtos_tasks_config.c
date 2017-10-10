@@ -20,7 +20,7 @@ int arrMax(int* arr, uint8_t len) {
 	return maxVal;
 }
 
-void assertConstantDefinitions() {
+void assert_rtos_constants() {
 	// The MOST reads per log corresponding to the LOWEST log frequency, 
 	// and the lowest log frequency should have a list of size 1 
 	// (or possibly some other value if we want to store more data in each struct), 

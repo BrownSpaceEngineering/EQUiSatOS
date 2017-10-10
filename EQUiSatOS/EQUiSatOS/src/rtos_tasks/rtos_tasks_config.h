@@ -135,8 +135,12 @@ typedef enum
 #define WATCHDOG_TASK_FREQ						1000
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #define BATTERY_CHARGING_TASK_FREQ				100
-#define FLASH_ACTIVATE_TASK_FREQ				60000 // 1 minute
-#define TRANSMIT_TASK_FREQ						1000
+#define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
+
+#define TRANSMIT_TASK_FREQ						60000	// 1 minute; how often to transmit
+#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
+#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
+#define TRANSMIT_TASK_MSG_REPEATS				3		// number of times to send the same transmission
 
 /* 
  * NOTE: The idle data collection doesn't really need these constants;
@@ -207,7 +211,7 @@ typedef enum
 #define flash_LIFEPO_VOLTS_LOOPS_PER_LOG		(500 / 500) // = ms / FLASH_DATA_TASK_FREQ
 #define flash_LED_CURRENT_LOOPS_PER_LOG			(500 / 500) // = ms / FLASH_DATA_TASK_FREQ
 
-#define TRANSMIT_DATA_TASK_FREQ					500
+#define TRANSMIT_DATA_TASK_FREQ					100
 /* Data array lengths for radio transmit action and data reader task */
 #define transmit_RADIO_TEMP_DATA_ARR_LEN		2
 #define transmit_LION_VOLTS_DATA_ARR_LEN		1
@@ -239,6 +243,6 @@ typedef enum
 /*
  * A function to make sure that the constants defined here are internally consistent.
  */
-void assertConstantDefinitions(void);
+void assert_rtos_constants(void);
 
 #endif

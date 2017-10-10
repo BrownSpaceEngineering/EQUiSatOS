@@ -1,7 +1,7 @@
 #ifndef FLATSAT_H_
 #define FLATSAT_H_
 
-#include "run.h"
+#include <global.h>
 
 void flatsat_init(void);
 void read_IR(uint16_t* buffer);

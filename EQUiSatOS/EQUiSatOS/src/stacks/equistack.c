@@ -112,6 +112,19 @@ void* equistack_Stage(equistack* S)
 	return staged_pointer; // return pointer to staged data
 }
 
+// Has the same effect as equistack_Stage, but writes the provided
+// data (assumed to be the size of S->data_size) to the staged index 
+// before incrementing the stack top. (for use with stacks using primitives)
+// (returns next pointer so can be used with equistack_Stage)
+void* equistack_Push(equistack* S, void* data) {
+	void* staged_pointer = S->data; // if this is an initial stage, simply copy to start 
+	if (S->top_index >= 0) {
+		 staged_pointer = S->data + S->data_size*(S->top_index % S->max_size);
+	}
+	memcpy(staged_pointer, data, S->data_size); // copy data
+	return equistack_Stage(S); // confirm the data at staged_pointer
+}
+
 void clear_existing_data(void* ptr, size_t slot_size)
 {
 	// convert the pointer to a char pointer to iterate over bytes

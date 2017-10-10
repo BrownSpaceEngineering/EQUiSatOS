@@ -8,25 +8,30 @@
 #include "rtos_tasks.h"
 #include "stacks/package_transmission.h"
 
+// define buffer here to keep it LOCAL
+char *msg_buffer [MSG_BUFFER_SIZE];
 
 void write_message_top(uint8_t num_data, size_t size_data) {
 	// write preamble
-	write_preamble(get_current_timestamp(), CurrentState, 
+	write_preamble(msg_buffer, get_current_timestamp(), CurrentState, 
 		num_data * size_data);
 	
 	// grab idle data and write to header
 	idle_data_t* cur_data = equistack_Get(&idle_readings_equistack, 0);
-	write_header(cur_data);
+	write_header(msg_buffer, cur_data);
 				
 	// TOOD: grab errors and write to section
-	//write_errors(&errors_equistack);
+	//write_errors(buffer, &errors_equistack);
 }
 
 void transmit_task(void *pvParameters)
 {
 	// initialize xNextWakeTime once
 	TickType_t xNextWakeTime = xTaskGetTickCount();
-
+	
+	// count of how many times the current packet has been transmitted
+	uint8_t current_packet_transmissions = 0;
+	
 	for( ;; )
 	{
 		// block for a time based on this task's globally-set frequency
@@ -35,53 +40,62 @@ void transmit_task(void *pvParameters)
 		
 		// start up the data collection task so that its records data while we're transmitting
 		task_resume_if_suspended(TRANSMIT_DATA_TASK);
-
-		// check that global buffer has not been broken (TODO: ERROR)
-		assert(get_msg_buffer()[0] == 'K' && get_msg_buffer()[1] == '1' && get_msg_buffer()[2] == 'A' && get_msg_buffer()[3] == 'D');
 		
-		// TODO: Do we need this loop? Can we just assume we'll always have data??
-		bool validDataTransmitted = false; // we're cynical
-		do
-		{
+		// only grab new transmission and fill message buffer after we've transmitted this one enough
+		if (current_packet_transmissions >= TRANSMIT_TASK_MSG_REPEATS) {
+			current_packet_transmissions = 0;
+			
 			// read the next state to transmit (get first off state queue)
 			int nextState = (int*) equistack_Get(&last_reading_type_equistack, 0);
 			
-			// based on what state we're in, compile a different message
-			switch(nextState)
-			{
-				case ATTITUDE_DATA: ; // empty statement to allow definition
-				
-					write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
-					write_attitude_data(&attitude_readings_equistack);
-					break;
+			// if there's no data in the state stack, we have nothing to transmit
+			if (nextState != NULL) {
+				// based on what state we're in, compile a different message
+				switch(nextState)
+				{
+					case ATTITUDE_DATA:
+						write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
+						write_attitude_data(msg_buffer, &attitude_readings_equistack);
+						break;
+						
+						//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
 					
-					// TODO: like to have a get_msg_buffer_data() that returns the pointer to the data section of the buffer
-					// attitude_data_t* attitude_data_trans = NULL; // (attitude_data_t*) get_msg_buffer_data();
-				
-					// assert(ATTITUDE_DATA_PACKETS <= ATTITUDE_STACK_MAX);
-					// for (uint8_t i = 0; i < ATTITUDE_DATA_PACKETS; i++) {
-					//	// TODO: What's with first arg?
-					//	memcpy(&(attitude_data_trans[i]), equistack_Get(&attitude_readings_equistack, 0), sizeof(attitude_data_t));
-					//}
-				
-					//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
+					case TRANSMIT_DATA:
+						write_message_top(TRANSMIT_DATA_PACKETS, TRANSMIT_DATA_PACKET_SIZE);
+						write_transmit_data(msg_buffer, &transmit_readings_equistack);
+						break;
 					
-				case TRANSMIT_DATA: ; // empty statement to allow definition
+					case FLASH_DATA:
+						write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
+						write_flash_data(msg_buffer, &flash_readings_equistack);
+						break;
 					
-					write_message_top(TRANSMIT_DATA_PACKETS, TRANSMIT_DATA_PACKET_SIZE);
-					write_transmit_data(&transmit_readings_equistack);
-					break;
-					
-				case FLASH_DATA: ; // empty statement to allow definition
-				
-					write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
-					write_flash_data(&flash_readings_equistack);
-					break;
-					
-				default:
-					validDataTransmitted = true; // if the state equistack is empty, we have no data, so avoid looping until we get some (potentially infinitely)
-			};
-		} while (!validDataTransmitted);
+					default:
+						break;
+				};
+			}			
+		}
+		
+		// actually send buffer over USART to radio for transmission
+		usart_send_string(msg_buffer);
+		current_packet_transmissions++; // NOTE: putting this here as opposed to after the confirmation
+										// means we will try to send the newest packet if encountering failures,
+										// as opposed to the first one to fail.
+		
+		bool transmission_in_progress = true;
+		TickType_t start_tick = xTaskGetTickCount();
+		while (transmission_in_progress) {
+			// give control back to RTOS to let transmit data task read info
+			vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
+			
+			transmission_in_progress = false; // TODO: query radio state
+			
+			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
+			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
+				log_error(ECODE_TRANS_CONFIRM_TIMEOUT);
+				break;
+			}
+		}
 		
 		task_suspend(TRANSMIT_DATA_TASK);
 	}
