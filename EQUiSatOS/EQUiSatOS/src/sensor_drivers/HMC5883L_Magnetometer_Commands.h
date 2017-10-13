@@ -14,10 +14,7 @@
 
 #define HMC5883L_ADDRESS 0x1E
 
-i2c_func HMC5883L_i2c_write_func;
-i2c_func HMC5883L_i2c_read_func;
-
-void HMC5883L_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func);
+void HMC5883L_init();
 void HMC5883L_read(uint8_t* read_buffer);
 void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer);
 float HMC5883L_computeCompassDir(int16_t x, int16_t y, int16_t z);
