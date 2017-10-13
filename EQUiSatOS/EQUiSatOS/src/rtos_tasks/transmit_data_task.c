@@ -44,15 +44,15 @@ void transmit_data_task(void *pvParameters)
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[RADIO_TEMP_DATA] >= transmit_RADIO_TEMP_LOOPS_PER_LOG) {
-			current_struct->radio_temp_data[data_array_tails[RADIO_TEMP_DATA]] = read_radio_temp_batch();
+			read_radio_temp_batch(current_struct->radio_temp_data[data_array_tails[RADIO_TEMP_DATA]]);
 			increment_data_type(RADIO_TEMP_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[LION_VOLTS_DATA] >= transmit_LION_VOLTS_LOOPS_PER_LOG) {
-			current_struct->lion_volts_data[data_array_tails[LION_VOLTS_DATA]] = read_lion_volts_batch();
+			read_lion_volts_batch(current_struct->lion_volts_data[data_array_tails[LION_VOLTS_DATA]]);
 			increment_data_type(LION_VOLTS_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[LION_CURRENT_DATA] >= transmit_LION_CURRENT_LOOPS_PER_LOG) {
-			current_struct->lion_current_data[data_array_tails[LION_CURRENT_DATA]] = read_lion_current_batch();
+			read_lion_current_batch(current_struct->lion_current_data[data_array_tails[LION_CURRENT_DATA]]);
 			increment_data_type(LION_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
 	}

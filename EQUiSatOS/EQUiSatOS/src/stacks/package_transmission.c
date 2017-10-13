@@ -57,32 +57,32 @@ void write_header(char* buffer, idle_data_t *idle_data) {
 	
 	if (idle_data != NULL) {
 		// TODO: drop two LSB (see write_bytes_and_shift_truncating)
-		write_bytes_and_shift(buffer, idle_data->lion_volts_data,		3 /* (1.5 bytes)[2] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->lion_current_data,		3 /* (1.5 bytes)[2] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->led_temps_data,		6 /* (1.5 bytes)[4] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->lifepo_current_data,	6 /* (1.5 bytes)[4] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->ir_data,				12 /* uint_16_t[6] */,			&index);
-		write_bytes_and_shift(buffer, idle_data->diode_data,			9 /* (1.5 bytes)[6] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->bat_temp_data,			6 /* (1.5 bytes)[4] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->ir_temps_data,			12 /* uint_16_t[6] */,			&index);
-		write_bytes_and_shift(buffer, idle_data->radio_temp_data,		2 /* uint_16_t */,				&index);
+		write_bytes_and_shift(buffer, idle_data->lion_volts_data,		sizeof(lion_volts_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->lion_current_data,		sizeof(lion_current_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->led_temps_data,		sizeof(led_temps_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->lifepo_current_data,	sizeof(lifepo_current_batch),		&index);
+		write_bytes_and_shift(buffer, idle_data->ir_data,				sizeof(ir_batch),					&index);
+		write_bytes_and_shift(buffer, idle_data->diode_data,			sizeof(diode_batch),				&index);
+		write_bytes_and_shift(buffer, idle_data->bat_temp_data,			sizeof(bat_temp_batch),				&index);
+		write_bytes_and_shift(buffer, idle_data->ir_temps_data,			sizeof(ir_temps_batch),				&index);
+		write_bytes_and_shift(buffer, idle_data->radio_temp_data,		sizeof(radio_temp_batch),			&index);
 		if (idle_data->imu_data != NULL) {
-			write_bytes_and_shift(buffer, idle_data->imu_data->accelerometer,	6 /* uint_16_t[3] */,		&index);
-			write_bytes_and_shift(buffer, idle_data->imu_data->gyro,			6 /* uint_16_t[3] */,		&index);	
+			write_bytes_and_shift(buffer, idle_data->imu_data->accelerometer,	6 /* uint16_t[3] */,		&index);
+			write_bytes_and_shift(buffer, idle_data->imu_data->gyro,			6 /* uint16_t[3] */,		&index);	
 		} else {
 			index += 12; // **** MAKE SURE TO DOUBLE-CHECK THIS WITH ABOVE ****
-			log_error(ECODE_NULL_IMU_DATA);
+			log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IMU_DATA);
 		}
-		write_bytes_and_shift(buffer, idle_data->magnetometer_data,		6 /* uint_16_t[3] */,			&index);
-		write_bytes_and_shift(buffer, idle_data->led_current_data,		6 /* (1.5 bytes)[4] */,			&index); // TODO
-		write_bytes_and_shift(buffer, idle_data->radio_volts_data,		4 /* uint_16_t[2] */,			&index);
-		write_bytes_and_shift(buffer, idle_data->bat_charge_volts_data,	28 /* uint_16_t[14] */,			&index);
-		write_bytes_and_shift(buffer, idle_data->bat_charge_dig_sigs_data,	2 /* (1 bit)[15] - rounded */,	&index);
-		write_bytes_and_shift(buffer, idle_data->digital_out_data,		2 /* uint_16_t */,				&index);
+		write_bytes_and_shift(buffer, idle_data->magnetometer_data,		sizeof(magnetometer_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->led_current_data,		sizeof(led_current_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->radio_volts_data,		sizeof(radio_volts_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->bat_charge_volts_data,	sizeof(bat_charge_volts_batch),		&index);
+		write_bytes_and_shift(buffer, idle_data->bat_charge_dig_sigs_data,	sizeof(bat_charge_dig_sigs_batch),	&index);
+		write_bytes_and_shift(buffer, idle_data->digital_out_data,		sizeof(digital_out_batch),			&index);
 	} else {
 		// write all 0s to buffer for idle data
-		write_value_and_shift(buffer, 0, IDLE_DATA_SIZE, &index);
-		log_error(ECODE_NULL_IDLE_DATA);
+		write_value_and_shift(buffer, 0, MSG_HEADER_LENGTH, &index);
+		log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IDLE_DATA);
 	}
 		
 	assert(index == START_ERRORS);
@@ -115,17 +115,17 @@ void write_attitude_data(char* buffer, equistack* attitude_stack) {
 		
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (attitude_data != NULL) {
-			write_bytes_and_shift(buffer, attitude_data->ir_data,			12 /* uint16_t[6][1] */,			&index);
-			write_bytes_and_shift(buffer, attitude_data->diode_data,		9 /* (1.5 bytes)[6][1] */,			&index);
+			write_bytes_and_shift(buffer, attitude_data->ir_data,			sizeof(ir_batch)	* 1 /* [1] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->diode_data,		sizeof(diode_batch) * 1 /* [1] */,	&index);
 			if (attitude_data->imu_data != NULL) {
-				write_bytes_and_shift(buffer, attitude_data->imu_data->accelerometer,	30 /* uint_16_t[3][5] */,	&index);
-				write_bytes_and_shift(buffer, attitude_data->imu_data->gyro,			30 /* uint_16_t[3][5] */,	&index);
+				write_bytes_and_shift(buffer, attitude_data->imu_data->accelerometer,	30 /* uint16_t[3][5] */,	&index);
+				write_bytes_and_shift(buffer, attitude_data->imu_data->gyro,			30 /* uint16_t[3][5] */,	&index);
 			} else {
 				index += 60; // **** MAKE SURE TO DOUBLE-CHECK THIS WITH ABOVE ****
-				log_error(ECODE_NULL_IMU_DATA);
+				log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IMU_DATA);
 			}
-			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	6 /* uint_16_t[3][1] */,			&index); // TODO: which magnetometer?
-			write_bytes_and_shift(buffer, attitude_data->timestamp,			4 /* uint_32_t */,					&index); 
+			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 1 /* [1] */,	&index); // TODO: which magnetometer?
+			write_bytes_and_shift(buffer, attitude_data->timestamp,			4 /* uint32_t */,							&index); 
 			
 		} else {
 			// overwrite entire section with 0s
@@ -146,10 +146,10 @@ void write_transmit_data(char* buffer, equistack* transmit_stack) {
 		
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (transmit_data != NULL) {
-			write_bytes_and_shift(buffer, transmit_data->radio_temp_data,		4 /* uint_16_t[2] */,			&index);
-			write_bytes_and_shift(buffer, transmit_data->lion_volts_data,		3 /* (1.5 bytes)[2][1] */,		&index); // TODO
-			write_bytes_and_shift(buffer, transmit_data->lion_current_data,		3 /* (1.5 bytes)[2][1] */,		&index); // TODO
-			write_bytes_and_shift(buffer, transmit_data->timestamp,				4 /* uint_32_t */,				&index);
+			write_bytes_and_shift(buffer, transmit_data->radio_temp_data,		sizeof(radio_temp_batch)	* 2 /* [2] */,		&index);
+			write_bytes_and_shift(buffer, transmit_data->lion_volts_data,		sizeof(lion_volts_batch)	* 1 /* [1] */,		&index);
+			write_bytes_and_shift(buffer, transmit_data->lion_current_data,		sizeof(lion_current_batch)	* 1 /* [1] */,		&index); 
+			write_bytes_and_shift(buffer, transmit_data->timestamp,				4 /* uint_32_t */,							&index);
 			
 			} else {
 			// overwrite entire section with 0s
@@ -170,11 +170,11 @@ void write_flash_data(char* buffer, equistack* flash_stack) {
 		
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (flash_data != NULL) {
-			write_bytes_and_shift(buffer, flash_data->led_temps_data,		6 /* (1.5 bytes)[4][1] */,			&index); // TODO
-			write_bytes_and_shift(buffer, flash_data->lifepo_volts_data,	12 /* (1.5 bytes)[4][2] */,			&index); // TODO
-			write_bytes_and_shift(buffer, flash_data->lifepo_current_data,	12 /* (1.5 bytes)[4][2] */,			&index); // TODO
-			write_bytes_and_shift(buffer, flash_data->led_current_data,		12 /* (1.5 bytes)[4][2] */,			&index); // TODO
-			write_bytes_and_shift(buffer, flash_data->timestamp,			4 /* uint_32_t */,					&index);
+			write_bytes_and_shift(buffer, flash_data->led_temps_data,		sizeof(led_temps_batch)		* 1 /* [1] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->lifepo_volts_data,	sizeof(lifepo_volts_batch)	* 2 /* [2] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* 2 /* [2] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->led_current_data,		sizeof(led_current_batch)	* 2 /* [2] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->timestamp,			4 /* uint_32_t */,									&index);
 			
 		} else {
 			// overwrite entire section with 0s
@@ -198,28 +198,4 @@ void write_value_and_shift(char *data, char value, size_t num_bytes, uint8_t *in
 		data[*index] = value;
 		(*index)++;
 	}
-}
-
-/* Writes num_values of input size value_size to data from input, but 
-	truncated bits_to_drop number of bits from each value by shifting each 
-	left to condense the whole data section. Increments index according 
-	to the condensed data. */
-void write_bytes_and_shift_truncating(char *data, void *input, size_t value_size, uint8_t num_values,
-	uint8_t bits_to_drop, uint8_t *index) {
-		
-	char *buffer[value_size * num_values];
-	memcpy(buffer, input, value_size * num_values);
-	
-	for (int i = 0; i < num_values; i++) {
-		// iterate through buffer, shifting each value left (truncating the MSBs)
-		// after copying those MSBs to the space in the previous value in buffer
-		// where they would be pushed over into if the left shift was across all memory
-	}
-	
-	// copy truncated data to data
-	
-	// increment the index value by the actual size of the condensed data,
-	// making sure it's byte-aligned (do this above, before copying...)
-// 	assert(value_size * ... == integer # bytes)
-// 	*index += value_size * ...;
 }

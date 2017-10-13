@@ -70,6 +70,8 @@
 #define ELOC_L2_REF						37
 #define ELOC_DET_RTN					38
 
+#define ELOC_PACKAGE_TRANS				39
+
 /******************** PROBLEM CODES ********************/
 
 /**** ATMEL DEFINED ****/
@@ -114,7 +116,7 @@
 /* Error storage and interfaces */
 #define ERROR_STACK_MAX		40
 
-typedef uint8_t sat_error_t;
+typedef uint16_t sat_error_t;
 equistack error_equistack; // of sat_error_t
 
 // static data used inside error equistack
@@ -123,6 +125,6 @@ StaticSemaphore_t _error_equistack_mutex_d;
 SemaphoreHandle_t _error_equistack_mutex;
 
 void init_errors(void);
-void log_error(sat_error_t error);
+void log_error(uint8_t loc, uint8_t err);
 
 #endif /* ERRORS_H_ */
