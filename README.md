@@ -3,7 +3,7 @@
 ## Project
 
 We are a student-run engineering group at Brown University. This project runs on our satellite, EQUiSat, which will launch in March 2018.
-The project uses an Atmel SAMD21J18A chip and Atmel's developer tools. We are open source, bringing space to the people!
+It uses an Atmel SAMD21J18A chip and Atmel's developer tools. We are open source, bringing space to the people!
 Contact: [Website](http://brownspace.org/) and [e-mail](mailto:bse@brown.edu)
 
 ## Documentation
