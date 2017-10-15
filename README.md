@@ -1,4 +1,4 @@
-# CubesatFreeRTOS
+# EQUiSatOS
 
 ## Project
 
