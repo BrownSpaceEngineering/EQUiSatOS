@@ -8,6 +8,8 @@
 #include "global.h"
 #include "scratch_testing.h"
 
+#include "../radio/rscode-1.3/ecc.h"
+
 void runit(void){	
 	configure_i2c_standard(SERCOM4);
 	MLX90614_init();
@@ -148,4 +150,53 @@ void radioTest(void) {
 		print(receivebuffer);	
 	}*/
 			
+}
+
+void byte_err (int err, int loc, unsigned char *dst)
+{
+  //printf("Adding Error at loc %d, data %#x\n", loc, dst[loc-1]);
+  dst[loc-1] ^= err;
+}
+
+//Pass in location of error (first byte position is labeled starting at 1, not 0), and the codeword.
+void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[]) 
+{
+  //printf("Erasure at loc %d, data %#x\n", loc, dst[loc-1]);
+  dst[loc-1] = 0;
+}
+
+void rsTest(void) {
+	unsigned char msg[] = "The quick brown fox jumped over the lazy dog.";
+	unsigned char codeword[256];
+	 
+	int erasures[16];
+	int nerasures = 0;
+	 
+	// Initialization the ECC library
+	initialize_ecc();
+	
+	encode_data(msg, sizeof(msg), codeword);
+	
+	#define ML (sizeof (msg) + NPAR)
+	
+	//introduce errors and erasures	
+	byte_err(0x35, 3, codeword);
+
+	byte_err(0x23, 17, codeword);
+	byte_err(0x34, 19, codeword);
+	
+	//We need to indicate the position of the erasures.  Eraseure
+    //positions are indexed (1 based) from the end of the message... 
+	erasures[nerasures++] = ML-17;
+	erasures[nerasures++] = ML-19;
+	
+	decode_data(codeword, ML);
+	
+	 //check if syndrome is all zeros
+	 if (check_syndrome () != 0) {
+		 correct_errors_erasures (codeword,
+		 ML,
+		 nerasures,
+		 erasures);		 		 
+	 }	   
 }

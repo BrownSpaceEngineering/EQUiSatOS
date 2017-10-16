@@ -894,6 +894,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\radio" />
+    <Folder Include="src\radio\rscode-1.3\" />
     <Folder Include="src\rtos_tasks\" />
     <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
@@ -978,6 +979,21 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\Watchdog_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\rscode-1.3\berlekamp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\rscode-1.3\crcgen.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\rscode-1.3\ecc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\rscode-1.3\galois.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\radio\rscode-1.3\rs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\attitude_data_task.c">
@@ -1871,6 +1887,15 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\radio\rscode-1.3\gpl.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\radio\rscode-1.3\LICENSE">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\radio\rscode-1.3\Makefile">
+      <SubType>compile</SubType>
+    </None>
     <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </None>
