@@ -8,7 +8,7 @@
 #include "global.h"
 #include "scratch_testing.h"
 
-#include "../radio/rscode-1.3/ecc.h"
+#include "../telemetry/rscode-1.3/ecc.h"
 
 void runit(void){	
 	configure_i2c_standard(SERCOM4);
