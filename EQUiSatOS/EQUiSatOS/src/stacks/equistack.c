@@ -55,7 +55,6 @@ void* equistack_Get(equistack* S, int16_t n)
 	// is full because that will be the one that's being overwritten
 	if (n < S->cur_size)
 	{	
-		// TODO: Remove this
 		int get_index = (S->top_index - n) % S->max_size;
 		if (get_index < 0) 
 		{
@@ -119,10 +118,11 @@ void* equistack_Stage(equistack* S)
 void* equistack_Push(equistack* S, void* data) {
 	void* staged_pointer = S->data; // if this is an initial stage, simply copy to start 
 	if (S->top_index >= 0) {
-		 staged_pointer = S->data + S->data_size*(S->top_index % S->max_size);
+		// otherwise, grab the pointer to the staging area (data just past the top index)
+		staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
 	}
-	memcpy(staged_pointer, data, S->data_size); // copy data
-	return equistack_Stage(S); // confirm the data at staged_pointer
+	memcpy(staged_pointer, data, S->data_size); // copy data to that staging area
+	return equistack_Stage(S); // confirm ("finalize") the data at the staging area
 }
 
 void clear_existing_data(void* ptr, size_t slot_size)

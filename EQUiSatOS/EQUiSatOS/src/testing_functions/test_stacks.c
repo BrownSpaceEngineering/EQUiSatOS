@@ -7,6 +7,111 @@
 
 #include "test_stacks.h"
 
+void basic_push_usage() {
+	equistack basic_test_actual;
+	equistack *test = &basic_test_actual;
+	StaticSemaphore_t inner_mutex;
+	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
+	int _data_arr[4];
+	equistack_Init(test, &_data_arr, sizeof(int), 4, &mutex);
+	
+	assert(test->top_index == -1);
+	assert(test->bottom_index == -1);
+	assert(test->cur_size == 0);
+	assert(equistack_Get(test, 0) == NULL);
+	assert(equistack_Get(test, 1) == NULL);
+	assert(equistack_Get(test, 2) == NULL);
+	
+	int data0 = 12;
+	equistack_Push(test, &data0);
+	
+	assert(test->top_index == 0);
+	assert(test->bottom_index == 0);
+	assert(test->cur_size == 1);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == 12);
+	assert(equistack_Get(test, 1) == NULL);
+	assert(equistack_Get(test, 2) == NULL);
+	
+	int data1 = -10;
+	equistack_Push(test, &data1);
+	
+	assert(test->top_index == 1);
+	assert(test->bottom_index == 0);
+	assert(test->cur_size == 2);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == -10);
+	assert(		 equistack_Get(test, 1) != NULL);
+	assert(*((int*) equistack_Get(test, 1)) == 12);
+	assert(equistack_Get(test, 2) == NULL);
+	
+	int data2 = 143;
+	equistack_Push(test, &data2);
+	
+	assert(test->top_index == 2);
+	assert(test->bottom_index == 0);
+	assert(test->cur_size == 3);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == 143);
+	assert(		 equistack_Get(test, 1) != NULL);
+	assert(*((int*) equistack_Get(test, 1)) == -10);
+	assert(		 equistack_Get(test, 2) != NULL);
+	assert(*((int*) equistack_Get(test, 2)) == 12);
+	
+	int data0new = -1231;
+	equistack_Push(test, &data0new);
+	
+	assert(test->top_index == 3);
+	assert(test->bottom_index == 1);
+	assert(test->cur_size == 3);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == -1231);
+	assert(		 equistack_Get(test, 1) != NULL);
+	assert(*((int*) equistack_Get(test, 1)) == 143);
+	assert(		 equistack_Get(test, 2) != NULL);
+	assert(*((int*) equistack_Get(test, 2)) == -10);
+	
+	int data1new = 15;
+	equistack_Push(test, &data1new);
+	
+	assert(test->top_index == 0);
+	assert(test->bottom_index == 2);
+	assert(test->cur_size == 3);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == 15);
+	assert(		 equistack_Get(test, 1) != NULL);
+	assert(*((int*) equistack_Get(test, 1)) == -1231);
+	assert(		 equistack_Get(test, 2) != NULL);
+	assert(*((int*) equistack_Get(test, 2)) == 143);
+	
+	int data2new = 16;
+	equistack_Push(test, &data2new);
+	
+	assert(test->top_index == 1);
+	assert(test->bottom_index == 3);
+	assert(test->cur_size == 3);
+	assert(		 equistack_Get(test, 0) != NULL);
+	assert(*((int*) equistack_Get(test, 0)) == 16);
+	assert(		 equistack_Get(test, 1) != NULL);
+	assert(*((int*) equistack_Get(test, 1)) == 15);
+	assert(		 equistack_Get(test, 2) != NULL);
+	assert(*((int*) equistack_Get(test, 2)) == -1231);
+	
+	int zero = 0;
+	int one = 1;
+	equistack_Push(test, &zero);
+	equistack_Push(test, &one);
+	for (int i = 2; i < 1000; i++) {
+		equistack_Push(test, &i);
+		assert(		 equistack_Get(test, 0) != NULL);
+		assert(*((int*) equistack_Get(test, 0)) == i);
+		assert(		 equistack_Get(test, 1) != NULL);
+		assert(*((int*) equistack_Get(test, 1)) == i - 1);
+		assert(		 equistack_Get(test, 2) != NULL);
+		assert(*((int*) equistack_Get(test, 2)) == i - 2);
+	}
+}
+
 void standard_case()
 {
 	equistack test_actual;
@@ -330,9 +435,9 @@ void multi_add()
 		assert(equistack_Get(bigTest, 2) != NULL);
 		assert((((test_data*)equistack_Get(bigTest, 2))->one_data[0]).values[0] == i + 5);
 		
-		char str[80];
-		sprintf(str, "%u\n\r", i);
-		print(str);
+		//char str[80];
+		//sprintf(str, "%u\n\r", i);
+		//print(str);
 	}
 	
 	assert(equistack_Get(bigTest, 20) == NULL);
@@ -347,26 +452,27 @@ void multi_add()
 
 void multi_create() 
 {
-	print("\n\r");
+	//print("\n\r");
 	int n = 100;
 	for (int i = 0; i < n; i++) {
-		print("-");
+		//print("-");
 	}
 	
-	print("\r");
+	//print("\r");
 	for (int i = 0; i < n; i++) {
 		standard_case();
 		big_case();
-		print("|");
+		//print("|");
 	}
 	
 	return;
 }
 
 void test_equistack() {
-	standard_case();
-	big_case();
-	multi_add();
+	//basic_push_usage();
+	//standard_case();
+	//big_case();
+	//multi_add();
 	multi_create();
 	return;
 }
