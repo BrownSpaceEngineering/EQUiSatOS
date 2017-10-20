@@ -51,9 +51,14 @@ void attitude_data_task(void *pvParameters)
 			read_diode_batch(current_struct->diode_data[data_array_tails[DIODE_DATA]]);
 			increment_data_type(DIODE_DATA, data_array_tails, loops_since_last_log);
 		}
-		if (loops_since_last_log[IMU_DATA] >= attitude_IMU_LOOPS_PER_LOG) {
-			read_imu_batch(&(current_struct->imu_data[data_array_tails[IMU_DATA]]));
-			increment_data_type(IMU_DATA, data_array_tails, loops_since_last_log);
+		// These should only ever happen at the same time
+		// i.e. assert(attitude_ACCELEROMETER_LOOPS_PER_LOG == attitude_GYRO_LOOPS_PER_LOG)
+		if (loops_since_last_log[ACCELEROMETER_DATA] >= attitude_ACCELEROMETER_LOOPS_PER_LOG && 
+			loops_since_last_log[GYRO_DATA] >= attitude_GYRO_LOOPS_PER_LOG) {
+			read_imu_batch(&(current_struct->accelerometer_data[data_array_tails[ACCELEROMETER_DATA]]),
+				&(current_struct->gyro_data[data_array_tails[GYRO_DATA]]));
+			increment_data_type(ACCELEROMETER_DATA, data_array_tails, loops_since_last_log);
+			increment_data_type(GYRO_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[MAGNETOMETER_DATA] >= attitude_MAGNETOMETER_LOOPS_PER_LOG) {
 			read_magnetometer_batch(current_struct->magnetometer_data[data_array_tails[MAGNETOMETER_DATA]]);

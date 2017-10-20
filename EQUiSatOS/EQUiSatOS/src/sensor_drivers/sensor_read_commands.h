@@ -34,7 +34,7 @@ read_diode_batch(diode_batch batch);
 read_bat_temp_batch(bat_temp_batch batch);
 read_ir_temps_batch(ir_temps_batch batch);
 read_radio_temp_batch(radio_temp_batch batch);
-read_imu_batch(imu_batch *batch); // only one that's a struct not an array ref, so make sure it passes by reference too
+read_imu_batch(accelerometer_batch *accel_batch, gyro_batch *gyro_batch);
 read_magnetometer_batch(magnetometer_batch batch);
 read_led_current_batch(led_current_batch batch);
 read_radio_volts_batch(radio_volts_batch batch);

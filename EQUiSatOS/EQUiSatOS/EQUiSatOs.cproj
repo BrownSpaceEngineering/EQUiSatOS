@@ -1011,9 +1011,6 @@
     <Compile Include="src\rtos_tasks\rtos_tasks_config.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\rtos_tasks\transmit_data_task.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\rtos_tasks\transmit_task.c">
       <SubType>compile</SubType>
     </Compile>

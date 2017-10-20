@@ -19,7 +19,6 @@ void init_task_handles(void) {
 	task_handles[TRANSMIT_TASK] = &transmit_task_handle;
 	task_handles[CURRENT_DATA_TASK] = &current_data_task_handle;
 	task_handles[FLASH_DATA_TASK] = &flash_data_task_handle;
-	task_handles[TRANSMIT_DATA_TASK] = &transmit_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] = &attitude_data_task_handle;
 }
 

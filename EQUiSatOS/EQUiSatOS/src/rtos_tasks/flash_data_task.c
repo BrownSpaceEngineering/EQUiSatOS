@@ -55,10 +55,12 @@ void flash_data_task(void *pvParameters)
 			read_lifepo_volts_batch(current_struct->lifepo_volts_data[data_array_tails[LIFEPO_CURRENT_DATA]]);
 			increment_data_type(LIFEPO_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
-		if (loops_since_last_log[LED_CURRENT_DATA] >= idle_LED_CURRENT_LOOPS_PER_LOG) {
+		if (loops_since_last_log[LED_CURRENT_DATA] >= flash_LED_CURRENT_LOOPS_PER_LOG) {
 			read_led_current_batch(current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]]);
 			increment_data_type(LED_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
+		
+		// TODO: Do averages too!
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

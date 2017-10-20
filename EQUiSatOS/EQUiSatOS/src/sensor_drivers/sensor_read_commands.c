@@ -51,12 +51,9 @@ read_radio_temp_batch(radio_temp_batch batch) {
 		
 };
 
-read_imu_batch(imu_batch *batch) { // only one that's a struct not an array ref, so make sure it passes by reference too
-	imu_batch imu;
-	batch->accelerometer[0] = 5;
-	batch->gyro[0] = 5;
-	batch->magnetometer[0] = 5;
-};	
+read_imu_batch(accelerometer_batch *accel_batch, gyro_batch *gyro_batch) {
+	
+}
 
 read_magnetometer_batch(magnetometer_batch batch) {
 	

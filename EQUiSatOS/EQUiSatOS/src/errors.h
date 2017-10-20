@@ -108,8 +108,7 @@
 #define ECODE_SIGNAL_LOST				29
 
 #define ECODE_TRANS_CONFIRM_TIMEOUT		30
-#define ECODE_NULL_IMU_DATA				31
-#define ECODE_NULL_IDLE_DATA			32
+#define ECODE_NULL_IDLE_DATA			31
 
 
 /* Error storage and interfaces */

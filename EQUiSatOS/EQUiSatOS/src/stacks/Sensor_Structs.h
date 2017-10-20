@@ -24,14 +24,12 @@ typedef uint16_t digital_out_batch;			// single value
 typedef uint16_t ir_batch					[12];
 typedef uint8_t diode_batch					[6];
 typedef uint16_t led_current_batch			[4];
+typedef uint16_t accelerometer_batch		[3];
+typedef uint16_t gyro_batch					[3];
 typedef uint16_t magnetometer_batch			[3];
-typedef struct imu_batch
-{
-	// one for each axis, for each sensor
-	uint16_t accelerometer[3];
-	uint16_t gyro[3];
-	uint16_t magnetometer[3];
-} imu_batch;
+typedef uint8_t imu_temp_batch;				// single value		
 typedef uint8_t radio_temp_batch;			// single value
+typedef uint8_t rail_3v_batch;				// single value
+typedef uint8_t rail_5v_batch;				// single value
 
 #endif

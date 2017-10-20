@@ -6,19 +6,12 @@
 */
 #include "package_transmission.h"
 
-void init_msg_buffer(char* buffer) {
-	
-	
-	// [TEST] Assertions regarding constants
-	assert_transmission_constants();
-}
-
 void assert_transmission_constants(void) {
 	// check things will fit in buffer (one space for \0)
 	int top_length = MSG_PREAMBLE_LENGTH + MSG_HEADER_LENGTH + ERROR_PACKET_SIZE * ERROR_PACKETS;
 	assert(top_length + ATTITUDE_DATA_PACKET_SIZE * ATTITUDE_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
-	assert(top_length + TRANSMIT_DATA_PACKET_SIZE * TRANSMIT_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
 	assert(top_length + FLASH_DATA_PACKET_SIZE * FLASH_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
+	assert(top_length + FLASH_CMP_PACKET_SIZE * FLASH_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
 	
 	// check that starts line up with data sizes
 	assert(MSG_PREAMBLE_LENGTH == START_HEADER);
@@ -32,7 +25,7 @@ void assert_transmission_constants(void) {
 void write_preamble(char* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len) {
 	uint8_t index = START_PREAMBLE;
 	
-	// re-write callsign
+	// write callsign
 	buffer[index++] = 'K';
 	buffer[index++] = '1';
 	buffer[index++] = 'A';
@@ -49,36 +42,16 @@ void write_preamble(char* buffer, uint32_t timestamp, uint32_t states, uint8_t d
 	buffer[MSG_BUFFER_SIZE - 1] = '\0'; 
 }
 
-// WARNING: for writing the big structs to the buffer, we CAN'T always use sizeof, because the types are defined
-// as pointers to arrays (see Sensor_Structs to see what I mean).
-
 void write_header(char* buffer, idle_data_t *idle_data) {
 	uint8_t index = START_HEADER;
 	
 	if (idle_data != NULL) {
 		// TODO: drop two LSB (see write_bytes_and_shift_truncating)
-		write_bytes_and_shift(buffer, idle_data->lion_volts_data,		sizeof(lion_volts_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->lion_current_data,		sizeof(lion_current_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->led_temps_data,		sizeof(led_temps_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->lifepo_current_data,	sizeof(lifepo_current_batch),		&index);
-		write_bytes_and_shift(buffer, idle_data->ir_data,				sizeof(ir_batch),					&index);
-		write_bytes_and_shift(buffer, idle_data->diode_data,			sizeof(diode_batch),				&index);
-		write_bytes_and_shift(buffer, idle_data->bat_temp_data,			sizeof(bat_temp_batch),				&index);
-		write_bytes_and_shift(buffer, idle_data->ir_temps_data,			sizeof(ir_temps_batch),				&index);
-		write_bytes_and_shift(buffer, idle_data->radio_temp_data,		sizeof(radio_temp_batch),			&index);
-		if (idle_data->imu_data != NULL) {
-			write_bytes_and_shift(buffer, idle_data->imu_data->accelerometer,	6 /* uint16_t[3] */,		&index);
-			write_bytes_and_shift(buffer, idle_data->imu_data->gyro,			6 /* uint16_t[3] */,		&index);	
-		} else {
-			index += 12; // **** MAKE SURE TO DOUBLE-CHECK THIS WITH ABOVE ****
-			log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IMU_DATA);
-		}
-		write_bytes_and_shift(buffer, idle_data->magnetometer_data,		sizeof(magnetometer_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->led_current_data,		sizeof(led_current_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->radio_volts_data,		sizeof(radio_volts_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->bat_charge_volts_data,	sizeof(bat_charge_volts_batch),		&index);
+		write_bytes_and_shift(buffer, idle_data->lion_volts_data,			sizeof(lion_volts_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->lion_current_data,			sizeof(lion_current_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->bat_charge_volts_data,		sizeof(bat_charge_volts_batch),		&index);
 		write_bytes_and_shift(buffer, idle_data->bat_charge_dig_sigs_data,	sizeof(bat_charge_dig_sigs_batch),	&index);
-		write_bytes_and_shift(buffer, idle_data->digital_out_data,		sizeof(digital_out_batch),			&index);
+		write_bytes_and_shift(buffer, idle_data->digital_out_data,			sizeof(digital_out_batch),			&index);
 	} else {
 		// write all 0s to buffer for idle data
 		write_value_and_shift(buffer, 0, MSG_HEADER_LENGTH, &index);
@@ -106,6 +79,32 @@ void write_errors(char* buffer, equistack* error_stack) {
 	assert(index == START_DATA);
 }
 
+void write_idle_data(char* buffer, equistack* idle_stack) {
+	uint8_t index = START_DATA;
+	
+	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
+	for (int i = 0; i < IDLE_DATA_PACKETS; i++) {
+		idle_data_t *idle_data = (idle_data_t*) equistack_Get(idle_stack, i);
+		
+		if (idle_data != NULL) {
+			write_bytes_and_shift(buffer, idle_data->bat_temp_data,			sizeof(bat_temp_batch),				&index);
+			write_bytes_and_shift(buffer, idle_data->radio_temp_data,		sizeof(radio_temp_batch),			&index);
+			write_bytes_and_shift(buffer, idle_data->radio_volts_data,		sizeof(radio_volts_batch),			&index);
+			write_bytes_and_shift(buffer, idle_data->imu_temp_data,			sizeof(imu_temp_batch),				&index);
+			write_bytes_and_shift(buffer, idle_data->ir_temps_data,			sizeof(ir_temps_batch),				&index);
+			write_bytes_and_shift(buffer, idle_data->rail_3v_data,			sizeof(rail_3v_batch),				&index);
+			write_bytes_and_shift(buffer, idle_data->rail_5v_data,			sizeof(rail_5v_batch),				&index);
+		} else {
+			// write all 0s to buffer for idle data
+			write_value_and_shift(buffer, 0, IDLE_DATA_PACKET_SIZE, &index);
+			log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IDLE_DATA);
+		}
+	}
+	
+	assert(index == START_DATA + IDLE_DATA_PACKET_SIZE * IDLE_DATA_PACKETS);
+	// TODO: Write padding
+}
+
 void write_attitude_data(char* buffer, equistack* attitude_stack) {
 	uint8_t index = START_DATA;
 	
@@ -115,18 +114,12 @@ void write_attitude_data(char* buffer, equistack* attitude_stack) {
 		
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (attitude_data != NULL) {
-			write_bytes_and_shift(buffer, attitude_data->ir_data,			sizeof(ir_batch)	* 1 /* [1] */,		&index);
-			write_bytes_and_shift(buffer, attitude_data->diode_data,		sizeof(diode_batch) * 1 /* [1] */,	&index);
-			if (attitude_data->imu_data != NULL) {
-				write_bytes_and_shift(buffer, attitude_data->imu_data->accelerometer,	30 /* uint16_t[3][5] */,	&index);
-				write_bytes_and_shift(buffer, attitude_data->imu_data->gyro,			30 /* uint16_t[3][5] */,	&index);
-			} else {
-				index += 60; // **** MAKE SURE TO DOUBLE-CHECK THIS WITH ABOVE ****
-				log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IMU_DATA);
-			}
-			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 1 /* [1] */,	&index); // TODO: which magnetometer?
-			write_bytes_and_shift(buffer, attitude_data->timestamp,			4 /* uint32_t */,							&index); 
-			
+			write_bytes_and_shift(buffer, attitude_data->ir_data,			sizeof(ir_batch)				/* [1] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->diode_data,		sizeof(diode_batch)				/* [1] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->accelerometer_data,sizeof(accelerometer_batch) * 2 /* [2] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->gyro_data,			sizeof(gyro_batch)				/* [2] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	sizeof(magnetometer_batch)		/* [1] */,		&index); 
+			write_bytes_and_shift(buffer, attitude_data->timestamp,			4 /* uint32_t */,								&index); 
 		} else {
 			// overwrite entire section with 0s
 			write_value_and_shift(buffer, 0, ATTITUDE_DATA_PACKET_SIZE, &index);
@@ -134,31 +127,7 @@ void write_attitude_data(char* buffer, equistack* attitude_stack) {
 	}
 	
 	assert(index == START_DATA + ATTITUDE_DATA_PACKET_SIZE * ATTITUDE_DATA_PACKETS);
-	buffer[index] = '\0';
-}
-
-void write_transmit_data(char* buffer, equistack* transmit_stack) {
-	uint8_t index = START_DATA;
-	
-	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
-	for (int i = 0; i < TRANSMIT_DATA_PACKETS; i++) {
-		transmit_data_t *transmit_data = (transmit_data_t*) equistack_Get(transmit_stack, i);
-		
-		// we have to fill up the entire section, so either write the data or its null equivalent
-		if (transmit_data != NULL) {
-			write_bytes_and_shift(buffer, transmit_data->radio_temp_data,		sizeof(radio_temp_batch)	* 2 /* [2] */,		&index);
-			write_bytes_and_shift(buffer, transmit_data->lion_volts_data,		sizeof(lion_volts_batch)	* 1 /* [1] */,		&index);
-			write_bytes_and_shift(buffer, transmit_data->lion_current_data,		sizeof(lion_current_batch)	* 1 /* [1] */,		&index); 
-			write_bytes_and_shift(buffer, transmit_data->timestamp,				4 /* uint_32_t */,							&index);
-			
-			} else {
-			// overwrite entire section with 0s
-			write_value_and_shift(buffer, 0, TRANSMIT_DATA_PACKET_SIZE, &index);
-		}
-	}
-	
-	assert(index == START_DATA + TRANSMIT_DATA_PACKET_SIZE * TRANSMIT_DATA_PACKETS);
-	buffer[index] = '\0';
+	// TODO: Write padding
 }
 
 void write_flash_data(char* buffer, equistack* flash_stack) {
@@ -170,10 +139,10 @@ void write_flash_data(char* buffer, equistack* flash_stack) {
 		
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (flash_data != NULL) {
-			write_bytes_and_shift(buffer, flash_data->led_temps_data,		sizeof(led_temps_batch)		* 1 /* [1] */,			&index); 
-			write_bytes_and_shift(buffer, flash_data->lifepo_volts_data,	sizeof(lifepo_volts_batch)	* 2 /* [2] */,			&index); 
-			write_bytes_and_shift(buffer, flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* 2 /* [2] */,			&index); 
-			write_bytes_and_shift(buffer, flash_data->led_current_data,		sizeof(led_current_batch)	* 2 /* [2] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->led_temps_data,		sizeof(led_temps_batch)		* 10 /* [10] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->lifepo_volts_data,	sizeof(lifepo_volts_batch)	* 10 /* [10] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* 10 /* [10] */,			&index); 
+			write_bytes_and_shift(buffer, flash_data->led_current_data,		sizeof(led_current_batch)	* 10 /* [10] */,			&index); 
 			write_bytes_and_shift(buffer, flash_data->timestamp,			4 /* uint_32_t */,									&index);
 			
 		} else {
@@ -183,7 +152,33 @@ void write_flash_data(char* buffer, equistack* flash_stack) {
 	}
 	
 	assert(index == START_DATA + FLASH_DATA_PACKET_SIZE * FLASH_DATA_PACKETS);
-	buffer[index] = '\0';
+	// TODO: Write padding
+}
+
+void write_flash_cmp(char* buffer, equistack* flash_cmp_stack) {
+	uint8_t index = START_DATA;
+	
+	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
+	for (int i = 0; i < FLASH_CMP_PACKETS; i++) {
+		flash_cmp_t *flash_cmp = (flash_cmp_t*) equistack_Get(flash_cmp_stack, i);
+		
+		// we have to fill up the entire section, so either write the data or its null equivalent
+		if (flash_cmp != NULL) {
+			/* NOTE: Though these are the same types as in flash_data_t, they are those values AVERAGED */
+			write_bytes_and_shift(buffer, flash_cmp->led_temps_avg_data,		sizeof(led_temps_batch)			/* [1] */,			&index);
+			write_bytes_and_shift(buffer, flash_cmp->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */,			&index);
+			write_bytes_and_shift(buffer, flash_cmp->lifepo_current_avg_data,	sizeof(lifepo_current_batch)	/* [1] */,			&index);
+			write_bytes_and_shift(buffer, flash_cmp->led_current_avg_data,		sizeof(led_current_batch)		/* [1] */,			&index);
+			write_bytes_and_shift(buffer, flash_cmp->timestamp,					4 /* uint_32_t */,									&index);
+			
+			} else {
+			// overwrite entire section with 0s
+			write_value_and_shift(buffer, 0, FLASH_CMP_PACKET_SIZE, &index);
+		}
+	}
+	
+	assert(index == START_DATA + FLASH_CMP_PACKET_SIZE * FLASH_CMP_PACKETS);
+	// TODO: Write padding
 }
 
 /* Writes num_bytes from input to data, and shifts the value at index up by num_bytes */

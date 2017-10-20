@@ -37,9 +37,6 @@
 #define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
 
-#define TASK_TRANSMIT_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
-
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
@@ -49,9 +46,9 @@
 // it doesn't make sense of this to be greater than the sum of the other _MAXs
 #define LAST_READING_TYPE_STACK_MAX		32
 #define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
-#define FLASH_STACK_MAX					10
-#define TRANSMIT_STACK_MAX				10
 #define ATTITUDE_STACK_MAX				10
+#define FLASH_STACK_MAX					10
+#define FLASH_CMP_STACK_MAX				10
 
 /************************************************************************/
 /* Enum for states that represent changes in which tasks are running	*/
@@ -88,14 +85,18 @@ typedef enum
 	BAT_TEMP_DATA,
 	IR_TEMPS_DATA,
 	RADIO_TEMP_DATA,
-	IMU_DATA,
+	ACCELEROMETER_DATA,
+	GYRO_DATA,
 	MAGNETOMETER_DATA,
 	LED_CURRENT_DATA,
 	RADIO_VOLTS_DATA,
+	IMU_TEMP_DATA,
 	BAT_CHARGE_VOLTS_DATA,
 	BAT_CHARGE_DIG_SIGS_DATA,
 	DIGITAL_OUT_DATA,
-	NUM_DATA_TYPES //= DIGITAL_OUT_D + 1
+	RAIL_3V_DATA,
+	RAIL_5V_DATA,
+	NUM_DATA_TYPES //= RAIL_5V_DATA + 1
 } sensor_type_t;
 
 /************************************************************************/
@@ -104,9 +105,10 @@ typedef enum
 /************************************************************************/
 typedef enum
 {
+	IDLE_DATA,
 	ATTITUDE_DATA,
-	TRANSMIT_DATA,
-	FLASH_DATA
+	FLASH_DATA,
+	FLASH_CMP
 } msg_data_type_t;
 
 /************************************************************************/
@@ -150,95 +152,92 @@ typedef enum
 #define CURRENT_DATA_TASK_FREQ					1000
 #define CURRENT_DATA_LOW_POWER_TASK_FREQ		10000
 /* Data array lengths for current data reader task */
+// for packet header
 #define idle_LION_VOLTS_DATA_ARR_LEN				1
 #define idle_LION_CURRENT_DATA_ARR_LEN				1
-#define idle_LED_TEMPS_DATA_ARR_LEN					1
-#define idle_LIFEPO_CURRENT_DATA_ARR_LEN			1
-#define idle_IR_DATA_ARR_LEN						1
-#define idle_DIODE_DATA_ARR_LEN						1
-#define idle_BAT_TEMP_DATA_ARR_LEN					1
-#define idle_IR_TEMPS_DATA_ARR_LEN					1
-#define idle_RADIO_TEMP_DATA_ARR_LEN				1
-#define idle_IMU_DATA_ARR_LEN						1
-#define idle_MAGNETOMETER_DATA_ARR_LEN				1
-#define idle_LED_CURRENT_DATA_ARR_LEN				1
-#define idle_RADIO_VOLTS_DATA_ARR_LEN				1
 #define idle_BAT_CHARGE_VOLTS_DATA_ARR_LEN			1
 #define idle_BAT_CHARGE_DIG_SIGS_DATA_ARR_LEN		1
 #define idle_DIGITAL_OUT_DATA_ARR_LEN				1
+// for idle data package
+#define idle_BAT_TEMP_DATA_ARR_LEN					1
+#define idle_RADIO_TEMP_DATA_ARR_LEN				1
+#define idle_RADIO_VOLTS_DATA_ARR_LEN				1
+#define idle_IMU_TEMP_DATA_ARR_LEN					1
+#define idle_IR_TEMPS_DATA_ARR_LEN					1
+#define idle_RAIL_3V_DATA_ARR_LEN					1
+#define idle_RAIL_5V_DATA_ARR_LEN					1
 
 /* Current data reader reads per log */
-#define idle_LION_VOLTS_LOOPS_PER_LOG					1 // all defined to be one?
-#define idle_LION_CURRENT_LOOPS_PER_LOG					1
-#define idle_LED_TEMPS_LOOPS_PER_LOG					1
-#define idle_LIFEPO_CURRENT_LOOPS_PER_LOG				1
-#define idle_IR_LOOPS_PER_LOG							1
-#define idle_DIODE_LOOPS_PER_LOG						1
-#define idle_BAT_TEMP_LOOPS_PER_LOG						1
-#define idle_IR_TEMPS_LOOPS_PER_LOG						1
-#define idle_RADIO_TEMP_LOOPS_PER_LOG					1
-#define idle_IMU_LOOPS_PER_LOG							1
-#define idle_MAGNETOMETER_LOOPS_PER_LOG					1
-#define idle_LED_CURRENT_LOOPS_PER_LOG					1
-#define idle_RADIO_VOLTS_LOOPS_PER_LOG					1
-#define idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG				1
-#define idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG			1
-#define idle_DIGITAL_OUT_LOOPS_PER_LOG					1
+// for packet header
+#define idle_LION_VOLTS_LOOPS_PER_LOG				1
+#define idle_LION_CURRENT_LOOPS_PER_LOG				1
+#define idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG			1
+#define idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG		1
+#define idle_DIGITAL_OUT_LOOPS_PER_LOG				1
+// for idle data package
+#define idle_BAT_TEMP_LOOPS_PER_LOG					1
+#define idle_RADIO_TEMP_LOOPS_PER_LOG				1
+#define idle_RADIO_VOLTS_LOOPS_PER_LOG				1
+#define idle_IMU_TEMP_LOOPS_PER_LOG					1
+#define idle_IR_TEMPS_LOOPS_PER_LOG					1
+#define idle_RAIL_3V_LOOPS_PER_LOG					1
+#define idle_RAIL_5V_LOOPS_PER_LOG					1
 
 /*
  * These may have data array lists longer than 1
  */
 
-#define FLASH_DATA_TASK_FREQ					500
-/* Data array lengths for flash action and data reader task */
-#define flash_LED_TEMPS_DATA_ARR_LEN			1
-#define flash_LIFEPO_CURRENT_DATA_ARR_LEN		2
-#define flash_LIFEPO_VOLTS_DATA_ARR_LEN			2 // currently exists only in flash
-#define flash_LED_CURRENT_DATA_ARR_LEN			2
+#define ATTITUDE_DATA_TASK_FREQ					10000
+/* Data array lengths for attitude data reader task */
+#define attitude_IR_DATA_ARR_LEN					1
+#define attitude_DIODE_DATA_ARR_LEN					1
+#define attitude_ACCELEROMETER_DATA_ARR_LEN			2
+#define attitude_GYRO_DATA_ARR_LEN					1
+#define attitude_MAGNETOMETER_DATA_ARR_LEN			2
 
-/* Flash action and data reader task reads per log */
+/* Attitude data read task reads per log */
 /* LOOPS_PER_LOG for each sensor at each state - 
 	How many times the whole sensor task loop must iterate before the given sensor is logged 
-	in a equistack for transmission. Note that this has a relationship with the array length;
+	in a equistack for transmission. Note that this has an INVERSE relationship with the array length;
 	more frequent sensors (with fewer loops per log) must have longer arrays.
-	(see tests in rtos_task_frequencies.c)
+	(see tests in rtos_tasks_config.c)
 	
 	NOTE: because the actual HZ frequency entered here is only computed relative 
 	to the execution frequency of the reading RTOS task, it must be less than that frequency.
 	*/
-#define flash_LED_TEMPS_LOOPS_PER_LOG			(1000 / 500) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_LIFEPO_CURRENT_LOOPS_PER_LOG		(500 / 500) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_LIFEPO_VOLTS_LOOPS_PER_LOG		(500 / 500) // = ms / FLASH_DATA_TASK_FREQ
-#define flash_LED_CURRENT_LOOPS_PER_LOG			(500 / 500) // = ms / FLASH_DATA_TASK_FREQ
+#define attitude_IR_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
+#define attitude_DIODE_LOOPS_PER_LOG				2 // = ms / [fastest log rate (ms) of any datum]
+#define attitude_ACCELEROMETER_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
+#define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
+#define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define TRANSMIT_DATA_TASK_FREQ					100
-/* Data array lengths for radio transmit action and data reader task */
-#define transmit_RADIO_TEMP_DATA_ARR_LEN		2
-#define transmit_LION_VOLTS_DATA_ARR_LEN		1
-#define transmit_LION_CURRENT_DATA_ARR_LEN		1
 
-/* Radio transmit and data read task reads per log */
+#define FLASH_DATA_TASK_FREQ					10
+/* Data array lengths for flash BURST segment of data reader task */
+#define flash_LED_TEMPS_DATA_ARR_LEN			10
+#define flash_LIFEPO_CURRENT_DATA_ARR_LEN		10
+#define flash_LIFEPO_VOLTS_DATA_ARR_LEN			10
+#define flash_LED_CURRENT_DATA_ARR_LEN			10
+
+/* Flash BURST segment of data reader task reads per log */
 /* ibid */
-#define transmit_RADIO_TEMP_LOOPS_PER_LOG		(500 / 500) // = ms / TRANSMIT_DATA_TASK_FREQ
-#define transmit_LION_VOLTS_LOOPS_PER_LOG		(1000 / 500) // = ms / TRANSMIT_DATA_TASK_FREQ
-#define transmit_LION_CURRENT_LOOPS_PER_LOG		(1000 / 500) // = ms / TRANSMIT_DATA_TASK_FREQ
+#define flash_LED_TEMPS_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
+#define flash_LIFEPO_CURRENT_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
+#define flash_LIFEPO_VOLTS_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
+#define flash_LED_CURRENT_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define ATTITUDE_DATA_TASK_FREQ							1000
-/* Data array lengths for attitude data reader task */
-#define attitude_IR_DATA_ARR_LEN					1
-#define attitude_DIODE_DATA_ARR_LEN					1
-#define attitude_IMU_DATA_ARR_LEN					5
-#define attitude_MAGNETOMETER_DATA_ARR_LEN			1
+/* Data array lengths for flash COMPARISON segment of data reader task */
+#define flash_LED_TEMPS_AVG_DATA_ARR_LEN		1
+#define flash_LIFEPO_CURRENT_AVG_DATA_ARR_LEN	1
+#define flash_LIFEPO_VOLTS_AVG_DATA_ARR_LEN		1
+#define flash_LED_CURRENT_AVG_DATA_ARR_LEN		1
 
-/* Attitude data read task reads per log */
+/* Flash COMPARISON segment of data reader task reads per log */
 /* ibid */
-#define attitude_IR_LOOPS_PER_LOG					(1000 / 200) // = ms / ATTITUDE_DATA_ACTIVATE_TASK_FREQ
-#define attitude_DIODE_LOOPS_PER_LOG				(1000 / 200) // = ms / ATTITUDE_DATA_ACTIVATE_TASK_FREQ
-#define attitude_IMU_LOOPS_PER_LOG					(200 / 200) // = ms / ATTITUDE_DATA_ACTIVATE_TASK_FREQ
-#define attitude_MAGNETOMETER_LOOPS_PER_LOG			(1000 / 200) // = ms / ATTITUDE_DATA_ACTIVATE_TASK_FREQ
-
-// TODO: Do this for:
-// Flash comparison?
+#define flash_LED_TEMPS_AVG_LOOPS_PER_LOG		1 // defined to be 1
+#define flash_LIFEPO_CURRENT_AVG_LOOPS_PER_LOG	1
+#define flash_LIFEPO_VOLTS_AVG_LOOPS_PER_LOG	1
+#define flash_LED_CURRENT_AVG_LOOPS_PER_LOG		1 
 
 /*
  * A function to make sure that the constants defined here are internally consistent.
