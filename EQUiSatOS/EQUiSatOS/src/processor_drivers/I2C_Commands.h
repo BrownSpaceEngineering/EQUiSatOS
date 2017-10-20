@@ -23,6 +23,7 @@ enum status_code i2c_write_command(struct i2c_master_packet* packet_address);
 enum status_code i2c_write_command_nostop(struct i2c_master_packet* packet_address);
 
 enum status_code writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address, bool should_stop);
+enum status_code writeDataToAddressSub(uint8_t* data, uint8_t len, uint8_t address, uint8_t* subAddress, bool should_stop);
 enum status_code readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation, bool should_stop);
 enum status_code readFromAddress(uint8_t* buffer, uint8_t len, uint8_t address, bool should_stop);
 
