@@ -18,21 +18,21 @@ void run_rtos()
 	// Initialize EQUiStack mutexes
 	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
-	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
-	_transmit_equistack_mutex = xSemaphoreCreateMutexStatic(&_transmit_equistack_mutex_d);
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
+	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
+	_flash_cmp_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_cmp_equistack_mutex_d);
 
 	// Initialize EQUiStacks
 	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr,
 		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, &_last_reading_type_equistack_mutex);
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
 		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
+	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
+		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
 	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr,
 		sizeof(flash_data_t), FLASH_STACK_MAX, &_flash_equistack_mutex);
- 	equistack_Init(&transmit_readings_equistack, &_transmit_equistack_arr,
-		sizeof(transmit_data_t), TRANSMIT_STACK_MAX, &_transmit_equistack_mutex);
- 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
-		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
+ 	equistack_Init(&flash_cmp_readings_equistack, &_flash_cmp_equistack_arr,
+		sizeof(flash_cmp_t), FLASH_CMP_STACK_MAX, &_flash_cmp_equistack_mutex);
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */
@@ -99,14 +99,6 @@ void run_rtos()
 		TASK_FLASH_DATA_RD_PRIORITY,
 		&flash_data_task_stack,
 		&flash_data_task_buffer);
-
-	transmit_data_task_handle = xTaskCreateStatic(transmit_data_task,
-		"transmission data reader task",
-		TASK_TRANSMIT_DATA_RD_STACK_SIZE,
-		NULL,
-		TASK_TRANSMIT_DATA_RD_PRIORITY,
-		&transmit_data_task_stack,
-		&transmit_data_task_buffer);
 
 	attitude_data_task_handle = xTaskCreateStatic(attitude_data_task,
 		"attitude data reader task",

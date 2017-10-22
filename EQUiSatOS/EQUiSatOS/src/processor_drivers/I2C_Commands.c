@@ -102,6 +102,27 @@ enum status_code writeDataToAddress(uint8_t* data, uint8_t len, uint8_t address,
 }
 
 /*
+	Wrapper to write to a specific memory location (subAddress) at address
+	author: Jarod Boone
+*/ 
+enum status_code writeDataToAddressSub(uint8_t* data, uint8_t len, uint8_t address, uint8_t* subAddress, bool should_stop){
+	enum status_code code, return_code = STATUS_OK; 
+	code = writeDataToAddress(subAddress,1,address,should_stop); 
+	
+	if ((code & 0x0F) != 0){ //check if status code is ok
+		return code;
+	} 
+	
+	code = writeDataToAddress(data,len,address,should_stop);
+	
+	if ((code & 0x0F) != 0){ //check if status code is ok
+		return code;
+	}
+	
+	return return_code;
+};
+
+/*
 	Read data of length len into buffer buffer from address address at location memoryLocation on the i2c bus, using the corresponding stopping function
 */
 enum status_code readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, uint8_t address, uint8_t memoryLocation, bool should_stop){

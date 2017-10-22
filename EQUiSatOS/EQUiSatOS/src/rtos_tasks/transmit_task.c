@@ -53,6 +53,11 @@ void transmit_task(void *pvParameters)
 				// based on what state we're in, compile a different message
 				switch(nextState)
 				{
+					case IDLE_DATA:
+						write_message_top(IDLE_DATA_PACKETS, IDLE_DATA_PACKET_SIZE);
+						write_attitude_data(msg_buffer, &idle_readings_equistack);
+						break;
+					
 					case ATTITUDE_DATA:
 						write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
 						write_attitude_data(msg_buffer, &attitude_readings_equistack);
@@ -60,14 +65,14 @@ void transmit_task(void *pvParameters)
 						
 						//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
 					
-					case TRANSMIT_DATA:
-						write_message_top(TRANSMIT_DATA_PACKETS, TRANSMIT_DATA_PACKET_SIZE);
-						write_transmit_data(msg_buffer, &transmit_readings_equistack);
-						break;
-					
 					case FLASH_DATA:
 						write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
 						write_flash_data(msg_buffer, &flash_readings_equistack);
+						break;
+						
+					case FLASH_CMP:
+						write_message_top(FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE);
+						write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
 						break;
 					
 					default:
@@ -92,7 +97,7 @@ void transmit_task(void *pvParameters)
 			
 			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
 			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
-				log_error(ECODE_TRANS_CONFIRM_TIMEOUT);
+				log_error(ELOC_PACKAGE_TRANS, ECODE_TRANS_CONFIRM_TIMEOUT); // TODO: not the best error location
 				break;
 			}
 		}

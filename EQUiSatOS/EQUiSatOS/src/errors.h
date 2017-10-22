@@ -22,53 +22,54 @@
 #include <global.h>
 #include "stacks/equistack.h"
 
-/* Error code that signified there is no error - "null error"; used in transmission */
-#define ECODE_NO_ERROR					0 
-
 /******************** LOCATIONS ********************/
-#define ELOC_IR_1						0
-#define ELOC_IR_2						1
-#define ELOC_IR_3						2
-#define ELOC_IR_4						3
-#define ELOC_IR_5						4
-#define ELOC_IR_6						5
+/* Error code that signified there is no error - "null error"; used in transmission */
+#define ECODE_NO_ERROR					0
+#define ELOC_IR_1						1
+#define ELOC_IR_2						2
+#define ELOC_IR_3						3
+#define ELOC_IR_4						4
+#define ELOC_IR_5						5
+#define ELOC_IR_6						6
 
-#define ELOC_PD_1						6
-#define ELOC_PD_2						7
-#define ELOC_PD_3						8
-#define ELOC_PD_4						9
-#define ELOC_PD_5						10
-#define ELOC_PD_6						11
+#define ELOC_PD_1						7
+#define ELOC_PD_2						8
+#define ELOC_PD_3						9
+#define ELOC_PD_4						10
+#define ELOC_PD_5						11
+#define ELOC_PD_6						12
 
-#define ELOC_TEMP_1						12
-#define ELOC_TEMP_2						13
-#define ELOC_TEMP_3						14
-#define ELOC_TEMP_4						15
-#define ELOC_TEMP_5						16
-#define ELOC_TEMP_6						17
-#define ELOC_TEMP_7						18
-#define ELOC_TEMP_8						19
-#define ELOC_RADIO_TEMP					20
+#define ELOC_TEMP_1						13
+#define ELOC_TEMP_2						14
+#define ELOC_TEMP_3						15
+#define ELOC_TEMP_4						16
+#define ELOC_TEMP_5						17
+#define ELOC_TEMP_6						18
+#define ELOC_TEMP_7						19
+#define ELOC_TEMP_8						20
+#define ELOC_RADIO_TEMP					21
 
-#define ELOC_IMU_ACC					21
-#define ELOC_IMU_GYRO					22
-#define ELOC_IMU_MAG					23
+#define ELOC_IMU_ACC					22
+#define ELOC_IMU_GYRO					23
+#define ELOC_IMU_MAG					24
 
-#define ELOC_LED1SNS					24
-#define ELOC_LED2SNS					25
-#define ELOC_LED3SNS					26
-#define ELOC_LED4SNS					27
-#define ELOC_LFB1OSNS					28
-#define ELOC_LFB1SNS					29
-#define ELOC_LFB2OSNS					30
-#define ELOC_LFB2SNS					31
-#define ELOC_LF1REF						32
-#define ELOC_LF2REF						33
-#define ELOC_LF3REF						34
-#define ELOC_LF4REF						35
-#define ELOC_L1_REF						36
-#define ELOC_L2_REF						37
-#define ELOC_DET_RTN					38
+#define ELOC_LED1SNS					25
+#define ELOC_LED2SNS					26
+#define ELOC_LED3SNS					27
+#define ELOC_LED4SNS					28
+#define ELOC_LFB1OSNS					29
+#define ELOC_LFB1SNS					30
+#define ELOC_LFB2OSNS					31
+#define ELOC_LFB2SNS					32
+#define ELOC_LF1REF						33
+#define ELOC_LF2REF						34
+#define ELOC_LF3REF						35
+#define ELOC_LF4REF						36
+#define ELOC_L1_REF						37
+#define ELOC_L2_REF						38
+#define ELOC_DET_RTN					39
+
+#define ELOC_PACKAGE_TRANS				40
 
 /******************** PROBLEM CODES ********************/
 
@@ -107,14 +108,13 @@
 #define ECODE_SIGNAL_LOST				29
 
 #define ECODE_TRANS_CONFIRM_TIMEOUT		30
-#define ECODE_NULL_IMU_DATA				31
-#define ECODE_NULL_IDLE_DATA			32
+#define ECODE_NULL_IDLE_DATA			31
 
 
 /* Error storage and interfaces */
 #define ERROR_STACK_MAX		40
 
-typedef uint8_t sat_error_t;
+typedef uint16_t sat_error_t;
 equistack error_equistack; // of sat_error_t
 
 // static data used inside error equistack
@@ -123,6 +123,6 @@ StaticSemaphore_t _error_equistack_mutex_d;
 SemaphoreHandle_t _error_equistack_mutex;
 
 void init_errors(void);
-void log_error(sat_error_t error);
+void log_error(uint8_t loc, uint8_t err);
 
 #endif /* ERRORS_H_ */

@@ -14,9 +14,7 @@
 	Gain = 5
 	Single Measurement Mode
 */
-void HMC5883L_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func){
-	HMC5883L_i2c_write_func = _i2c_write_func;
-	HMC5883L_i2c_read_func = _i2c_read_func;
+void HMC5883L_init(){
 	
 	static uint8_t write_buffer_1[2] = {
 		0x00, 0x70
@@ -42,9 +40,6 @@ void HMC5883L_init(i2c_func _i2c_write_func, i2c_func _i2c_read_func){
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
-	
-	(*HMC5883L_i2c_write_func)(&write_packet_1);
-	(*HMC5883L_i2c_write_func)(&write_packet_2);
 }
 
 /*
@@ -73,9 +68,6 @@ void HMC5883L_read(uint8_t* read_buffer){
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
-	
-	(*HMC5883L_i2c_write_func)(&write_packet);
-	(*HMC5883L_i2c_read_func)(&read_packet);
 }
 
 //Converts the raw data from sensor into xyz coordinates in milligauss.

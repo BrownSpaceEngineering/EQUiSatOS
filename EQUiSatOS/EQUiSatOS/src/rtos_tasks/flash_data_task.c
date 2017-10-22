@@ -44,21 +44,23 @@ void flash_data_task(void *pvParameters)
 		
 		// 		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {
-			current_struct->led_temps_data[data_array_tails[LED_TEMPS_DATA]] = read_led_temps_batch();
+			read_led_temps_batch(current_struct->led_temps_data[data_array_tails[LED_TEMPS_DATA]]);
 			increment_data_type(LED_TEMPS_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[LIFEPO_VOLTS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {
-			current_struct->lifepo_current_data[data_array_tails[LIFEPO_VOLTS_DATA]] = read_lifepo_current_batch();
+			read_lifepo_current_batch(current_struct->lifepo_current_data[data_array_tails[LIFEPO_VOLTS_DATA]]);
 			increment_data_type(LIFEPO_VOLTS_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[LIFEPO_CURRENT_DATA] >= flash_LIFEPO_CURRENT_LOOPS_PER_LOG) {
-			current_struct->lifepo_volts_data[data_array_tails[LIFEPO_CURRENT_DATA]] = read_lifepo_volts_batch();
+			read_lifepo_volts_batch(current_struct->lifepo_volts_data[data_array_tails[LIFEPO_CURRENT_DATA]]);
 			increment_data_type(LIFEPO_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
-		if (loops_since_last_log[LED_CURRENT_DATA] >= idle_LED_CURRENT_LOOPS_PER_LOG) {
-			current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]] = read_led_current_batch();
+		if (loops_since_last_log[LED_CURRENT_DATA] >= flash_LED_CURRENT_LOOPS_PER_LOG) {
+			read_led_current_batch(current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]]);
 			increment_data_type(LED_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
+		
+		// TODO: Do averages too!
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

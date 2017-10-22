@@ -1,10 +1,6 @@
 //#include "runnable_configurations/flatsat.h"
-#include "runnable_configurations/isItOn.h"
 #include "main.h"
-#include "processor_drivers\USART_Commands.h"
-#include "processor_drivers\PWM_Commands.h"
-#include "processor_drivers\Direct_Pin_Commands.h"
-#include "../runnable_configurations/flatsat.h"
+#include "runnable_configurations/flatsat.h"
 
 int main(void)
 {
@@ -13,7 +9,7 @@ int main(void)
 	//USART_init();
 		
 	flatsat_run(); //calls flatsat init
-	
+
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 
 	/* TESTS */
@@ -28,4 +24,7 @@ int main(void)
 	//assert_transmission_constants();
 
 	run_rtos();*/
+	//assert_transmission_constants();*/
+	
+	run_rtos();
 }
