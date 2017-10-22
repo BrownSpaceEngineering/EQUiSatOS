@@ -8,38 +8,72 @@
 #include "ADC_Commands.h"
 void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
 	struct adc_config config_adc;
-	// setup_config_defaults
 	adc_get_config_defaults(&config_adc);
 
 	config_adc.resolution = ADC_RESOLUTION_10BIT;
-
+	config_adc.correction.correction_enable = true;
+	if (pin == P_AI_TEMP_OUT){
+		config_adc.correction.offset_correction = 22;
+		config_adc.correction.gain_correction = 2920; // 2048 = 1x
+	}else{
+		config_adc.correction.offset_correction = 48;
+		config_adc.correction.gain_correction = 2220; // 2048 = 1x
+	}
+	
+	config_adc.correction.gain_correction = 2220; // 2048 = 1x
+	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
+	config_adc.reference = ADC_REFERENCE_INTVCC0; //VCC/1.48
+	
+	//Maybe add this or similar things for other pins
+	/*if (pin == P_AI_LED1SNS || pin==P_AI_LED2SNS || pin == P_AI_LED3SNS || pin==P_AI_LED4SNS){
+		config_adc.gain_factor = ADC_GAIN_FACTOR_16X;
+		config_adc.reference = ADC_REFERENCE_INT1V;
+	}*/
+	
+	//Hardware averaging - couldn't get this to work
+	//config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_1024;
+	//config_adc.divide_result = ADC_DIVIDE_RESULT_16;
+	
+	//Set the pin
 	config_adc.positive_input = pin;
+	
 	//setup_set_config
 	adc_init(adc_instance, ADC, &config_adc);
 	adc_enable(adc_instance);
 }
 
 //reads the current voltage from the ADC connection
-float readVoltagemV(struct adc_module adc_instance) {
+// Currently reads a 10 bit value
+uint16_t readVoltagemV(struct adc_module adc_instance) {
 	if (!&adc_instance || !adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
 		return -1;
 	}
 	
-	uint16_t result = 0;
+	uint16_t result;
 	int status;
 	
-	//start conversion
 	adc_start_conversion(&adc_instance);
+	
+	uint8_t scale = 218;//3300/1.48/1024.0; //3.3V/1.48 reference, 2^10 range
 	
 	do {
 		// Wait for conversion to be done and read out result
 		status = adc_read(&adc_instance, &result);
 	} while (status == STATUS_BUSY);
-	float resFloat = result;
-	return resFloat;
+	
+	adc_disable(&adc_instance);
+	return result;
 }
 
 float readVoltageV(struct adc_module adc_instance){
 	return readVoltagemV(adc_instance)/1000.0;
 } 
+
+uint8_t convert_ir_to_8_bit(uint16_t input) {
+	bool addOne = (input & 0b0000000000000011) >= 2;
+	uint8_t _8bitResult = input >> 2;
+	if (addOne) {
+		_8bitResult = _8bitResult+1;
+	}
+}
