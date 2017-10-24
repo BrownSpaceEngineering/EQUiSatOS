@@ -80,14 +80,15 @@ void flatsat_init(void) {
 	 for (int i=0; i<4; i++){
 		 //struct adc_module temp_instance;
 		 configure_adc(&temp_instance,P_AI_TEMP_OUT); // Changed for proc test board testing
-		 LTC1380_channel_select(0x48, i+4);
+		 return_struct_8 rs;
+		 LTC1380_channel_select(0x48, i+4, rs);
 		 //tempBuffer[i] = readVoltagemV(temp_instance);
 		 
 		uint16_t sum =0;
-	
+		
 		for (int j=0; j<num_samples; j++){
 			adc_enable(&temp_instance);
-			sum = sum +readVoltagemV(temp_instance);
+			sum = sum +read_adc(temp_instance);
 		}
 		tempBuffer[i] = sum/num_samples;
 	 }
@@ -95,14 +96,15 @@ void flatsat_init(void) {
 	 for (int i=0; i<1; i++){
 		//struct adc_module adc_instance;
 		configure_adc(&pd_instance,P_AI_PD_OUT);
-		LTC1380_channel_select(0x4a, i+3); 
+		return_struct_8 rs;
+		LTC1380_channel_select(0x4a, i+3, rs); 
 		//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
 		
 		uint16_t sum =0;
 		
 		for (int j=0; j<num_samples; j++){
 			adc_enable(&pd_instance);
-			sum = sum +readVoltagemV(pd_instance);
+			sum = sum +read_adc(pd_instance);
 		}
 		uint16_t value = sum/num_samples;
 		pdBuffer[i] = value;
@@ -121,13 +123,13 @@ void flatsat_init(void) {
  uint8_t readFromADC(enum adc_positive_input pin){
 	struct adc_module adc_instance;
 	configure_adc(&adc_instance,pin);
-	readVoltagemV(adc_instance);
+	read_adc(adc_instance);
 	adc_enable(&adc_instance);
 	uint16_t sum =0;
 	
 	for (int i=0; i<num_samples; i++){
 		adc_enable(&adc_instance);
-		sum = sum +readVoltagemV(adc_instance);
+		sum = sum +read_adc(adc_instance);
 	}
 	return sum/num_samples;
 }
@@ -135,7 +137,9 @@ void flatsat_init(void) {
 void read_IR(uint16_t* buffer) {
 	for (int i = 0; i < LEN_IR; i++)
 	{
-		buffer[i] = MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1).return_value;
+		return_struct_16 rs;
+		MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1, rs);
+		buffer[i] = rs.return_value;
 	}
 }
 

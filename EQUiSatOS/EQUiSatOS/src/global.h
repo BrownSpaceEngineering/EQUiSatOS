@@ -12,6 +12,24 @@
 #include <asf.h>
 #include <inttypes.h>
 
+/* Global satellite state */
+int8_t CurrentState;
+
+typedef struct {
+	enum status_code return_status;
+	float return_value;
+} return_struct_float;
+
+typedef struct {
+	enum status_code return_status;
+	uint16_t return_value;
+} return_struct_16;
+
+typedef struct {
+	enum status_code return_status;
+	uint8_t return_value;
+} return_struct_8;
+
 #include "config/proc_pins.h"
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"
@@ -30,28 +48,5 @@
 #include "sensor_drivers/TCA9535_GPIO.h"
 #include "telemetry/Radio_Commands.h"
 #include "errors.h"
-
-/* Global satellite state */
-int8_t CurrentState;
-
-typedef struct return_struct_float {
-	enum status_code return_status;
-	float return_value;
-} return_struct_float;
-
-typedef struct return_struct_16 {
-	enum status_code return_status;
-	uint16_t return_value;
-} return_struct_16;
-	
-typedef struct return_struct_8 {
-	enum status_code return_status;
-	uint8_t return_value;
-} return_struct_8;
-	
-typedef struct return_struct_0 {
-	enum status_code return_status;
-} return_struct_0;
-
 
 #endif /* GLOBAL_H_ */

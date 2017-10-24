@@ -9,10 +9,18 @@
 
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
+/*uint8_t irs[6] = {
+	MLX90614_FLASHPANEL_V6_2_1,
+	MLX90614_TOPPANEL_V4_2,
+	MLX90614_ACCESSPANEL_V3_1,
+	MLX90614_SIDEPANEL_V4_2,
+	MLX90614_SIDEPANEL_V4_3,
+	MLX90614_SIDEPANEL_V4_4 };*/
+
 read_ir_batch(ir_batch batch) {
-	for (int i = 0; i < 12; i++)
-	{
-		batch[i] = i;
+	for (int i = 0; i < 12; i += 2) {
+		//batch[i] = (MLX90614_readTempC(irs[i] / 2, OBJ1) + MLX90614_readTempC(irs[i] / 2, OBJ2)) / 2;
+		//batch[i + 1] = MLX90614_readTempC(irs[i] / 2, AMBIENT);
 	}
 }
 read_lion_volts_batch(lion_volts_batch batch) {

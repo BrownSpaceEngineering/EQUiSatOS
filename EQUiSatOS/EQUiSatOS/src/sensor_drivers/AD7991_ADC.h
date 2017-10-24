@@ -19,7 +19,7 @@ enum status_code AD7991_init(void);
 enum status_code AD7991_read_all(uint8_t *results);
 
 /* Yucky  *////////////////////////////////////
-void AD7991_change_channel(uint8_t channel);///
+enum status_code AD7991_change_channel(uint8_t channel);///
 uint16_t AD7991_read(uint8_t channel);/////////
 ///////////////////////////////////////////////
 

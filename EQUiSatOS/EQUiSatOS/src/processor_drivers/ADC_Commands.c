@@ -44,7 +44,7 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 
 //reads the current voltage from the ADC connection
 // Currently reads a 10 bit value
-uint16_t readVoltagemV(struct adc_module adc_instance) {
+uint16_t read_adc(struct adc_module adc_instance) {
 	if (!&adc_instance || !adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
 		return -1;
@@ -65,10 +65,6 @@ uint16_t readVoltagemV(struct adc_module adc_instance) {
 	adc_disable(&adc_instance);
 	return result;
 }
-
-float readVoltageV(struct adc_module adc_instance){
-	return readVoltagemV(adc_instance)/1000.0;
-} 
 
 uint8_t convert_ir_to_8_bit(uint16_t input) {
 	bool addOne = (input & 0b0000000000000011) >= 2;

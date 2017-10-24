@@ -19,7 +19,6 @@ enum status_code AD7991_init(){
 enum status_code AD7991_read_all(uint8_t *results){
 	//AD7991_change_channel(channel);
 	uint8_t buffer[8];// = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-	struct return_struct_16 rs;
 	enum status_code read = readFromAddress(buffer,8,AD7991_ADDR,true);
 	results[0] = ((buffer[0] & 0b00001111) << 8) + buffer[1];
 	results[1] = ((buffer[2] & 0b00001111) << 8) + buffer[3];
@@ -36,7 +35,7 @@ enum status_code AD7991_read_all(uint8_t *results){
 /////////////////////////////////////////////////////////////////////////////
 
 //change the channel of the external ADC
-void AD7991_change_channel(uint8_t channel){
+enum status_code AD7991_change_channel(uint8_t channel){
 	uint8_t target;//[] = {0b10000};
 	
 	//int target[] = {0x0};
@@ -59,23 +58,15 @@ void AD7991_change_channel(uint8_t channel){
 			
 	}
 	//target = target + 3; //Disables the sample delay and bit trial mechanisms
-	struct return_struct_0 rs;
-	rs.return_status = writeDataToAddress(target, 1, AD7991_ADDR, true);
-	
-	int a = 10;
-	//return rs;
+	return writeDataToAddress(target, 1, AD7991_ADDR, true);
 }
 
 uint16_t AD7991_read(uint8_t channel){
 	//AD7991_change_channel(channel);
 	uint8_t buffer[] = {0x0, 0x0};
-	struct return_struct_16 rs;
-	rs.return_status = readFromAddress(buffer,2,AD7991_ADDR,false);
-	rs.return_value =  ((buffer[0] & 0b00001111) << 8)+ buffer[1];
+	enum status_code status = readFromAddress(buffer,2,AD7991_ADDR,false);
 
-
-	int a = 5; 
-	return rs.return_value;
+	return ((buffer[0] & 0b00001111) << 8)+ buffer[1];
 };
 
 
