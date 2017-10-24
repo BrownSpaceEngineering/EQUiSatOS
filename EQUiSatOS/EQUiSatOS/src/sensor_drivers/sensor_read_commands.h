@@ -8,18 +8,7 @@
 #ifndef SENSOR_READ_COMMANDS_H
 #define	SENSOR_READ_COMMANDS_H
 
-#include "../stacks/Sensor_Structs.h"
-
-#include "processor_drivers/I2C_Commands.h"
-#include "processor_drivers/SPI_Commands.h"
-#include "processor_drivers/ADC_Commands.h"
-#include "processor_drivers/Direct_Pin_Commands.h"
-
-//#include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
-#include "sensor_drivers/MLX90614_IR_Sensor.h"
-#include "sensor_drivers/TEMD6200_Commands.h"
-#include "sensor_drivers/switching_commands.h"
-#include "sensor_drivers/sensor_read_commands.h"
+#include "../global.h"
 
 /**
  * Helpful regex: (\w*)_DATA -> $1_batch read_$1_batch(void);
@@ -34,7 +23,7 @@ read_diode_batch(diode_batch batch);
 read_bat_temp_batch(bat_temp_batch batch);
 read_ir_temps_batch(ir_temps_batch batch);
 read_radio_temp_batch(radio_temp_batch batch);
-read_imu_batch(accelerometer_batch *accel_batch, gyro_batch *gyro_batch);
+read_imu_batch(accelerometer_batch accel_batch, gyro_batch gyr_batch);
 read_magnetometer_batch(magnetometer_batch batch);
 read_led_current_batch(led_current_batch batch);
 read_radio_volts_batch(radio_volts_batch batch);

@@ -46,6 +46,7 @@ typedef struct {
 #include "sensor_drivers/LTC1380_Multiplexer_Commands.h"
 #include "sensor_drivers/AD7991_ADC.h"
 #include "sensor_drivers/TCA9535_GPIO.h"
+#include "stacks/Sensor_Structs.h"
 #include "telemetry/Radio_Commands.h"
 #include "errors.h"
 
