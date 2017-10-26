@@ -3,7 +3,7 @@
  *
  * Created: 9/20/2016 9:46:00 PM
  *  Author: Tyler
- */ 
+ */
 
 #include "USART_Commands.h"
 
@@ -21,14 +21,14 @@ void USART_init() {
 
 /*ext_usart handler*/
 void SERCOM3_Handler()
-{		
-	if (SERCOM3->USART.INTFLAG.bit.RXC){		
-		char curByte = SERCOM3->USART.DATA.reg;		
+{
+	if (SERCOM3->USART.INTFLAG.bit.RXC){
+		char curByte = SERCOM3->USART.DATA.reg;
 		if (curByte == 0x01) {
 			memset(receivebuffer, 0, 16);
 			receiveIndex = 0;
 		}
-		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;		
+		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;
 		if(curByte == 0xff) {
 			//TODO: Handle received packet
 		}
@@ -215,7 +215,7 @@ while(SERCOM3->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
 }
 
 void usart_send_string(const char *str_buf)
-{	
+{
 	while (*str_buf != '\0')
 	{
 		while(!SERCOM3->USART.INTFLAG.bit.DRE);
@@ -224,7 +224,8 @@ void usart_send_string(const char *str_buf)
 	}
 }
 
-void print(const char *str_buf)
+// deprecated
+void print_old(const char *str_buf)
 {
 	while (*str_buf != '\0')
 	{
@@ -232,4 +233,10 @@ void print(const char *str_buf)
 		SERCOM2->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
+}
+
+// use in debug mode (set in header file)
+void print(const char *str_buf)
+{
+	if(PRINT_DEBUG) {usart_send_string(str_buf);}
 }
