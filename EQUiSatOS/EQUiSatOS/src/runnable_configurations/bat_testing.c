@@ -4,6 +4,7 @@
  * Created: 10/26/2017 3:26:26 PM
  *  Author: Ryan Izant
  */ 
+#include "bat_testing.h"
 
 void bat_testing_init(){
 	delay_init();
@@ -11,13 +12,15 @@ void bat_testing_init(){
 	
 	LTC1380_init();
 	AD7991_init();
-	TCA9535_init();
+	return_struct_16 tca9535_rs;
+	TCA9535_init(tca9535_rs);
 	
 	setup_pin(true,P_5V_EN);
 	set_output(true, P_5V_EN); //init gpio pin for 5V regulator enable
 	
 }
 
+//Reads all sensors from Battery Board remote ADC and returns in human readable voltage
 void readRemoteADC_0(float* batReadings){
 	uint16_t remoteADC[4];
 	AD7991_read_all(remoteADC, AD7991_ADDR_0);

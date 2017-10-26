@@ -9,6 +9,8 @@
 #ifndef BAT_TESTING_H_
 #define BAT_TESTING_H_
 
+#include "../global.h"
+
 void bat_testing_init();
 void readRemoteADC_0(float* batReadings);
 void bat_testing_run();

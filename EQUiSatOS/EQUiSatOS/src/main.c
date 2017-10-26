@@ -1,6 +1,7 @@
 //#include "runnable_configurations/flatsat.h"
 #include "main.h"
 #include "runnable_configurations/flatsat.h"
+#include "runnable_configurations/bat_testing.h"
 
 int main(void)
 {

@@ -172,15 +172,7 @@ void readRemoteADC_1(float* cntrlReadings){
 	cntrlReadings[3] = ((float) remoteADC[3])/4096*3.3*2.01;//3V3REf
 }
 
-//Reads all sensors from Battery Board remote ADC and returns in human readable voltage
-void readRemoteADC_0(float* batReadings){
-	uint16_t remoteADC[4];
-	AD7991_read_all(remoteADC, AD7991_ADDR_0);
-	batReadings[0] = ((float) remoteADC[0])/4096*3.3;//TBD
-	batReadings[1] = ((float) remoteADC[1])/4096*3.3;//TBD
-	batReadings[2]= ((float)  remoteADC[2])/4096*3.3;//TBD
-	batReadings[3] = ((float) remoteADC[3])/4096*3.3;//TBD
-}
+
 
 void flatsat_run(void) {	
 	flatsat_init();	

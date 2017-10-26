@@ -11,7 +11,6 @@ void led_flash(void);
 void flatsat_run(void);
 void sendToArduino(uint8_t* data, uint8_t length);
 float convertToVoltage(uint16_t reading);
-void readRemoteADC_0(float* batReadings);
 void readRemoteADC_1(float* cntrlReadings);
 #define LEN_IR 6
 #define ARDUINO_ADDR 0x08
