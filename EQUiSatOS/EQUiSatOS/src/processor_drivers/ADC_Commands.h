@@ -16,5 +16,7 @@
 uint16_t read_adc(struct adc_module adc_instance);
 void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin);
 uint8_t convert_ir_to_8_bit(uint16_t input);
+uint16_t readFromADC(enum adc_positive_input pin, int num_avg);
+float convertToVoltage(uint16_t reading);
 
 #endif /* ADC_COMMANDS_H */

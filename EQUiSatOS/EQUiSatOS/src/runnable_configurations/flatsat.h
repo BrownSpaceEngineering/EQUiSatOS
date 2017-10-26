@@ -10,7 +10,6 @@ float read_temp(void);
 void led_flash(void);
 void flatsat_run(void);
 void sendToArduino(uint8_t* data, uint8_t length);
-uint16_t readFromADC(enum adc_positive_input pin);
 float convertToVoltage(uint16_t reading);
 void readRemoteADC_0(float* batReadings);
 void readRemoteADC_1(float* cntrlReadings);

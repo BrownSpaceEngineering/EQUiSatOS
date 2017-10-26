@@ -1022,6 +1022,12 @@
     <Compile Include="src\rtos_tasks\watchdog_task.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\runnable_configurations\bat_testing.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\bat_testing.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\runnable_configurations\flatsat.c">
       <SubType>compile</SubType>
     </Compile>

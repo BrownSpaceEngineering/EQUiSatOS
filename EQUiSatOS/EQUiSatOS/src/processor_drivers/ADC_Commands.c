@@ -73,3 +73,24 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
 		_8bitResult = _8bitResult+1;
 	}
 }
+
+ // Given an ADC channel, reads from ADC with <num_avg> software averaging
+ uint16_t readFromADC(enum adc_positive_input pin, int num_avg){
+	 struct adc_module adc_instance;
+	 configure_adc(&adc_instance,pin);
+	 //read_adc(adc_instance);
+	 //adc_enable(&adc_instance);
+	 uint16_t sum =0;
+	 
+	 for (int i=0; i<num_avg; i++){
+		 adc_enable(&adc_instance);
+		 sum = sum +read_adc(adc_instance);
+	 }
+	 return sum/num_avg;
+ }
+
+//Converts from 10bit ADC reading to float voltage
+//Todo - remove this because no floats for real sat
+float convertToVoltage(uint16_t reading){
+	return (((float) (reading))/1024*3.300/1.48); //converts from 10 bit to V
+}

@@ -6,9 +6,11 @@ int main(void)
 {
 	// Initialize the SAM system
 	system_init();
-	//USART_init();
-		
-	flatsat_run(); //calls flatsat init
+	//init_tc();
+	USART_init();
+	//flatsat_run(); //calls flatsat init
+	
+	bat_testing_run();
 
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 
@@ -26,5 +28,5 @@ int main(void)
 	run_rtos();*/
 	//assert_transmission_constants();*/
 	
-	run_rtos();
+	//run_rtos();
 }
