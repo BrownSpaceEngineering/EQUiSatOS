@@ -3,7 +3,7 @@
  *
  * Created: 4/12/2017 9:35:47 PM
  *  Author: jleiken
- */ 
+ */
 
 
 #ifndef GLOBAL_H_
@@ -11,6 +11,7 @@
 
 #include <asf.h>
 #include <inttypes.h>
+#include <stdarg.h>
 
 /* Global satellite state */
 int8_t CurrentState;
