@@ -13,13 +13,16 @@ enum status_code AD7991_init(){
 	//read 8 bytes 1-2 -> channel 1, 3-4 -> channel 2 ... etc 
 	uint8_t all_reg = 0xf0;
 	
-	return writeDataToAddress(all_reg, 1, AD7991_ADDR, true);	
+	//Initializes both remote ADCs
+	//Commented out ADDR_0 cuz not connected unless battery board V2 is plugged in
+	//enum status_code0 = writeDataToAddress(&all_reg, 1, AD7991_ADDR_0, true);	
+	return writeDataToAddress(&all_reg, 1, AD7991_ADDR_1, true);	
 }
 
-enum status_code AD7991_read_all(uint8_t *results){
-	//AD7991_change_channel(channel);
-	uint8_t buffer[8];// = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-	enum status_code read = readFromAddress(buffer,8,AD7991_ADDR,true);
+enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
+	
+	uint8_t buffer[8];
+	enum status_code read = readFromAddress(buffer,8,addr,false);
 	results[0] = ((buffer[0] & 0b00001111) << 8) + buffer[1];
 	results[1] = ((buffer[2] & 0b00001111) << 8) + buffer[3];
 	results[2] = ((buffer[4] & 0b00001111) << 8) + buffer[5];
@@ -58,13 +61,13 @@ enum status_code AD7991_change_channel(uint8_t channel){
 			
 	}
 	//target = target + 3; //Disables the sample delay and bit trial mechanisms
-	return writeDataToAddress(target, 1, AD7991_ADDR, true);
+	return writeDataToAddress(target, 1, AD7991_ADDR_1, true);
 }
 
 uint16_t AD7991_read(uint8_t channel){
 	//AD7991_change_channel(channel);
 	uint8_t buffer[] = {0x0, 0x0};
-	enum status_code status = readFromAddress(buffer,2,AD7991_ADDR,false);
+	enum status_code status = readFromAddress(buffer,2,AD7991_ADDR_1,false);
 
 	return ((buffer[0] & 0b00001111) << 8)+ buffer[1];
 };

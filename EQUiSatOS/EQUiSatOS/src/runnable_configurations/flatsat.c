@@ -71,18 +71,18 @@ void flatsat_init(void) {
 	
 	//configure_watchdog();
 	LTC1380_init();
+	AD7991_init();
 	///setup_switching();
 	//TCA9535_init();
 }
 
- void readMuxs(uint8_t* tempBuffer, uint8_t* pdBuffer){
+//Cycles through temperatures sensor and photodiode external muxes and does 10x software averaging on each channel
+ void readMuxs(uint16_t* tempBuffer, uint16_t* pdBuffer){
 	 
 	 for (int i=0; i<4; i++){
-		 //struct adc_module temp_instance;
-		 configure_adc(&temp_instance,P_AI_TEMP_OUT); // Changed for proc test board testing
+		 configure_adc(&temp_instance,P_AI_TEMP_OUT);
 		 return_struct_8 rs;
-		 LTC1380_channel_select(0x48, i+4, rs);
-		 //tempBuffer[i] = readVoltagemV(temp_instance);
+		 LTC1380_channel_select(0x48, i, rs);
 		 
 		uint16_t sum =0;
 		
@@ -94,10 +94,9 @@ void flatsat_init(void) {
 	 }
 	 
 	 for (int i=0; i<1; i++){
-		//struct adc_module adc_instance;
 		configure_adc(&pd_instance,P_AI_PD_OUT);
 		return_struct_8 rs;
-		LTC1380_channel_select(0x4a, i+3, rs); 
+		LTC1380_channel_select(0x4a, i, rs); 
 		//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
 		
 		uint16_t sum =0;
@@ -111,8 +110,8 @@ void flatsat_init(void) {
 	 }
  }
  
- 
- void readOtherADC(uint8_t* buffer){
+ //Cycles through all of the ADC channels that are not externally mux'd
+ void readOtherADC(uint16_t* buffer){
 	 for (int i=0; i<LEN_ADC; i++){
 		 //buffer[i] = readVoltagemV(modules[i]);
 		 buffer[i] = readFromADC(adc_pins[i]);
@@ -120,11 +119,12 @@ void flatsat_init(void) {
 	 }
  }
  
- uint8_t readFromADC(enum adc_positive_input pin){
+ // Given an ADC channel, reads from ADC with <num_samples> software averaging
+ uint16_t readFromADC(enum adc_positive_input pin){
 	struct adc_module adc_instance;
 	configure_adc(&adc_instance,pin);
-	read_adc(adc_instance);
-	adc_enable(&adc_instance);
+	//read_adc(adc_instance);
+	//adc_enable(&adc_instance);
 	uint16_t sum =0;
 	
 	for (int i=0; i<num_samples; i++){
@@ -152,58 +152,79 @@ void sendToArduino(uint8_t* data, uint8_t length) {
 	writeDataToAddress(data, length, ARDUINO_ADDR, true);
 }
 
-float convertToVoltage(uint8_t reading){
-	return (((float) (reading))/255*3.300/1.48); //converts from 8 bit to V
+//Converts from 10bit ADC reading to float voltage 
+float convertToVoltage(uint16_t reading){
+	return (((float) (reading))/1024*3.300/1.48); //converts from 10 bit to V
 }
 
+//Read all channels of processor ADC - only for testing. For flight we'll want to break this up and 
 void readAnalog(float* temperatures, float* photodiodes, float* analogs){
-	uint8_t buffer[LEN_ADC];
-	uint8_t temp_buffer[4];
-	uint8_t pd_buffer[1];
+	uint16_t buffer[LEN_ADC];
+	uint16_t temp_buffer[8];
+	uint16_t pd_buffer[6];
 	
 	readOtherADC(buffer);
 	for (int i=0; i<LEN_ADC; i++){
 		analogs[i] = convertToVoltage(buffer[i]);
 	}
 	readMuxs(temp_buffer, pd_buffer);
-	for (int i=0; i<4; i++){
-		float current = ((float) convertToVoltage(temp_buffer[i]))/2197 -0.0001002; //converts from V to A
+	for (int i=0; i<8; i++){
+		float current = ((float) convertToVoltage(temp_buffer[i]))/2197 -0.0001001; //converts from V to A
 		temperatures[i] = (current)*1000000-273;// T = 454*V in C
 	}
-	for (int i=0; i<1; i++){
+	for (int i=0; i<6; i++){
 		photodiodes[i] = convertToVoltage(pd_buffer[i]);
 	}
+}
+
+//Reads all sensors from Control Board remote ADC and returns in human readable voltage
+void readRemoteADC_1(float* cntrlReadings){
+	uint16_t remoteADC[4];
+	AD7991_read_all(remoteADC, AD7991_ADDR_1);
+	cntrlReadings[0] = ((float) remoteADC[0])/4096*3.3*2.01;//3V6Rf
+	cntrlReadings[1] = ((float) remoteADC[1])/4096*3.3;//3V6SNS
+	cntrlReadings[2]= ((float)  remoteADC[2])/4096*3.3*3.381;//5VREF
+	cntrlReadings[3] = ((float) remoteADC[3])/4096*3.3*2.01;//3V3REf
+}
+
+//Reads all sensors from Battery Board remote ADC and returns in human readable voltage
+void readRemoteADC_0(float* batReadings){
+	uint16_t remoteADC[4];
+	AD7991_read_all(remoteADC, AD7991_ADDR_0);
+	batReadings[0] = ((float) remoteADC[0])/4096*3.3;//TBD
+	batReadings[1] = ((float) remoteADC[1])/4096*3.3;//TBD
+	batReadings[2]= ((float)  remoteADC[2])/4096*3.3;//TBD
+	batReadings[3] = ((float) remoteADC[3])/4096*3.3;//TBD
 }
 
 void flatsat_run(void) {	
 	flatsat_init();	
 	
-	float pre_temp[4];
-	float pre_pd[1];
+	float pre_temp[8];
+	float pre_pd[6];
 	float pre_analog[LEN_ADC];
-	
-	float dur1_temp[4];
-	float dur1_pd[1];
-	float dur1_analog[LEN_ADC];
-	
-	float dur2_temp[4];
-	float dur2_pd[1];
-	float dur2_analog[LEN_ADC];
+	float cntrlReadings[4];
+	//float batReadings[4];
 	
 
+	
+	
+	setup_pin(true, P_RAD_PWR_RUN);
 
-	int count =0; //Run only 5 times in case we get out of debug mode.
-	while (count<5){
-		
-		
+
+	int count =0; //Run only 15 times in case we get out of debug mode.
+	while (count<15){	
 		
 		readAnalog(pre_temp,pre_pd, pre_analog);
 		
+		readRemoteADC_1(cntrlReadings);
 		
- 		set_output(false,P_LED_CMD); //Turns on LEDs for 100ms (hardware timed). Any breakpoints placed during flashing are not guaranteed to be accurate
-		readAnalog(dur1_temp,dur1_pd, dur1_analog);
-		set_output(true,P_LED_CMD);
-		readAnalog(dur2_temp,dur2_pd, dur2_analog);
+
+		set_output(true, P_RAD_PWR_RUN);
+ 		//set_output(false,P_LED_CMD); //Turns on LEDs for 100ms (hardware timed). Any breakpoints placed during flashing are not guaranteed to be accurate
+		//readAnalog(dur1_temp,dur1_pd, dur1_analog);
+		//set_output(true,P_LED_CMD);
+		
 		
 		count = count +1;
 	}
