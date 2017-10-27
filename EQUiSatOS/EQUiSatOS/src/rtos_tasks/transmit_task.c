@@ -32,6 +32,9 @@ void transmit_task(void *pvParameters)
 	// count of how many times the current packet has been transmitted
 	uint8_t current_packet_transmissions = 0;
 	
+	// this task is not initially active, so suspend itself initially
+	//vTaskSuspend(NULL); 
+	
 	for( ;; )
 	{
 		// block for a time based on this task's globally-set frequency

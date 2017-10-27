@@ -15,6 +15,9 @@ void flash_activate_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
 	TickType_t xNextWakeTime = xTaskGetTickCount();
+		
+	// this task is not initially active, so suspend itself initially
+	//vTaskSuspend(NULL); 
 	
 	for ( ;; )
 	{

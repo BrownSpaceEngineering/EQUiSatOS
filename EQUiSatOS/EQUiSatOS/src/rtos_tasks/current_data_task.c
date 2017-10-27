@@ -25,6 +25,9 @@ void current_data_task(void *pvParameters)
 	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(&idle_readings_equistack);
 	assert(current_struct != NULL); // TESTING
 	current_struct->timestamp = get_current_timestamp();
+	
+	// this task is not initially active, so suspend itself initially
+	//vTaskSuspend(NULL); 
 		
 	for( ;; )
 	{

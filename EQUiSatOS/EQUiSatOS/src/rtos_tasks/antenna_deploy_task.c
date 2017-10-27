@@ -12,6 +12,9 @@
 static int num_tries = 0;
 void antenna_deploy_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	// this task is not initially active, so suspend itself initially
+	vTaskSuspend(NULL); 
 
 	for( ;; )
 	{

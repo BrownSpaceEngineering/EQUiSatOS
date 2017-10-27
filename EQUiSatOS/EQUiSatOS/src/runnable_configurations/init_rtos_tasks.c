@@ -14,6 +14,9 @@ void run_rtos()
 	/************************************************************************/
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
+	
+	// watchdog has some extra initialization
+	watchdog_init();
 
 	// Initialize EQUiStack mutexes
 	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
@@ -128,14 +131,23 @@ void run_rtos()
   		NULL,
   		TASK_SENS_RD_IDLE_PRIORITY,
   		NULL);*/
-
-  	// Make sure we define the first state
-  	set_state_idle();
+	  
+	// NOTE: We can't actually set task state before RTOS is started below,
+	// and tasks start as active (resumed), so we have the task themselves set
+	// their initial state (if you look at task you'll see most
+	// will suspend themselves on creation.)
+	
+	
+	
+	// TODO: can we do this somewhere and have it work?
+  	//set_state_idle();
+	  
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
 }
 
+// TODO: is this useful? just encoded in task initial state or executed via watchdog reset?
 void set_state_hello_world()
 {
 	CurrentState = HELLO_WORLD;
