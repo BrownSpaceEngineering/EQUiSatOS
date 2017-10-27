@@ -39,6 +39,30 @@
 
 #define		MAG_DATA_READY				0x01
 
+//Macros for bias calibration
+#define		PWR_MGMT_1       0x6B // Device defaults to the SLEEP mode
+#define		PWR_MGMT_2       0x6C
+#define     INT_ENABLE       0x38
+#define		FIFO_EN          0x23
+#define		I2C_MST_CTRL     0x24
+#define		USER_CTRL        0x6A  // Bit 7 enable DMP, bit 3 reset DMP
+#define		CONFIG           0x1A
+#define		SMPLRT_DIV       0x19
+#define		FIFO_COUNTH      0x72
+#define		FIFO_R_W         0x74
+#define		XG_OFFSET_H      0x13  // User-defined trim values for gyroscope
+#define		XG_OFFSET_L      0x14
+#define		YG_OFFSET_H      0x15
+#define		YG_OFFSET_L      0x16
+#define		ZG_OFFSET_H      0x17
+#define		ZG_OFFSET_L      0x18
+#define		XA_OFFSET_H      0x06 // User-defined trim values for accelerometer
+#define		XA_OFFSET_L_TC   0x07
+#define		YA_OFFSET_H      0x08
+#define		YA_OFFSET_L_TC   0x09
+#define		ZA_OFFSET_H      0x0A
+#define		ZA_OFFSET_L_TC   0x0B
+
 typedef struct {
 	int16_t x, y, z;
 } ThreeAxisReading;
@@ -51,6 +75,7 @@ void MPU9250_init(void);
 void MPU9250_read_mag(MPU9250Reading* toFill);
 enum status_code MPU9250_read_acc(MPU9250Reading* toFill);
 enum status_code MPU9250_read_gyro(MPU9250Reading* toFill);
+void MPU9250_computeBias();
 MPU9250Reading MPU9250_read(void);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 

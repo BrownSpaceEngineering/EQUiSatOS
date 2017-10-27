@@ -9,7 +9,7 @@
 #ifndef TCA9535_GPIO_H_
 #define TCA9535_GPIO_H_
 
-#include <global.h>
+#include "../global.h"
 #include "../processor_drivers/I2C_Commands.h"
 
 #define TCA_ADDR 0b0100000
@@ -30,9 +30,9 @@
 #define IOMask1 0b00000000
 
 
-struct return_struct_16 TCA9535_init();
+void TCA9535_init(return_struct_16 rs);
 enum status_code setIOMask(uint8_t reg0, uint8_t reg1);
-struct return_struct_16 readTCA9535Levels(void);
+void readTCA9535Levels(return_struct_16 rs);
 enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel);
 
 #endif /* TCA9535_GPIO_H_ */

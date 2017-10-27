@@ -9,30 +9,34 @@
 
 void run_rtos()
 {
+	/************************************************************************/
+	/* ESSENTIAL INITIALIZATION                                             */
+	/************************************************************************/
 	//configure_i2c_master(SERCOM4);
-	TaskSuspendedStates = 0; // no tasks suspended
+	pre_init_rtos_tasks(); // populate task_handles array and setup constants
 
 	// Initialize EQUiStack mutexes
 	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
-	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
-	_transmit_equistack_mutex = xSemaphoreCreateMutexStatic(&_transmit_equistack_mutex_d);
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
+	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
+	_flash_cmp_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_cmp_equistack_mutex_d);
 
 	// Initialize EQUiStacks
 	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr,
 		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, &_last_reading_type_equistack_mutex);
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
 		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
+	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
+		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
 	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr,
 		sizeof(flash_data_t), FLASH_STACK_MAX, &_flash_equistack_mutex);
- 	equistack_Init(&transmit_readings_equistack, &_transmit_equistack_arr,
-		sizeof(transmit_data_t), TRANSMIT_STACK_MAX, &_transmit_equistack_mutex);
- 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
-		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
+ 	equistack_Init(&flash_cmp_readings_equistack, &_flash_cmp_equistack_arr,
+		sizeof(flash_cmp_t), FLASH_CMP_STACK_MAX, &_flash_cmp_equistack_mutex);
 
-	// init global radio buffer
-	init_msg_buffer();
+	/************************************************************************/
+	/* TASK CREATION                                                        */
+	/************************************************************************/
 
 	// Started at boot
 	// TODO: Should we even store this handle?
@@ -96,14 +100,6 @@ void run_rtos()
 		&flash_data_task_stack,
 		&flash_data_task_buffer);
 
-	transmit_data_task_handle = xTaskCreateStatic(transmit_data_task,
-		"transmission data reader task",
-		TASK_TRANSMIT_DATA_RD_STACK_SIZE,
-		NULL,
-		TASK_TRANSMIT_DATA_RD_PRIORITY,
-		&transmit_data_task_stack,
-		&transmit_data_task_buffer);
-
 	attitude_data_task_handle = xTaskCreateStatic(attitude_data_task,
 		"attitude data reader task",
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
@@ -145,10 +141,12 @@ void set_state_hello_world()
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
-	vTaskSuspend(current_data_task_handle);
-	vTaskSuspend(flash_activate_task_handle);
-	vTaskSuspend(transmit_task_handle);
-	taskResumeIfSuspended(attitude_data_task_handle, ATTITUDE_DATA_TASK);
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK); // right
+	task_suspend(CURRENT_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(TRANSMIT_TASK);
+	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
 
@@ -156,10 +154,12 @@ void set_state_idle()
 {
 	CurrentState = IDLE;
 
-	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
-	taskResumeIfSuspended(flash_activate_task_handle, FLASH_DATA_TASK);
-	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
-	taskResumeIfSuspended(attitude_data_task_handle, ATTITUDE_DATA_TASK);
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
+	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
+	task_resume_if_suspended(TRANSMIT_TASK);
+	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others
 }
 
@@ -167,68 +167,11 @@ void set_state_low_power()
 {
 	CurrentState = LOW_POWER;
 
-	taskResumeIfSuspended(current_data_task_handle, IDLE_DATA_TASK);
-	vTaskSuspend(flash_activate_task_handle);
-	taskResumeIfSuspended(transmit_task_handle, TRANSMIT_DATA_TASK);
-	vTaskSuspend(attitude_data_task_handle); // TODO: Do this?
+	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
+	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_resume_if_suspended(TRANSMIT_TASK);
+	task_suspend(ATTITUDE_DATA_TASK); // TODO: Do this?
 	// TODO: Others
-}
-
-
-/************************************************************************/
-/* Required functions for FreeRTOS 9 static allocation					*/
-/* Copied from http://www.freertos.org/a00110.html						*/
-/************************************************************************/
-
-/* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
-implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
-used by the Idle task. */
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
-                                    StackType_t **ppxIdleTaskStackBuffer,
-                                    uint32_t *pulIdleTaskStackSize )
-{
-/* If the buffers to be provided to the Idle task are declared inside this
-function then they must be declared static - otherwise they will be allocated on
-the stack and so not exists after this function exits. */
-static StaticTask_t xIdleTaskTCB;
-static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
-
-    /* Pass out a pointer to the StaticTask_t structure in which the Idle task's
-    state will be stored. */
-    *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
-
-    /* Pass out the array that will be used as the Idle task's stack. */
-    *ppxIdleTaskStackBuffer = uxIdleTaskStack;
-
-    /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
-    Note that, as the array is necessarily of type StackType_t,
-    configMINIMAL_STACK_SIZE is specified in words, not bytes. */
-    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
-}
-/*-----------------------------------------------------------*/
-
-/* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
-application must provide an implementation of vApplicationGetTimerTaskMemory()
-to provide the memory that is used by the Timer service task. */
-void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
-                                     StackType_t **ppxTimerTaskStackBuffer,
-                                     uint32_t *pulTimerTaskStackSize )
-{
-/* If the buffers to be provided to the Timer task are declared inside this
-function then they must be declared static - otherwise they will be allocated on
-the stack and so not exists after this function exits. */
-static StaticTask_t xTimerTaskTCB;
-static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
-
-    /* Pass out a pointer to the StaticTask_t structure in which the Timer
-    task's state will be stored. */
-    *ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
-
-    /* Pass out the array that will be used as the Timer task's stack. */
-    *ppxTimerTaskStackBuffer = uxTimerTaskStack;
-
-    /* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.
-    Note that, as the array is necessarily of type StackType_t,
-    configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
-    *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }

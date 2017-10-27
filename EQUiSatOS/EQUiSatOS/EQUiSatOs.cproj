@@ -45,6 +45,7 @@
           <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.tc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -294,6 +295,8 @@
           <file path="src/ASF/sam0/drivers/wdt/wdt.h" framework="" version="3.31.0" source="sam0\drivers\wdt\wdt.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start/qs_wdt_basic.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start\qs_wdt_basic.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc.h" framework="" version="3.31.0" source="sam0\drivers\tc\tc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c" framework="" version="3.31.0" source="sam0\drivers\tc\tc_sam_d_r\tc.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -306,7 +309,7 @@
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800056157</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -316,20 +319,22 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009084</ToolNumber>
+      <ToolNumber>ATML2130021800009153</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <custom>
-      <ToolOptions xmlns="">
+      <ToolOptions>
         <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
-        <InterfaceName>SWD</InterfaceName>
+        <InterfaceName>
+        </InterfaceName>
       </ToolOptions>
-      <ToolType xmlns="">custom</ToolType>
-      <ToolNumber xmlns="">
+      <ToolType>custom</ToolType>
+      <ToolNumber>
       </ToolNumber>
-      <ToolName xmlns="">Custom Programming Tool</ToolName>
+      <ToolName>Custom Programming Tool</ToolName>
     </custom>
     <CustomProgrammingToolCommand>
     </CustomProgrammingToolCommand>
@@ -423,6 +428,7 @@
       <Value>ADC_CALLBACK_MODE=false</Value>
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>TC_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -468,6 +474,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -532,9 +540,11 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -578,6 +588,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -607,6 +619,7 @@
       <Value>ADC_CALLBACK_MODE=false</Value>
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
+      <Value>TC_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -650,15 +663,14 @@
       <Value>../src/ASF/sam0/utils/cmsis/samd21/source</Value>
       <Value>../src/ASF/sam0/drivers/system/clock</Value>
       <Value>../src/ASF/sam0/drivers/system/interrupt</Value>
-      <Value>../src/ASF/thirdparty/TraceRecorder/config</Value>
-      <Value>../src/ASF/thirdparty/TraceRecorder/include</Value>
       <Value>../src/ASF/sam0/drivers/adc</Value>
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize most (-O3)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
@@ -674,6 +686,9 @@
   <armgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
       <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
@@ -694,8 +709,6 @@
       <Value>../src/ASF/sam0/drivers/sercom/i2c</Value>
       <Value>../src/ASF/sam0/drivers/sercom/i2c/i2c_sam0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
-      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
       <Value>../src/ASF/sam0/drivers/sercom/spi</Value>
       <Value>../src/ASF/sam0/utils/header_files</Value>
       <Value>../src/ASF/sam0/drivers/system/power/power_sam_d_r</Value>
@@ -724,10 +737,14 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/include</Value>
+      <Value>../src/ASF/thirdparty/freertos/freertos-9.0.0/Source/portable/GCC/ARM_CM0</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -773,6 +790,8 @@
       <Value>../src/ASF/sam0/drivers/adc/adc_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/tcc</Value>
       <Value>../src/ASF/sam0/drivers/wdt</Value>
+      <Value>../src/ASF/sam0/drivers/tc</Value>
+      <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -838,6 +857,8 @@
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\" />
     <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_dma\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\" />
+    <Folder Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\wdt\quick_start_callback\" />
@@ -873,11 +894,10 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\" />
-    <Folder Include="src\ASF\thirdparty\TraceRecorder\" />
-    <Folder Include="src\ASF\thirdparty\TraceRecorder\config\" />
-    <Folder Include="src\ASF\thirdparty\TraceRecorder\include\" />
     <Folder Include="src\config\" />
-    <Folder Include="src\radio" />
+    <Folder Include="src\telemetry" />
+    <Folder Include="src\telemetry\rscode-1.3" />
+    <Folder Include="src\rtos_tasks\" />
     <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
@@ -906,6 +926,12 @@
     <None Include="src\ASF\sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\ASF\sam0\drivers\tc\tc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\tc\tc_sam_d_r\tc.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam0\drivers\wdt\wdt.c">
       <SubType>compile</SubType>
     </Compile>
@@ -924,7 +950,19 @@
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\errors.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\errors.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\global.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\Flash_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\Flash_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\PWM_Commands.c">
@@ -933,16 +971,61 @@
     <Compile Include="src\processor_drivers\PWM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\processor_drivers\TC_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\TC_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\processor_drivers\Watchdog_Commands.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\Watchdog_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.c">
+    <Compile Include="src\rtos_tasks\attitude_data_task.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\Watchdog_Task.h">
+    <Compile Include="src\rtos_tasks\antenna_deploy_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\battery_charging_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\current_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\flash_activate_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\flash_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks_config.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\rtos_tasks_config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\transmit_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\watchdog_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\watchdog_task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\bat_testing.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\bat_testing.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\flatsat.c">
@@ -955,6 +1038,27 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\isItOn.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\Radio_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\Radio_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\rscode-1.3\berlekamp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\rscode-1.3\crcgen.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\rscode-1.3\ecc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\rscode-1.3\galois.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\telemetry\rscode-1.3\rs.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
@@ -1038,39 +1142,6 @@
     <Compile Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\timers.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcConfig.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcSnapshotConfig.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcStreamingConfig.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcHardwarePort.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcKernelPort.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcPortDefines.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcRecorder.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcKernelPort.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcSnapshotRecorder.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcStreamingRecorder.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_task_frequencies.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\runnable_configurations\struct_tests.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1143,13 +1214,6 @@
     <Compile Include="src\testing_functions\test_structs.h">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="..\..\..\..\EquiSAT%2520Backup\EQUiSat_before_rename.zip">
-      <SubType>compile</SubType>
-      <Link>EQUiSatOS\src\stacks\EQUiSat_before_rename.zip</Link>
-    </None>
-    <None Include="src\ASF\sam0\drivers\adc\adc_callback.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\readme.txt">
       <SubType>compile</SubType>
     </None>
@@ -1166,27 +1230,6 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\readme.txt">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\readme.txt">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\include\stdint.readme">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\a00111.html">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\ReadMe.url">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\readme.txt">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\readme.txt">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\thirdparty\TraceRecorder\readme.txt">
       <SubType>compile</SubType>
     </None>
     <None Include="src\config\conf_clocks.h">
@@ -1834,25 +1877,10 @@
     <Compile Include="src\processor_drivers\USART_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\radio\Radio_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\radio\Radio_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\run.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\runnable_configurations\init_rtos_tasks.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\init_rtos_tasks.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_tasks.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\rtos_tasks.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.c">
@@ -1861,12 +1889,9 @@
     <Compile Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\rtos_task_frequencies.h">
+    <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.h">
       <SubType>compile</SubType>
     </None>
@@ -1894,6 +1919,15 @@
     <Compile Include="src\sensor_drivers\TEMD6200_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\telemetry\rscode-1.3\gpl.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\telemetry\rscode-1.3\LICENSE">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\telemetry\rscode-1.3\Makefile">
+      <SubType>compile</SubType>
+    </None>
     <None Include="src\testing_functions\bit_flipping_tester.c">
       <SubType>compile</SubType>
     </None>

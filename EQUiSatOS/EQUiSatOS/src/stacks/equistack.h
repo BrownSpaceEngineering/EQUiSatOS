@@ -11,7 +11,9 @@
 
 #define MUTEX_WAIT_TIME_TICKS 10
 
-#include <asf.h>
+#include <asf.h> // don't #include global, there are circular dependencies!
+#include "task.h"
+#include "semphr.h"
 
 typedef struct equistack
 {
@@ -28,6 +30,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 void* equistack_Get(equistack* S, int16_t n);
 void* equistack_Initial_Stage(equistack* S);
 void* equistack_Stage(equistack* S);
+void* equistack_Push(equistack* S, void* data);
 void clear_existing_data(void* ptr, size_t slot_size);
 
 #endif /* EQUISTACK_H_ */

@@ -11,5 +11,6 @@
 
 void runit(void);
 void radioTest(void);
+void rsTest(void);
 
 #endif /* SCRATCH_TESTING_H_ */

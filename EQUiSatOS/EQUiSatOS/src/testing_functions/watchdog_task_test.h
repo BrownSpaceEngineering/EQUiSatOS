@@ -11,7 +11,7 @@
 
 #include <global.h>
 #include <assert.h>
-#include "../processor_drivers/Watchdog_Task.h"
+#include "../rtos_tasks/watchdog_task.h"
 
 void watch_test(void);
 

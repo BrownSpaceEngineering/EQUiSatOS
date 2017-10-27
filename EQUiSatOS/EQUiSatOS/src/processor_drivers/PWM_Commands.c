@@ -7,8 +7,10 @@
 
 #include "PWM_Commands.h"
 
-void configure_pwm(void)
-{
+void configure_pwm(int pwm_pin, int pwm_mux) {
+	if (tcc_instance.hw) {
+		tcc_reset(&tcc_instance);
+	}
 	struct tcc_config config_tcc;
 	tcc_get_config_defaults(&config_tcc, CONF_PWM_MODULE);
 	
@@ -18,23 +20,24 @@ void configure_pwm(void)
 	config_tcc.compare.match[CONF_PWM_CHANNEL] = PWM_ON_PERIOD; //when to change output
 	
 	config_tcc.pins.enable_wave_out_pin[CONF_PWM_OUTPUT] = true;
-	config_tcc.pins.wave_out_pin[CONF_PWM_OUTPUT]        = CONF_PWM_OUT_PIN;
-	config_tcc.pins.wave_out_pin_mux[CONF_PWM_OUTPUT]    = CONF_PWM_OUT_MUX;
+	config_tcc.pins.wave_out_pin[CONF_PWM_OUTPUT]        = pwm_pin;
+	config_tcc.pins.wave_out_pin_mux[CONF_PWM_OUTPUT]    = pwm_mux;
 
 	tcc_init(&tcc_instance, CONF_PWM_MODULE, &config_tcc);
 
 	tcc_enable(&tcc_instance);
 }
 
-/*
-	Set 
-*/
-bool setPulseWidthFraction(int numerator, int denominator){
-	if(numerator > denominator){
+bool set_pulse_width_fraction(int numerator, int denominator) {
+	if (numerator > denominator) {
 		return false;
-	}else{
-		int toSet = (PWM_PERIOD*numerator)/denominator;
-		tcc_set_compare_value(&tcc_instance,CONF_PWM_CHANNEL,toSet);
+	} else {
+		int toSet = (PWM_PERIOD * numerator) / denominator;
+		tcc_set_compare_value(&tcc_instance, CONF_PWM_CHANNEL, toSet);
 		return true;
 	}
+}
+
+void disable_pwm(void) {
+	tcc_disable(&tcc_instance);
 }
