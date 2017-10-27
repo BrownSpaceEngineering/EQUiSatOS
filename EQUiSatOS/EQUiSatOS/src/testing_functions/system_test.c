@@ -4,45 +4,6 @@
  * Created: 10/22/2017 1:15:00 PM
  *  Author: Jarod Boone
  */ 
-/*
-
-**ADC USE** 
-void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
-	struct adc_config config_adc;
-	// setup_config_defaults
-	adc_get_config_defaults(&config_adc);
-
-	config_adc.resolution = ADC_RESOLUTION_10BIT;
-
-	config_adc.positive_input = pin;
-	//setup_set_config
-	adc_init(adc_instance, ADC, &config_adc);
-	adc_enable(adc_instance);
-}
-
-//reads the current voltage from the ADC connection
-float readVoltagemV(struct adc_module adc_instance) {
-	if (!&adc_instance || !adc_instance.hw) {
-		//You must configure the adc_instance and set it as a global variable.
-		return -1;
-	}
-	
-	uint16_t result = 0;
-	int status;
-	
-	//start conversion
-	adc_start_conversion(&adc_instance);
-	
-	do {
-		// Wait for conversion to be done and read out result
-		status = adc_read(&adc_instance, &result);
-	} while (status == STATUS_BUSY);
-	float resFloat = result;
-	return resFloat;
-}
-*/ 
-#define CTRL_BOARD 1
-
 #include "system_test.h"
 
 float MLX90614_test(uint8_t addr){
@@ -53,39 +14,46 @@ float MLX90614_test(uint8_t addr){
 	 MLX90614_init(); //Turns on the IR sensor and sets up the Port
 	 
 	 //Read -> return_struct_float
-	 struct return_struct_float IR_read = MLX90614_readTempC(addr,OBJ1);
-	 float return_value = IR_read.return_value;
+	 return_struct_16 rs;
+	 MLX90614_read_all_obj(addr,rs);
 	 
 	 //If return status is return status is category OK
-	 if ((IR_read.return_status & 0x0F) != 0){
+	 if ((rs.return_status & 0x0F) != 0){
 		 // return_value = NULL;
 	 }
 	 
-	 return return_value; 
+	 return rs.return_value; 
 }
 
-float AD590_test(){
-	
-	if(CTRL_BOARD) { //control board
-		//To read CNTRLTEMP, put PB30 low, PB22 and PB23 High, PB10 low, and expect reading on PB00.
+uint16_t AD590_test(int channel, int num_samples){
 
-	} else {
-		struct adc_module temp_instance; //generate object
-		setup_pin(true, 51);
-		set_output(true, 51);
-		setup_pin(true, 49);
-		set_output(true, 49);
-		setup_pin(true, 50);
-		set_output(false, 50);
-		
-		//Set up object to adc pin
-		configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8); //IS THIS THE RIGHT PIN???? -> probably not lmao
-		
-		//try reading
-		return readVoltagemV(temp_instance);
+	struct adc_module temp_instance; //generate object
+	// TEST BOARD ADC MUX
+	//setup_pin(true, 51);
+	//set_output(true, 51);
+	//setup_pin(true, 49);
+	//set_output(true, 49);
+	//setup_pin(true, 50);
+	//set_output(false, 50);
+		//
+	////Set up object to adc pin
+	//configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8); //IS THIS THE RIGHT PIN???? -> probably not lmao
+		//
+	////try reading
+	//return read_adc(temp_instance);
+	
+	configure_adc(&temp_instance,P_AI_TEMP_OUT);
+	return_struct_8 rs;
+	LTC1380_channel_select(0x48, channel, rs);
+	
+	uint16_t sum =0;
+	
+	for (int j=0; j<num_samples; j++){
+		adc_enable(&temp_instance);
+		sum = sum +read_adc(temp_instance);
 	}
 	
-	
+	return sum/num_samples;	 
 }
 
 MPU9250Reading MPU9250_test(){
@@ -110,18 +78,32 @@ float HMC5883L_test(){
 }
 
 return_struct_16 TCA9535_test(){
-	
-	struct return_struct_16 init = TCA9535_init();
-	return readTCA9535Levels(); 
+	return_struct_16 rs;
+	TCA9535_init(rs);
+	readTCA9535Levels(rs); 
+	return rs;
 	
 }
 
-float TEMD6200_test(){
-	//test the photodiode 
+uint16_t TEMD6200_test(int num_samples){
 	
-	//To read in LED_Sense put PA10 low, PB22 High, PB23 Low, and expect reading on PB00.
+	struct adc_module pd_instance; 
 	
+	configure_adc(&pd_instance,P_AI_PD_OUT);
+	return_struct_8 rs;
+	LTC1380_channel_select(0x4a, 1, rs);
+	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
+			 
+	uint16_t sum =0;
+			 
+	for (int j=0; j<num_samples; j++){
+		adc_enable(&pd_instance);
+		sum = sum +read_adc(pd_instance);
+	}
+	
+	return sum/num_samples;
 
+		
 }
 
 //input a uint8_t array of length 4, it will fill each index with the corresponding test
@@ -233,6 +215,26 @@ void AD7991_control_test(uint8_t *results){
 	}		
 }
 
+void AD7991_control_test_all(float *results_f){
+	
+	uint16_t results[4]; 
+	
+	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator 
+	setup_pin(true, P_5V_EN); // 5V regulator 
+	
+		
+	set_output(true, P_RAD_PWR_RUN);		
+	set_output(true, P_5V_EN);
+	
+	AD7991_init(); 
+	AD7991_read_all(results, AD7991_ADDR_1);
+	
+	results_f[0] = ((float) results[0])/4096*3.3*2.01;//3V6Rf
+	results_f[1] = ((float) results[1])/4096*3.3;//3V6SNS
+	results_f[2]= ((float)  results[2])/4096*3.3*3.381;//5VREF
+	results_f[3] = ((float) results[3])/4096*3.3*2.01;//3V3REF	
+	
+}
 
 
 void system_test(void){
@@ -246,15 +248,37 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	
-	struct return_struct_0 testz; 
 	configure_i2c_master(SERCOM4); 
 	//configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
+	
+	LTC1380_init();
 
-	uint8_t results[4]; 
+	float results[4]; 
+	uint16_t expected[] = {3.6, 3.6, 5, 3.3}; 
+	
 	AD7991_control_test(results);
+	
+	for (int i = 0; i < 4; i++){
+		if (results[i] > expected[i]){
+			if((results[i] - expected[i]) >= 0.5) {
+				//FAILURE
+			}
+		} else {
+			if((expected[i] - results[i]) >= 0.5) {
+				//FAILURE
+			}
+		}
+	}
+	
+	uint16_t temps[4];
+	
+	temps[0] = AD590_test(1, 5);
+	temps[1] = AD590_test(1, 5);
+	temps[2] = AD590_test(1, 5);
+	temps[3] = AD590_test(1, 5);
+	
 	float test1 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
 	
-	float test2 = AD590_test(); 
 	MPU9250Reading test3 = MPU9250_test();
 	float test4 = HMC5883L_test(); 
 	return_struct_16 TCA9535_test(); 

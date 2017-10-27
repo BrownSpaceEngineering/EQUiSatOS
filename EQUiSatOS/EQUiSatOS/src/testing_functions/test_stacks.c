@@ -452,17 +452,17 @@ void multi_add()
 
 void multi_create() 
 {
-	//print("\n\r");
+	print("\n\r");
 	int n = 100;
 	for (int i = 0; i < n; i++) {
-		//print("-");
+		print("-");
 	}
 	
-	//print("\r");
+	print("\r");
 	for (int i = 0; i < n; i++) {
 		standard_case();
 		big_case();
-		//print("|");
+		print("|");
 	}
 	
 	return;
