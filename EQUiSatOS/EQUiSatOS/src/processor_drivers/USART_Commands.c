@@ -244,11 +244,12 @@ void print_old(const char *str_buf)
 // call to sprintf stores result in char *debug_buf
 void print(const char *format, ...)
 {
-	if(PRINT_DEBUG) {
+	#if PRINT_DEBUG  // if debug mode
 		va_list arg;
 		va_start (arg, format);
 		sprintf(debug_buf, format, arg);
 		va_end (arg);
 		usart_send_string(debug_buf);
-	}
+	#endif
+	
 }
