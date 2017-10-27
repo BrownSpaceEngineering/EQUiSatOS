@@ -35,17 +35,30 @@
 #define P_IR_PWR_CMD	PIN_PB17
 #define P_LED_CMD		PIN_PA12 //active low
 #define P_5V_EN			PIN_PB11
-#define L1_RUN_CHG		PIN_PA01
-#define L2_RUN_CHG		PIN_PB04
-#define LF_B1_RUNCHG	PIN_PB05
-#define LF_B2_RUNCHG	PIN_PB10
-#define L1_DISG			PIN_PB31 //active low
-#define L2_DISG			PIN_PA00 //active low
-#define LF_B1_OUTEN		PIN_PB06
-#define LF_B2_OUTEN		PIN_PB07
+#define P_L1_RUN_CHG	PIN_PA01
+#define P_L2_RUN_CHG	PIN_PB04
+#define P_LF_B1_RUNCHG	PIN_PB05
+#define P_LF_B2_RUNCHG	PIN_PB10
+#define P_L1_DISG		PIN_PB31 //active low
+#define P_L2_DISG		PIN_PA00 //active low
+#define P_LF_B1_OUTEN	PIN_PB06
+#define P_LF_B2_OUTEN	PIN_PB07
 	
 //GPIO Input
 #define P_DET_RTN		PIN_PB14
+	
+// TODO: fill in PB or PA pins
+#define P_L1_FAULTN		5
+#define P_L1_CHGN		4
+#define P_L1_ST			1
+#define P_L2_FAULTN		7
+#define P_L2_CHGN		6
+#define P_L2_ST			0
+#define P_LF_B1_CHGN	16
+#define P_LF_B1_FAULTN	17
+#define P_LF_B2_CHGN	14
+#define P_LF_B2_FAULTN	15
+#define P_SPF_ST		2
 	
 //PWM/TCC
 #define P_ANT_DRV1		PIN_PA13F_TCC0_WO7

@@ -167,7 +167,7 @@ void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[])
 
 void rsTest(void) {
 	unsigned char msg[] = "The quick brown fox jumped over the lazy dog.";
-	//unsigned char codeword[256];
+	unsigned char codeword[256];
 	 
 	int erasures[16];
 	int nerasures = 0;

@@ -5,7 +5,6 @@
 
 void flatsat_init(void);
 void read_IR(uint16_t* buffer);
-MPU9250Reading read_IMU(void);
 float read_temp(void);
 void led_flash(void);
 void flatsat_run(void);
