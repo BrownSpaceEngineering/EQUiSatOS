@@ -7,6 +7,10 @@
 
 #include "USART_Commands.h"
 
+#if PRINT_DEBUG  // if debug mode
+	char debug_buf[256];
+#endif
+
 uint8_t edbg_rx_data,ext_rx_data;
 
 void USART_init() {
@@ -236,7 +240,15 @@ void print_old(const char *str_buf)
 }
 
 // use in debug mode (set in header file)
-void print(const char *str_buf)
+// input: format string and arbitrary number of args to be passed to sprintf
+// call to sprintf stores result in char *debug_buf
+void print(const char *format, ...)
 {
-	if(PRINT_DEBUG) {usart_send_string(str_buf);}
+	if(PRINT_DEBUG) {
+		va_list arg;
+		va_start (arg, format);
+		sprintf(debug_buf, format, arg);
+		va_end (arg);
+		usart_send_string(debug_buf);
+	}
 }
