@@ -9,9 +9,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-//BOARD TYPE
-//#define CNTRL_BRD_V3
-#define XPLAINED_PRO
+// BOARD TYPE - ALSO LOOK AT SERCOM_PINOUT.H, it has to have it's own version changed too!!!
+//#define CNTRL_BRD_V3 // to use print, etc. on real control board
+#define XPLAINED_PRO  // to use print, etc. on devboard
 
 #include <global.h>
 #include "runnable_configurations/init_rtos_tasks.h"

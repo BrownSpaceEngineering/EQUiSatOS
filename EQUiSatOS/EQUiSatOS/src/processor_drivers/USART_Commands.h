@@ -14,7 +14,13 @@
 #define USART_BAUD_RATE 38400
 #define USART_SAMPLE_NUM 16
 #define SHIFT 32
-#define PRINT_DEBUG 0  // change to 1 if print debug is desired
+
+#ifdef XPLAINED_PRO
+	#define PRINT_DEBUG 1  // change to 1 if print debug on DEV BOARD is desired
+#endif
+#ifdef CNTRL_BRD_V3
+	#define PRINT_DEBUG 0  // change to 1 if print debug on REAL CONTROL BOARD is desired
+#endif
 
 int receiveIndex;
 char receivebuffer[42];

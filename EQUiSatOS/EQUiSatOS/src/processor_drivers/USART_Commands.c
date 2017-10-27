@@ -160,70 +160,145 @@ void edbg_usart_init(void)
 	/* synchronization busy */
 	while(SERCOM2->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
 }
-/* External connector(SERCOM3) UART bus and generic clock initialization */
-void ext_usart_clock_init(void)
-{
-	struct system_gclk_chan_config gclk_chan_conf;
-	uint32_t gclk_index = SERCOM3_GCLK_ID_CORE;
-	/* Turn on module in PM */
-	system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_SERCOM3);
-	/* Turn on Generic clock for USART */
-	system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-	//Default is generator 0. Other wise need to configure like below
-	/* gclk_chan_conf.source_generator = GCLK_GENERATOR_1; */
-	system_gclk_chan_set_config(gclk_index, &gclk_chan_conf);
-	system_gclk_chan_enable(gclk_index);
-}
-/* External connector(SERCOM3) pin initialization */
+
+
+// development board
+// essentially, we have to use SERCOM2 pins and masks instead of SERCOM3
+// (a lot of it is simply done by changing EXT_USART_SERCOM)
+#ifdef XPLAINED_PRO
+
+	#define EXT_USART_SERCOM			SERCOM2
+	#define EXT_USART_TX_PIN			PINMUX_PA08D_SERCOM2_PAD0
+	#define EXT_USART_RX_PIN			PINMUX_PA09D_SERCOM2_PAD1
+	
+	/* External connector(SERCOM2) UART bus and generic clock initialization */
+	void ext_usart_clock_init(void)
+	{
+		struct system_gclk_chan_config gclk_chan_conf;
+		uint32_t gclk_index = SERCOM2_GCLK_ID_CORE;								// CHANGED FROM SERCOM3
+		/* Turn on module in PM */
+		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_SERCOM2); // CHANGED FROM SERCOM3
+		/* Turn on Generic clock for USART */
+		system_gclk_chan_get_config_defaults(&gclk_chan_conf);
+		//Default is generator 0. Other wise need to configure like below
+		/* gclk_chan_conf.source_generator = GCLK_GENERATOR_1; */
+		system_gclk_chan_set_config(gclk_index, &gclk_chan_conf);
+		system_gclk_chan_enable(gclk_index);
+	}
+	/* External connector(SERCOM2) UART initialization */
+	void ext_usart_init(void)
+	{
+	uint16_t baud_value;
+	baud_value = calculate_baud_value(USART_BAUD_RATE,system_gclk_chan_get_hz(SERCOM2_GCLK_ID_CORE), // CHANGED FROM SERCOM3
+	USART_SAMPLE_NUM);
+	/* By setting the DORD bit LSB is transmitted first and setting the RXPO bit as
+	1 corresponding SERCOM PAD[1] will be used for data reception RXD, PAD[0] will be used as TxD
+	pin by setting TXPO bit as 0, 16x over-sampling is selected by setting the SAMPR bit as 0,
+	Generic clock is enabled in all sleep modes by setting RUNSTDBY bit as 1,
+	USART clock mode is selected as USART with internal clock by setting MODE bit into 1.
+	*/
+	EXT_USART_SERCOM->USART.CTRLA.reg = SERCOM_USART_CTRLA_DORD |  
+	SERCOM_USART_CTRLA_RXPO(0x3) |
+	 SERCOM_USART_CTRLA_TXPO(0x1) |
+	 SERCOM_USART_CTRLA_SAMPR(0x0)|
+	 SERCOM_USART_CTRLA_RUNSTDBY |
+	 SERCOM_USART_CTRLA_MODE_USART_INT_CLK ;
+	/* baud register value corresponds to the device communication baud rate */
+	EXT_USART_SERCOM->USART.BAUD.reg = baud_value;
+	/* 8-bits size is selected as character size by setting the bit CHSIZE as 0,
+	TXEN bit and RXEN bits are set to enable the Transmitter and receiver*/
+	EXT_USART_SERCOM->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0x0) |
+	 SERCOM_USART_CTRLB_TXEN |
+	 SERCOM_USART_CTRLB_RXEN ;
+	/* synchronization busy */
+	while(EXT_USART_SERCOM->USART.SYNCBUSY.bit.CTRLB);
+	/* SERCOM2 handler enabled */
+	system_interrupt_enable(SERCOM2_IRQn);								// CHANGED FROM SERCOM3
+	/* receive complete interrupt set */
+	EXT_USART_SERCOM->USART.INTENSET.reg = SERCOM_USART_INTFLAG_RXC;
+	/* SERCOMe peripheral enabled */
+	EXT_USART_SERCOM->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
+	/* synchronization busy */
+	while(EXT_USART_SERCOM->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
+	}
+	
+#endif
+
+// main processor
+// essentially, we have to use SERCOM3 pins and masks instead of SERCOM2
+#ifdef CNTRL_BRD_V3
+
+	#define EXT_USART_SERCOM			SERCOM3
+	#define EXT_USART_RX_PIN			PINMUX_PA25C_SERCOM3_PAD3
+	#define EXT_USART_TX_PIN			PINMUX_PA24C_SERCOM3_PAD2
+	
+	/* External connector(SERCOM3) UART bus and generic clock initialization */
+	void ext_usart_clock_init(void)
+	{
+		struct system_gclk_chan_config gclk_chan_conf;
+		uint32_t gclk_index = SERCOM3_GCLK_ID_CORE;
+		/* Turn on module in PM */
+		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_SERCOM3);
+		/* Turn on Generic clock for USART */
+		system_gclk_chan_get_config_defaults(&gclk_chan_conf);
+		//Default is generator 0. Other wise need to configure like below
+		/* gclk_chan_conf.source_generator = GCLK_GENERATOR_1; */
+		system_gclk_chan_set_config(gclk_index, &gclk_chan_conf);
+		system_gclk_chan_enable(gclk_index);
+	}
+	/* External connector(SERCOM3) UART initialization */
+	void ext_usart_init(void)
+	{
+	uint16_t baud_value;
+	baud_value = calculate_baud_value(USART_BAUD_RATE,system_gclk_chan_get_hz(SERCOM3_GCLK_ID_CORE),
+	USART_SAMPLE_NUM);
+	/* By setting the DORD bit LSB is transmitted first and setting the RXPO bit as
+	1 corresponding SERCOM PAD[1] will be used for data reception RXD, PAD[0] will be used as TxD
+	pin by setting TXPO bit as 0, 16x over-sampling is selected by setting the SAMPR bit as 0,
+	Generic clock is enabled in all sleep modes by setting RUNSTDBY bit as 1,
+	USART clock mode is selected as USART with internal clock by setting MODE bit into 1.
+	*/
+	EXT_USART_SERCOM->USART.CTRLA.reg = SERCOM_USART_CTRLA_DORD |
+	SERCOM_USART_CTRLA_RXPO(0x3) |
+	 SERCOM_USART_CTRLA_TXPO(0x1) |
+	 SERCOM_USART_CTRLA_SAMPR(0x0)|
+	 SERCOM_USART_CTRLA_RUNSTDBY |
+	 SERCOM_USART_CTRLA_MODE_USART_INT_CLK ;
+	/* baud register value corresponds to the device communication baud rate */
+	EXT_USART_SERCOM->USART.BAUD.reg = baud_value;
+	/* 8-bits size is selected as character size by setting the bit CHSIZE as 0,
+	TXEN bit and RXEN bits are set to enable the Transmitter and receiver*/
+	EXT_USART_SERCOM->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0x0) |
+	 SERCOM_USART_CTRLB_TXEN |
+	 SERCOM_USART_CTRLB_RXEN ;
+	/* synchronization busy */
+	while(EXT_USART_SERCOM->USART.SYNCBUSY.bit.CTRLB);
+	/* SERCOM2 handler enabled */
+	system_interrupt_enable(SERCOM3_IRQn);
+	/* receive complete interrupt set */
+	EXT_USART_SERCOM->USART.INTENSET.reg = SERCOM_USART_INTFLAG_RXC;
+	/* SERCOMe peripheral enabled */
+	EXT_USART_SERCOM->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
+	/* synchronization busy */
+	while(EXT_USART_SERCOM->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
+	}
+	
+#endif
+
+/* External connector(SERCOMX) pin initialization */
 void ext_usart_pin_init(void)
 {
 	/* PA08 and PA09 set into peripheral function*/
-	pin_set_peripheral_function(PINMUX_PA24C_SERCOM3_PAD2);
-	pin_set_peripheral_function(PINMUX_PA25C_SERCOM3_PAD3);
-}
-/* External connector(SERCOM3) UART initialization */
-void ext_usart_init(void)
-{
-uint16_t baud_value;
-baud_value = calculate_baud_value(USART_BAUD_RATE,system_gclk_chan_get_hz(SERCOM3_GCLK_ID_CORE),
-USART_SAMPLE_NUM);
-/* By setting the DORD bit LSB is transmitted first and setting the RXPO bit as
-1 corresponding SERCOM PAD[1] will be used for data reception RXD, PAD[0] will be used as TxD
-pin by setting TXPO bit as 0, 16x over-sampling is selected by setting the SAMPR bit as 0,
-Generic clock is enabled in all sleep modes by setting RUNSTDBY bit as 1,
-USART clock mode is selected as USART with internal clock by setting MODE bit into 1.
-*/
-SERCOM3->USART.CTRLA.reg = SERCOM_USART_CTRLA_DORD |
-SERCOM_USART_CTRLA_RXPO(0x3) |
- SERCOM_USART_CTRLA_TXPO(0x1) |
- SERCOM_USART_CTRLA_SAMPR(0x0)|
- SERCOM_USART_CTRLA_RUNSTDBY |
- SERCOM_USART_CTRLA_MODE_USART_INT_CLK ;
-/* baud register value corresponds to the device communication baud rate */
-SERCOM3->USART.BAUD.reg = baud_value;
-/* 8-bits size is selected as character size by setting the bit CHSIZE as 0,
-TXEN bit and RXEN bits are set to enable the Transmitter and receiver*/
-SERCOM3->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0x0) |
- SERCOM_USART_CTRLB_TXEN |
- SERCOM_USART_CTRLB_RXEN ;
-/* synchronization busy */
-while(SERCOM3->USART.SYNCBUSY.bit.CTRLB);
-/* SERCOM2 handler enabled */
-system_interrupt_enable(SERCOM3_IRQn);
-/* receive complete interrupt set */
-SERCOM3->USART.INTENSET.reg = SERCOM_USART_INTFLAG_RXC;
-/* SERCOMe peripheral enabled */
-SERCOM3->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
-/* synchronization busy */
-while(SERCOM3->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
+	pin_set_peripheral_function(EXT_USART_RX_PIN);
+	pin_set_peripheral_function(EXT_USART_TX_PIN);
 }
 
 void usart_send_string(const char *str_buf)
 {
 	while (*str_buf != '\0')
 	{
-		while(!SERCOM3->USART.INTFLAG.bit.DRE);
-		SERCOM3->USART.DATA.reg = *str_buf;
+		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just do to uncertainty of above ifdefs
+		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
 }
@@ -233,8 +308,8 @@ void print_old(const char *str_buf)
 {
 	while (*str_buf != '\0')
 	{
-		while(!SERCOM2->USART.INTFLAG.bit.DRE);
-		SERCOM2->USART.DATA.reg = *str_buf;
+		while(!EXT_USART_SERCOM->USART.INTFLAG.bit.DRE); // error highlight is just do to uncertainty of above ifdefs
+		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
 }
