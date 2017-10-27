@@ -33,6 +33,37 @@ void MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, return_struct_16
 	MLX90614_read2ByteValue(addr, (uint8_t)chan, rs);
 }
 
+void MLX90614_read_all_obj(MLXDeviceAddr addr, return_struct_16 rs){
+	uint16_t val[2]; 
+	uint8_t read_buffer[2] = {
+		0x0, 0x0
+	};
+	
+	MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, rs);
+	enum status_code read_obj1 =  rs.return_status;
+	
+	if ((read_obj1 & 0x0F) != 0){
+		rs.return_status = read_obj1; 
+		return; 
+	}
+	
+	val[0] = read_buffer[0] | (((uint16_t)read_buffer[1]) << 8);
+	
+	MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, rs);
+	enum status_code read_obj2 =  rs.return_status;
+	
+	if ((read_obj2 & 0x0F) != 0) {
+		rs.return_status = read_obj2;
+		return;
+	}
+	
+	val[1] = read_buffer[0] | (((uint16_t)read_buffer[1]) << 8);
+	
+	rs.return_status = read_obj2; 
+	rs.return_value = (val[0] + val[1])/2;
+		
+}
+
 // converts a data value from the sensor corresponding to a temperature memory address to a Celsius temperature
 float dataToTemp(uint16_t data){
 	float raw_temp = (float)data; // treat data as a 16-bit float

@@ -53,15 +53,16 @@ float MLX90614_test(uint8_t addr){
 	 MLX90614_init(); //Turns on the IR sensor and sets up the Port
 	 
 	 //Read -> return_struct_float
-	 struct return_struct_float IR_read = MLX90614_readTempC(addr,OBJ1);
-	 float return_value = IR_read.return_value;
+	 return_struct_16 rs;
+	 MLX90614_read_all_obj(addr,rs);
+	 
 	 
 	 //If return status is return status is category OK
-	 if ((IR_read.return_status & 0x0F) != 0){
+	 if ((rs.return_status & 0x0F) != 0){
 		 // return_value = NULL;
 	 }
 	 
-	 return return_value; 
+	 return rs.return_value; 
 }
 
 float AD590_test(){
@@ -82,7 +83,7 @@ float AD590_test(){
 		configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8); //IS THIS THE RIGHT PIN???? -> probably not lmao
 		
 		//try reading
-		return readVoltagemV(temp_instance);
+		return read_adc(temp_instance);
 	}
 	
 	
@@ -110,9 +111,10 @@ float HMC5883L_test(){
 }
 
 return_struct_16 TCA9535_test(){
-	
-	struct return_struct_16 init = TCA9535_init();
-	return readTCA9535Levels(); 
+	return_struct_16 rs;
+	TCA9535_init(rs);
+	readTCA9535Levels(rs); 
+	return rs;
 	
 }
 
@@ -120,8 +122,6 @@ float TEMD6200_test(){
 	//test the photodiode 
 	
 	//To read in LED_Sense put PA10 low, PB22 High, PB23 Low, and expect reading on PB00.
-	
-
 }
 
 //input a uint8_t array of length 4, it will fill each index with the corresponding test
@@ -233,6 +233,19 @@ void AD7991_control_test(uint8_t *results){
 	}		
 }
 
+void AD7991_control_test_all(uint8_t *results){
+	
+	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator 
+	setup_pin(true, P_5V_EN); // 5V regulator 
+	
+		
+	set_output(true, P_RAD_PWR_RUN);		
+	set_output(true, P_5V_EN);
+	
+	AD7991_init(); 
+	AD7991_read_all(results, AD7991_ADDR_1);
+	
+}
 
 
 void system_test(void){
@@ -246,11 +259,10 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	
-	struct return_struct_0 testz; 
 	configure_i2c_master(SERCOM4); 
 	//configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 
-	uint8_t results[4]; 
+	uint16_t results[4]; 
 	AD7991_control_test(results);
 	float test1 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
 	
