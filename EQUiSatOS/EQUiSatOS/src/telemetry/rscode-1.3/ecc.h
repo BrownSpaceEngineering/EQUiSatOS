@@ -41,6 +41,8 @@
   (say, 10 or 20)
 
   ****************************************************************/
+
+#include <stdint.h>
 #define NPAR 32
 
 /****************************************************************/
@@ -57,13 +59,13 @@ typedef unsigned short BIT16;
 
 /*************************************/
 /* Encoder parity bytes */
-extern int pBytes[MAXDEG];
+extern uint8_t pBytes[MAXDEG];
 
 /* Decoder syndrome bytes */
 extern int synBytes[MAXDEG];
 
 /* print debugging info */
-//extern int DEBUG;
+//extern uint8_t DEBUG;
 
 /* Reed Solomon encode/decode routines */
 void initialize_ecc (void);
@@ -72,19 +74,19 @@ void decode_data (unsigned char data[], int nbytes);
 void encode_data (unsigned char msg[], int nbytes, unsigned char dst[]);
 
 /* CRC-CCITT checksum generator */
-BIT16 crc_ccitt(unsigned char *msg, int len);
+BIT16 crc_ccitt(unsigned char *msg, uint8_t len);
 
 /* galois arithmetic tables */
-extern int gexp[];
-extern int glog[];
+extern uint8_t gexp[];
+extern uint8_t glog[];
 
 void init_galois_tables (void);
-int ginv(int elt); 
-int gmult(int a, int b);
+uint8_t ginv(uint8_t elt); 
+uint8_t gmult(uint8_t a, uint8_t b);
 
 
 /* Error location routines */
-int correct_errors_erasures (unsigned char codeword[], int csize,int nerasures, int erasures[]);
+uint8_t correct_errors_erasures (uint8_t codeword[], uint8_t csize,uint8_t nerasures, uint8_t erasures[]);
 
 /* polynomial arithmetic */
 void add_polys(int dst[], int src[]) ;
@@ -93,3 +95,4 @@ void mult_polys(int dst[], int p1[], int p2[]);
 
 void copy_poly(int dst[], int src[]);
 void zero_poly(int poly[]);
+void zero_poly_uint8 (uint8_t poly[]);

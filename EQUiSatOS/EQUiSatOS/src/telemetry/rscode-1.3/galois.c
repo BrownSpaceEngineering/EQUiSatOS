@@ -30,9 +30,6 @@
  *
  ******************************/
  
- 
-#include <stdio.h>
-#include <stdlib.h>
 #include "ecc.h"
 
 /* This is one of 14 irreducible polynomials
@@ -42,8 +39,8 @@
 #define PPOLY 0x1D 
 
 
-int gexp[512];
-int glog[256];
+uint8_t gexp[512];
+uint8_t glog[256];
 
 
 static void init_exp_table (void);
@@ -60,8 +57,8 @@ init_galois_tables (void)
 static void
 init_exp_table (void)
 {
-  int i, z;
-  int pinit,p1,p2,p3,p4,p5,p6,p7,p8;
+  uint16_t i, z;
+  uint8_t pinit,p1,p2,p3,p4,p5,p6,p7,p8;
 
   pinit = p2 = p3 = p4 = p5 = p6 = p7 = p8 = 0;
   p1 = 1;
@@ -95,9 +92,9 @@ init_exp_table (void)
 }
 
 /* multiplication using logarithms */
-int gmult(int a, int b)
+uint8_t gmult(uint8_t a, uint8_t b)
 {
-  int i,j;
+  uint8_t i,j;
   if (a==0 || b == 0) return (0);
   i = glog[a];
   j = glog[b];
@@ -105,7 +102,7 @@ int gmult(int a, int b)
 }
 		
 
-int ginv (int elt) 
+uint8_t ginv (uint8_t elt) 
 { 
   return (gexp[255-glog[elt]]);
 }
