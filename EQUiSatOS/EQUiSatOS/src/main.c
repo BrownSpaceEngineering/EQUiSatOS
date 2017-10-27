@@ -18,7 +18,7 @@ int main(void)
 	/* Start and init tracing */
 	vTraceEnable(TRC_START);
 
-	//run_rtos();
+	run_rtos();
 
 	/* TESTS */
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);

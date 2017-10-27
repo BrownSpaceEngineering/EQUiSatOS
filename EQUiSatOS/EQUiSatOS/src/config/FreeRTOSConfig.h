@@ -24,7 +24,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 0 ) )
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
-#define configAPPLICATION_ALLOCATED_HEAP		1
+#define configAPPLICATION_ALLOCATED_HEAP		0
 #define configMAX_TASK_NAME_LEN                 ( 8 )
 #define configUSE_TRACE_FACILITY                1
 #define configUSE_16_BIT_TICKS                  0
@@ -32,10 +32,10 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_MUTEXES                       1
 #define configQUEUE_REGISTRY_SIZE               0
 #define configCHECK_FOR_STACK_OVERFLOW          0
-#define configUSE_RECURSIVE_MUTEXES             1
+#define configUSE_RECURSIVE_MUTEXES             0
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_COUNTING_SEMAPHORES           1
-#define configUSE_QUEUE_SETS                    1
+#define configUSE_QUEUE_SETS                    0
 #define configGENERATE_RUN_TIME_STATS           0
 #define configENABLE_BACKWARD_COMPATIBILITY     0
 
