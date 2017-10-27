@@ -18,11 +18,11 @@ typedef uint16_t lifepo_volts_batch			[4];
 typedef uint16_t bat_temp_batch				[4];
 typedef uint16_t ir_temps_batch				[6];
 typedef uint16_t radio_volts_batch			[2];
-typedef uint16_t bat_charge_volts_batch		[14];
+typedef uint16_t bat_charge_volts_batch		[2];
 typedef uint16_t bat_charge_dig_sigs_batch;	// single value
 typedef uint16_t digital_out_batch;			// single value
-typedef uint16_t ir_batch					[12];
-typedef uint8_t diode_batch					[6];
+typedef uint16_t ir_batch					[6];
+typedef uint8_t pdiode_batch				[6];
 typedef uint16_t led_current_batch			[4];
 typedef uint16_t accelerometer_batch		[3];
 typedef uint16_t gyro_batch					[3];

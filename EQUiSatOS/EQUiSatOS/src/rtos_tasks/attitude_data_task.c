@@ -48,7 +48,7 @@ void attitude_data_task(void *pvParameters)
 			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[DIODE_DATA] >= attitude_DIODE_LOOPS_PER_LOG) {
-			read_diode_batch(current_struct->diode_data[data_array_tails[DIODE_DATA]]);
+			read_pdiode_batch(current_struct->diode_data[data_array_tails[DIODE_DATA]]);
 			increment_data_type(DIODE_DATA, data_array_tails, loops_since_last_log);
 		}
 		// These should only ever happen at the same time
