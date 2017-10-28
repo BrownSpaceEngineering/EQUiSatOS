@@ -130,11 +130,6 @@ void read_IR(uint16_t* buffer) {
 	}
 }
 
-MPU9250Reading read_IMU(void) {
-	MPU9250Reading data = MPU9250_read();
-	return data;
-}
-
 void sendToArduino(uint8_t* data, uint8_t length) {
 	writeDataToAddress(data, length, ARDUINO_ADDR, true);
 }

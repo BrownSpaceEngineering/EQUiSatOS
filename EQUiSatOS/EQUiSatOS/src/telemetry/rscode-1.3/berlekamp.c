@@ -35,27 +35,28 @@
  *
  */
 
+#include <stdio.h>
 #include "ecc.h"
 
 /* The Error Locator Polynomial, also known as Lambda or Sigma. Lambda[0] == 1 */
 static int Lambda[MAXDEG];
 
 /* The Error Evaluator Polynomial */
-static int Omega[MAXDEG];
+static uint8_t Omega[MAXDEG];
 
 /* local ANSI declarations */
-static int compute_discrepancy(int lambda[], int S[], int L, int n);
+static int compute_discrepancy(int lambda[], int S[], uint8_t L, uint8_t n);
 static void init_gamma(int gamma[]);
 static void compute_modified_omega (void);
 static void mul_z_poly (int src[]);
 
 /* error locations found using Chien's search*/
-static int ErrorLocs[256];
-static int NErrors;
+static uint8_t ErrorLocs[256];
+static uint8_t NErrors;
 
 /* erasure flags */
-static int ErasureLocs[256];
-static int NErasures;
+static uint8_t ErasureLocs[256];
+static uint8_t NErasures;
 
 /* From  Cain, Clark, "Error-Correction Coding For Digital Communications", pp. 216. */
 void
@@ -101,20 +102,23 @@ Modified_Berlekamp_Massey (void)
   }
 	
   for(i = 0; i < MAXDEG; i++) Lambda[i] = psi[i];
-  compute_modified_omega();	
+  compute_modified_omega();
+
+	
 }
 
 /* given Psi (called Lambda in Modified_Berlekamp_Massey) and synBytes,
    compute the combined erasure/error evaluator polynomial as 
    Psi*S mod z^4
   */
-void compute_modified_omega ()
+void
+compute_modified_omega ()
 {
-  int i;
+  uint8_t i;
   int product[MAXDEG*2];
 	
   mult_polys(product, Lambda, synBytes);	
-  zero_poly(Omega);
+  zero_poly_uint8(Omega);
   for(i = 0; i < NPAR; i++) Omega[i] = product[i];
 
 }
@@ -123,8 +127,8 @@ void compute_modified_omega ()
 void
 mult_polys (int dst[], int p1[], int p2[])
 {
-  int i, j;
-  int tmp1[MAXDEG*2];
+  int16_t i, j;
+  uint8_t tmp1[MAXDEG*2];
 	
   for (i=0; i < (MAXDEG*2); i++) dst[i] = 0;
 	
@@ -164,9 +168,10 @@ init_gamma (int gamma[])
 	
 	
 	
-void compute_next_omega (int d, int A[], int dst[], int src[])
+void 
+compute_next_omega (int d, int A[], int dst[], int src[])
 {
-  int i;
+  uint8_t i;
   for ( i = 0; i < MAXDEG;  i++) {
     dst[i] = src[i] ^ gmult(d, A[i]);
   }
@@ -175,9 +180,9 @@ void compute_next_omega (int d, int A[], int dst[], int src[])
 
 
 int
-compute_discrepancy (int lambda[], int S[], int L, int n)
+compute_discrepancy (int lambda[], int S[], uint8_t L, uint8_t n)
 {
-  int i, sum=0;
+  uint8_t i, sum=0;
 	
   for (i = 0; i <= L; i++) 
     sum ^= gmult(lambda[i], S[n-i]);
@@ -188,26 +193,32 @@ compute_discrepancy (int lambda[], int S[], int L, int n)
 
 void add_polys (int dst[], int src[]) 
 {
-  int i;
+  uint8_t i;
   for (i = 0; i < MAXDEG; i++) dst[i] ^= src[i];
 }
 
 void copy_poly (int dst[], int src[]) 
 {
-  int i;
+  uint8_t i;
   for (i = 0; i < MAXDEG; i++) dst[i] = src[i];
 }
 
 void scale_poly (int k, int poly[]) 
 {	
-  int i;
+  uint8_t i;
   for (i = 0; i < MAXDEG; i++) poly[i] = gmult(k, poly[i]);
 }
 
 
 void zero_poly (int poly[]) 
 {
-  int i;
+  uint8_t i;
+  for (i = 0; i < MAXDEG; i++) poly[i] = 0;
+}
+
+void zero_poly_uint8 (uint8_t poly[]) 
+{
+  uint8_t i;
   for (i = 0; i < MAXDEG; i++) poly[i] = 0;
 }
 
@@ -215,7 +226,7 @@ void zero_poly (int poly[])
 /* multiply by z, i.e., shift right by 1 */
 static void mul_z_poly (int src[])
 {
-  int i;
+  uint8_t i;
   for (i = MAXDEG-1; i > 0; i--) src[i] = src[i-1];
   src[0] = 0;
 }
@@ -231,7 +242,7 @@ static void mul_z_poly (int src[])
 void 
 Find_Roots (void)
 {
-  int sum, r, k;	
+  uint16_t sum, r, k;	
   NErrors = 0;
   
   for (r = 1; r < 256; r++) {
@@ -261,13 +272,13 @@ Find_Roots (void)
  *
  */
 
-int
-correct_errors_erasures (unsigned char codeword[], 
-			 int csize,
-			 int nerasures,
-			 int erasures[])
+uint8_t
+correct_errors_erasures (uint8_t codeword[], 
+			 uint8_t csize,
+			 uint8_t nerasures,
+			 uint8_t erasures[])
 {
-  int r, i, j, err;
+  uint8_t r, i, j, err;
 
   /* If you want to take advantage of erasure correction, be sure to
      set NErasures and ErasureLocs[] with the locations of erasures. 

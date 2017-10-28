@@ -63,20 +63,11 @@
 #define		ZA_OFFSET_H      0x0A
 #define		ZA_OFFSET_L_TC   0x0B
 
-typedef struct {
-	int16_t x, y, z;
-} ThreeAxisReading;
-
-typedef struct {
-	ThreeAxisReading mag, accel, gyro;
-} MPU9250Reading;
-
 void MPU9250_init(void);
-void MPU9250_read_mag(MPU9250Reading* toFill);
-enum status_code MPU9250_read_acc(MPU9250Reading* toFill);
-enum status_code MPU9250_read_gyro(MPU9250Reading* toFill);
+enum status_code MPU9250_read_mag(int16_t toFill[3]);
+enum status_code MPU9250_read_acc(int16_t toFill[3]);
+enum status_code MPU9250_read_gyro(int16_t toFill[3]);
 void MPU9250_computeBias();
-MPU9250Reading MPU9250_read(void);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 
 #endif

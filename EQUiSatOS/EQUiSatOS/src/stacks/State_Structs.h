@@ -45,7 +45,7 @@ typedef struct attitude_data_t
 	uint32_t timestamp;
 	/* ibid */
 	ir_batch ir_data								[attitude_IR_DATA_ARR_LEN];
-	diode_batch diode_data							[attitude_DIODE_DATA_ARR_LEN];
+	pdiode_batch diode_data							[attitude_DIODE_DATA_ARR_LEN];
 	accelerometer_batch accelerometer_data			[attitude_ACCELEROMETER_DATA_ARR_LEN];
 	gyro_batch gyro_data							[attitude_GYRO_DATA_ARR_LEN];
 	magnetometer_batch magnetometer_data			[attitude_MAGNETOMETER_DATA_ARR_LEN];
