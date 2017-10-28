@@ -24,14 +24,17 @@ void bat_testing_init(){
 void readRemoteADC_0(float* batReadings){
 	uint16_t remoteADC[4];
 	AD7991_read_all(remoteADC, AD7991_ADDR_0);
-	batReadings[0] = ((float) remoteADC[0])/4096*3.3;//TBD
-	batReadings[1] = ((float) remoteADC[1])/4096*3.3;//TBD
-	batReadings[2]= ((float)  remoteADC[2])/4096*3.3;//TBD
-	batReadings[3] = ((float) remoteADC[3])/4096*3.3;//TBD
+	batReadings[0] = (((float) remoteADC[0])/4096*3.3-1)*2000;// mA
+	batReadings[1] = (((float) remoteADC[1])/4096*3.3-1)*2000;// mA
+	batReadings[2]= ((float)  remoteADC[2])/4096*3.3*2.717;//V
+	batReadings[3] = ((float) remoteADC[3])/4096*3.3*5.58;//V
 }
 
 
 
 void bat_testing_run(){
 	
+	for (int i=0; i<100; i++){
+		for (int j=4 )
+	}
 }
