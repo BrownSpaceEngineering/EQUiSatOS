@@ -28,6 +28,6 @@ int main(void)
 
 	run_rtos();*/
 	//assert_transmission_constants();*/
-	system_test();
+	 system_test(); 
 	//run_rtos();
 }
