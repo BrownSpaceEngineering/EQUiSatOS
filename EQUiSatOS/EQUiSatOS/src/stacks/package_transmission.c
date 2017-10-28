@@ -115,7 +115,7 @@ void write_attitude_data(char* buffer, equistack* attitude_stack) {
 		// we have to fill up the entire section, so either write the data or its null equivalent
 		if (attitude_data != NULL) {
 			write_bytes_and_shift(buffer, attitude_data->ir_data,			sizeof(ir_batch)				/* [1] */,		&index);
-			write_bytes_and_shift(buffer, attitude_data->diode_data,		sizeof(diode_batch)				/* [1] */,		&index);
+			write_bytes_and_shift(buffer, attitude_data->diode_data,		sizeof(pdiode_batch)				/* [1] */,		&index);
 			write_bytes_and_shift(buffer, attitude_data->accelerometer_data,sizeof(accelerometer_batch) * 2 /* [2] */,		&index);
 			write_bytes_and_shift(buffer, attitude_data->gyro_data,			sizeof(gyro_batch)				/* [2] */,		&index);
 			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	sizeof(magnetometer_batch)		/* [1] */,		&index); 

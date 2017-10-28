@@ -112,7 +112,7 @@
 
 
 /* Error storage and interfaces */
-#define ERROR_STACK_MAX		40
+#define ERROR_STACK_MAX					40
 
 typedef uint16_t sat_error_t;
 equistack error_equistack; // of sat_error_t

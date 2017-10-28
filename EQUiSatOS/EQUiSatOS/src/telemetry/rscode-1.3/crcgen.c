@@ -37,9 +37,9 @@ BIT16 crchware(BIT16 data, BIT16 genpoly, BIT16 accum);
 
 /* Computes the CRC-CCITT checksum on array of byte data, length len
 */
-BIT16 crc_ccitt(unsigned char *msg, int len)
+BIT16 crc_ccitt(unsigned char *msg, uint8_t len)
 {
-	int i;
+	uint8_t i;
 	BIT16 acc = 0;
 
 	for (i = 0; i < len; i++) {
@@ -63,4 +63,3 @@ BIT16 crchware(BIT16 data, BIT16 genpoly, BIT16 accum)
 	}
 	return (accum);
 }
-		

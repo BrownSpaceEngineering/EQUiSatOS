@@ -9,7 +9,7 @@
 
 void LTC1380_init(void){
 	//nothing yet
-};
+}
 
 
 void LTC1380_channel_select(uint8_t addr, uint8_t target, return_struct_8 rs){
@@ -21,14 +21,10 @@ void LTC1380_channel_select(uint8_t addr, uint8_t target, return_struct_8 rs){
 	uint8_t bufferResult = target + 8;
 	rs.return_status = writeDataToAddress(&bufferResult,1,addr,true);
 	rs.return_value = bufferResult;
-	
-	return rs;
 }
 
 void LTC1380_disable(uint8_t addr, return_struct_8 rs){
 	uint8_t off = 0;
 	rs.return_status = writeDataToAddress(&off,1,addr,true);
 	rs.return_value = off;
-	
-	return rs;
 }

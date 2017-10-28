@@ -25,10 +25,12 @@
  * Source code is available at http://rscode.sourceforge.net
  */
 
+#include <stdio.h>
+#include <ctype.h>
 #include "ecc.h"
 
 /* Encoder parity bytes */
-int pBytes[MAXDEG];
+uint8_t pBytes[MAXDEG];
 
 /* Decoder syndrome bytes */
 int synBytes[MAXDEG];
@@ -36,12 +38,14 @@ int synBytes[MAXDEG];
 /* generator polynomial */
 int genPoly[MAXDEG*2];
 
-//int DEBUG = FALSE;
+//uint8_t DEBUG = FALSE;
 
-static void compute_genpoly (int nbytes, int genpoly[]);
+static void
+compute_genpoly (int nbytes, int genpoly[]);
 
 /* Initialize lookup tables, polynomials, etc. */
-void initialize_ecc ()
+void
+initialize_ecc ()
 {
   /* Initialize the galois field arithmetic tables */
     init_galois_tables();
@@ -50,26 +54,29 @@ void initialize_ecc ()
     compute_genpoly(NPAR, genPoly);
 }
 
-void zero_fill_from (unsigned char buf[], int from, int to)
+void
+zero_fill_from (unsigned char buf[], int from, int to)
 {
-  int i;
+  uint8_t i;
   for (i = from; i < to; i++) buf[i] = 0;
 }
 
 /* debugging routines */
-/*void print_parity (void)
+/*void
+print_parity (void)
 { 
-  int i;
+  uint8_t i;
   printf("Parity Bytes: ");
   for (i = 0; i < NPAR; i++) 
     printf("[%d]:%x, ",i,pBytes[i]);
   printf("\n");
-}*/
+}
 
 
-/*void print_syndrome (void)
+void
+print_syndrome (void)
 { 
-  int i;
+  uint8_t i;
   printf("Syndrome Bytes: ");
   for (i = 0; i < NPAR; i++) 
     printf("[%d]:%x, ",i,synBytes[i]);
@@ -77,9 +84,10 @@ void zero_fill_from (unsigned char buf[], int from, int to)
 }*/
 
 /* Append the parity bytes onto the end of the message */
-void build_codeword (unsigned char msg[], int nbytes, unsigned char dst[])
+void
+build_codeword (unsigned char msg[], int nbytes, unsigned char dst[])
 {
-  int i;
+  uint8_t i;
 	
   for (i = 0; i < nbytes; i++) dst[i] = msg[i];
 	
@@ -95,9 +103,10 @@ void build_codeword (unsigned char msg[], int nbytes, unsigned char dst[])
  * into the synBytes[] array.
  */
  
-void decode_data(unsigned char data[], int nbytes)
+void
+decode_data(unsigned char data[], int nbytes)
 {
-  int i, j, sum;
+  uint8_t i, j, sum;
   for (j = 0; j < NPAR;  j++) {
     sum	= 0;
     for (i = 0; i < nbytes; i++) {
@@ -112,7 +121,7 @@ void decode_data(unsigned char data[], int nbytes)
 int
 check_syndrome (void)
 {
- int i, nz = 0;
+ uint8_t i, nz = 0;
  for (i =0 ; i < NPAR; i++) {
   if (synBytes[i] != 0) {
       nz = 1;
@@ -123,12 +132,14 @@ check_syndrome (void)
 }
 
 
-void debug_check_syndrome (void)
+void
+debug_check_syndrome (void)
 {	
-  int i;
+  uint8_t i;
 	
   for (i = 0; i < 3; i++) {
-    //printf(" inv log S[%d]/S[%d] = %d\n", i, i+1, glog[gmult(synBytes[i], ginv(synBytes[i+1]))]);
+    printf(" inv log S[%d]/S[%d] = %d\n", i, i+1, 
+	   glog[gmult(synBytes[i], ginv(synBytes[i+1]))]);
   }
 }
 
@@ -139,9 +150,11 @@ void debug_check_syndrome (void)
  * at least n+1 bytes long.
  */
 
-static void compute_genpoly (int nbytes, int genpoly[])
+static void
+compute_genpoly (int nbytes, int genpoly[])
 {
-  int i, tp[256], tp1[256];
+  uint8_t i;
+  int tp[256], tp1[256];
 	
   /* multiply (x + a^n) for n = 1 to nbytes */
 
@@ -166,9 +179,10 @@ static void compute_genpoly (int nbytes, int genpoly[])
  * 
  */
 
-void encode_data (unsigned char msg[], int nbytes, unsigned char dst[])
+void
+encode_data (unsigned char msg[], int nbytes, unsigned char dst[])
 {
-  int i, LFSR[NPAR+1],dbyte, j;
+  uint8_t i, LFSR[NPAR+1],dbyte, j;
 	
   for(i=0; i < NPAR+1; i++) LFSR[i]=0;
 
@@ -185,4 +199,3 @@ void encode_data (unsigned char msg[], int nbytes, unsigned char dst[])
 	
   build_codeword(msg, nbytes, dst);
 }
-
