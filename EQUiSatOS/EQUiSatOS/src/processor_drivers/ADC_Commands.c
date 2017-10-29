@@ -43,3 +43,7 @@ float readVoltagemV(struct adc_module adc_instance) {
 float readVoltageV(struct adc_module adc_instance){
 	return readVoltagemV(adc_instance)/1000.0;
 } 
+
+uint16_t read_adc(struct adc_module adc_instance) {
+	return 0;
+}

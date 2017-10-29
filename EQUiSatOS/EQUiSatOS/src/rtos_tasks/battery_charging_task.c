@@ -15,22 +15,68 @@ int state = FULL_LION;
 // this array represents both the past state and the current state
 // it's smartly refreshed such that if it's old values are needed,
 // they aren't overwritten until after they're needed 
-int charging[4] = {0, 0, 0, 0};
+bool charging[4] = {false, false, false, false};
 
 // number of strikes for each battery
-int strikes[4] = {0, 0, 0, 0};
+bool strikes[4] = {false, false, false, false};
 
 // counts up from zero as the method gets executed
 int iteration_count = 0;
 
-int get_battery_percentage(int battery_number)
+int get_battery_percentage(battery batt)
 {
-	// TODO: fill this out
+	struct adc_module adc_instance;
+	struct adc_module adc_instance1;
+	uint16_t volts;
+	// for explanation of conversions (multiplication) see Battery Board V2 Datasheet
+	switch (batt) {
+		case LION_ONE:
+			configure_adc(&adc_instance, P_AI_L1_REF);
+			volts = read_adc(adc_instance) * 2.5;
+			break;
+		case LION_TWO:
+			configure_adc(&adc_instance, P_AI_L2_REF);
+			volts = read_adc(adc_instance) * 2.5;
+			break;
+		case LIFE_PO_BANK_ONE:
+			configure_adc(&adc_instance, P_AI_LF1REF);
+			volts = read_adc(adc_instance) * 3.87;
+			configure_adc(&adc_instance1, P_AI_LF2REF);
+			volts -= read_adc(adc_instance1);
+			break;
+		case LIFE_PO_BANK_TWO:
+			configure_adc(&adc_instance, P_AI_LF3REF);
+			volts = read_adc(adc_instance) * 3.87;
+			configure_adc(&adc_instance1, P_AI_LF4REF);
+			volts -= read_adc(adc_instance1);
+			break;
+	}
+	// TODO: convert to percentages
+	return volts;
 }
 
-int set_battery_charge(int battery_number, int charge)
+void set_battery_charge(battery batt, bool should_charge)
 {
-	// TODO: fill this out
+	// TODO: verify this won't destroy everything
+	int pin;
+	switch (batt) {
+		case LION_ONE:
+			pin = P_L1_RUN_CHG;
+			break;
+		case LION_TWO:
+			pin = P_L2_RUN_CHG;
+			break;
+		case LIFE_PO_BANK_ONE:
+			pin = P_LF_B1_RUNCHG;
+			break;
+		case LIFE_PO_BANK_TWO:
+			pin = P_LF_B2_RUNCHG;
+			break;
+	}
+	// MAKE SURE THIS IS FINE BEFORE RUNNING
+	// I.E. NMOS MIGHT NEED TO BE SET HIGH FIRST
+	setup_pin(true, pin);
+	set_output(should_charge, pin);
 }
 
 void reset_charging()

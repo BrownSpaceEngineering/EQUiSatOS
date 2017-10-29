@@ -39,14 +39,14 @@
 	#define P_IR_PWR_CMD	PIN_PB17
 	#define P_LED_CMD		PIN_PA12 //active low
 	#define P_5V_EN			PIN_PB11
-	#define L1_RUN_CHG		PIN_PA01
-	#define L2_RUN_CHG		PIN_PB04
-	#define LF_B1_RUNCHG	PIN_PB05
-	#define LF_B2_RUNCHG	PIN_PB10
-	#define L1_DISG			PIN_PB31 //active low
-	#define L2_DISG			PIN_PA00 //active low
-	#define LF_B1_OUTEN		PIN_PB06
-	#define LF_B2_OUTEN		PIN_PB07
+	#define P_L1_RUN_CHG	PIN_PA01
+	#define P_L2_RUN_CHG	PIN_PB04
+	#define P_LF_B1_RUNCHG	PIN_PB05
+	#define P_LF_B2_RUNCHG	PIN_PB10
+	#define P_L1_DISG		PIN_PB31 //active low
+	#define P_L2_DISG		PIN_PA00 //active low
+	#define P_LF_B1_OUTEN	PIN_PB06
+	#define P_LF_B2_OUTEN	PIN_PB07
 	
 	//GPIO Input
 	#define P_DET_RTN		PIN_PB14
