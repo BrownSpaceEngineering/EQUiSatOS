@@ -998,6 +998,9 @@
     <Compile Include="src\rtos_tasks\flash_data_task.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\rtos_tasks\battery_charging_task.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\rtos_tasks\rtos_tasks.c">
       <SubType>compile</SubType>
     </Compile>
