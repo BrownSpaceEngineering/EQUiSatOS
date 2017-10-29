@@ -57,13 +57,16 @@ int get_battery_percentage(battery batt)
 
 void set_battery_charge(battery batt, bool should_charge)
 {
-	int pin;
+	int disg = -1, pin;
+	// find the proper pins based on batt
 	switch (batt) {
 		case LION_ONE:
 			pin = P_L1_RUN_CHG;
+			disg = P_L1_DISG;
 			break;
 		case LION_TWO:
 			pin = P_L2_RUN_CHG;
+			disg = P_L2_DISG;
 			break;
 		case LIFE_PO_BANK_ONE:
 			pin = P_LF_B1_RUNCHG;
@@ -72,8 +75,25 @@ void set_battery_charge(battery batt, bool should_charge)
 			pin = P_LF_B2_RUNCHG;
 			break;
 	}
-	setup_pin(true, pin);
-	set_output(should_charge, pin);
+	
+	if (disg != -1) {
+		// if batt is LiON, stop its discharging before charging it
+		if (should_charge) {
+			setup_pin(true, disg);
+			set_output(!should_charge, pin);
+			setup_pin(true, pin);
+			set_output(should_charge, pin);
+		} else {
+			setup_pin(true, pin);
+			set_output(should_charge, pin);
+			setup_pin(true, disg);
+			set_output(!should_charge, pin);
+		}
+	} else {
+		// if batt is LiFePO, just set its charge to should_charge
+		setup_pin(true, pin);
+		set_output(should_charge, pin);
+	}
 }
 
 void reset_charging()
