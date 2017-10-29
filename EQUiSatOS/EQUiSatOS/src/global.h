@@ -39,7 +39,7 @@ typedef struct {
 #include "processor_drivers/USART_Commands.h"
 #include "processor_drivers/PWM_Commands.h"
 #include "processor_drivers/Watchdog_Commands.h"
-#include "processor_drivers/TC_Commands.h"
+#include "processor_drivers/RTC_Commands.h"
 #include "sensor_drivers/MLX90614_IR_Sensor.h"
 #include "sensor_drivers/TEMD6200_Commands.h"
 #include "sensor_drivers/switching_commands.h"

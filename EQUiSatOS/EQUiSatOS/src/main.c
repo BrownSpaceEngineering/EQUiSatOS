@@ -7,7 +7,7 @@ int main(void)
 {
 	// Initialize the SAM system
 	system_init();
-	//init_tc();
+	//init_rtc();
 	USART_init();
 	//flatsat_run(); //calls flatsat init
 	
@@ -18,7 +18,7 @@ int main(void)
 	
 	/* TESTS */
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
-	init_tc();
+	init_rtc();
 	while(get_count() < 3) {
 			set_pulse_width_fraction(3, 4);		
 	}*/
