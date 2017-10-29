@@ -22,7 +22,9 @@ int main(void)
 	bat_testing_run();
 
 	/* Start and init tracing */
-	vTraceEnable(TRC_START);
+	#if configUSE_TRACE_FACILITY == 1
+		vTraceEnable(TRC_START);
+	#endif
 
 	run_rtos();
 

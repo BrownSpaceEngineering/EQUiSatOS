@@ -13,12 +13,15 @@ static int num_tries = 0;
 void antenna_deploy_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
-	// this task is not initially active, so suspend itself initially
-	vTaskSuspend(NULL); 
+	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot
 
 	for( ;; )
 	{
+		// report to watchdog
+		report_task_running(ANTENNA_DEPLOY_TASK);
+		
 		vTaskDelayUntil(&xNextWakeTime, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		
 		// set DET_RTN (antenna deployment pin) as input
 		setup_pin(false, P_DET_RTN);
 		// if it's open kill the task because the antenna has been deployed

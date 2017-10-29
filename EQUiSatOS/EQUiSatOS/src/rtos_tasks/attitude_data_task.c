@@ -20,8 +20,13 @@ void attitude_data_task(void *pvParameters)
 	
 	attitude_data_t *current_struct = (attitude_data_t*) equistack_Initial_Stage(&attitude_readings_equistack);
 	
+	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
+	
 	for ( ;; )
 	{
+		// report to watchdog
+		report_task_running(ATTITUDE_DATA_TASK); 
+		
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary

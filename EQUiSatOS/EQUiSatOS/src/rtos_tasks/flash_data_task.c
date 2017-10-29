@@ -20,11 +20,13 @@ void flash_data_task(void *pvParameters)
 	
 	flash_data_t *current_struct = (flash_data_t*) equistack_Initial_Stage(&attitude_readings_equistack);
 	
-	// this task is not initially active, so suspend itself initially
-	vTaskSuspend(NULL); 
+	init_task_state(FLASH_DATA_TASK); // suspend or run on boot
 	
 	for ( ;; )
 	{
+		// report to watchdog
+		report_task_running(FLASH_DATA_TASK);
+		
 		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary

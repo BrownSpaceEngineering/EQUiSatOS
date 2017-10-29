@@ -147,19 +147,54 @@ void run_rtos()
 	vTaskStartScheduler();
 }
 
+/* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
+void init_task_state(task_type_t task) {
+	switch (task) {
+		case BATTERY_CHARGING_TASK:
+			task_resume_if_suspended(BATTERY_CHARGING_TASK);
+			return;
+		case ANTENNA_DEPLOY_TASK:
+			task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
+			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
+			return;
+		case CURRENT_DATA_TASK:
+			task_suspend(CURRENT_DATA_TASK); // REAL ONE
+			//task_resume_if_suspended(CURRENT_DATA_TASK);
+			return;
+		case FLASH_ACTIVATE_TASK:
+			task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
+			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
+			return;
+		case FLASH_DATA_TASK: 
+			// ALWAYS suspend because is activated by FLASH_ACTIVATE_TASK
+			task_suspend(FLASH_DATA_TASK); // REAL ONE
+			return;
+		case TRANSMIT_TASK:
+			task_suspend(TRANSMIT_TASK); // REAL ONE
+			//task_resume_if_suspended(TRANSMIT_TASK);
+			return;
+		case ATTITUDE_DATA_TASK:
+			task_suspend(ATTITUDE_DATA_TASK); // REAL ONE
+			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
+			return;
+	}
+}
+
 // TODO: is this useful? just encoded in task initial state or executed via watchdog reset?
+// TODO: May be deprecated for above, unless we need to change BACK TO THIS STATE
 void set_state_hello_world()
 {
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK); // right
+	task_suspend(ANTENNA_DEPLOY_TASK); 
 	task_suspend(CURRENT_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
 	task_suspend(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
-		// TODO: Others
+		// TODO: Others?
 }
 
 void set_state_idle()
@@ -167,12 +202,15 @@ void set_state_idle()
 	CurrentState = IDLE;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
 	task_resume_if_suspended(CURRENT_DATA_TASK);
 	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
+	// we'll try to resume the flash data task, in case we went to LOW_POWER
+	// in the middle of the flash (this will allow it to suspend itself)
+	task_resume_if_suspended(FLASH_DATA_TASK);
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
-		// TODO: Others
+		// TODO: Others?
 }
 
 void set_state_low_power()
@@ -180,10 +218,11 @@ void set_state_low_power()
 	CurrentState = LOW_POWER;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should never be stopped?????
+	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
 	task_resume_if_suspended(CURRENT_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
 	task_resume_if_suspended(TRANSMIT_TASK);
-	task_suspend(ATTITUDE_DATA_TASK); // TODO: Do this?
-	// TODO: Others
+	task_suspend(ATTITUDE_DATA_TASK);
+	// TODO: Others?
 }
