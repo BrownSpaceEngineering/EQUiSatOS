@@ -90,9 +90,9 @@ int main(void)
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 
 	/* Start and init tracing */
-	#if configUSE_TRACE_FACILITY == 1
-		vTraceEnable(TRC_START);
-	#endif
+// 	#if configUSE_TRACE_FACILITY == 1
+// 		vTraceEnable(TRC_START);
+// 	#endif
 
 	run_rtos();
 

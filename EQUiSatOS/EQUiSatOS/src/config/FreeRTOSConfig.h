@@ -26,7 +26,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		1
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                0
+/*#define configUSE_TRACE_FACILITY                0*/
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1
@@ -94,8 +94,8 @@ to all Cortex-M ports, and do not rely on any particular library functions. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 
 /* Integrates the Tracealyzer recorder with FreeRTOS */
-#if ( configUSE_TRACE_FACILITY == 1 )
-#include "trcRecorder.h"
-#endif
+// #if ( configUSE_TRACE_FACILITY == 1 )
+// #include "trcRecorder.h"
+// #endif
 
 #endif /* FREERTOS_CONFIG_H */
