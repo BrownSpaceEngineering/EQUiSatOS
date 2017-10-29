@@ -35,6 +35,6 @@ void readRemoteADC_0(float* batReadings){
 void bat_testing_run(){
 	
 	for (int i=0; i<100; i++){
-		for (int j=4 )
+		// TODO
 	}
 }

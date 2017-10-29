@@ -80,7 +80,7 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
 	 configure_adc(&adc_instance,pin);
 	 //read_adc(adc_instance);
 	 //adc_enable(&adc_instance);
-	 uint16_t sum =0;
+	 uint16_t sum = 0;
 	 
 	 for (int i=0; i<num_avg; i++){
 		 adc_enable(&adc_instance);
