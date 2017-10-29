@@ -57,7 +57,6 @@ int get_battery_percentage(battery batt)
 
 void set_battery_charge(battery batt, bool should_charge)
 {
-	// TODO: verify this won't destroy everything
 	int pin;
 	switch (batt) {
 		case LION_ONE:
@@ -73,8 +72,6 @@ void set_battery_charge(battery batt, bool should_charge)
 			pin = P_LF_B2_RUNCHG;
 			break;
 	}
-	// MAKE SURE THIS IS FINE BEFORE RUNNING
-	// I.E. NMOS MIGHT NEED TO BE SET HIGH FIRST
 	setup_pin(true, pin);
 	set_output(should_charge, pin);
 }
