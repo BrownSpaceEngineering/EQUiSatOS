@@ -8,7 +8,7 @@ int main(void)
 	// Initialize the SAM system
 	system_init();
 	//init_rtc();
-	USART_init();
+	//USART_init();
 	//flatsat_run(); //calls flatsat init
 	
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)

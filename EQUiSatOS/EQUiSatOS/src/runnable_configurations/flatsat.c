@@ -114,7 +114,7 @@ void flatsat_init(void) {
  void readOtherADC(uint16_t* buffer){
 	 for (int i=0; i<LEN_ADC; i++){
 		 //buffer[i] = readVoltagemV(modules[i]);
-		 buffer[i] = readFromADC(adc_pins[i], num_samples);
+		 //buffer[i] = readFromADC(adc_pins[i], num_samples);
 		 //delay_ms(10);
 	 }
  }

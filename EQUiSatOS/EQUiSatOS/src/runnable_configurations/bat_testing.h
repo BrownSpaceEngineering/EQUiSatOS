@@ -13,8 +13,10 @@
 
 void bat_testing_init();
 void readRemoteADC_0(float* batReadings);
+void readBatBoard(float* batBoardReadings);
+uint16_t readFromADC(enum adc_positive_input pin, int num_avg);
 void bat_testing_run();
 
-
+#define LEN_BAT_ADC 10
 
 #endif /* BAT_TESTING_H_ */

@@ -8,10 +8,15 @@
 #include "TCA9535_GPIO.h"
 
 void TCA9535_init(return_struct_16 rs){
-	readTCA9535Levels(rs);
+	return_struct_16 rs_before;
+	readTCA9535Levels(rs_before);
+	uint8_t initial_outputs = 0b00000000;//sets to 0 all outputs
 	
 	rs.return_status = setIOMask(IOMask0,IOMask1);
 	rs.return_value = rs.return_value;
+	rs.return_status = setBatOutputs(initial_outputs);
+	readTCA9535Levels(rs);
+	int x =0;
 }
 
 //Set the mask for the configuration register
@@ -63,4 +68,16 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 	}
 	
 	return setIOMask(data[0],data[1]);
+}
+
+
+//Sets output registers. Function tailored for battery board v2.
+enum status_code setBatOutputs(uint8_t vals){
+	if (vals<8){
+		return -1; //if 
+	}
+	
+	uint8_t data1[2] = {OUTPUTS_REGISTER_1, vals};
+	
+	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
 }
