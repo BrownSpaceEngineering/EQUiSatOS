@@ -303,17 +303,6 @@ void usart_send_string(const char *str_buf)
 	}
 }
 
-// deprecated
-void print_old(const char *str_buf)
-{
-	while (*str_buf != '\0')
-	{
-		while(!EXT_USART_SERCOM->USART.INTFLAG.bit.DRE); // error highlight is just do to uncertainty of above ifdefs
-		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
-		str_buf++;
-	}
-}
-
 // use in debug mode (set in header file)
 // input: format string and arbitrary number of args to be passed to sprintf
 // call to sprintf stores result in char *debug_buf
