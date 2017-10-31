@@ -10,7 +10,6 @@
 void TCA9535_init(return_struct_16 *rs){
 	//return_struct_16 *rs_before;
 	//readTCA9535Levels(rs_before);
-	uint8_t initial_outputs = 0b00000000;//sets to 0 all outputs
 	enum status_code statc1 = setIOMask(IOMask0,IOMask1);
 	if (statc1 & 0xf0 != 0) {
 		rs->return_status = statc1;
@@ -82,7 +81,15 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 //Sets output registers. Function tailored for battery board v2.
 enum status_code setBatOutputs(uint8_t vals){
 	
+	if (vals>7){
+		return 0xf0; //Todo is this the correct error code?
+	}
+
 	uint8_t data1[2] = {OUTPUTS_REGISTER_1, vals};
 	
 	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
+}
+
+enum status_code resetBatOutputs(){
+	return setBatOutputs(initial_outputs);
 }
