@@ -27,10 +27,15 @@ void bat_testing_init(){
 	LTC1380_init();
 	AD7991_init();
 	return_struct_16 tca9535_rs;
-	TCA9535_init(tca9535_rs);
+	TCA9535_init(&tca9535_rs);
+	if (!(tca9535_rs.return_value && 0xf4f0)){
+		bool ohno = true; //Todo some sort of check here. As long as we're not charging, f4f0 should be the return value.
+	}
 	
 	setup_pin(true,P_5V_EN);
 	set_output(true, P_5V_EN); //init gpio pin for 5V regulator enable
+	
+	setup_pin(true, P_IR_PWR_CMD);
 	
 }
 
@@ -95,23 +100,25 @@ void bat_testing_run(){
 	bool l2_st, l1_st, spf_st, l1_chgn, l1_faultn, l2_chgn, l2_faultn, lf_b1_bt, lf_b1,tt, lf_b2_bt, lf_b2_tt, lf_b2_chgn, lf_b2_faultn, lf_b1_chgn, lf_b1_faultn;
 	float l1_sns, l2_sns, lion_ref, sp_out_ref;
 	
+	print("time[ms];l1_sns[mA];l2_sns[mA];lion_ref[mv];sp_out_ref[mV]\n");
 	
 	for (int i=0; i<100; i++){
 		
 		readRemoteADC_0(remoteBatReadings);
 		l1_sns = (((float) remoteBatReadings[0])/4096*3.3-1)*2000;// mA
 		l2_sns = (((float) remoteBatReadings[1])/4096*3.3-1)*2000;// mA
-		lion_ref = ((float)  remoteBatReadings[2])/4096*3.3*2.717;//V
-		sp_out_ref = ((float) remoteBatReadings[3])/4096*3.3*5.58;//V
+		lion_ref = ((float)  remoteBatReadings[2])/4096*3.3*2717;//mV
+		sp_out_ref = ((float) remoteBatReadings[3])/4096*3.3*5580;//mV
 
 		
 		//readBatBoard(batReadings);
 		
 		//enum status = setIOMask()
-		readTCA9535Levels(gpio_rs);
+		readTCA9535Levels(&gpio_rs);
 		
+		set_output(true,P_IR_PWR_CMD);
 		
-		int a =4;
-		
+		print("%d;%d;%d;%d;%d\n",i*10,(int)l1_sns, (int)l2_sns, (int) lion_ref, (int)sp_out_ref);
+		delay_ms(10);
 	}
 }
