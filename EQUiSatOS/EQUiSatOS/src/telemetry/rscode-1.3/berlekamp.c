@@ -35,7 +35,6 @@
  *
  */
 
-#include <stdio.h>
 #include "ecc.h"
 
 /* The Error Locator Polynomial, also known as Lambda or Sigma. Lambda[0] == 1 */
