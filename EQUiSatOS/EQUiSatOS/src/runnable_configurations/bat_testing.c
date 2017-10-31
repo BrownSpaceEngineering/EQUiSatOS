@@ -21,7 +21,9 @@ enum adc_positive_input bat_adc_pins[LEN_BAT_ADC] = {
 };
 
 void bat_testing_init(){
+
 	delay_init();
+	init_rtc();
 	configure_i2c_standard(SERCOM4);
 	
 	LTC1380_init();
@@ -122,3 +124,6 @@ void bat_testing_run(){
 		delay_ms(10);
 	}
 }
+
+
+
