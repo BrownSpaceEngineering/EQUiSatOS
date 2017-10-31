@@ -11,7 +11,7 @@ int main(void)
 	//Get this false as fast as possible.
 	setup_pin(true,P_LF_B2_OUTEN);
 	set_output(false, P_LF_B2_OUTEN); 
-	setup_pin(true,P_LF_B1_OUTEN
+	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
 	
 	//init_rtc();
