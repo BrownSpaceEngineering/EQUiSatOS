@@ -1,5 +1,4 @@
 #include "Radio_Commands.h"
-#include "../processor_drivers/Direct_Pin_Commands.h"
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -9,12 +8,20 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
-void setCommandMode(void) {
-	usart_send_string("+++");
-	delay_ms(300);
+void XDL_init() {
+	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
+	setup_pin(true,P_RAD_SHDN); //init shutdown pin
+	setup_pin(true,P_TX_EN); //init send enable pin
+	setup_pin(true,P_RX_EN); //init receive enable pin
 }
 
-void setDealerMode(void) {
+void set_command_mode(void) {
+	delay_ms(150);
+	usart_send_string("+++");
+	delay_ms(150);
+}
+
+void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -23,7 +30,7 @@ void setDealerMode(void) {
 	usart_send_string(sendbuffer);
 }
 
-void setTxFreq() {
+void set_tx_freq() {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x37;
@@ -37,7 +44,7 @@ void setTxFreq() {
 	usart_send_string(sendbuffer);
 }
 
-void setRxFreq(void) {
+void set_rx_freq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x39;
@@ -51,7 +58,7 @@ void setRxFreq(void) {
 	usart_send_string(sendbuffer);
 }
 
-void setChannel(void) {
+void set_channel(void) {
 	//index 2 is byte to set channel
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x03;
@@ -61,7 +68,7 @@ void setChannel(void) {
 	usart_send_string(sendbuffer);
 }
 
-void warmReset(void){
+void warm_reset(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x1d;
 	sendbuffer[2] = 0x01; //warm
@@ -70,7 +77,7 @@ void warmReset(void){
 	usart_send_string(sendbuffer);
 }
 
-void setModulationFormat(void){
+void set_modulation_format(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x2B;
 	sendbuffer[2] = 0x01;
@@ -79,7 +86,7 @@ void setModulationFormat(void){
 	usart_send_string(sendbuffer);
 }
 
-void setLinkSpeed(void){
+void set_link_speed(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x05;
 	sendbuffer[2] = 0x03;
@@ -88,13 +95,8 @@ void setLinkSpeed(void){
 	usart_send_string(sendbuffer);
 }
 
-unsigned char calculateChecksum(char* data, int dataLen) {
-	unsigned char checksum = 0;
-	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
-	return ~checksum;
-}
 
-int responseCheck(char arr[]){
+int response_check(char arr[]){
 	if(working==0) return 0; //not gonna work anymore pal
 
 	for(int i=0;i<sizeof(arr)/sizeof(arr[0]);i++){
@@ -103,48 +105,42 @@ int responseCheck(char arr[]){
 	return 1;
 }
 
-void setSendEnable(bool level) {
-	set_output(level, PIN_PB02);
+void get_temperature(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x50;
+	sendbuffer[2] = ~0x50;
+	sendbuffer[3] = '\0';
+	usart_send_string(sendbuffer);
 }
 
-void setReceiveEnable(bool level) {
-	set_output(level, PIN_PB03);
+uint16_t XDL_get_temperature() {
+	set_command_mode();
+	get_temperature();
+	delay_ms(200);
+	//TODO: Check packet validity and extract data
+	warm_reset();
+	delay_ms(500);
+	return 0;
 }
 
-void initializeRadio() {
-	delay_ms(1500);
-	setCommandMode();
-	delay_ms(1500); //remember to put delay, because the MCU is faster than the USART
-	
-	setDealerMode();
-	delay_ms(100);
-	working = responseCheck(dealer_response);
-	print(receivebuffer);
-	
-	setTxFreq();
-	delay_ms(100);
-	working = responseCheck(txFreq_response);	
-	print(receivebuffer);
-	
-	setRxFreq();
-	delay_ms(100);
-	working = responseCheck(rxFreq_response);	
-	print(receivebuffer);
-	
-	setModulationFormat();
-	delay_ms(400);	
-	
-	
-	setLinkSpeed();
-	delay_ms(100);	
-	
-	setChannel();
-	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
-	working = responseCheck(channel_response);	
-	print(receivebuffer);
-	
-	warmReset();
-	delay_ms(500); //longer delay because radio is from the 90s and needs a smoke break
-	working = responseCheck(warmReset_response);	
-	print(receivebuffer);
+unsigned char calculate_checksum(char* data, int dataLen) {
+	unsigned char checksum = 0;
+	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
+	return ~checksum;
+}
+
+void setTXEnable(bool enable) {
+	set_output(enable, P_TX_EN);
+}
+
+void setRXEnable(bool enable) {
+	set_output(enable, P_RX_EN);
+}
+
+void set3V6Power(bool on) {
+	set_output(on, P_RAD_PWR_RUN);
+}
+
+void setRadioPower(bool on) {
+	set_output(on, P_RAD_SHDN);
 }

@@ -13,43 +13,26 @@
 
 uint8_t edbg_rx_data,ext_rx_data;
 
-void USART_init() {
-	edbg_usart_clock_init();
-	edbg_usart_pin_init();
-	edbg_usart_init();
+void USART_init() {	
 	ext_usart_clock_init();
 	ext_usart_pin_init();
-	ext_usart_init();
-	delay_init();
+	ext_usart_init();	
 }
 
-/*ext_usart handler*/
+//Receive handler
 void SERCOM3_Handler()
 {
 	if (SERCOM3->USART.INTFLAG.bit.RXC){
 		char curByte = SERCOM3->USART.DATA.reg;
-		if (curByte == 0x01) {
-			memset(receivebuffer, 0, 16);
+		/*if (curByte == 0x01) {
+			memset(receivebuffer, 0, LEN_RECEIVEBUFFER);
 			receiveIndex = 0;
-		}
-		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;
-		if(curByte == 0xff) {
-			//TODO: Handle received packet
-		}
+		}*/
+		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;		
 		receiveIndex++;
 	}
 }
-/*edbg_usart handler*/
-/*void SERCOM2_Handler()
-{
-	if (SERCOM2->USART.INTFLAG.bit.RXC){
-		edbg_rx_data = SERCOM2->USART.DATA.reg;
-		if (SERCOM3->USART.INTFLAG.bit.DRE)
-		{
-			SERCOM3->USART.DATA.reg = edbg_rx_data;
-		}
-	}
-}*/
+
 /*Assigning pin to the alternate peripheral function*/
 static inline void pin_set_peripheral_function(uint32_t pinmux)
 {
@@ -102,65 +85,6 @@ uint8_t sample_num)
 	baud_calculated = (65536 * scale) >> SHIFT;
 	return baud_calculated;
 }
-/* EDBG UART(SERCOM2) bus and generic clock initialization */
-void edbg_usart_clock_init(void)
-{
-	struct system_gclk_chan_config gclk_chan_conf;
-	uint32_t gclk_index = SERCOM2_GCLK_ID_CORE;
-	/* Turn on module in PM */
-	system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_SERCOM2);
-	/* Turn on Generic clock for USART */
-	system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-	/*Default is generator 0. Other wise need to configure like below */
-	/* gclk_chan_conf.source_generator = GCLK_GENERATOR_1; */
-	system_gclk_chan_set_config(gclk_index, &gclk_chan_conf);
-	system_gclk_chan_enable(gclk_index);
-}
-/* EDBG UART(SERCOM2) pin initialization */
-void edbg_usart_pin_init(void)
-{
-	/* PA12 and PA13 set into peripheral function C */
-	pin_set_peripheral_function(PINMUX_PA12C_SERCOM2_PAD0);
-	pin_set_peripheral_function(PINMUX_PA13C_SERCOM2_PAD1);
-}
-/* EDBG(SERCOM2) UART initialization */
-void edbg_usart_init(void)
-{
-	uint16_t baud_value;
-	baud_value = calculate_baud_value(USART_BAUD_RATE,system_gclk_chan_get_hz(SERCOM2_GCLK_ID_CORE),
-	USART_SAMPLE_NUM);
-	/* By setting the DORD bit LSB is transmitted first and setting the RXPO bit as 1 corresponding
-	SERCOM PAD[1] will be used for data reception, PAD[0] will be used as TxD pin by
-	setting TXPO bit as 0,16x over-sampling is selected by setting the SAMPR bit as 0,
-	Generic clock is enabled in all sleep modes by setting RUNSTDBY bit as 1,
-	USART clock mode is selected as USART with internal clock by setting MODE bit into 1.
-	*/
-	SERCOM2->USART.CTRLA.reg = SERCOM_USART_CTRLA_DORD |
-	SERCOM_USART_CTRLA_RXPO(0x1) |
-	SERCOM_USART_CTRLA_TXPO(0x0) |
-	SERCOM_USART_CTRLA_SAMPR(0x0)|
-	SERCOM_USART_CTRLA_RUNSTDBY |
-	SERCOM_USART_CTRLA_MODE_USART_INT_CLK ;
-
-	/*baud register value corresponds to the device communication baud rate */
-	SERCOM2->USART.BAUD.reg = baud_value;
-	/* 8-bits size is selected as character size by setting the bit CHSIZE as 0,
-	TXEN bit and RXEN bits are set to enable the Transmitter and receiver*/
-	SERCOM2->USART.CTRLB.reg = SERCOM_USART_CTRLB_CHSIZE(0x0) |
-	SERCOM_USART_CTRLB_TXEN |
-	SERCOM_USART_CTRLB_RXEN ;
-	/* synchronization busy */
-	while(SERCOM2->USART.SYNCBUSY.bit.CTRLB);
-	/* SERCOM2 handler enabled */
-	system_interrupt_enable(SERCOM2_IRQn);
-	/* receive complete interrupt set */
-	SERCOM2->USART.INTENSET.reg = SERCOM_USART_INTFLAG_RXC;
-	/* SERCOM2 peripheral enabled */
-	SERCOM2->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
-	/* synchronization busy */
-	while(SERCOM2->USART.SYNCBUSY.reg & SERCOM_USART_SYNCBUSY_ENABLE);
-}
-
 
 // development board
 // essentially, we have to use SERCOM2 pins and masks instead of SERCOM3
@@ -224,7 +148,7 @@ void edbg_usart_init(void)
 	
 #endif
 
-// main processor
+// If using control board V3
 // essentially, we have to use SERCOM3 pins and masks instead of SERCOM2
 #ifdef CNTRL_BRD_V3
 
