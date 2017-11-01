@@ -44,6 +44,7 @@ void bat_testing_init(bat_testing_struct *data){
 	set_output(true, P_5V_EN); //init gpio pin for 5V regulator enable
 	
 	setup_pin(true, P_IR_PWR_CMD);
+	set_output(true,P_IR_PWR_CMD);
 
 	// Should already be set up and made false
 	set_output(data->LF_B2_OUTEN,P_LF_B2_OUTEN);
@@ -76,21 +77,21 @@ void bat_testing_init(bat_testing_struct *data){
 	} else{
 		//TODO Please tell me there's a better way to do this -Ryan
 		uint16_t res = tca9535_rs.return_value;
-		data->l2_st 		= !!res&0b0000000100000000;	//8
-		data->l1_st 		= !!res&0b0000001000000000;	//9
-		data->spf_st 		= !!res&0b0000010000000000;	//10
-		data->l1_chgn 		= !!res&0b0001000000000000; //12
-		data->l1_faultn 	= !!res&0b0010000000000000; //13
-		data->l2_chgn 		= !!res&0b0100000000000000; //14
-		data->l2_faultn 	= !!res&0b1000000000000000; //15
-		data->lf_b1_bt 		= !!res&0b0000000000000001;	//0
-		data->lf_b1_tt 		= !!res&0b0000000000000010; //1
-		data->lf_b2_tt 		= !!res&0b0000000000000100; //2
-		data->lf_b2_bt 		= !!res&0b0000000000001000; //3
-		data->lf_b2_chgn 	= !!res&0b0000000000010000; //4
-		data->lf_b2_faultn 	= !!res&0b0000000000100000; //5
-		data->lf_b1_chgn 	= !!res&0b0000000001000000; //6
-		data->lf_b1_faultn 	= !!res&0b0000000010000000; //7
+		data->l2_st 		= !(!(res&0b0000000100000000));	//8
+		data->l1_st 		= !(!(res&0b0000001000000000));	//9
+		data->spf_st 		= !(!(res&0b0000010000000000));	//10
+		data->l1_chgn 		= !(!(res&0b0001000000000000)); //12
+		data->l1_faultn 	= !(!(res&0b0010000000000000)); //13
+		data->l2_chgn 		= !(!(res&0b0100000000000000)); //14
+		data->l2_faultn 	= !(!(res&0b1000000000000000)); //15
+		data->lf_b1_bt 		= !(!(res&0b0000000000000001));//0
+		data->lf_b1_tt 		= !(!(res&0b0000000000000010)); //1
+		data->lf_b2_tt 		= !(!(res&0b0000000000000100)); //2
+		data->lf_b2_bt 		= !(!(res&0b0000000000001000)); //3
+		data->lf_b2_chgn 	= !(!(res&0b0000000000010000)); //4
+		data->lf_b2_faultn 	= !(!(res&0b0000000000100000)); //5
+		data->lf_b1_chgn 	= !(!(res&0b0000000001000000)); //6
+		data->lf_b1_faultn 	= !(!(res&0b0000000010000000)); //7
 		}
 	
 }
@@ -142,12 +143,12 @@ void readBatBoard(float* batBoardReadings){
 	return sum/num_avg;
 }*/
 
-void readCommandAndSend(float *remoteBatReadings, float *batReadings, return_struct_16 *gpio_rs, bat_testing_struct *data){
+void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_struct_16 gpio_rs, bat_testing_struct *data){
 
 	
 	readRemoteADC_0(remoteBatReadings);
-	data->l1_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1)*2000;	// mA
-	data->l2_sns 		= (((float) remoteBatReadings[1])/4096*3.3-1)*2000;	// mA
+	data->l1_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.021)*2000;	// mA
+	data->l2_sns 		= (((float) remoteBatReadings[1])/4096*3.3-1.019)*2000;	// mA
 	data->lion_ref 		= ((float)  remoteBatReadings[2])/4096*3.3*2717;	// mV
 	data->sp_out_ref	= ((float) remoteBatReadings[3])/4096*3.3*5580;		// mV
 
@@ -171,20 +172,20 @@ void readCommandAndSend(float *remoteBatReadings, float *batReadings, return_str
 	
 	uint8_t setOutputs[] = {data->lf_b2_bt,data->lf_b2_tt,data->lf_b1_tt,data->lf_b1_bt};
 	enum status_code statc = setBatOutputs(setOutputs);
-	readTCA9535Levels(gpio_rs);
-	uint16_t res = gpio_rs->return_value;
-	data->l2_st 		= !!res&0b0000000100000000;	//8
-	data->l1_st 		= !!res&0b0000001000000000;	//9
-	data->spf_st 		= !!res&0b0000010000000000;	//10
-	data->l1_chgn 		= !!res&0b0001000000000000; //12
-	data->l1_faultn 	= !!res&0b0010000000000000; //13
-	data->l2_chgn 		= !!res&0b0100000000000000; //14
-	data->l2_faultn 	= !!res&0b1000000000000000; //15
-	data->lf_b2_chgn 	= !!res&0b0000000000010000; //4
-	data->lf_b2_faultn 	= !!res&0b0000000000100000; //5
-	data->lf_b1_chgn 	= !!res&0b0000000001000000; //6
-	data->lf_b1_faultn 	= !!res&0b0000000010000000; //7
-
+	readTCA9535Levels(&gpio_rs);
+	uint16_t res = gpio_rs.return_value;
+	data->l2_st 		= !(!(res&0b0000000100000000));	//8
+	data->l1_st 		= !(!(res&0b0000001000000000));	//9
+	data->spf_st 		= !(!(res&0b0000010000000000));	//10
+	data->l1_chgn 		= !(!(res&0b0001000000000000)); //12
+	data->l1_faultn 	= !(!(res&0b0010000000000000)); //13
+	data->l2_chgn 		= !(!(res&0b0100000000000000)); //14
+	data->l2_faultn 	= !(!(res&0b1000000000000000)); //15
+	data->lf_b2_chgn 	= !(!(res&0b0000000000010000)); //4
+	data->lf_b2_faultn 	= !(!(res&0b0000000000100000)); //5
+	data->lf_b1_chgn 	= !(!(res&0b0000000001000000)); //6
+	data->lf_b1_faultn 	= !(!(res&0b0000000010000000)); //7
+	// could also grab the outputs, indices 0,1,2,3 and verify that they match what we chose the output to be at that moment
 
 	
 	
@@ -192,7 +193,7 @@ void readCommandAndSend(float *remoteBatReadings, float *batReadings, return_str
 	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;",get_count(), (int) data->LF_B2_OUTEN, (int) data->LF_B1_OUTEN, (int) data->L1_RUN_CHG, (int) data->L2_RUN_CHG, (int) data->LF_B1_RUNCHG, (int) data->LF_B2_RUNCHG, (int) data->L1_DISG, (int) data->L2_DISG);
 	print("%d;%d;%d;%d;", (int) data->l1_sns, (int) data->l2_sns, (int) data->lion_ref, (int) data->sp_out_ref);
 	//print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;", (int) data->LFB1OSNS, (int) data->LFB1SNS, (int) data->LFB2OSNS, (int) data->LFB2SNS, (int) data->LF1REF, (int) data->LF2REF, (int) data->LF3REF, (int) data->LF4REF, (int) data->L1_REF, (int) data->L2_REF);
-	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n", (int) data->l2_st, (int) data->l1_st, (int) data->spf_st, (int) data->l1_chgn, (int) data->l1_faultn, (int) data->l2_chgn, (int) data->l2_faultn, (int) data->lf_b1_bt, (int) data->lf_b1_tt, (int) data->lf_b2_bt, (int) data->lf_b2_tt, (int) data->lf_b2_chgn, (int) data->lf_b2_faultn, (int) data->lf_b1_chgn, (int) data->lf_b1_faultn);
+	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n", (int) data->l2_st, (int) data->l1_st, (int) data->spf_st, (int) data->l1_chgn, (int) data->l1_faultn, (int) data->l2_chgn, (int) data->l2_faultn, (int) data->lf_b1_bt, (int) data->lf_b1_tt, (int) data->lf_b2_bt, (int) data->lf_b2_tt, (int) data->lf_b2_chgn, (int) data->lf_b2_faultn, (int) data->lf_b1_chgn, (int) data->lf_b1_faultn);
 }
 
 bool areVoltagesNominal(bat_testing_struct data){
@@ -220,31 +221,33 @@ void bat_testing_run(){
 	return_struct_16 gpio_rs;
 
 	bat_testing_struct bat_test_data;
+	
+	bat_test_data.lf_b1_bt = false;
+	bat_test_data.lf_b1_tt = false;
+	bat_test_data.lf_b2_tt = false;
+	bat_test_data.lf_b2_tt = false;
 
 	bat_testing_init(&bat_test_data);
 	
 	
 	
+	
 	print("time[s];LF_B2_OUTEN[cmd];LF_B1_OUTEN[cmd];L1_RUN_CHG[cmd];L2_RUN_CHG[cmd];LF_B1_RUNCHG[cmd];LF_B2_RUNCHG[cmd];L1_DISG[cmd];L2_DISG[cmd];");
 	print("l1_sns[mA];l2_sns[mA];lion_ref[mv];sp_out_ref[mV];");
-	print("LFB1OSNS[A];LFB1SNS[A];LFB2OSNS[A];LFB2SNS[A];LF1REF[mV];LF2REF[mV];LF3REF[mV];LF4REF[mV];L1_REF[mV];L2_REF[mV];");
+	//print("LFB1OSNS[A];LFB1SNS[A];LFB2OSNS[A];LFB2SNS[A];LF1REF[mV];LF2REF[mV];LF3REF[mV];LF4REF[mV];L1_REF[mV];L2_REF[mV];");
 	print("l2_st[bool];l1_st[bool];spf_st[bool];l1_chgn[bool];l1_faultn[bool];l2_chgn[bool];l2_faultn[bool];lf_b1_bt[bool];lf_b1_tt[bool];lf_b2_bt[bool];lf_b2_tt[bool];lf_b2_chgn[bool];lf_b2_faultn[bool];lf_b1_chgn[bool];lf_b1_faultn[bool]\n");
 	
 	
-	for (int i=0; i<100; i++){
+	while (true){
 		delay_ms(1000);
-		readCommandAndSend(&remoteBatReadings, &batReadings, &gpio_rs, &bat_test_data);
-		
-		if (i==1){
-			set_output(true,P_IR_PWR_CMD);
-		}
+		readCommandAndSend(remoteBatReadings, batReadings, gpio_rs, &bat_test_data);
 
-		if (!areVoltagesNominal(bat_test_data)){
+		/*if (!areVoltagesNominal(bat_test_data)){
 			print("A voltage has been detected as being an anomaly. Automatically resetting outputs and exiting.\n");
 			resetState();
-		}
+		}*/
 		
-
+		int x =45;
 	}
 }
 
