@@ -32,8 +32,13 @@ void transmit_task(void *pvParameters)
 	// count of how many times the current packet has been transmitted
 	uint8_t current_packet_transmissions = 0;
 	
+	init_task_state(TRANSMIT_TASK); // suspend or run on boot
+	
 	for( ;; )
 	{
+		// report to watchdog
+		report_task_running(TRANSMIT_TASK);
+		
 		// block for a time based on this task's globally-set frequency
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);

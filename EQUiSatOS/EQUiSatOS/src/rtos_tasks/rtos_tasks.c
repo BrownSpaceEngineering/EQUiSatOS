@@ -39,8 +39,10 @@ void task_resume_if_suspended(task_type_t task_id)
 	{
 		vTaskResume(task_handle); // actually resume task
 		task_suspended_states |= (1 << task_id); // note we WERE suspended
-		check_in_task(task_id); // check in for watchdog
 	}
+	check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
+	// this is also good in the case the task_handle is NULL and the task isn't started
+	// here, because it will trigger a watchdog reset
 }
 
 /* Checks and returns whether this task was suspended, AND report that it is not suspended */

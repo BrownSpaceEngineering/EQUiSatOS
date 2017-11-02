@@ -15,9 +15,14 @@ void flash_activate_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
 	TickType_t xNextWakeTime = xTaskGetTickCount();
+		
+	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
 	
 	for ( ;; )
 	{
+		// report to watchdog
+		report_task_running(FLASH_ACTIVATE_TASK); 
+		
 		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// start taking data

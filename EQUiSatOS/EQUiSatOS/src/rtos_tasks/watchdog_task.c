@@ -10,7 +10,6 @@
 
 #include "Watchdog_Task.h"
 static uint8_t check_ins;
-static uint8_t check_outs;
 static uint8_t is_running;
 
 static uint8_t watch_block;
@@ -18,7 +17,6 @@ SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
 	check_ins = 0;
-	check_outs = 0;
 	is_running = 0;
 	watch_block = 0;
 	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
@@ -39,40 +37,42 @@ void watchdog_task(void *pvParameters) {
 
 bool watchdog_as_function(void) {
 	xSemaphoreTake(mutex, (TickType_t) WATCHDOG_MUTEX_WAIT_TIME_TICKS);
-	if (/*battery charing task isn't running*/0 == 1) {
+		
+	// make sure the battery task is definitely set to run
+	eTaskState battery_task_state = eTaskGetState(task_handles[BATTERY_CHARGING_TASK]);
+	if (battery_task_state == eDeleted || battery_task_state == eSuspended) {
 		watch_block = 1;
 	}
-	if ((check_ins ^ check_outs) > 0 || (is_running ^ check_outs) > 0 || (is_running ^ check_ins) > 0 || watch_block == 1) {
-		// "kick" watchdog
-		check_ins = 0;
-		check_outs = 0;
-		is_running = 0;
+	if ((check_ins ^ is_running) > 0 || watch_block == 1) {
+		// "kick" watchdog - RESTART SATELLITE
 		xSemaphoreGive(mutex);
 		return false;
 	} else {
-		// pet watchdog
-		check_ins = 0;
-		check_outs = 0;
+		// pet watchdog - pass this watchdog test, move onto next
 		is_running = 0;
 		xSemaphoreGive(mutex);
 		return true;
 	}
 }
 
+// tasks must check in when launching
 void check_in_task(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
-	check_ins = check_ins | (1 << task_ind);
+	check_ins = check_ins | (1 << task_ind); // set this task bit to 1
 	xSemaphoreGive(mutex);
 }
 
-void running_task(task_type_t task_ind) {
+// tasks must check in while running to avoid the watchdog
+// (we'll set 'im loose on that task if it doesn't!)
+void report_task_running(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
 	xSemaphoreGive(mutex);
 }
 
+// tasks must check in when suspending so they don't trip the watchdog
 void check_out_task(task_type_t task_ind) {
 	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
-	check_outs = check_outs | (1 << task_ind);
+	check_ins = check_ins & ~(1 << task_ind); // set this task bit to 0
 	xSemaphoreGive(mutex);
 }
