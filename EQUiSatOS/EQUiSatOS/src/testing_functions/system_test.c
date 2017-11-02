@@ -11,7 +11,7 @@ float MLX90614_test(uint8_t addr){
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 	 
 	 //DON'T NEED TO TURN ON FOR TEST BOARD. UNCOMMENT WHEN REAL TESTING
-	 MLX90614_init(); //Turns on the IR sensor and sets up the Port
+	 //MLX90614_init(); //Turns on the IR sensor and sets up the Port DO THIS IN MAIN()
 	 
 	 //Read -> return_struct_float
 	 return_struct_16 rs;
@@ -84,8 +84,8 @@ float HMC5883L_test(){
 //GPIO test 
 return_struct_16 TCA9535_test(){
 	return_struct_16 rs;
-	TCA9535_init(rs);
-	readTCA9535Levels(rs); 
+	TCA9535_init(&rs);
+	//readTCA9535Levels(rs); 
 	return rs;
 	
 }
@@ -242,13 +242,25 @@ void AD7991_control_test_all(float *results_f){
 	
 }
 
+void compare_results(void * results, void * expected, int num, int margin, char * testname){
+	for (int i = 0; i < num; i++){
+		if (results[i] > expected[i]){
+			if((results[i] - expected[i]) >= margin) {
+				print("Error in test %s number %d \n",testname,i);
+			}
+			} else {
+			if((expected[i] - results[i]) >= margin) {
+				print("Error in test %s number %d \n",testname,i);
+			}
+		}
+	}
+}
 
 void system_test(void){
 	
 	MLX90614_init();
 	configure_i2c_master(SERCOM4); //init I2C
-	//LTC1380_init(); //init multiplexer
-
+	LTC1380_init(); //init multiplexer
 	float results[4]; 
 	uint16_t expected[] = {3.6, 3.6, 5, 3.3}; 
 	
@@ -256,25 +268,18 @@ void system_test(void){
 	int AD7991_test_results[4] = {0,0,0,0};
 	
 	//check with expected values
-	for (int i = 0; i < 4; i++){
-		if (results[i] > expected[i]){
-			if((results[i] - expected[i]) >= 0.5) {
-				AD7991_test_results[i] = 1;
-			}
-		} else {
-			if((expected[i] - results[i]) >= 0.5) {
-				AD7991_test_results[i] = 1;
-			}
-		}
-	}
+	compare_results((void *) results,(void *) expected, 4, 1, "AD7991");
 	
+	const uint16_t e_temp = 20;
+	uint16_t temps[4], ex_temp[] = {e_temp, e_temp, e_temp, e_temp};
 	
-	uint16_t temps[4];
 	
 	temps[0] = AD590_test(1, 1);
 	temps[1] = AD590_test(2, 5);
 	temps[2] = AD590_test(3, 5);
 	temps[3] = AD590_test(4, 5);
+	
+	compare_results((void *) temps,(void *) expected,4, 5, "AD590");
 	
 	////Flight IR Sensors
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
@@ -285,14 +290,21 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
+	print("IR test on Panel: %d yielded approx %d degrees Celsius\n",MLX90614_ACCESSPANEL_V4_1,(int) test1);
 	//float test2 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
 	
 	// IMU 
+	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
 	uint16_t fill[6]; 
 	MPU9250_test(fill);
+	uint16_t MPU_expect[] = {0, 0, 0, 0, 0, 0};
+		
+	compare_results((void *) fill,(void *) MPU_expect,6, 12, "MPU9250");
+
 	
+	//WILL THESE WORK???? 
 	float test4 = HMC5883L_test(); 
 	uint16_t test5 = TEMD6200_test(5); 
-	// return_struct_16 TCA9535_test(); 
+	return_struct_16 TCA9535_test(); 
 	
 }
