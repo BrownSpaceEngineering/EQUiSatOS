@@ -67,7 +67,7 @@ void MPU9250_init(void);
 enum status_code MPU9250_read_mag(int16_t toFill[3]);
 enum status_code MPU9250_read_acc(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro(int16_t toFill[3]);
-void MPU9250_computeBias();
+void MPU9250_computeBias(float *dest1, float *dest2);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 
 #endif

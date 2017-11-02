@@ -18,7 +18,7 @@ void log_error(uint8_t loc, uint8_t err) {
 	sat_error_t full_error = loc << 8 || err; // location goes in first 8 bytes, error in last 8
 	
 	// memory will be copied so don't worry about scope issues with local var ptrs
-	equistack_Push(&error_equistack, full_error); 
+	equistack_Push(&error_equistack, &full_error); 
 
 // way without equistack_Push
 // 	// grab the first pointer if we don't have it

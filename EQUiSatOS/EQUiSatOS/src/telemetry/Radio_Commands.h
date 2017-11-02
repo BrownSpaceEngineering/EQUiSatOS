@@ -12,8 +12,8 @@
 #include "../processor_drivers/USART_Commands.h"
 
 void set_command_mode(void);
-void XDL_init();
-uint16_t XDL_get_temperature();
+void XDL_init(void);
+uint16_t XDL_get_temperature(void);
 void warm_reset(void);
 
 void setTXEnable(bool enable);

@@ -36,6 +36,6 @@ enum status_code setIOMask(uint8_t reg0, uint8_t reg1);
 void readTCA9535Levels(return_struct_16 *rs);
 enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel);
 enum status_code setBatOutputs(uint8_t vals);
-enum status_code resetBatOutputs();
+enum status_code resetBatOutputs(void);
 
 #endif /* TCA9535_GPIO_H_ */

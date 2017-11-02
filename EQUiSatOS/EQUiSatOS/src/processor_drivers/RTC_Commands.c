@@ -23,7 +23,7 @@ void init_rtc(void)
 	int status_code = 0;
 	int retries = 0;
 	
-	while (status_code = rtc_count_init(&rtc_instance, RTC, &config_rtc_count) != STATUS_OK &&
+	while ((status_code = rtc_count_init(&rtc_instance, RTC, &config_rtc_count)) != STATUS_OK &&
 		   retries <= 2)
 	{
 		retries++;

@@ -130,7 +130,7 @@ enum status_code readFromAddressAndMemoryLocation(uint8_t* buffer, uint8_t len, 
 	
 	enum status_code statc = writeDataToAddress(data,1,address,should_stop);
 	// checks if the error is STATUS_CATEGORY_OK
-	if (statc & 0xf0 != 0) {
+	if ((statc & 0xf0) != 0) {
 		return statc;
 	}
 	return readFromAddress(buffer,len,address,true);

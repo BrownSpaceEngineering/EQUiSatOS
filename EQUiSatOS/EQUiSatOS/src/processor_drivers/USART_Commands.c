@@ -23,7 +23,7 @@ void USART_init() {
 void SERCOM3_Handler()
 {
 	if (SERCOM3->USART.INTFLAG.bit.RXC){
-		char curByte = SERCOM3->USART.DATA.reg;
+		//char curByte = SERCOM3->USART.DATA.reg;
 		/*if (curByte == 0x01) {
 			memset(receivebuffer, 0, LEN_RECEIVEBUFFER);
 			receiveIndex = 0;
