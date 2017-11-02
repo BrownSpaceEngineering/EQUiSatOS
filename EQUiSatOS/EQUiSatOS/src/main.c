@@ -77,8 +77,7 @@ int main(void)
 	
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 	
-	bat_testing_run();
-	
+    bat_testing_run();
 	
 	//run_rtos();
 	
