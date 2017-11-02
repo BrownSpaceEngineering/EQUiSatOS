@@ -25,8 +25,6 @@
  * Source code is available at http://rscode.sourceforge.net
  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "ecc.h"
 
 /* Encoder parity bytes */
@@ -132,7 +130,7 @@ check_syndrome (void)
 }
 
 
-void
+/*void
 debug_check_syndrome (void)
 {	
   uint8_t i;
@@ -141,7 +139,7 @@ debug_check_syndrome (void)
     printf(" inv log S[%d]/S[%d] = %d\n", i, i+1, 
 	   glog[gmult(synBytes[i], ginv(synBytes[i+1]))]);
   }
-}
+}*/
 
 
 /* Create a generator polynomial for an n byte RS code. 

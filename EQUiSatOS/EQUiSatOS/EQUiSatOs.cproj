@@ -36,16 +36,16 @@
           <option id="sam0.drivers.adc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.nvm" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.rtc" value="Add" config="calendar_callback" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.rtc" value="Add" config="count_polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.sercom.i2c.master" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.sercom.spi" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.sercom.usart" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.system.clock" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.tc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.tcc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="sam0.drivers.wdt" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.tc" value="Add" config="polled" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro2" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.utils.cmsis.samd21.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -70,11 +70,7 @@
           <file path="src/ASF/common2/services/delay/sam0/systick_counter.c" framework="" version="3.31.0" source="common2\services\delay\sam0\systick_counter.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common2/services/delay/delay.h" framework="" version="3.31.0" source="common2\services\delay\delay.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common2/services/delay/sam0/systick_counter.h" framework="" version="3.31.0" source="common2\services\delay\sam0\systick_counter.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/rtc/rtc_calendar.h" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_calendar.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_calendar_interrupt.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/rtc/rtc_tamper.h" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_tamper.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar.c" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar_interrupt.c" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/sercom.c" framework="" version="3.31.0" source="sam0\drivers\sercom\sercom.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/sercom_pinout.h" framework="" version="3.31.0" source="sam0\drivers\sercom\sercom_pinout.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/sercom/sercom.h" framework="" version="3.31.0" source="sam0\drivers\sercom\sercom.h" changed="False" content-id="Atmel.ASF" />
@@ -297,6 +293,8 @@
           <file path="src/ASF/sam0/drivers/wdt/quick_start_callback/qs_wdt_callback.h" framework="" version="3.31.0" source="sam0\drivers\wdt\quick_start_callback\qs_wdt_callback.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/tc/tc.h" framework="" version="3.31.0" source="sam0\drivers\tc\tc.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/tc/tc_sam_d_r/tc.c" framework="" version="3.31.0" source="sam0\drivers\tc\tc_sam_d_r\tc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/rtc/rtc_count.h" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_count.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_count.c" framework="" version="3.31.0" source="sam0\drivers\rtc\rtc_sam_d_r\rtc_count.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.31.0/common.applications.user_application.xplained_pro2.samd21_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -314,12 +312,12 @@
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009153</ToolNumber>
+      <ToolNumber>ATML2130021800007809</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
@@ -418,7 +416,6 @@
       <Value>TEST_SUITE_DEFINE_ASSERT_MACRO</Value>
       <Value>_ASSERT_ENABLE_</Value>
       <Value>SYSTICK_MODE</Value>
-      <Value>RTC_CALENDAR_ASYNC=true</Value>
       <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
       <Value>USART_CALLBACK_MODE=false</Value>
       <Value>SPI_CALLBACK_MODE=false</Value>
@@ -429,6 +426,7 @@
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
       <Value>TC_ASYNC=false</Value>
+      <Value>RTC_COUNT_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -544,7 +542,7 @@
       <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false -DRTC_COUNT_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -609,7 +607,6 @@
       <Value>TEST_SUITE_DEFINE_ASSERT_MACRO</Value>
       <Value>_ASSERT_ENABLE_</Value>
       <Value>SYSTICK_MODE</Value>
-      <Value>RTC_CALENDAR_ASYNC=true</Value>
       <Value>I2C_MASTER_CALLBACK_MODE=false</Value>
       <Value>USART_CALLBACK_MODE=false</Value>
       <Value>SPI_CALLBACK_MODE=false</Value>
@@ -620,6 +617,7 @@
       <Value>TCC_ASYNC=false</Value>
       <Value>WDT_CALLBACK_MODE=true</Value>
       <Value>TC_ASYNC=false</Value>
+      <Value>RTC_COUNT_ASYNC=false</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -744,7 +742,7 @@
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMD21_XPLAINED_PRO -D__SAMD21J18A__ -DADC_CALLBACK_MODE=false -DTCC_ASYNC=false -DWDT_CALLBACK_MODE=true -DTC_ASYNC=false -DRTC_COUNT_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -914,6 +912,12 @@
     <None Include="src\ASF\sam0\drivers\tcc\quick_start\qs_tcc_basic.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\ASF\sam0\drivers\rtc\rtc_count.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_count.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam0\drivers\tcc\tcc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -965,18 +969,18 @@
     <Compile Include="src\processor_drivers\Flash_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\processor_drivers\RTC_Commands_Old.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\processor_drivers\PWM_Commands.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\PWM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\processor_drivers\TC_Commands.c">
+    <None Include="src\processor_drivers\RTC_Commands_Old.c">
       <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\TC_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\processor_drivers\Watchdog_Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1628,12 +1632,6 @@
     <Compile Include="src\ASF\sam0\boards\samd21_xplained_pro\board_init.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\ASF\sam0\drivers\sercom\i2c\i2c_sam0\i2c_master.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1788,12 +1786,6 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\drivers\rtc\rtc_tamper.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\rtc\rtc_calendar_interrupt.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\rtc\rtc_calendar.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\common2\services\delay\sam0\systick_counter.h">

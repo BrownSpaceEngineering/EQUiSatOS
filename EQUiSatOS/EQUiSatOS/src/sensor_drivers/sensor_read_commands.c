@@ -33,10 +33,13 @@ void read_ir_temps_batch(ir_temps_batch batch) {
 }
 
 void read_lion_volts_batch(lion_volts_batch batch) {
-	configure_adc(&adc_instance, P_AI_L1_REF);
-	batch[0] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_L2_REF);
-	batch[1] = read_adc(adc_instance);
+	// readFromADC?
+	struct adc_module adc_instance1;
+	struct adc_module adc_instance2;
+	configure_adc(&adc_instance1, P_AI_L1_REF);
+	batch[0] = read_adc(adc_instance1);
+	configure_adc(&adc_instance2, P_AI_L2_REF);
+	batch[1] = read_adc(adc_instance2);
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
@@ -58,26 +61,34 @@ void read_led_temps_batch(led_temps_batch batch) {
 }
 
 void read_lifepo_current_batch(lifepo_current_batch batch) {
+	struct adc_module adc_instance1;
+	struct adc_module adc_instance2;
+	struct adc_module adc_instance3;
+	struct adc_module adc_instance4;
 	// order is bank 1, bank 1 out, bank 2, bank 2 out
-	configure_adc(&adc_instance, P_AI_LFB1SNS);
-	batch[0] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LFB1OSNS);
-	batch[1] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LFB2SNS);
-	batch[2] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LFB2OSNS);
-	batch[3] = read_adc(adc_instance);
+	configure_adc(&adc_instance1, P_AI_LFB1SNS);
+	batch[0] = read_adc(adc_instance1);
+	configure_adc(&adc_instance2, P_AI_LFB1OSNS);
+	batch[1] = read_adc(adc_instance2);
+	configure_adc(&adc_instance3, P_AI_LFB2SNS);
+	batch[2] = read_adc(adc_instance3);
+	configure_adc(&adc_instance4, P_AI_LFB2OSNS);
+	batch[3] = read_adc(adc_instance4);
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	configure_adc(&adc_instance, P_AI_LF1REF);
-	batch[0] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LF2REF);
-	batch[1] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LF3REF);
-	batch[2] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LF4REF);
-	batch[3] = read_adc(adc_instance);
+	struct adc_module adc_instance1;
+	struct adc_module adc_instance2;
+	struct adc_module adc_instance3;
+	struct adc_module adc_instance4;
+	configure_adc(&adc_instance1, P_AI_LF1REF);
+	batch[0] = read_adc(adc_instance1);
+	configure_adc(&adc_instance2, P_AI_LF2REF);
+	batch[1] = read_adc(adc_instance2);
+	configure_adc(&adc_instance3, P_AI_LF3REF);
+	batch[2] = read_adc(adc_instance3);
+	configure_adc(&adc_instance4, P_AI_LF4REF);
+	batch[3] = read_adc(adc_instance4);
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
@@ -107,14 +118,18 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 void read_led_current_batch(led_current_batch batch) {
-	configure_adc(&adc_instance, P_AI_LED1SNS);
-	batch[0] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LED2SNS);
-	batch[1] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LED3SNS);
-	batch[2] = read_adc(adc_instance);
-	configure_adc(&adc_instance, P_AI_LED4SNS);
-	batch[3] = read_adc(adc_instance);
+	struct adc_module adc_instance1;
+	struct adc_module adc_instance2;
+	struct adc_module adc_instance3;
+	struct adc_module adc_instance4;
+	configure_adc(&adc_instance1, P_AI_LED1SNS);
+	batch[0] = read_adc(adc_instance1);
+	configure_adc(&adc_instance2, P_AI_LED2SNS);
+	batch[1] = read_adc(adc_instance2);
+	configure_adc(&adc_instance3, P_AI_LED3SNS);
+	batch[2] = read_adc(adc_instance3);
+	configure_adc(&adc_instance4, P_AI_LED4SNS);
+	batch[3] = read_adc(adc_instance4);
 }
 
 void read_radio_temp_batch(radio_temp_batch batch) {

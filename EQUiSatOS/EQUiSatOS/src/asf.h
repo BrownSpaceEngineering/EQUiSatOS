@@ -47,6 +47,7 @@
 /*
  * This file includes all API header files for the selected drivers from ASF.
  * Note: There might be duplicate includes required by more than one driver.
+ * IMPORTANT NOTE: #include <FreeRTOS.h> will be removed by the ASF Wizard
  *
  * The file is automatically generated and will be re-written when
  * running the ASF driver selector tool. Any changes will be discarded.
@@ -83,9 +84,8 @@
 // From module: Part identification macros
 #include <parts.h>
 
-// From module: RTC - Real Time Counter in Calendar Mode (Callback APIs)
-#include <rtc_calendar.h>
-#include <rtc_calendar_interrupt.h>
+// From module: RTC - Real Time Counter in Count Mode (Polled APIs)
+#include <rtc_count.h>
 #include <rtc_tamper.h>
 
 // From module: SERCOM I2C - Master Mode I2C (Polled APIs)

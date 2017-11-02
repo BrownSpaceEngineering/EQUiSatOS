@@ -22,13 +22,30 @@ enum status_code AD7991_init(){
 	return code1; 
 }
 
+// Reads from all 4 channels of the chip, each num_samples times and averages them
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
-	uint8_t buffer[8];
-	enum status_code read = readFromAddress(buffer,8,addr,false);
-	results[0] = ((buffer[0] & 0b00001111) << 8) + buffer[1];
-	results[1] = ((buffer[2] & 0b00001111) << 8) + buffer[3];
-	results[2] = ((buffer[4] & 0b00001111) << 8) + buffer[5];
-	results[3] = ((buffer[6] & 0b00001111) << 8) + buffer[7];
+	// Initialize
+	int num_samples = 4;
+	uint8_t buffer[8*num_samples];
+	uint16_t results0, results1, results2, results3;
+	results0 = 0;
+	results1 = 0;
+	results2 = 0;
+	results3 = 0;
+	// I2C transaction
+	enum status_code read = readFromAddress(buffer,8*num_samples,addr,false);
+
+	//Software averaging
+	for (int i=0; i<num_samples; i++){
+		results0 = results0 + (((buffer[(8*i)] & 0b00001111) << 8) + buffer[(8*i+1)]);
+		results1 = results1 + (((buffer[(8*i+2)] & 0b00001111) << 8) + buffer[(8*i+3)]);
+		results2 = results2 + (((buffer[(8*i+4)] & 0b00001111) << 8) + buffer[(8*i+5)]);
+		results3 = results3 + (((buffer[(8*i+6)] & 0b00001111) << 8) + buffer[(8*i+7)]);
+	}	
+	results[0] = results0/num_samples;
+	results[1] = results1/num_samples;
+	results[2] = results2/num_samples;
+	results[3] = results3/num_samples;
 	
 	return read;
 }

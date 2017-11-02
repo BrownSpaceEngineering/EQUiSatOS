@@ -25,14 +25,17 @@
 #define CONFIG_REGISTER_0 0x6
 #define CONFIG_REGISTER_1 0x7
 
-//0 is output, 1 is input
-#define IOMask0 0b11111111
-#define IOMask1 0b00000000
+//0 is output, 1 is input - see battery board v2 datasheet for rationale
+#define IOMask0 0b11111111 //Port 0: 0.7->0.0
+#define IOMask1 0b11110000 //Port 1: 1.7->1.0
+#define initial_outputs  0b00000000 //Initial output states
 
 
-void TCA9535_init(return_struct_16 rs);
+void TCA9535_init(return_struct_16 *rs);
 enum status_code setIOMask(uint8_t reg0, uint8_t reg1);
-void readTCA9535Levels(return_struct_16 rs);
+void readTCA9535Levels(return_struct_16 *rs);
 enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targetLevel);
+enum status_code setBatOutputs(uint8_t vals);
+enum status_code resetBatOutputs();
 
 #endif /* TCA9535_GPIO_H_ */

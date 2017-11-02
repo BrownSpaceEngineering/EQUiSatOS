@@ -1,5 +1,6 @@
 #include "Direct_Pin_Commands.h"
 
+//dir is true for output, false for input
 void setup_pin(bool dir,uint8_t pin){
 	struct port_config conf;
 	port_get_config_defaults(&conf);

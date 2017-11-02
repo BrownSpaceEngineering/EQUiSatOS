@@ -136,10 +136,9 @@ void radioTest(void) {
 	
 	set_output(true, P_RAD_PWR_RUN);
 	set_output(true, P_RAD_SHDN);
-	set_output(false, P_TX_EN);
-	set_output(false, P_RX_EN);
-	
-	initializeRadio();	
+	set_output(true, P_TX_EN);
+	set_output(true, P_RX_EN);
+		
 	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
 	while (true) {		
 		usart_send_string("EQUiSat\n");

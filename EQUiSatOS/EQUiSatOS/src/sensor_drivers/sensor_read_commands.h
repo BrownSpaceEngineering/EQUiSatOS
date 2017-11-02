@@ -11,7 +11,6 @@
 #include "../global.h"
 
 // will be used to read all ADCs
-struct adc_module adc_instance;
 return_struct_8 rs;
 return_struct_16 rs_obj1;
 return_struct_16 rs_obj2;
