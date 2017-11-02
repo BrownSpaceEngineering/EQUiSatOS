@@ -242,19 +242,19 @@ void AD7991_control_test_all(float *results_f){
 	
 }
 
-void compare_results(void * results, void * expected, int num, int margin, char * testname){
-	for (int i = 0; i < num; i++){
-		if (results[i] > expected[i]){
-			if((results[i] - expected[i]) >= margin) {
-				print("Error in test %s number %d \n",testname,i);
-			}
-			} else {
-			if((expected[i] - results[i]) >= margin) {
-				print("Error in test %s number %d \n",testname,i);
-			}
-		}
-	}
-}
+//void compare_results(void * results, void * expected, int num, int margin, char * testname){
+	//for (int i = 0; i < num; i++){
+		//if (results[i] > expected[i]){
+			//if((results[i] - expected[i]) >= margin) {
+				//print("Error in test %s number %d \n",testname,i);
+			//}
+			//} else {
+			//if((expected[i] - results[i]) >= margin) {
+				//print("Error in test %s number %d \n",testname,i);
+			//}
+		//}
+	//}
+//}
 
 void system_test(void){
 	
@@ -267,19 +267,32 @@ void system_test(void){
 	AD7991_control_test_all(results);
 	int AD7991_test_results[4] = {0,0,0,0};
 	
+	
 	//check with expected values
-	compare_results((void *) results,(void *) expected, 4, 1, "AD7991");
+	//compare_results((void *) results,(void *) expected, 4, 1, "AD7991");
+	//for (int i = 0; i < num; i++){
+		//if (results[i] > expected[i]){
+			//if((results[i] - expected[i]) >= margin) {
+				//print("Error in test %s number %d \n",testname,i);
+			//}
+			//} else {
+			//if((expected[i] - results[i]) >= margin) {
+				//print("Error in test %s number %d \n",testname,i);
+			//}
+		//}
+	//}
 	
 	const uint16_t e_temp = 20;
 	uint16_t temps[4], ex_temp[] = {e_temp, e_temp, e_temp, e_temp};
 	
 	
-	temps[0] = AD590_test(1, 1);
-	temps[1] = AD590_test(2, 5);
-	temps[2] = AD590_test(3, 5);
-	temps[3] = AD590_test(4, 5);
+	//ADC out of comission at the moment
+	//temps[0] = AD590_test(1, 1);
+	//temps[1] = AD590_test(2, 5);
+	//temps[2] = AD590_test(3, 5);
+	//temps[3] = AD590_test(4, 5);
 	
-	compare_results((void *) temps,(void *) expected,4, 5, "AD590");
+	//compare_results((void *) temps,(void *) expected,4, 5, "AD590");
 	
 	////Flight IR Sensors
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
@@ -299,12 +312,14 @@ void system_test(void){
 	MPU9250_test(fill);
 	uint16_t MPU_expect[] = {0, 0, 0, 0, 0, 0};
 		
-	compare_results((void *) fill,(void *) MPU_expect,6, 12, "MPU9250");
+	//compare_results((void *) fill,(void *) MPU_expect,6, 12, "MPU9250");
 
 	
 	//WILL THESE WORK???? 
 	float test4 = HMC5883L_test(); 
-	uint16_t test5 = TEMD6200_test(5); 
+	
+	//ADC out of comission
+	//uint16_t test5 = TEMD6200_test(5); 
 	return_struct_16 TCA9535_test(); 
 	
 }
