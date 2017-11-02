@@ -84,7 +84,7 @@ void flatsat_init(void) {
 		 return_struct_8 rs;
 		 LTC1380_channel_select(0x48, i, rs);
 		 
-		uint16_t sum =0;
+		uint16_t sum = 0;
 		
 		for (int j=0; j<num_samples; j++){
 			adc_enable(&temp_instance);

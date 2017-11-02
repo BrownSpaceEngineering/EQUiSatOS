@@ -11,7 +11,9 @@
 //Flight Sensors
 #define MLX90614_FLASHPANEL_V6_2_1	0x6C
 #define MLX90614_TOPPANEL_V4_2		0x6B
-#define MLX90614_ACCESSPANEL_V3_1	0x5C
+#define MLX90614_TOPPANEL_V4_1		0x6A
+#define MLX90614_ACCESSPANEL_V3_1	0x5C //Kept this in just so I could build, delete this -Jarod 
+#define MLX90614_ACCESSPANEL_V4_1	0x5C
 #define MLX90614_SIDEPANEL_V4_2		0x5D
 #define MLX90614_SIDEPANEL_V4_3		0x5F
 #define MLX90614_SIDEPANEL_V4_4		0x6D
@@ -44,6 +46,7 @@ typedef enum {AMBIENT = MLX90614_TA,
               OBJ2 = MLX90614_TOBJ2} IRTempTarget;
 
 void MLX90614_init(void);
+void MLX90614_read_all_obj(MLXDeviceAddr addr, return_struct_16 rs);
 void MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr, return_struct_16 rs);
 void MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, return_struct_16 rs);
 float dataToTemp(uint16_t data);

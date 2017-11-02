@@ -25,9 +25,14 @@ void current_data_task(void *pvParameters)
 	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(&idle_readings_equistack);
 	assert(current_struct != NULL); // TESTING
 	current_struct->timestamp = get_current_timestamp();
-		
+	
+	init_task_state(CURRENT_DATA_TASK); // suspend or run on boot
+	
 	for( ;; )
 	{
+		// report to watchdog
+		report_task_running(CURRENT_DATA_TASK);
+		
 		// block for a time based on a frequency, determined by whether we're in IDLE or LOW_POWER mode.
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		if (CurrentState == LOW_POWER) {

@@ -18,5 +18,4 @@
 #include "runnable_configurations/scratch_testing.h"
 #include "testing_functions/test_stacks.h"
 
-
 #endif /* MAIN_H */

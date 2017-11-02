@@ -17,6 +17,7 @@
 
 void run_rtos(void);
 
+void init_task_state(task_type_t task);
 /* State setting functions */
 void set_state_hello_world(void);
 void set_state_idle(void);
