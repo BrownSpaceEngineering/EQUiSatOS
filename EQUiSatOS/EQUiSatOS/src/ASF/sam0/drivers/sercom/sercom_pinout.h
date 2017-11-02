@@ -3,8 +3,8 @@
 #include <compiler.h>
 
 // BOARD TYPE - see main.h too!!
-// #define CNTRL_BRD_V3 
-#define XPLAINED_PRO
+#define CNTRL_BRD_V3 
+//#define XPLAINED_PRO
 
 // for satellite processor
 #ifdef CNTRL_BRD_V3

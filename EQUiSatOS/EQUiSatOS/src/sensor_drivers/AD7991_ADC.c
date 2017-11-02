@@ -14,9 +14,12 @@ uint8_t all_adc_reg = 0xf0;
 // Make sure I2C is configured (on SERCOM4) 
 enum status_code AD7991_init(){	
 	// Initializes battery board
-	enum status_code code0 = writeDataToAddress(&all_adc_reg, 1, AD7991_ADDR_0, true);
+	//enum status_code code0 = writeDataToAddress(&all_adc_reg, 1, AD7991_ADDR_0, true);
 	// Initializes control board
-	return writeDataToAddress(&all_adc_reg, 1, AD7991_ADDR_1, true);	
+	enum status_code code1 = writeDataToAddress(&all_adc_reg, 1, AD7991_ADDR_1, true);
+
+	
+	return code1; 
 }
 
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){

@@ -50,6 +50,7 @@ typedef struct {
 #include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "stacks/Sensor_Structs.h"
 #include "telemetry/Radio_Commands.h"
+#include "testing_functions/system_test.h"
 #include "errors.h"
 
 #endif /* GLOBAL_H_ */

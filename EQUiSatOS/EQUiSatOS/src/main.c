@@ -11,7 +11,9 @@ int main(void)
 	USART_init();
 	//flatsat_run(); //calls flatsat init
 	
-	bat_testing_run();
+	system_test(); 
+	
+	//bat_testing_run();
 
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 

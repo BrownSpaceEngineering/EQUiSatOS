@@ -56,15 +56,19 @@ uint16_t AD590_test(int channel, int num_samples){
 	return sum/num_samples;	 
 }
 
-MPU9250Reading MPU9250_test(){
+//IMU test
+void MPU9250_test(int16_t toFill[6]){
 	//initalize imu.... probably
 	MPU9250_init();
 	
 	float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
-	MPU9250_computeBias(gyroBias,accelBias);
-	MPU9250Reading reading;
+	//MPU9250_computeBias(gyroBias,accelBias);
+	MPU9250_read_acc(toFill[0]);
+	MPU9250_read_gyro(toFill[3]);
+	
 }
 
+//Magnetometer test 
 float HMC5883L_test(){
 	
 	uint8_t *buffer; 
@@ -77,6 +81,7 @@ float HMC5883L_test(){
 	
 }
 
+//GPIO test 
 return_struct_16 TCA9535_test(){
 	return_struct_16 rs;
 	TCA9535_init(rs);
@@ -85,6 +90,7 @@ return_struct_16 TCA9535_test(){
 	
 }
 
+// Photodiode test 
 uint16_t TEMD6200_test(int num_samples){
 	
 	struct adc_module pd_instance; 
@@ -109,7 +115,7 @@ uint16_t TEMD6200_test(int num_samples){
 //input a uint8_t array of length 4, it will fill each index with the corresponding test
 // channel 0 -> results[0],  channel 1 -> results[1] etc...
 // 1 represents a failed channel test 0 represents a passed channel test
-void AD7991_control_test(uint8_t *results){
+/*void AD7991_control_test(uint8_t *results){
 	
 	const uint16_t error_tolerance = 100; // how many millivolts off expected value will we accept?
 	
@@ -213,7 +219,7 @@ void AD7991_control_test(uint8_t *results){
 	} else {
 		results[3] = 0; 
 	}		
-}
+}*/
 
 void AD7991_control_test_all(float *results_f){
 	
@@ -239,48 +245,54 @@ void AD7991_control_test_all(float *results_f){
 
 void system_test(void){
 	
-	//Test IR sensor
-	////Flight Sensors
-	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
-	//#define MLX90614_TOPPANEL_V4_2		0x6B
-	//#define MLX90614_ACCESSPANEL_V3_1	0x5C
-	//#define MLX90614_SIDEPANEL_V4_2		0x5D
-	//#define MLX90614_SIDEPANEL_V4_3		0x5F
-	//#define MLX90614_SIDEPANEL_V4_4		0x6D
-	
-	configure_i2c_master(SERCOM4); 
-	//configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
-	
-	LTC1380_init();
+	MLX90614_init();
+	configure_i2c_master(SERCOM4); //init I2C
+	//LTC1380_init(); //init multiplexer
 
 	float results[4]; 
 	uint16_t expected[] = {3.6, 3.6, 5, 3.3}; 
 	
-	AD7991_control_test(results);
+	AD7991_control_test_all(results);
+	int AD7991_test_results[4] = {0,0,0,0};
 	
+	//check with expected values
 	for (int i = 0; i < 4; i++){
 		if (results[i] > expected[i]){
 			if((results[i] - expected[i]) >= 0.5) {
-				//FAILURE
+				AD7991_test_results[i] = 1;
 			}
 		} else {
 			if((expected[i] - results[i]) >= 0.5) {
-				//FAILURE
+				AD7991_test_results[i] = 1;
 			}
 		}
 	}
 	
+	
 	uint16_t temps[4];
 	
-	temps[0] = AD590_test(1, 5);
-	temps[1] = AD590_test(1, 5);
-	temps[2] = AD590_test(1, 5);
-	temps[3] = AD590_test(1, 5);
+	temps[0] = AD590_test(1, 1);
+	temps[1] = AD590_test(2, 5);
+	temps[2] = AD590_test(3, 5);
+	temps[3] = AD590_test(4, 5);
 	
-	float test1 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
+	////Flight IR Sensors
+	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
+	//#define MLX90614_TOPPANEL_V4_2		0x6B //
+	//#define MLX90614_TOPPANEL_V4_1		0x6A
+	//#define MLX90614_ACCESSPANEL_V4_1	0x5C
+	//#define MLX90614_SIDEPANEL_V4_2		0x5D //
+	//#define MLX90614_SIDEPANEL_V4_3		0x5F
+	//#define MLX90614_SIDEPANEL_V4_4		0x6D
+	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
+	//float test2 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
 	
-	MPU9250Reading test3 = MPU9250_test();
+	// IMU 
+	uint16_t fill[6]; 
+	MPU9250_test(fill);
+	
 	float test4 = HMC5883L_test(); 
-	return_struct_16 TCA9535_test(); 
+	uint16_t test5 = TEMD6200_test(5); 
+	// return_struct_16 TCA9535_test(); 
 	
 }

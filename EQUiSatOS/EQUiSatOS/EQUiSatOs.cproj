@@ -1061,6 +1061,12 @@
     <Compile Include="src\telemetry\rscode-1.3\rs.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\testing_functions\system_test.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\system_test.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
       <SubType>compile</SubType>
     </Compile>
