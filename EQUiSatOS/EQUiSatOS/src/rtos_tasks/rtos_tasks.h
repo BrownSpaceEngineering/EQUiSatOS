@@ -3,7 +3,7 @@
  *
  * Created: 10/2/2016 1:47:37 PM
  *  Author: mckenna
- */ 
+ */
 
 #ifndef RTOS_TASKS_H_
 #define RTOS_TASKS_H_
@@ -19,7 +19,7 @@
 #include "rtos_tasks_config.h"
 #include "stacks/Sensor_Structs.h"
 #include "stacks/State_Structs.h"
-#include "stacks/equistack.h" 
+#include "stacks/equistack.h"
 #include "./runnable_configurations/init_rtos_tasks.h"
 #include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
@@ -33,7 +33,7 @@ signed char *pcTaskName);
 extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
 extern void vApplicationTickHook(void);
 
-/************************************************************************************/ 
+/************************************************************************************/
 /* All main satellite tasks
 	NOTE:
 	If you add/remove a task, there are several things you must change:
@@ -43,9 +43,9 @@ extern void vApplicationTickHook(void);
 	4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
 	5. (Maybe) Create new struct to store all data and add data arrays for all data
 	6. (Maybe) Create new EQUIstack to store these structs							*/
-/************************************************************************************/ 
+/************************************************************************************/
 
-// Action tasks 
+// Action tasks
 void watchdog_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
@@ -109,7 +109,7 @@ SemaphoreHandle_t _flash_cmp_equistack_mutex;
 /************************************************************************/
 /* TASK STATE MANAGEMENT                                               */
 /************************************************************************/
-/* List of task handles, indexed by the task id enum value 
+/* List of task handles, indexed by the task id enum value
    (essentially a map) */
 TaskHandle_t task_handles[NUM_TASKS];
 
@@ -125,10 +125,10 @@ TaskHandle_t attitude_data_task_handle;
 
 /* List (series of bits) of whether a given task is RESUMING from suspension.
  * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
- * 
+ *
  *				|---suspended----|       | task reports unsuspended
  * task bit:  0   0   0   0   0    1   1   0   0   0   ...
- * 
+ *
  * This was put here to allow tasks to immediately write old data to their
  * equistacks when resuming from suspend.
  * NOTE: We WILL merge this with the watchdog check in / check out indicators.

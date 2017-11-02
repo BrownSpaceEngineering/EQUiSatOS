@@ -20,8 +20,13 @@ void attitude_data_task(void *pvParameters)
 	
 	attitude_data_t *current_struct = (attitude_data_t*) equistack_Initial_Stage(&attitude_readings_equistack);
 	
+	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
+	
 	for ( ;; )
 	{
+		// report to watchdog
+		report_task_running(ATTITUDE_DATA_TASK); 
+		
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
@@ -55,8 +60,8 @@ void attitude_data_task(void *pvParameters)
 		// i.e. assert(attitude_ACCELEROMETER_LOOPS_PER_LOG == attitude_GYRO_LOOPS_PER_LOG)
 		if (loops_since_last_log[ACCELEROMETER_DATA] >= attitude_ACCELEROMETER_LOOPS_PER_LOG && 
 			loops_since_last_log[GYRO_DATA] >= attitude_GYRO_LOOPS_PER_LOG) {
-			read_imu_batch(&(current_struct->accelerometer_data[data_array_tails[ACCELEROMETER_DATA]]),
-				&(current_struct->gyro_data[data_array_tails[GYRO_DATA]]));
+			read_accel_batch(&(current_struct->accelerometer_data[data_array_tails[ACCELEROMETER_DATA]]));
+			read_gyro_batch(&(current_struct->gyro_data[data_array_tails[GYRO_DATA]]));
 			increment_data_type(ACCELEROMETER_DATA, data_array_tails, loops_since_last_log);
 			increment_data_type(GYRO_DATA, data_array_tails, loops_since_last_log);
 		}
