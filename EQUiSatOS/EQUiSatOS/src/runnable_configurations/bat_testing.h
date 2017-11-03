@@ -18,13 +18,13 @@ typedef struct{
 	bool LF_B2_OUTEN, LF_B1_OUTEN, L1_RUN_CHG, L2_RUN_CHG, LF_B1_RUNCHG, LF_B2_RUNCHG, L1_DISG, L2_DISG;
 } bat_testing_struct;
 
-void bat_testing_init();
+void bat_testing_init(bat_testing_struct *data);
 void readRemoteADC_0(float* batReadings);
 void readBatBoard(float* batBoardReadings);
 //uint16_t readFromADC(enum adc_positive_input pin, int num_avg);
 void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_struct_16 gpio_rs, bat_testing_struct *data);
-void bat_testing_run();
-void resetState();
+void bat_testing_run(void);
+void resetState(void);
 bool areVoltagesNominal(bat_testing_struct data);
 bool isLFPOOK(float bat);
 bool isLionOK(float bat);

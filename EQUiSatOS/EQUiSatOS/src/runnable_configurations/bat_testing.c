@@ -73,9 +73,9 @@ void bat_testing_init(bat_testing_struct *data){
 	return_struct_16 tca9535_rs;
 	TCA9535_init(&tca9535_rs);
 	if (!(tca9535_rs.return_value && 0xf4f0)){
-		bool ohno = true; //Todo some sort of check here. As long as we're not charging, f4f0 should be the return value.
+		//TODO: some sort of check here. As long as we're not charging, f4f0 should be the return value.
 	} else{
-		//TODO Please tell me there's a better way to do this -Ryan
+		//TODO: Please tell me there's a better way to do this -Ryan
 		uint16_t res = tca9535_rs.return_value;
 		data->l2_st 		= !(!(res&0b0000000100000000));	//8
 		data->l1_st 		= !(!(res&0b0000001000000000));	//9
@@ -96,7 +96,7 @@ void bat_testing_init(bat_testing_struct *data){
 	
 }
 
-void resetState(){
+void resetState(void) {
 	set_output(false, P_LF_B2_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
 	set_output(false, P_L1_RUN_CHG);

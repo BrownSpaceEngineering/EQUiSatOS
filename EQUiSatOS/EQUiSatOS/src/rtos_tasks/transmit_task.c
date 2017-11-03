@@ -9,7 +9,7 @@
 #include "stacks/package_transmission.h"
 
 // define buffer here to keep it LOCAL
-char *msg_buffer [MSG_BUFFER_SIZE];
+uint8_t msg_buffer[MSG_BUFFER_SIZE];
 
 void write_message_top(uint8_t num_data, size_t size_data) {
 	// write preamble
@@ -50,40 +50,37 @@ void transmit_task(void *pvParameters)
 		if (current_packet_transmissions >= TRANSMIT_TASK_MSG_REPEATS) {
 			current_packet_transmissions = 0;
 			
-			// read the next state to transmit (get first off state queue)
-			int nextState = (int*) equistack_Get(&last_reading_type_equistack, 0);
+			// TODO
+			int nextState = 0;
 			
-			// if there's no data in the state stack, we have nothing to transmit
-			if (nextState != NULL) {
-				// based on what state we're in, compile a different message
-				switch(nextState)
-				{
-					case IDLE_DATA:
-						write_message_top(IDLE_DATA_PACKETS, IDLE_DATA_PACKET_SIZE);
-						write_attitude_data(msg_buffer, &idle_readings_equistack);
-						break;
+			// based on what state we're in, compile a different message
+			switch(nextState)
+			{
+				case IDLE_DATA:
+					write_message_top(IDLE_DATA_PACKETS, IDLE_DATA_PACKET_SIZE);
+					write_attitude_data(msg_buffer, &idle_readings_equistack);
+					break;
 					
-					case ATTITUDE_DATA:
-						write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
-						write_attitude_data(msg_buffer, &attitude_readings_equistack);
-						break;
+				case ATTITUDE_DATA:
+					write_message_top(ATTITUDE_DATA_PACKETS, ATTITUDE_DATA_PACKET_SIZE);
+					write_attitude_data(msg_buffer, &attitude_readings_equistack);
+					break;
 						
-						//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
+					//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
 					
-					case FLASH_DATA:
-						write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
-						write_flash_data(msg_buffer, &flash_readings_equistack);
-						break;
+				case FLASH_DATA:
+					write_message_top(FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE);
+					write_flash_data(msg_buffer, &flash_readings_equistack);
+					break;
 						
-					case FLASH_CMP:
-						write_message_top(FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE);
-						write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
-						break;
+				case FLASH_CMP:
+					write_message_top(FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE);
+					write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
+					break;
 					
-					default:
-						break;
-				};
-			}			
+				default:
+					break;
+			};	
 		}
 		
 		// actually send buffer over USART to radio for transmission

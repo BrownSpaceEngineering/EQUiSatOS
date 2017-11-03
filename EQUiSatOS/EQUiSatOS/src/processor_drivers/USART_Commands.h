@@ -37,13 +37,10 @@ void edbg_usart_init(void);
 void ext_usart_clock_init(void);
 void ext_usart_pin_init(void);
 void ext_usart_init(void);
-void usart_send_string(const char *str_buf);
+void usart_send_string(const uint8_t *str_buf);
 void print_old(const char *str_buf);  // deprecated
 void print(const char *format, ...);
-
-
-
-
+uint16_t calculate_baud_value(const uint32_t baudrate, const uint32_t peripheral_clock, uint8_t sample_num);
 
 
 #endif /* USART_COMMANDS_H_ */

@@ -18,4 +18,8 @@
 #include "runnable_configurations/scratch_testing.h"
 #include "testing_functions/test_stacks.h"
 
+static void The_Fall_Of_Ryan(void);
+static void run_tests(void);
+static void global_init(void);
+
 #endif /* MAIN_H */

@@ -48,15 +48,15 @@
 // methods
 void assert_transmission_constants(void);
 
-void write_preamble(		char* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len);
-void write_header(			char* buffer, idle_data_t *idle_data);
-void write_errors(			char* buffer, equistack *error_stack);
-void write_idle_data(		char* buffer, equistack *idle_stack);
-void write_attitude_data(	char* buffer, equistack *attitude_stack);
-void write_flash_data(		char* buffer, equistack *flash_stack);
-void write_flash_cmp(		char* buffer, equistack *flash_cmp_stack);
+void write_preamble(		uint8_t* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len);
+void write_header(			uint8_t* buffer, idle_data_t *idle_data);
+void write_errors(			uint8_t* buffer, equistack *error_stack);
+void write_idle_data(		uint8_t* buffer, equistack *idle_stack);
+void write_attitude_data(	uint8_t* buffer, equistack *attitude_stack);
+void write_flash_data(		uint8_t* buffer, equistack *flash_stack);
+void write_flash_cmp(		uint8_t* buffer, equistack *flash_cmp_stack);
 
-void write_bytes_and_shift(char *data, void *input, size_t num_bytes, uint8_t *index);
-void write_value_and_shift(char *data, char value, size_t num_bytes, uint8_t *index);
+void write_bytes_and_shift(	uint8_t* data, void *input, size_t num_bytes, uint8_t *index);
+void write_value_and_shift(	uint8_t* data, char value, size_t num_bytes, uint8_t *index);
 
 #endif /* PACKAGE_TRANSMISSION_H_ */

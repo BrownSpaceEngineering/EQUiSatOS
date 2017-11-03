@@ -11,14 +11,14 @@ void TCA9535_init(return_struct_16 *rs){
 	//return_struct_16 *rs_before;
 	//readTCA9535Levels(rs_before);
 	enum status_code statc1 = setIOMask(IOMask0,IOMask1);
-	if (statc1 & 0xf0 != 0) {
+	if ((statc1 & 0xf0) != 0) {
 		rs->return_status = statc1;
 		// PLACEHOLDER
 		rs->return_value = -1;
 	}
 	//rs->return_value = rs.return_value;
 	enum status_code statc2 = setBatOutputs(initial_outputs);
-	if (statc2 & 0xf0 != 0) {
+	if ((statc2 & 0xf0) != 0) {
 		rs->return_status = statc2;
 		// PLACEHOLDER
 		rs->return_value = -1;
@@ -32,7 +32,7 @@ enum status_code setIOMask(uint8_t reg0, uint8_t reg1){
 	uint8_t data1[2] = {CONFIG_REGISTER_1, reg1};
 	
 	enum status_code statc = writeDataToAddress(data0, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
-	if (statc & 0xf0 != 0) {
+	if ((statc & 0xf0) != 0) {
 		return statc;
 	}
 	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
@@ -42,7 +42,7 @@ void readTCA9535Levels(return_struct_16 *rs){
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);
-	if (statc1 & 0xf0 != 0) {
+	if ((statc1 & 0xf0) != 0) {
 		rs->return_status = statc1;
 		// PLACEHOLDER
 		rs->return_value = -1;
@@ -58,11 +58,11 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, CONFIG_REGISTER_0, TCA_SHOULD_STOP_READ);
-	if (statc1 & 0xf0 != 0) {
+	if ((statc1 & 0xf0) != 0) {
 		return statc1;
 	}
 	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, CONFIG_REGISTER_1, TCA_SHOULD_STOP_READ);
-	if (statc2 & 0xf0 != 0) {
+	if ((statc2 & 0xf0) != 0) {
 		return statc2;
 	}
 	
@@ -81,7 +81,7 @@ enum status_code setIO(bool isArray1, uint8_t char_index_in_register, bool targe
 //Sets output registers. Function tailored for battery board v2.
 enum status_code setBatOutputs(uint8_t vals){
 	
-	if (vals>7){
+	if (vals > 7){
 		return 0xf0; //Todo is this the correct error code?
 	}
 

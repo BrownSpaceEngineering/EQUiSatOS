@@ -22,7 +22,7 @@ void assert_transmission_constants(void) {
 /**
  * Writes the given data to the preamble of the message buffer.
  */
-void write_preamble(char* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len) {
+void write_preamble(uint8_t* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len) {
 	uint8_t index = START_PREAMBLE;
 	
 	// write callsign
@@ -42,7 +42,7 @@ void write_preamble(char* buffer, uint32_t timestamp, uint32_t states, uint8_t d
 	buffer[MSG_BUFFER_SIZE - 1] = '\0'; 
 }
 
-void write_header(char* buffer, idle_data_t *idle_data) {
+void write_header(uint8_t* buffer, idle_data_t *idle_data) {
 	uint8_t index = START_HEADER;
 	
 	if (idle_data != NULL) {
@@ -61,7 +61,7 @@ void write_header(char* buffer, idle_data_t *idle_data) {
 	assert(index == START_ERRORS);
 }
 
-void write_errors(char* buffer, equistack* error_stack) {
+void write_errors(uint8_t* buffer, equistack* error_stack) {
 	uint8_t index = START_ERRORS;	
 	
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
@@ -79,7 +79,7 @@ void write_errors(char* buffer, equistack* error_stack) {
 	assert(index == START_DATA);
 }
 
-void write_idle_data(char* buffer, equistack* idle_stack) {
+void write_idle_data(uint8_t* buffer, equistack* idle_stack) {
 	uint8_t index = START_DATA;
 	
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
@@ -105,7 +105,7 @@ void write_idle_data(char* buffer, equistack* idle_stack) {
 	// TODO: Write padding
 }
 
-void write_attitude_data(char* buffer, equistack* attitude_stack) {
+void write_attitude_data(uint8_t* buffer, equistack* attitude_stack) {
 	uint8_t index = START_DATA;
 	
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
@@ -130,7 +130,7 @@ void write_attitude_data(char* buffer, equistack* attitude_stack) {
 	// TODO: Write padding
 }
 
-void write_flash_data(char* buffer, equistack* flash_stack) {
+void write_flash_data(uint8_t* buffer, equistack* flash_stack) {
 	uint8_t index = START_DATA;
 	
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
@@ -155,7 +155,7 @@ void write_flash_data(char* buffer, equistack* flash_stack) {
 	// TODO: Write padding
 }
 
-void write_flash_cmp(char* buffer, equistack* flash_cmp_stack) {
+void write_flash_cmp(uint8_t* buffer, equistack* flash_cmp_stack) {
 	uint8_t index = START_DATA;
 	
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
@@ -182,13 +182,13 @@ void write_flash_cmp(char* buffer, equistack* flash_cmp_stack) {
 }
 
 /* Writes num_bytes from input to data, and shifts the value at index up by num_bytes */
-void write_bytes_and_shift(char *data, void *input, size_t num_bytes, uint8_t *index) {
+void write_bytes_and_shift(uint8_t *data, void *input, size_t num_bytes, uint8_t *index) {
 	memcpy(data[*index], (char*) input, num_bytes);
 	*index += num_bytes;
 }
 
 /* Writes num_bytes copies of value to data, and shifts the value at index up by num_bytes */
-void write_value_and_shift(char *data, char value, size_t num_bytes, uint8_t *index) {
+void write_value_and_shift(uint8_t *data, char value, size_t num_bytes, uint8_t *index) {
 	for (int i = 0; i < num_bytes; i++) {
 		data[*index] = value;
 		(*index)++;

@@ -66,12 +66,9 @@ static uint64_t long_division(uint64_t n, uint64_t d)
 	return q;
 }
 /*
-* \internal Calculate asynchronous baudrate value (UART)
+* internal Calculate asynchronous baudrate value (UART)
 */
-uint16_t calculate_baud_value(
-const uint32_t baudrate,
-const uint32_t peripheral_clock,
-uint8_t sample_num)
+uint16_t calculate_baud_value(const uint32_t baudrate, const uint32_t peripheral_clock, uint8_t sample_num)
 {
 	/* Temporary variables */
 	uint64_t ratio = 0;
@@ -217,7 +214,7 @@ void ext_usart_pin_init(void)
 	pin_set_peripheral_function(EXT_USART_TX_PIN);
 }
 
-void usart_send_string(const char *str_buf)
+void usart_send_string(const uint8_t *str_buf)
 {
 	while (*str_buf != '\0')
 	{

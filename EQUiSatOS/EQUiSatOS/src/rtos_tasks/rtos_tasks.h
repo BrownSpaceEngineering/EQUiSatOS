@@ -46,7 +46,6 @@ extern void vApplicationTickHook(void);
 /************************************************************************************/
 
 // Action tasks
-void watchdog_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
