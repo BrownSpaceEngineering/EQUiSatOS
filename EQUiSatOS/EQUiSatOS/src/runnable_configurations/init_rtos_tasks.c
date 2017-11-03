@@ -135,13 +135,7 @@ void run_rtos()
 	// NOTE: We can't actually set task state before RTOS is started below,
 	// and tasks start as active (resumed), so we have the task themselves set
 	// their initial state (if you look at task you'll see most
-	// will suspend themselves on creation.)
-	
-	
-	
-	// TODO: can we do this somewhere and have it work?
-  	//set_state_idle();
-	  
+	// will suspend themselves on creation.)	  
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();

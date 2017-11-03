@@ -3,20 +3,7 @@
 #include "runnable_configurations/flatsat.h"
 #include "runnable_configurations/bat_testing.h"
 
-
-void global_init(void) {
-	// Initialize the SAM system
-	system_init();
-
-	//Get this false as fast as possible.
-	setup_pin(true,P_LF_B2_OUTEN);
-	set_output(false, P_LF_B2_OUTEN);
-	setup_pin(true,P_LF_B1_OUTEN);
-	set_output(false, P_LF_B1_OUTEN);
-
-	//init_rtc();
-	USART_init();
-
+void The_Fall_Of_Ryan(void) {
 	/*struct adc_module *adc_instance;
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
@@ -71,44 +58,57 @@ void global_init(void) {
 	} while (status == STATUS_BUSY);
 
 	adc_disable(adc_instance);*/
-
-	//flatsat_run(); //calls flatsat init
-
-	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 }
 
-int main(void)
-{
-	global_init();
 
+void run_tests(void) {
 	//flatsat_run(); //calls flatsat init
+	//bat_testing_run();
+	//test_equistack();
+	//assert_rtos_constants();
+	//assert_transmission_constants();
 
-	bat_testing_run();
+	/************************************************************************/
+	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
+	/************************************************************************/
+	The_Fall_Of_Ryan();
 
-	//run_rtos();
-
-	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
-
-	/* Start and init tracing */
-// 	#if configUSE_TRACE_FACILITY == 1
-// 		vTraceEnable(TRC_START);
-// 	#endif
-
-	run_rtos();
-
-	/* TESTS */
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
 	init_tc();
 	while(get_count() < 3) {
 			set_pulse_width_fraction(3, 4);
 	}
 	disable_pwm();
-	//test_equistack();
-	//assert_rtos_constants();
-	//assert_transmission_constants();
+	*/
+}
 
-	run_rtos();*/
-	//assert_transmission_constants();*/
+/************************************************************************/
+/* DO NOT MODIFY BELOW HERE BESIDED COMMENTING - sid will come for you  */
+/************************************************************************/
+void global_init(void) {
+	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
+	
+	// Initialize the SAM system
+	system_init();
 
-	//run_rtos();
+	// Get this false as fast as possible.
+	setup_pin(true,P_LF_B2_OUTEN);
+	set_output(false, P_LF_B2_OUTEN);
+	setup_pin(true,P_LF_B1_OUTEN);
+	set_output(false, P_LF_B1_OUTEN);
+
+	//init_rtc();
+	USART_init();
+}
+
+int main(void)
+{
+	/* Start and init tracalyzer tracing */
+	#if configUSE_TRACE_FACILITY == 1
+		vTraceEnable(TRC_START);
+	#endif
+	
+	global_init();
+	run_tests();
+	run_rtos();	
 }
