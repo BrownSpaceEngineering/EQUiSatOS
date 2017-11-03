@@ -27,22 +27,12 @@
 /************************************************************************/
 /* TASK HEADERS                                                         */
 /************************************************************************/
-// ?
-extern void vApplicationStackOverflowHook(TaskHandle_t *pxTask,
-signed char *pcTaskName);
-extern void vApplicationIdleHook(void); // lowest-priority task... may be used for switching to lower power / other modes
-extern void vApplicationTickHook(void);
+// lowest-priority task... may be used for switching to lower power / other modes
+// FOR US, it handles state, and is implemented in init_rtos_tasks.c
+extern void vApplicationIdleHook(void); 
 
 /************************************************************************************/
-/* All main satellite tasks
-	NOTE:
-	If you add/remove a task, there are several things you must change:
-	1. Actually implement the task (in this .h and the .c)
-	2. Add the task to the tasks enum (above) AND update NUM_TASKS
-	3. Specify a STACK_SIZE and PRIORITY for the task (above)
-	4. Specify a FREQ in rtos_task_frequencies.h FOR ALL relevant data_type
-	5. (Maybe) Create new struct to store all data and add data arrays for all data
-	6. (Maybe) Create new EQUIstack to store these structs							*/
+/* All main satellite tasks															*/
 /************************************************************************************/
 
 // Action tasks
@@ -110,7 +100,7 @@ SemaphoreHandle_t _flash_cmp_equistack_mutex;
 /************************************************************************/
 /* List of task handles, indexed by the task id enum value
    (essentially a map) */
-TaskHandle_t task_handles[NUM_TASKS];
+TaskHandle_t* task_handles[NUM_TASKS];
 
 /* Task handles for starting and stopping */
 TaskHandle_t watchdog_task_handle; // Should we have this?
@@ -138,7 +128,7 @@ uint8_t task_suspended_states; // no tasks suspended
 /* Task Control Functions                                               */
 /************************************************************************/
 void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
-void task_suspend(task_type_t task_id);
+void task_suspend(task_type_t task_id, int suspend_current_task);
 void task_resume_if_suspended(task_type_t taskId);
 bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
 

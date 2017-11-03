@@ -37,17 +37,26 @@ void watchdog_task(void *pvParameters) {
 
 bool watchdog_as_function(void) {
 	xSemaphoreTake(mutex, (TickType_t) WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+	
+	eTaskState current_data_state = eTaskGetState(task_handles[CURRENT_DATA_TASK]);
+	eTaskState flash_state = eTaskGetState(*task_handles[FLASH_ACTIVATE_TASK]);
+	eTaskState transmit_state = eTaskGetState(*task_handles[TRANSMIT_TASK]);
+	trace_print("State current data task: %d", current_data_state);
+	trace_print("State flash task: %d", flash_state);
+	trace_print("State transmit task: %d", transmit_state);
 		
 	// make sure the battery task is definitely set to run
-	eTaskState battery_task_state = eTaskGetState(task_handles[BATTERY_CHARGING_TASK]);
+	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
 	if (battery_task_state == eDeleted || battery_task_state == eSuspended) {
 		watch_block = 1;
 	}
 	if ((check_ins ^ is_running) > 0 || watch_block == 1) {
 		// "kick" watchdog - RESTART SATELLITE
+		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
 		return false;
 	} else {
+		trace_print("Pet watchdog");
 		// pet watchdog - pass this watchdog test, move onto next
 		is_running = 0;
 		xSemaphoreGive(mutex);
@@ -57,22 +66,22 @@ bool watchdog_as_function(void) {
 
 // tasks must check in when launching
 void check_in_task(task_type_t task_ind) {
-	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS); // TODO: What about the outside?
 	check_ins = check_ins | (1 << task_ind); // set this task bit to 1
-	xSemaphoreGive(mutex);
+	//xSemaphoreGive(mutex);
 }
 
 // tasks must check in while running to avoid the watchdog
 // (we'll set 'im loose on that task if it doesn't!)
 void report_task_running(task_type_t task_ind) {
-	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
-	xSemaphoreGive(mutex);
+	//xSemaphoreGive(mutex);
 }
 
 // tasks must check in when suspending so they don't trip the watchdog
 void check_out_task(task_type_t task_ind) {
-	xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	check_ins = check_ins & ~(1 << task_ind); // set this task bit to 0
-	xSemaphoreGive(mutex);
+	//xSemaphoreGive(mutex);
 }

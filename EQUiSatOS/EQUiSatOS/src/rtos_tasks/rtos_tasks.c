@@ -12,7 +12,7 @@
 /* TASK CONTROL FUNCTIONS                                               */
 /************************************************************************/
 void init_task_handles(void) {
-	//task_handles[WATCHDOG_TASK] = &watchdog_task_handles;
+	//task_handles[WATCHDOG_TASK] = &watchdog_task_handle;
 	task_handles[ANTENNA_DEPLOY_TASK] = &antenna_deploy_task_handle;
 	task_handles[BATTERY_CHARGING_TASK] = &battery_charging_task_handle;
 	task_handles[FLASH_ACTIVATE_TASK] = &flash_activate_task_handle;
@@ -27,20 +27,36 @@ void pre_init_rtos_tasks(void) {
 	init_task_handles();
 }
 
-void task_suspend(task_type_t task_id) {
-	vTaskSuspend(task_handles[task_id]); // actually suspend using handle
+// NOTE: task_id must be the id of the current task if suspend_current_task is true
+void task_suspend(task_type_t task_id, int suspend_current_task) {
 	check_out_task(task_id); // check out of watchdog
+	if (suspend_current_task) {
+		// this signifies suspend the currently-running task;
+		// we allow this because RTOS can (evidently) only
+		// suspend the current task when starting up, because
+		// it hasn't run all tasks yet so doesn't know all their 
+		// handles
+		vTaskSuspend(NULL); 
+	} else {
+		TaskHandle_t* task_handle = task_handles[task_id];
+		if (task_handle != NULL) {
+			vTaskSuspend(*task_handle); // actually suspend using handle
+		} else {
+			// TODO: ERROR!!!!
+		}
+	}
 }
 
 void task_resume_if_suspended(task_type_t task_id)
 {
-	TaskHandle_t task_handle = task_handles[task_id];
-	if (task_handle != NULL && eTaskGetState(task_handle) == eSuspended)
+	check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
+	TaskHandle_t* task_handle = task_handles[task_id];
+	if (task_handle != NULL)
 	{
-		vTaskResume(task_handle); // actually resume task
+		// actually resume task (will be graceful if task_handle task is not actually suspended)
+		vTaskResume(*task_handle); 
 		task_suspended_states |= (1 << task_id); // note we WERE suspended
 	}
-	check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
 	// this is also good in the case the task_handle is NULL and the task isn't started
 	// here, because it will trigger a watchdog reset
 }

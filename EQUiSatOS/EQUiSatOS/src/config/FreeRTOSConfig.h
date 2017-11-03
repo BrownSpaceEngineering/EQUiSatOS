@@ -13,7 +13,7 @@ void assert_triggered( const char * file, uint32_t line );
 #endif
 
 #define configUSE_PREEMPTION                    1
-#define configUSE_IDLE_HOOK                     0
+#define configUSE_IDLE_HOOK                     1
 #define configUSE_TICK_HOOK                     0
 #define configPRIO_BITS                         2
 #define configCPU_CLOCK_HZ                      ( 8000000 )
@@ -26,7 +26,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		1
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                0			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
+#define configUSE_TRACE_FACILITY                1			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1
@@ -35,7 +35,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_COUNTING_SEMAPHORES           1
-#define configUSE_QUEUE_SETS                    1
+#define configUSE_QUEUE_SETS                    0
 #define configGENERATE_RUN_TIME_STATS           0
 #define configENABLE_BACKWARD_COMPATIBILITY     0
 

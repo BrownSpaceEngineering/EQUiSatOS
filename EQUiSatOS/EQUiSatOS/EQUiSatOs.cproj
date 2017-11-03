@@ -1024,6 +1024,9 @@
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\debug_utils.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\errors.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1031,6 +1034,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\global.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\debug_utils.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\Flash_Commands.c">

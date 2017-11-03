@@ -53,4 +53,6 @@ typedef struct {
 #include "testing_functions/system_test.h"
 #include "errors.h"
 
+#include "debug_utils.h"
+
 #endif /* GLOBAL_H_ */

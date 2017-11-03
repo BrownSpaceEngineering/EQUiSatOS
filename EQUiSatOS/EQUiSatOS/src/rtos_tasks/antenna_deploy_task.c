@@ -16,11 +16,11 @@ void antenna_deploy_task(void *pvParameters) {
 	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot
 
 	for( ;; )
-	{
+	{		
+		vTaskDelayUntil(&xNextWakeTime, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);
-		
-		vTaskDelayUntil(&xNextWakeTime, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// set DET_RTN (antenna deployment pin) as input
 		setup_pin(false, P_DET_RTN);

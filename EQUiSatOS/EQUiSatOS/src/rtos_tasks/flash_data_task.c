@@ -23,11 +23,11 @@ void flash_data_task(void *pvParameters)
 	init_task_state(FLASH_DATA_TASK); // suspend or run on boot
 	
 	for ( ;; )
-	{
+	{		
+		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		
 		// report to watchdog
 		report_task_running(FLASH_DATA_TASK);
-		
-		vTaskDelayUntil( &xNextWakeTime, FLASH_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// update current_struct if necessary
 		if (check_if_suspended_and_update(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)

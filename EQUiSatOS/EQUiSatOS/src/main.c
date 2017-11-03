@@ -83,9 +83,11 @@ void run_tests(void) {
 }
 
 /************************************************************************/
-/* DO NOT MODIFY BELOW HERE BESIDED COMMENTING - sid will come for you  */
+/* DO NOT MODIFY BELOW HERE BESIDES COMMENTING - sid will come for you  */
 /************************************************************************/
 void global_init(void) {
+	init_tracelyzer();	
+	
 	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
 	
 	// Initialize the SAM system
@@ -103,11 +105,6 @@ void global_init(void) {
 
 int main(void)
 {
-	/* Start and init tracalyzer tracing */
-	#if configUSE_TRACE_FACILITY == 1
-		vTraceEnable(TRC_START);
-	#endif
-	
 	global_init();
 	run_tests();
 	run_rtos();	

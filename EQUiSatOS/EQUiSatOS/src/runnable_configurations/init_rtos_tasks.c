@@ -143,32 +143,36 @@ void run_rtos()
 
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
 void init_task_state(task_type_t task) {
+	// NOTE: The last "true" argument signifies that the suspend functions should
+	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles) 
+	// when RTOS is first starting 
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
-			task_resume_if_suspended(BATTERY_CHARGING_TASK);
+			//task_suspend(BATTERY_CHARGING_TASK, true); 
+			task_resume_if_suspended(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
-			task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
+			task_suspend(ANTENNA_DEPLOY_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
 			return;
 		case CURRENT_DATA_TASK:
-			task_suspend(CURRENT_DATA_TASK); // REAL ONE
+			task_suspend(CURRENT_DATA_TASK, true); // REAL ONE
 			//task_resume_if_suspended(CURRENT_DATA_TASK);
 			return;
 		case FLASH_ACTIVATE_TASK:
-			task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
+			task_suspend(FLASH_ACTIVATE_TASK, true); // REAL ONE
 			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 			return;
 		case FLASH_DATA_TASK: 
 			// ALWAYS suspend because is activated by FLASH_ACTIVATE_TASK
-			task_suspend(FLASH_DATA_TASK); // REAL ONE
+			task_suspend(FLASH_DATA_TASK, true); // REAL ONE
 			return;
 		case TRANSMIT_TASK:
-			task_suspend(TRANSMIT_TASK); // REAL ONE
+			task_suspend(TRANSMIT_TASK, true); // REAL ONE
 			//task_resume_if_suspended(TRANSMIT_TASK);
 			return;
 		case ATTITUDE_DATA_TASK:
-			task_suspend(ATTITUDE_DATA_TASK); // REAL ONE
+			task_suspend(ATTITUDE_DATA_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
 			return;
 		case TRANSMIT_DATA_TASK:
@@ -180,25 +184,58 @@ void init_task_state(task_type_t task) {
 	}
 }
 
+/************************************************************************/
+/* FOR DEBUGGING - DON'T SET STATES THIS WAY                            */
+/************************************************************************/
+/**
+ * The "idle" hook for FreeRTOS - this is is code run in the idle task of RTOS, which
+ * runs whenever something else is NOT. It should NOT call hanging RTOS functions
+ * or take up much computational power in general. 
+ * See http://www.freertos.org/RTOS-idle-task.html for more details.
+ */
+void vApplicationIdleHook(void) {
+	
+	// TODO: TESTING
+	
+	static int idle_started = false;
+	// TODO: Doesn't appear to go well when we set_state_idle
+	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
+		set_state_idle();
+		idle_started = true;
+	}
+}
+
+/************************************************************************/
+/* STATE SETTING METHODS                                                */
+/************************************************************************/
+
 // TODO: is this useful? just encoded in task initial state or executed via watchdog reset?
 // TODO: May be deprecated for above, unless we need to change BACK TO THIS STATE
 void set_state_hello_world()
 {
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+	
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK); 
-	task_suspend(CURRENT_DATA_TASK);
-	task_suspend(FLASH_ACTIVATE_TASK);
-	task_suspend(FLASH_DATA_TASK);
-	task_suspend(TRANSMIT_TASK);
+	task_suspend(ANTENNA_DEPLOY_TASK, false); 
+	task_suspend(CURRENT_DATA_TASK, false);
+	task_suspend(FLASH_ACTIVATE_TASK, false);
+	task_suspend(FLASH_DATA_TASK, false);
+	task_suspend(TRANSMIT_TASK, false);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
+		
+	xTaskResumeAll();
 }
 
 void set_state_idle()
 {
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+	
 	CurrentState = IDLE;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
@@ -211,18 +248,25 @@ void set_state_idle()
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
+		
+	xTaskResumeAll();
 }
 
 void set_state_low_power()
 {
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+	
 	CurrentState = LOW_POWER;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
 	task_resume_if_suspended(CURRENT_DATA_TASK);
-	task_suspend(FLASH_ACTIVATE_TASK);
-	task_suspend(FLASH_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK, false);
+	task_suspend(FLASH_DATA_TASK, false);
 	task_resume_if_suspended(TRANSMIT_TASK);
-	task_suspend(ATTITUDE_DATA_TASK);
+	task_suspend(ATTITUDE_DATA_TASK, false);
 	// TODO: Others?
+	
+	xTaskResumeAll();
 }

@@ -19,11 +19,11 @@ void flash_activate_task(void *pvParameters)
 	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
 	
 	for ( ;; )
-	{
-		// report to watchdog
-		report_task_running(FLASH_ACTIVATE_TASK); 
-		
+	{	
 		vTaskDelayUntil( &xNextWakeTime, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// report to watchdog
+		report_task_running(FLASH_ACTIVATE_TASK);
 		
 		// start taking data
 		task_resume_if_suspended(FLASH_DATA_TASK);
@@ -35,7 +35,7 @@ void flash_activate_task(void *pvParameters)
 		}
 		
 		// stop taking data
-		task_suspend(FLASH_DATA_TASK);
+		task_suspend(FLASH_DATA_TASK, false);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

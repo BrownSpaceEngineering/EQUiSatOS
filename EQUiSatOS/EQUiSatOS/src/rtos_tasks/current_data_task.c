@@ -29,10 +29,7 @@ void current_data_task(void *pvParameters)
 	init_task_state(CURRENT_DATA_TASK); // suspend or run on boot
 	
 	for( ;; )
-	{
-		// report to watchdog
-		report_task_running(CURRENT_DATA_TASK);
-		
+	{	
 		// block for a time based on a frequency, determined by whether we're in IDLE or LOW_POWER mode.
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		if (CurrentState == LOW_POWER) {
@@ -40,7 +37,10 @@ void current_data_task(void *pvParameters)
 		} else {
 			vTaskDelayUntil( &xNextWakeTime, CURRENT_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		}
-
+		
+		// report to watchdog
+		report_task_running(CURRENT_DATA_TASK);
+		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// (all data is collected once some sensor is just about to log past the end of the list 
 		//  (if one is, all should be according to their LOOPS_PER_LOG -> they're all the same freq))

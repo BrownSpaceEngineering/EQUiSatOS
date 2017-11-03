@@ -35,13 +35,13 @@ void transmit_task(void *pvParameters)
 	init_task_state(TRANSMIT_TASK); // suspend or run on boot
 	
 	for( ;; )
-	{
-		// report to watchdog
-		report_task_running(TRANSMIT_TASK);
-		
+	{	
 		// block for a time based on this task's globally-set frequency
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
 		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// report to watchdog
+		report_task_running(TRANSMIT_TASK);
 		
 		// start up the data collection task so that its records data while we're transmitting
 		task_resume_if_suspended(TRANSMIT_DATA_TASK);
@@ -104,7 +104,7 @@ void transmit_task(void *pvParameters)
 			}
 		}
 		
-		task_suspend(TRANSMIT_DATA_TASK);
+		task_suspend(TRANSMIT_DATA_TASK, false);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

@@ -24,10 +24,10 @@ void attitude_data_task(void *pvParameters)
 	
 	for ( ;; )
 	{
-		// report to watchdog
-		report_task_running(ATTITUDE_DATA_TASK); 
-		
 		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// report to watchdog
+		report_task_running(ATTITUDE_DATA_TASK);
 		
 		// update current_struct if necessary
 		if (check_if_suspended_and_update(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
