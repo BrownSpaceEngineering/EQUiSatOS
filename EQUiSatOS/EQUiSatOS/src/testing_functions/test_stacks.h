@@ -14,6 +14,6 @@
 #include "test_data.h"
 #include "processor_drivers/USART_Commands.h"
 
-void test_equistack();
+void test_equistack(void);
 
 #endif

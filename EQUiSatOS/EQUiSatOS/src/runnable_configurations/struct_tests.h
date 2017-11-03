@@ -13,6 +13,6 @@
 #include "../stacks/State_Structs.h"
 #include "../stacks/Sensor_Structs.h"
 
-idle_data_t init_test_struct(void);
+void init_test_struct(void);
 
 #endif /* STRUCT_TESTS_H_ */

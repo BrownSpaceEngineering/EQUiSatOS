@@ -55,7 +55,7 @@ bool check_if_suspended_and_update(task_type_t task_id) {
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
-void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log)
+void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)
 {
 	// increment array tail marker and reset reads-per-log counter
 	data_array_tails[data_type] = data_array_tails[data_type] + 1;

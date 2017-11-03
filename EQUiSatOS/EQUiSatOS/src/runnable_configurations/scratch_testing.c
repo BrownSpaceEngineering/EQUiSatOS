@@ -139,9 +139,9 @@ void radioTest(void) {
 	set_output(true, P_TX_EN);
 	set_output(true, P_RX_EN);
 		
-	char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
+	//char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
 	while (true) {		
-		usart_send_string("EQUiSat\n");
+		usart_send_string((uint8_t *)"EQUiSat\n");
 		delay_ms(1500);		
 	}
 	/*while (true) {
@@ -168,7 +168,7 @@ void rsTest(void) {
 	unsigned char msg[] = "The quick brown fox jumped over the lazy dog.";
 	unsigned char codeword[256];
 	 
-	int erasures[16];
+	uint8_t erasures[16];
 	int nerasures = 0;
 	 
 	// Initialization the ECC library

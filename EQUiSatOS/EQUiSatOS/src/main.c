@@ -23,17 +23,16 @@ void The_Fall_Of_Ryan(void) {
 	config_adc.reference = ADC_REFERENCE_INTVCC0; //VCC/1.48
 
 	//Maybe add this or similar things for other pins
-	/*if (pin == P_AI_LED1SNS || pin==P_AI_LED2SNS || pin == P_AI_LED3SNS || pin==P_AI_LED4SNS){
+	if (pin == P_AI_LED1SNS || pin==P_AI_LED2SNS || pin == P_AI_LED3SNS || pin==P_AI_LED4SNS){
 		config_adc.gain_factor = ADC_GAIN_FACTOR_16X;
 		config_adc.reference = ADC_REFERENCE_INT1V;
-	}*/
+	}
 
 	//Hardware averaging - couldn't get this to work
 	//config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_1024;
 	//config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 
 	//Set the pin
-	/*
 	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN19;
 
 	//setup_set_config

@@ -61,18 +61,18 @@ typedef enum
 } global_state_t;
 
 /************************************************************************/
-/*  Enum for all types of collected sensor readings						*/
-/* (for consistency across sensor read functions)						*/
-/* Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
-/*	NOTE:																*/
-/*	If you add/remove a type of collected data, there are several		*/
-/*	things you must change:												*/
-/*		- Create a batch type definition								*/
-/*		- Create the required frequencies								*/
-/*		- Add a new array of data to ALL of the relevant state structs  */
-/*		- Add an add_*_batch_if_ready function						    */
-/* NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*/
-/************************************************************************/
+/*  Enum for all types of collected sensor readings						*
+ * (for consistency across sensor read functions)						*
+ * Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
+ *	NOTE:																*
+ *	If you add/remove a type of collected data, there are several		*
+ *	things you must change:												*
+ *		- Create a batch type definition								*
+ *		- Create the required frequencies								*
+ *		- Add a new array of data to ALL of the relevant state structs  *
+ *		- Add an add_*_batch_if_ready function						    *
+ * NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*
+ ************************************************************************/
 typedef enum
 {
 	LION_VOLTS_DATA,

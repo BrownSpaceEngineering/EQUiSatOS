@@ -16,7 +16,7 @@ uint8_t readCount(void) {
 
 	uint8_t buffer[1] = {0x42};
 
-	enum status_code ret = readFromAddress(buffer, 1, CHIP_ADDR, true);
+	readFromAddress(buffer, 1, CHIP_ADDR, true);
 	
 	return buffer[0];
 }
@@ -44,5 +44,5 @@ void resetCount(void) {
 	outBuffer[1] = 0x00;
 	outBuffer[2] = newCount;
 
-	enum status_code ret = writeDataToAddress(outBuffer, 3, CHIP_ADDR, true);
+	writeDataToAddress(outBuffer, 3, CHIP_ADDR, true);
 }

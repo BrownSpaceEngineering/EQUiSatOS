@@ -145,7 +145,7 @@ bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns w
 /************************************************************************/
 /* Helper Functions                                                     */
 /************************************************************************/
-void increment_data_type(uint16_t data_type, int *data_array_tails, int *loops_since_last_log);
+void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);

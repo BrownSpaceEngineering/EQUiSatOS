@@ -171,6 +171,12 @@ void init_task_state(task_type_t task) {
 			task_suspend(ATTITUDE_DATA_TASK); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
 			return;
+		case TRANSMIT_DATA_TASK:
+			//TODO?
+			return;
+		case NUM_TASKS:
+			//TODO?
+			return;
 	}
 }
 

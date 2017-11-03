@@ -7,7 +7,7 @@
 
 #include "test_stacks.h"
 
-void basic_push_usage() {
+static void basic_push_usage(void) {
 	equistack basic_test_actual;
 	equistack *test = &basic_test_actual;
 	StaticSemaphore_t inner_mutex;
@@ -112,7 +112,7 @@ void basic_push_usage() {
 	}
 }
 
-void standard_case()
+static void standard_case(void)
 {
 	equistack test_actual;
 	equistack* test = &test_actual;
@@ -220,7 +220,7 @@ void standard_case()
 	return;
 }
 
-void big_case()
+static void big_case(void)
 {	
 	int n = 1000;
 	
@@ -333,7 +333,7 @@ void big_case()
 	return;
 }
 
-void multi_add()
+static void multi_add(void)
 {
 	int n = 30000;
 	
@@ -450,7 +450,7 @@ void multi_add()
 	return;
 }
 
-void multi_create() 
+static void multi_create(void) 
 {
 	print("\n\r");
 	int n = 100;
@@ -468,11 +468,11 @@ void multi_create()
 	return;
 }
 
-void test_equistack() {
-	//basic_push_usage();
-	//standard_case();
-	//big_case();
-	//multi_add();
+void test_equistack(void) {
+	basic_push_usage();
+	standard_case();
+	big_case();
+	multi_add();
 	multi_create();
 	return;
 }

@@ -12,5 +12,7 @@
 void runit(void);
 void radioTest(void);
 void rsTest(void);
+static void byte_err (int err, int loc, unsigned char *dst);
+static void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[]);
 
 #endif /* SCRATCH_TESTING_H_ */

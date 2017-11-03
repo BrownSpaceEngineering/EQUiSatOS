@@ -22,12 +22,12 @@ void task_suicide_test(void *pvParameters)
 		while (i <= 100000) {
 			if (i >= 50000) {
 				vTaskSuspend(suicide_test_handle);
-				int b = 0;
+				//int b = 0;
 			}	
 			i++;
 		}
 		
-		int b = 0;
+		//int b = 0;
 		
 	}
 	// delete this task if it ever breaks out

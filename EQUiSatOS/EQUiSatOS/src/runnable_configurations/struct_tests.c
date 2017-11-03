@@ -7,7 +7,7 @@
 
 #include "struct_tests.h"
 
-idle_data_t init_test_struct(void){
+void init_test_struct(void){
 	idle_data_t IDT_ORIG;
 	idle_data_t *IDT = &IDT_ORIG;
 
