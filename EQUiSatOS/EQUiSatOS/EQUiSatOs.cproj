@@ -667,6 +667,9 @@
       <Value>../src/ASF/sam0/drivers/wdt</Value>
       <Value>../src/ASF/sam0/drivers/tc</Value>
       <Value>../src/ASF/sam0/drivers/tc/tc_sam_d_r</Value>
+      <Value>../src/ASF/thirdparty/TraceRecorder/config</Value>
+      <Value>../src/ASF/thirdparty/TraceRecorder/include</Value>
+      <Value>../src/ASF/thirdparty/TraceRecorder/streamports/Jlink_RTT/include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
@@ -691,7 +694,7 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--defsym,__stack_size__=0x1000 -Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/sam0/drivers/nvm</Value>
@@ -892,6 +895,16 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\MemMang\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\config\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\include\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\include\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\include\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\" />
+    <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\include\" />
     <Folder Include="src\config\" />
     <Folder Include="src\telemetry" />
     <Folder Include="src\telemetry\rscode-1.3" />
@@ -948,6 +961,63 @@
     <None Include="src\ASF\sam0\drivers\wdt\wdt_callback.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcSnapshotConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\config\trcStreamingConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcHardwarePort.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcKernelPort.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcPortDefines.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\include\trcRecorder.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\include\SEGGER_RTT.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\include\SEGGER_RTT_Conf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\include\trcStreamingPort.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\SEGGER_RTT.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\SEGGER_RTT_Printf.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\include\trcStreamingPort.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\trcStreamingPort.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\include\trcStreamingPort.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\trcStreamingPort.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcKernelPort.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcSnapshotRecorder.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\thirdparty\TraceRecorder\trcStreamingRecorder.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\FreeRTOSConfig.h">
       <SubType>compile</SubType>
     </Compile>
@@ -978,6 +1048,18 @@
     <Compile Include="src\processor_drivers\PWM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\ASF\thirdparty\TraceRecorder\readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\TraceRecorder\streamports\Jlink_RTT\Readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\Readme.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\Readme.txt">
+      <SubType>compile</SubType>
+    </None>
     <None Include="src\processor_drivers\RTC_Commands_Old.c">
       <SubType>compile</SubType>
     </None>
