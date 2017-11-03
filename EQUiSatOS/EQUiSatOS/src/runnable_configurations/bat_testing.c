@@ -73,7 +73,7 @@ void bat_testing_init(bat_testing_struct *data){
 	return_struct_16 tca9535_rs;
 	TCA9535_init(&tca9535_rs);
 	if (!(tca9535_rs.return_value && 0xf4f0)){
-		//TODO: some sort of check here. As long as we're not charging, f4f0 should be the return value.
+		//TODO: some sort of check here. As long as we're not charging or balancing (and no batteries or solar panels are connected), f4f0 should be the return value.
 	} else{
 		//TODO: Please tell me there's a better way to do this -Ryan
 		uint16_t res = tca9535_rs.return_value;
@@ -153,22 +153,22 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	data->sp_out_ref	= ((float) remoteBatReadings[3])/4096*3.3*5580;		// mV
 
 	
-	/*readBatBoard(batReadings);
+	readBatBoard(batReadings);
 	//Testing will have to determine if we're ok to multiply by 1000 to convert to mA
 	data->LFB1OSNS 	= batReadings[0]*71;			// A 
-	data->LFB1SNS 	= (batReadings[1]*-0.980)*50	// A
+	data->LFB1SNS 	= (batReadings[1]*-0.980)*50;	// A
 	data->LFB2OSNS 	= batReadings[2]*71.43;			// A 
 	data->LFB2SNS 	= (batReadings[3]-0.979)*50;	// A 
 	
 	data->LF2REF = batReadings[5]*1950; 				// mV
-	data->LF1REF = (batReadings[4]*3870)-LF2REF; 		// mV
+	data->LF1REF = (batReadings[4]*3870)-data->LF2REF; 		// mV
 
 	data->LF4REF = batReadings[7]*1950; 				// mV
-	data->LF3REF = (batReadings[6]*3870)-LF4REF); 	// mV
+	data->LF3REF = (batReadings[6]*3870)-data->LF4REF; 	// mV
 
 	data->L1_REF = batReadings[8]*2500; 				// mV
 	data->L2_REF = batReadings[9]*2500; 				// mV
-	*/
+	
 	
 	uint8_t setOutputs[] = {data->lf_b2_bt,data->lf_b2_tt,data->lf_b1_tt,data->lf_b1_bt};
 	enum status_code statc = setBatOutputs(setOutputs);
@@ -192,7 +192,7 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	
 	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;",get_count(), (int) data->LF_B2_OUTEN, (int) data->LF_B1_OUTEN, (int) data->L1_RUN_CHG, (int) data->L2_RUN_CHG, (int) data->LF_B1_RUNCHG, (int) data->LF_B2_RUNCHG, (int) data->L1_DISG, (int) data->L2_DISG);
 	print("%d;%d;%d;%d;", (int) data->l1_sns, (int) data->l2_sns, (int) data->lion_ref, (int) data->sp_out_ref);
-	//print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;", (int) data->LFB1OSNS, (int) data->LFB1SNS, (int) data->LFB2OSNS, (int) data->LFB2SNS, (int) data->LF1REF, (int) data->LF2REF, (int) data->LF3REF, (int) data->LF4REF, (int) data->L1_REF, (int) data->L2_REF);
+	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;", (int) data->LFB1OSNS, (int) data->LFB1SNS, (int) data->LFB2OSNS, (int) data->LFB2SNS, (int) data->LF1REF, (int) data->LF2REF, (int) data->LF3REF, (int) data->LF4REF, (int) data->L1_REF, (int) data->L2_REF);
 	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n", (int) data->l2_st, (int) data->l1_st, (int) data->spf_st, (int) data->l1_chgn, (int) data->l1_faultn, (int) data->l2_chgn, (int) data->l2_faultn, (int) data->lf_b1_bt, (int) data->lf_b1_tt, (int) data->lf_b2_bt, (int) data->lf_b2_tt, (int) data->lf_b2_chgn, (int) data->lf_b2_faultn, (int) data->lf_b1_chgn, (int) data->lf_b1_faultn);
 }
 
@@ -234,7 +234,7 @@ void bat_testing_run(){
 	
 	print("time[s];LF_B2_OUTEN[cmd];LF_B1_OUTEN[cmd];L1_RUN_CHG[cmd];L2_RUN_CHG[cmd];LF_B1_RUNCHG[cmd];LF_B2_RUNCHG[cmd];L1_DISG[cmd];L2_DISG[cmd];");
 	print("l1_sns[mA];l2_sns[mA];lion_ref[mv];sp_out_ref[mV];");
-	//print("LFB1OSNS[A];LFB1SNS[A];LFB2OSNS[A];LFB2SNS[A];LF1REF[mV];LF2REF[mV];LF3REF[mV];LF4REF[mV];L1_REF[mV];L2_REF[mV];");
+	print("LFB1OSNS[A];LFB1SNS[A];LFB2OSNS[A];LFB2SNS[A];LF1REF[mV];LF2REF[mV];LF3REF[mV];LF4REF[mV];L1_REF[mV];L2_REF[mV];");
 	print("l2_st[bool];l1_st[bool];spf_st[bool];l1_chgn[bool];l1_faultn[bool];l2_chgn[bool];l2_faultn[bool];lf_b1_bt[bool];lf_b1_tt[bool];lf_b2_bt[bool];lf_b2_tt[bool];lf_b2_chgn[bool];lf_b2_faultn[bool];lf_b1_chgn[bool];lf_b1_faultn[bool]\n");
 	
 	
