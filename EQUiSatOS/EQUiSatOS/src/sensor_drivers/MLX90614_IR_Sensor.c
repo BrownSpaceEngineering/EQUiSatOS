@@ -90,6 +90,5 @@ enum status_code MLX90614_setSleepMode(MLXDeviceAddr addr) {
 	// send PEC (Packet Error Code) (0xF3)
 	uint8_t dataByte[2] = {(uint8_t)0xFF, (uint8_t)0xF3};
 	// write to address with stop condition
-	enum status_code statc_sleep = writeDataToAddress(dataByte, 2, addr, true);
-
+	return writeDataToAddress(dataByte, 2, addr, true);
 }
