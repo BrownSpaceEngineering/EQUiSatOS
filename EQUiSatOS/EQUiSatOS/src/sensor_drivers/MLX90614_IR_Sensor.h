@@ -12,7 +12,7 @@
 #define MLX90614_FLASHPANEL_V6_2_1	0x6C
 #define MLX90614_TOPPANEL_V4_2		0x6B
 #define MLX90614_TOPPANEL_V4_1		0x6A
-#define MLX90614_ACCESSPANEL_V3_1	0x5C //Kept this in just so I could build, delete this -Jarod 
+#define MLX90614_ACCESSPANEL_V3_1	0x5C //Kept this in just so I could build, delete this -Jarod
 #define MLX90614_ACCESSPANEL_V4_1	0x5C
 #define MLX90614_SIDEPANEL_V4_2		0x5D
 #define MLX90614_SIDEPANEL_V4_3		0x5F
@@ -53,6 +53,8 @@ float dataToTemp(uint16_t data);
 void MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target, return_struct_float returner);
 
 void MLX90614_getAddress(MLXDeviceAddr addr, return_struct_16 rs);
+
+enum status_code MLX90614_setSleepMode(MLXDeviceAddr addr);
 
 void irPower(bool trueIsOn);
 bool isIROn(void);
