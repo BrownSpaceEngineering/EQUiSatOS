@@ -36,6 +36,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_COUNTING_SEMAPHORES           1
 #define configUSE_QUEUE_SETS                    0
+#define configUSE_TICKLESS_IDLE					0
 #define configGENERATE_RUN_TIME_STATS           0
 #define configENABLE_BACKWARD_COMPATIBILITY     0
 

@@ -6,8 +6,7 @@
  */ 
 #include "system_test.h"
 
-void print_error(enum status_code code){
-	
+static void print_error(enum status_code code){
 	switch(code){
 		
 		case STATUS_OK:
@@ -40,7 +39,7 @@ void print_error(enum status_code code){
 		
 }
 
-char * get_panel(int panel_addr){
+static void get_panel(int panel_addr, char* buffer){
 		////Flight IR Sensors
 		//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 		//#define MLX90614_TOPPANEL_V4_2		0x6B //
@@ -51,33 +50,33 @@ char * get_panel(int panel_addr){
 		//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	switch (panel_addr){
 		case 0x6C:
-		return "MLX90614_FLASHPANEL_V6_2_1";
+		strcpy(buffer, "MLX90614_FLASHPANEL_V6_2_1");
 		
 		case 0x6B:
-		return "MLX90614_TOPPANEL_V4_2";
+		strcpy(buffer, "MLX90614_TOPPANEL_V4_2");
 		
 		case 0x6A:
-		return "MLX90614_TOPPANEL_V4_1";
+		strcpy(buffer, "MLX90614_TOPPANEL_V4_1");
 		
 		case 0x5C:
-		return "MLX90614_ACCESSPANEL_V4_1";
+		strcpy(buffer, "MLX90614_ACCESSPANEL_V4_1");
 		
 		case 0x5D: 
-		return "MLX90614_SIDEPANEL_V4_2";
+		strcpy(buffer, "MLX90614_SIDEPANEL_V4_2");
 		
 		case 0x5F: 
-		return "MLX90614_SIDEPANEL_V4_3";
+		strcpy(buffer, "MLX90614_SIDEPANEL_V4_3");
 		
 		case 0x6D:
-		return "MLX90614_SIDEPANEL_V4_4";
+		strcpy(buffer, "MLX90614_SIDEPANEL_V4_4");
 		
 		default: 
-		return "INVALID FLASH PANEL ADDRESS";
+		strcpy(buffer, "INVALID FLASH PANEL ADDRESS");
 	}
 	
 }
 
-float MLX90614_test(uint8_t addr){
+static float MLX90614_test(uint8_t addr){
 	 
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 	 
@@ -99,8 +98,7 @@ float MLX90614_test(uint8_t addr){
 	 return rs.return_value; 
 }
 
-uint16_t AD590_test(int channel, int num_samples){
-
+static uint16_t AD590_test(int channel, int num_samples){
 	struct adc_module temp_instance; //generate object
 	// TEST BOARD ADC MUX
 	//setup_pin(true, 51);
@@ -131,25 +129,31 @@ uint16_t AD590_test(int channel, int num_samples){
 }
 
 //IMU test
-void MPU9250_test(int16_t toFill[6]){
+static void MPU9250_test(uint16_t toFill[6]){
 	//initalize imu.... probably
 	MPU9250_init();
 	
-	float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
+	uint16_t gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
 	//MPU9250_computeBias(gyroBias,accelBias);
-	enum status_code code1 = MPU9250_read_acc(toFill[0]);
+	enum status_code code1 = MPU9250_read_acc(accelBias);
+	toFill[0] = accelBias[0];
+	toFill[1] = accelBias[1];
+	toFill[2] = accelBias[2];
 	print("MPU9250 read accelerometer");
 	print_error(code1);
-	enum status_code code2 = MPU9250_read_gyro(toFill[3]);
+	enum status_code code2 = MPU9250_read_gyro(gyroBias);
+	toFill[3] = gyroBias[0];
+	toFill[4] = gyroBias[1];
+	toFill[5] = gyroBias[2];
 	print("MPU9250 read gyroscope");
 	print_error(code2); 
 	
 }
 
 //Magnetometer test 
-float HMC5883L_test(){
+static float HMC5883L_test(void){
 	
-	uint8_t *buffer; 
+	uint8_t buffer[10]; 
 	int16_t xyz[3]; 
 	
 	HMC5883L_init(); 
@@ -160,14 +164,14 @@ float HMC5883L_test(){
 }
 
 //GPIO test 
-void TCA9535_test(return_struct_16 rs){
+static void TCA9535_test(return_struct_16 rs){
 	
 	TCA9535_init(&rs);
 	
 }
 
 // Photodiode test 
-uint16_t TEMD6200_test(int num_samples){
+static uint16_t TEMD6200_test(int num_samples){
 	
 	struct adc_module pd_instance; 
 	
@@ -190,7 +194,7 @@ uint16_t TEMD6200_test(int num_samples){
 
 
 
-void AD7991_control_test_all(float *results_f){
+static void AD7991_control_test_all(float *results_f){
 	
 	uint16_t results[4]; 
 	
@@ -245,9 +249,9 @@ void system_test(void){
 		print("AD7991: All tests passed!\n");
 	}
 	
-	const uint16_t expected_temp = 20;//Celsius
-	uint16_t temps[4], AD590_expected[] = 
-	{expected_temp, expected_temp, expected_temp, expected_temp};
+	//const uint16_t expected_temp = 20;//Celsius
+	//uint16_t temps[4], AD590_expected[] = 
+	//{expected_temp, expected_temp, expected_temp, expected_temp};
 	
 	
 	//ADC out of comission at the moment
@@ -267,7 +271,9 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
-	print("IR test on %s yielded approx %d degrees Celsius\n",get_panel(MLX90614_ACCESSPANEL_V4_1),(int) test1);
+	char buffer[30];
+	get_panel(MLX90614_ACCESSPANEL_V4_1, buffer);
+	print("IR test on %s yielded approx %d degrees Celsius\n",buffer,(int) test1);
 	//float test2 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
 	
 	
@@ -279,27 +285,27 @@ void system_test(void){
 	uint16_t MPU9250_results[6], MPU9250_err_margin = 20; 
 	MPU9250_test(MPU9250_results);
 	uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0};
-	char * a; 	
+	char a[7]; 	
 	for (int i = 0; i < 6; i++){
 		
 		switch (i) {
 			case 0:
-			a = "acc x";
+			strcpy(a, "acc x");
 			break;
 			case 1:
-			a = "acc y";
+			strcpy(a, "acc y");
 			break;
 			case 2:
-			a = "acc z";
+			strcpy(a, "acc z");
 			break;
 			case 3:
-			a = "gyro x";
+			strcpy(a, "gyro x");
 			break;
 			case 4:
-			a = "gyro y";
+			strcpy(a, "gyro y");
 			break;
 			case 5:
-			a = "gyro z";
+			strcpy(a, "gyro z");
 			break;
 		}
 		print("MPU Reading %s: %d\n",a,MPU9250_results[i]);

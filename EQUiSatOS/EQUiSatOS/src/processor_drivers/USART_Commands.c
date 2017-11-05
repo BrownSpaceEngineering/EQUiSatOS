@@ -8,7 +8,7 @@
 #include "USART_Commands.h"
 
 #if PRINT_DEBUG  // if debug mode
-	char debug_buf[256];
+	uint8_t debug_buf[256];
 #endif
 
 uint8_t edbg_rx_data,ext_rx_data;

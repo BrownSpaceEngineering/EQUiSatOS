@@ -77,7 +77,7 @@ void flatsat_init(void) {
 }
 
 //Cycles through temperatures sensor and photodiode external muxes and does 10x software averaging on each channel
- void readMuxs(uint16_t* tempBuffer, uint16_t* pdBuffer){
+static void readMuxs(uint16_t* tempBuffer, uint16_t* pdBuffer){
 	 
 	 for (int i=0; i<4; i++){
 		 configure_adc(&temp_instance,P_AI_TEMP_OUT);
@@ -111,7 +111,7 @@ void flatsat_init(void) {
  }
  
  //Cycles through all of the ADC channels that are not externally mux'd
- void readOtherADC(uint16_t* buffer){
+static void readOtherADC(uint16_t* buffer){
 	 for (int i=0; i<LEN_ADC; i++){
 		 //buffer[i] = readVoltagemV(modules[i]);
 		 //buffer[i] = readFromADC(adc_pins[i], num_samples);
@@ -137,7 +137,7 @@ void sendToArduino(uint8_t* data, uint8_t length) {
 
 
 //Read all channels of processor ADC - only for testing. For flight we'll want to break this up and 
-void readAnalog(float* temperatures, float* photodiodes, float* analogs){
+static void readAnalog(float* temperatures, float* photodiodes, float* analogs){
 	uint16_t buffer[LEN_ADC];
 	uint16_t temp_buffer[8];
 	uint16_t pd_buffer[6];
@@ -186,7 +186,7 @@ void flatsat_run(void) {
 
 	
 	int count =0; //Run only 15 times in case we get out of debug mode.
-	usart_send_string("Begin\n");
+	usart_send_string((uint8_t*) "Begin\n");
 	char temp[50];
 	while (count<1000){	
 		
@@ -195,27 +195,27 @@ void flatsat_run(void) {
 		
 		readRemoteADC_1(cntrlReadings);
 		
-		usart_send_string("\n___________________\n");
+		usart_send_string((uint8_t*) "\n___________________\n");
 		sprintf(temp,"Sending new batch of data. Counts Since Boot = %d.\n\n",count );
-		usart_send_string(temp);
+		usart_send_string((uint8_t*) temp);
 
 		sprintf(temp,"3V3 Regulator Voltage Sense\t=%dmV\n",((uint16_t)(cntrlReadings[3]*1000)));
-		usart_send_string(temp);
+		usart_send_string((uint8_t*) temp);
 		
 		sprintf(temp,"5V Regulator Voltage Sense\t=%dmV\n", ((uint16_t)(cntrlReadings[2]*1000)));
-		usart_send_string(temp);
+		usart_send_string((uint8_t*) temp);
 		
 		sprintf(temp,"3V6 Regulator Voltage Sense\t=%dmV\n", ((uint16_t)(cntrlReadings[0]*1000)));
-		usart_send_string(temp);
+		usart_send_string((uint8_t*) temp);
 		
 		sprintf(temp,"3V6 Regulator Current Sense\t=%dmA\n", ((uint16_t)(cntrlReadings[1]*1000)));
-		usart_send_string(temp);
+		usart_send_string((uint8_t*) temp);
 		
 		if (((uint16_t)(cntrlReadings[0]*1000))<3000){
-			usart_send_string("3V6 rail looking funky\n\n\n\n\n\n\n\n*****************");
+			usart_send_string((uint8_t*) "3V6 rail looking funky\n\n\n\n\n\n\n\n*****************");
 		}
 	
-		usart_send_string("--------------------\n");
+		usart_send_string((uint8_t*) "--------------------\n");
 		//set_output(true, P_RAD_PWR_RUN);
  		//set_output(false,P_LED_CMD); //Turns on LEDs for 100ms (hardware timed). Any breakpoints placed during flashing are not guaranteed to be accurate
 		//readAnalog(dur1_temp,dur1_pd, dur1_analog);
@@ -224,7 +224,7 @@ void flatsat_run(void) {
 		
 		count = count +1;
 	}
-	usart_send_string("end\n");
+	usart_send_string((uint8_t*) "end\n");
 	
 		
 	

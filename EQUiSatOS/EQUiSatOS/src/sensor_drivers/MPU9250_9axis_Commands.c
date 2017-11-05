@@ -2,22 +2,27 @@
 
 void MPU9250_init(void) {
 	uint8_t address = 0;
-	
-	enum status_code statc1 = readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
+	// TODO: handle all (search regex) //enum lines
+	//enum status_code statc1 = 
+	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_2000_DPS};
 	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
 	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
 	
-	enum status_code statc2 = writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	enum status_code statc3 = writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	enum status_code statc4 = writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	//enum status_code statc2 = 
+	writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	//enum status_code statc3 = 
+	writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	//enum status_code statc4 = 
+	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
-enum status_code MPU9250_read_mag(int16_t toFill[3]){
+enum status_code MPU9250_read_mag(uint16_t toFill[3]){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
-	enum status_code statc1 = writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
+	//enum status_code statc1 = 
+	writeDataToAddress(reqData,2,MAG_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	// Check if measurement is ready
 	uint8_t status[1] = {!MAG_DATA_READY};
@@ -27,7 +32,8 @@ enum status_code MPU9250_read_mag(int16_t toFill[3]){
 	
 	//Read data
 	uint8_t data[6] = {0,0,0,0,0,0};
-	enum status_code statc2 = readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS,MPU9250_SHOULD_STOP);
+	enum status_code statc2 = 
+	readFromAddressAndMemoryLocation(data,6,MAG_ADDRESS,MAG_READ_ADDRESS,MPU9250_SHOULD_STOP);
 	
 	//process data
 	toFill[0] = -(data[3]<<8 | data[2]);
@@ -37,7 +43,7 @@ enum status_code MPU9250_read_mag(int16_t toFill[3]){
 	return statc2;
 }
 
-enum status_code MPU9250_read_acc(int16_t toFill[3]){
+enum status_code MPU9250_read_acc(uint16_t toFill[3]){
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
 	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS,MPU9250_SHOULD_STOP);
@@ -50,7 +56,7 @@ enum status_code MPU9250_read_acc(int16_t toFill[3]){
 	return statc;
 }
 
-enum status_code MPU9250_read_gyro(int16_t toFill[3]){	
+enum status_code MPU9250_read_gyro(uint16_t toFill[3]){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
 	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS,MPU9250_SHOULD_STOP);
@@ -93,60 +99,63 @@ void MPU9250_computeBias(float *dest1, float *dest2){
 	
 	// reset device
 	dataByte[0] = (uint8_t)0x80; subaddress[0] = PWR_MGMT_1;
-	enum status_code statc1 = writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc1 =
+	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	delay_ms(100);
 	
 	// get stable time source; Auto select clock source to be PLL gyroscope reference if ready
 	// else use the internal oscillator, bits 2:0 = 001
 	dataByte[0] = (uint8_t)0x01;
-	enum status_code statc2 = writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc2 = 
+	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	dataByte[0] = (uint8_t)0x00; subaddress[0] = PWR_MGMT_2;
-	enum status_code statc3 = writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc3 = 
+	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	delay_ms(200);
 
 	// Configure device for bias calculation
 	subaddress[0] = INT_ENABLE;
-	enum status_code statc4 =
+	//enum status_code statc4 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //disable all interrupts
 	
 	subaddress[0] = FIFO_EN;
-	enum status_code statc5 =
+	//enum status_code statc5 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //disable FIFO
 	
 	subaddress[0] = PWR_MGMT_1;
-	enum status_code statc6 =
+	//enum status_code statc6 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //turn on internal clock source
 	
 	subaddress[0] = I2C_MST_CTRL;
-	enum status_code statc7 =
+	//enum status_code statc7 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //disable I2C master
 	
 	subaddress[0] = USER_CTRL;
-	enum status_code statc8 =
+	//enum status_code statc8 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //disable FIFO and I2C master
 	
 	dataByte[0] = (uint8_t)0x0C;
-	enum status_code statc9 =
+	//enum status_code statc9 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //reset FIFO and DMP
 	
 	delay_ms(15);
 	
 	// Configure MPU6050 gyro and accelerometer for bias calculation
 	dataByte[0] = (uint8_t)0x01; subaddress[0] = CONFIG;
-	enum status_code statc10 =
+	//enum status_code statc10 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //set lpf to 188hz
 	
 	dataByte[0] = (uint8_t)0x00; subaddress[0] = SMPLRT_DIV;
-	enum status_code statc11 =
+	//enum status_code statc11 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); //set sample rate to 1 khz
 	
 	subaddress[0] = GYRO_CONFIG_ADDRESS;
-	enum status_code statc12 =
+	//enum status_code statc12 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); // Set gyro full-scale to 250 degrees per second
 	
 	subaddress[0] = ACC_CONFIG_ADDRESS;
-	enum status_code statc13 =
+	//enum status_code statc13 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); // Set accelerometer full-scale to 2 g, maximum sensitivity
 	
 	//uhhhh not really sure how we got these but oh well
@@ -155,27 +164,27 @@ void MPU9250_computeBias(float *dest1, float *dest2){
 
 	// Configure FIFO to capture accelerometer and gyro data for bias calculation
 	dataByte[0] = (uint8_t)0x40; subaddress[0] = USER_CTRL;
-	enum status_code statc14 =
+	//enum status_code statc14 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); // Enable FIFO
 	
 	dataByte[0] = (uint8_t)0x78; subaddress[0] = FIFO_EN;
-	enum status_code statc15 =
+	//enum status_code statc15 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); // Enable gyro and accelerometer sensors for FIFO  (max size 512 bytes in MPU-9150)
 	delay_ms(40); // accumulate 40 samples in 40 milliseconds = 480 bytes
 
 	// At end of sample accumulation, turn off FIFO sensor read
 	dataByte[0] = (uint8_t)0x00;
-	enum status_code statc16 =
+	//enum status_code statc16 =
 	writeDataToAddressSub(dataByte,2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP); // Disable gyro and accelerometer sensors for FIFO
 	
-	enum status_code statc17 =
+	//enum status_code statc17 =
 	readFromAddressAndMemoryLocation(&data[0],2,MPU9250_ADDRESS,FIFO_COUNTH,MPU9250_SHOULD_STOP);
 	fifo_count = ((uint16_t)data[0] << 8) | data[1];
 	packet_count = fifo_count/12;// How many sets of full gyro and accelerometer data for averaging
 	
 	for (ii = 0; ii < packet_count; ii++) {
 		uint16_t accel_temp[3] = {0, 0, 0}, gyro_temp[3] = {0, 0, 0};
-		enum status_code statc18 =
+		//enum status_code statc18 =
 		readFromAddressAndMemoryLocation(&data[0],12,MPU9250_ADDRESS,FIFO_R_W,MPU9250_SHOULD_STOP); //read data to average
 		accel_temp[0] = (int16_t) (((int16_t)data[0] << 8) | data[1]  ) ;  // Form signed 16-bit integer for each sample in FIFO
 		accel_temp[1] = (int16_t) (((int16_t)data[2] << 8) | data[3]  ) ;
@@ -212,28 +221,28 @@ void MPU9250_computeBias(float *dest1, float *dest2){
 	
 	// Push gyro biases to hardware registers
 	subaddress[0] = XG_OFFSET_H;
-	enum status_code statc19 =
-	writeDataToAddressSub(data[0],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc19 =
+	writeDataToAddressSub(&data[0],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = XG_OFFSET_L;
-	enum status_code statc20 =
-	writeDataToAddressSub(data[1],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc20 =
+	writeDataToAddressSub(&data[1],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = YG_OFFSET_H;
-	enum status_code statc21 =
-	writeDataToAddressSub(data[2],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc21 =
+	writeDataToAddressSub(&data[2],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = YG_OFFSET_L;
-	enum status_code statc22 =
-	writeDataToAddressSub(data[3],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc22 =
+	writeDataToAddressSub(&data[3],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = ZG_OFFSET_H;
-	enum status_code statc23 =
-	writeDataToAddressSub(data[4],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc23 =
+	writeDataToAddressSub(&data[4],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = ZG_OFFSET_L;
-	enum status_code statc24 =
-	writeDataToAddressSub(data[5],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc24 =
+	writeDataToAddressSub(&data[5],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
 	
 	// Output scaled gyro biases for display in the main program
@@ -248,15 +257,15 @@ void MPU9250_computeBias(float *dest1, float *dest2){
 	// the accelerometer biases calculated above must be divided by 8.
 
 	int32_t accel_bias_reg[3] = {0, 0, 0}; // A place to hold the factory accelerometer trim biases
-	enum status_code statc25 =
+	//enum status_code statc25 =
 	readFromAddressAndMemoryLocation(&data[0],2,MPU9250_ADDRESS,XA_OFFSET_H,MPU9250_SHOULD_STOP); // Read factory accelerometer trim values
 	accel_bias_reg[0] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
 	
-	enum status_code statc26 =
+	//enum status_code statc26 =
 	readFromAddressAndMemoryLocation(&data[0],2,MPU9250_ADDRESS,YA_OFFSET_H,MPU9250_SHOULD_STOP);
 	accel_bias_reg[1] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
 	
-	enum status_code statc27 =
+	//enum status_code statc27 =
 	readFromAddressAndMemoryLocation(&data[0],2,MPU9250_ADDRESS,ZA_OFFSET_H,MPU9250_SHOULD_STOP);
 	accel_bias_reg[2] = (int32_t) (((int16_t)data[0] << 8) | data[1]);
 	
@@ -291,40 +300,46 @@ void MPU9250_computeBias(float *dest1, float *dest2){
 	uint8_t check[2];
 	
 	subaddress[0] = XA_OFFSET_H;
-	enum status_code statc28 =
-	writeDataToAddressSub(data[0],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc28 =
+	writeDataToAddressSub(&data[0],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat1 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,XA_OFFSET_H,MPU9250_SHOULD_STOP);
+	//enum status_code stat1 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,XA_OFFSET_H,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = XA_OFFSET_L_TC;
-	enum status_code statc29 =
-	writeDataToAddressSub(data[1],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc29 =
+	writeDataToAddressSub(&data[1],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat2 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,XA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
+	//enum status_code stat2 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,XA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = YA_OFFSET_H;
-	enum status_code statc30 =
-	writeDataToAddressSub(data[2],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc30 =
+	writeDataToAddressSub(&data[2],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat3 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,YA_OFFSET_H,MPU9250_SHOULD_STOP);
+	//enum status_code stat3 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,YA_OFFSET_H,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = YA_OFFSET_L_TC;
-	enum status_code statc31 =
-	writeDataToAddressSub(data[3],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc31 =
+	writeDataToAddressSub(&data[3],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat4 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,YA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
+	//enum status_code stat4 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,YA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = ZA_OFFSET_H;
-	enum status_code statc32 =
-	writeDataToAddressSub(data[4],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc32 =
+	writeDataToAddressSub(&data[4],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat5 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,ZA_OFFSET_H,MPU9250_SHOULD_STOP);
+	//enum status_code stat5 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,ZA_OFFSET_H,MPU9250_SHOULD_STOP);
 	
 	subaddress[0] = ZA_OFFSET_L_TC;
-	enum status_code statc33 =
-	writeDataToAddressSub(data[5],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
+	//enum status_code statc33 =
+	writeDataToAddressSub(&data[5],2,MPU9250_ADDRESS,subaddress,MPU9250_SHOULD_STOP);
 	
-	enum status_code stat6 = readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,ZA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
+	//enum status_code stat6 = 
+	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,ZA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
 	// Output scaled accelerometer biases for display in the main program
 	dest2[0] = (float)accel_bias[0]/(float)accelsensitivity;
 	dest2[1] = (float)accel_bias[1]/(float)accelsensitivity;

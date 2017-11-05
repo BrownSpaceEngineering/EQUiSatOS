@@ -123,7 +123,7 @@ void readBatBoard(float* batBoardReadings){
 	uint16_t raw[LEN_BAT_ADC];
 	for (int i=0; i<LEN_BAT_ADC; i++){
 		raw[i] = readFromADC(bat_adc_pins[i],5);
-		batBoardReadings[i] = convertToVoltage(raw);
+		batBoardReadings[i] = convertToVoltage(raw[i]);
 	}
 	
 }
@@ -171,7 +171,7 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	
 	
 	uint8_t setOutputs[] = {data->lf_b2_bt,data->lf_b2_tt,data->lf_b1_tt,data->lf_b1_bt};
-	enum status_code statc = setBatOutputs(setOutputs);
+	setBatOutputs(setOutputs[0]);
 	readTCA9535Levels(&gpio_rs);
 	uint16_t res = gpio_rs.return_value;
 	data->l2_st 		= !(!(res&0b0000000100000000));	//8

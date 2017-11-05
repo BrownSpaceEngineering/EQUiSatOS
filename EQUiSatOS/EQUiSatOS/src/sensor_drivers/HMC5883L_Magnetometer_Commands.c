@@ -47,6 +47,7 @@ void HMC5883L_init(){
 	on the HMC5883L magnetometer in single measurement mode
 */
 void HMC5883L_read(uint8_t* read_buffer){
+	// TODO: does this actually do anything??
 	struct i2c_master_packet read_packet = {
 		.address     = HMC5883L_ADDRESS,
 		.data_length = 6,
