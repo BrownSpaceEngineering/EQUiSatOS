@@ -123,7 +123,7 @@ void readBatBoard(float* batBoardReadings){
 	uint16_t raw[LEN_BAT_ADC];
 	for (int i=0; i<LEN_BAT_ADC; i++){
 		raw[i] = readFromADC(bat_adc_pins[i],5);
-		batBoardReadings[i] = convertToVoltage(raw);
+		batBoardReadings[i] = convertToVoltage(raw[i]);
 	}
 	
 }
