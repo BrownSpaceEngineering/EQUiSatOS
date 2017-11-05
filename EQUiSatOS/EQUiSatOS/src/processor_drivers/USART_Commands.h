@@ -20,7 +20,7 @@
 
 uint8_t receiveIndex;
 char receivebuffer[LEN_RECEIVEBUFFER];
-char sendbuffer[LEN_SENDBUFFER];
+uint8_t sendbuffer[LEN_SENDBUFFER];
 
 /* function prototype */
 void USART_init(void);

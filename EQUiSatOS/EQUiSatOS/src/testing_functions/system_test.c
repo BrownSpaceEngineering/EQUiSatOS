@@ -6,8 +6,7 @@
  */ 
 #include "system_test.h"
 
-void print_error(enum status_code code){
-	
+static void print_error(enum status_code code){
 	switch(code){
 		
 		case STATUS_OK:
@@ -40,7 +39,7 @@ void print_error(enum status_code code){
 		
 }
 
-char * get_panel(int panel_addr){
+static char* get_panel(int panel_addr){
 		////Flight IR Sensors
 		//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 		//#define MLX90614_TOPPANEL_V4_2		0x6B //
@@ -77,7 +76,7 @@ char * get_panel(int panel_addr){
 	
 }
 
-float MLX90614_test(uint8_t addr){
+static float MLX90614_test(uint8_t addr){
 	 
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 	 
@@ -99,8 +98,7 @@ float MLX90614_test(uint8_t addr){
 	 return rs.return_value; 
 }
 
-uint16_t AD590_test(int channel, int num_samples){
-
+static uint16_t AD590_test(int channel, int num_samples){
 	struct adc_module temp_instance; //generate object
 	// TEST BOARD ADC MUX
 	//setup_pin(true, 51);
@@ -131,7 +129,7 @@ uint16_t AD590_test(int channel, int num_samples){
 }
 
 //IMU test
-void MPU9250_test(int16_t toFill[6]){
+static void MPU9250_test(int16_t toFill[6]){
 	//initalize imu.... probably
 	MPU9250_init();
 	

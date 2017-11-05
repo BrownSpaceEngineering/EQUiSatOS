@@ -17,11 +17,11 @@ void XDL_init() {
 
 void set_command_mode(void) {
 	delay_ms(150);
-	usart_send_string("+++");
+	usart_send_string((uint8_t*) "+++");
 	delay_ms(150);
 }
 
-void set_dealer_mode(void) {
+static void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -30,7 +30,7 @@ void set_dealer_mode(void) {
 	usart_send_string(sendbuffer);
 }
 
-void set_tx_freq() {
+void set_tx_freq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x37;

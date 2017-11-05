@@ -48,7 +48,7 @@ void run_rtos()
 		TASK_BATTERY_CHARGING_STACK_SIZE,
 		NULL,
 		TASK_BATTERY_CHARGING_PRIORITY,
-		&battery_charging_task_stack,
+		battery_charging_task_stack,
 		&battery_charging_task_buffer);
 
 	// TODO: Should we even store this handle?
@@ -57,7 +57,7 @@ void run_rtos()
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
 		NULL,
 		TASK_ANTENNA_DEPLOY_PRIORITY,
-		&antenna_deploy_task_stack,
+		antenna_deploy_task_stack,
 		&antenna_deploy_task_buffer);
 
 	 // TODO: Should we even store this handle?
@@ -66,7 +66,7 @@ void run_rtos()
 		TASK_WATCHDOG_STACK_SIZE,
 		NULL,
 		TASK_WATCHDOG_STACK_PRIORITY,
-		&watchdog_task_stack,
+		watchdog_task_stack,
 		&watchdog_task_buffer);
 
 	flash_activate_task_handle = xTaskCreateStatic(flash_activate_task,
@@ -74,7 +74,7 @@ void run_rtos()
 		TASK_FLASH_ACTIVATE_STACK_SIZE,
 		NULL,
 		TASK_FLASH_ACTIVATE_PRIORITY,
-		&flash_activate_task_stack,
+		flash_activate_task_stack,
 		&flash_activate_task_buffer);
 
 	transmit_task_handle = xTaskCreateStatic(transmit_task,
@@ -82,7 +82,7 @@ void run_rtos()
 		TASK_TRANSMIT_STACK_SIZE,
 		NULL,
 		TASK_TRANSMIT_PRIORITY,
-		&transmit_task_stack,
+		transmit_task_stack,
 		&transmit_task_buffer);
 
 	/* Data tasks */
@@ -92,7 +92,7 @@ void run_rtos()
 		TASK_CURRENT_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_CURRENT_DATA_RD_PRIORITY,
-		&current_data_task_stack,
+		current_data_task_stack,
 		&current_data_task_buffer);
 
 	flash_data_task_handle = xTaskCreateStatic(flash_data_task,
@@ -100,7 +100,7 @@ void run_rtos()
 		TASK_FLASH_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_FLASH_DATA_RD_PRIORITY,
-		&flash_data_task_stack,
+		flash_data_task_stack,
 		&flash_data_task_buffer);
 
 	attitude_data_task_handle = xTaskCreateStatic(attitude_data_task,
@@ -108,7 +108,7 @@ void run_rtos()
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_ATTITUDE_DATA_DATA_RD_PRIORITY,
-		&attitude_data_task_stack,
+		attitude_data_task_stack,
 		&attitude_data_task_buffer);
 
 // 		xTaskCreate(task_suicide_test,
