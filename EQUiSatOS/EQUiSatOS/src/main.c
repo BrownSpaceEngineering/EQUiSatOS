@@ -99,6 +99,10 @@ void global_init(void) {
 	set_output(false, P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
+	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
+	set_output(false, P_L1_RUN_CHG);
+	setup_pin(true,P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);
 
 	//init_rtc();
 	USART_init();

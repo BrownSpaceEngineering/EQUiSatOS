@@ -50,28 +50,28 @@ static void get_panel(int panel_addr, char* buffer){
 		//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	switch (panel_addr){
 		case 0x6C:
-		strcpy(buffer, "MLX90614_FLASHPANEL_V6_2_1");
+		buffer = "MLX90614_FLASHPANEL_V6_2_1";
 		
 		case 0x6B:
-		strcpy(buffer, "MLX90614_TOPPANEL_V4_2");
+		buffer = "MLX90614_TOPPANEL_V4_2";
 		
 		case 0x6A:
-		strcpy(buffer, "MLX90614_TOPPANEL_V4_1");
+		buffer = "MLX90614_TOPPANEL_V4_1";
 		
 		case 0x5C:
-		strcpy(buffer, "MLX90614_ACCESSPANEL_V4_1");
+		buffer = "MLX90614_ACCESSPANEL_V4_1";
 		
 		case 0x5D: 
-		strcpy(buffer, "MLX90614_SIDEPANEL_V4_2");
+		buffer = "MLX90614_SIDEPANEL_V4_2";
 		
 		case 0x5F: 
-		strcpy(buffer, "MLX90614_SIDEPANEL_V4_3");
+		buffer = "MLX90614_SIDEPANEL_V4_3";
 		
 		case 0x6D:
-		strcpy(buffer, "MLX90614_SIDEPANEL_V4_4");
+		buffer = "MLX90614_SIDEPANEL_V4_4";
 		
 		default: 
-		strcpy(buffer, "INVALID FLASH PANEL ADDRESS");
+		buffer = "INVALID FLASH PANEL ADDRESS";
 	}
 	
 }
@@ -257,34 +257,34 @@ void system_test(void){
 	for (int i = 0; i < 8; i++){
 		switch (i) {
 			case 0:
-			strcpy(test_str, "LED1TEMP");
+			test_str = "LED1TEMP";
 			break;
 			case 1:
-			strcpy(test_str, "LED2TEMP");
+			test_str = "LED2TEMP";
 			break;
 			case 2:
-			strcpy(test_str, "LED3TEMP");
+			test_str = "LED3TEMP";
 			break;
 			case 3:
-			strcpy(test_str, "LED4TEMP");
+			test_str = "LED4TEMP";
 			break;
 			case 4:
-			strcpy(test_str, "L1_TEMP");
+			test_str = "L1_TEMP";
 			break;
 			case 5:
-			strcpy(test_str, "L2_TEMP");
+			test_str = "L2_TEMP";
 			break;
 			case 6: 
-			strcpy(test_str, "LF1_TEMP");
+			test_str = "LF1_TEMP";
 			break; 
 			case 7: 
-			strcpy(test_str, "LF3_TEMP");
+			test_str = "LF3_TEMP";
 			break; 
 			
 		}
 				
 		temps[i] = AD590_test(i);
-		print("AD590 test %s: %d degrees celsius\n",test_str,temps[i]); 
+		print("AD590 test %s: %d degrees Celsius\n",test_str,temps[i]); 
 	}
 	
 	//compare_results((void *) temps,(void *) expected,4, 5, "AD590");
@@ -317,22 +317,22 @@ void system_test(void){
 		
 		switch (i) {
 			case 0:
-			strcpy(test_str, "acc x");
+			test_str = "acc x";
 			break;
 			case 1:
-			strcpy(test_str, "acc y");
+			test_str = "acc y";
 			break;
 			case 2:
-			strcpy(test_str, "acc z");
+			test_str = "acc z";
 			break;
 			case 3:
-			strcpy(test_str, "gyro x");
+			test_str = "gyro x";
 			break;
 			case 4:
-			strcpy(test_str, "acc y");
+			test_str = "acc y";
 			break;
 			case 5:
-			strcpy(test_str, "acc z");
+			test_str = "acc z";
 			break;
 		}
 		print("MPU Reading %s: %d\n",test_str,MPU9250_results[i]);
@@ -356,29 +356,29 @@ void system_test(void){
 	float test4 = HMC5883L_test(); 
 	print("HMC test: %d\n",test4); 
 	
-	//ADC out of comission
+	//ADC out of commission
 	print("TEMD6200 test========================================\n");
 	uint16_t pd_tests[6];
 	for (int i = 0; i < 6; i++){
 		
 		switch (i) {
 			case 0:
-			strcpy(test_str, "PD_FLASH");
+			test_str = "PD_FLASH";
 			break;
 			case 1:
-			strcpy(test_str, "PD_SIDE1");
+			test_str = "PD_SIDE1";
 			break;
 			case 2:
-			strcpy(test_str, "PD_SIDE2");
+			test_str = "PD_SIDE2";
 			break;
 			case 3:
-			strcpy(test_str, "PD_ACCESS");
+			test_str = "PD_ACCESS";
 			break;
 			case 4:
-			strcpy(test_str, "PD_TOP1");
+			test_str = "PD_TOP1";
 			break;
 			case 5:
-			strcpy(test_str, "PD_TOP2");
+			test_str = "PD_TOP2";
 			break;
 		}
 		
