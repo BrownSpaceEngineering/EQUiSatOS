@@ -151,14 +151,14 @@ void radioTest(void) {
 			
 }
 
-void byte_err (int err, int loc, unsigned char *dst)
+static void byte_err (int err, int loc, unsigned char *dst)
 {
   //printf("Adding Error at loc %d, data %#x\n", loc, dst[loc-1]);
   dst[loc-1] ^= err;
 }
 
 //Pass in location of error (first byte position is labeled starting at 1, not 0), and the codeword.
-void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[]) 
+static void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[]) 
 {
   //printf("Erasure at loc %d, data %#x\n", loc, dst[loc-1]);
   dst[loc-1] = 0;

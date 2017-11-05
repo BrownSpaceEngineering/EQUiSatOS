@@ -11,7 +11,7 @@
 // define buffer here to keep it LOCAL
 uint8_t msg_buffer[MSG_BUFFER_SIZE];
 
-void write_message_top(uint8_t num_data, size_t size_data) {
+static void write_message_top(uint8_t num_data, size_t size_data) {
 	// write preamble
 	write_preamble(msg_buffer, get_current_timestamp(), CurrentState, 
 		num_data * size_data);

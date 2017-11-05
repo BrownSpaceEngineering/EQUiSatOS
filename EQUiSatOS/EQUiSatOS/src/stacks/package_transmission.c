@@ -31,10 +31,10 @@ void write_preamble(uint8_t* buffer, uint32_t timestamp, uint32_t states, uint8_
 	buffer[index++] = 'A';
 	buffer[index++] = 'D';
 	
-	write_bytes_and_shift(buffer,	timestamp,		sizeof(timestamp),	&index); // 4 byte timestamp
-	write_bytes_and_shift(buffer,	states,			sizeof(states),		&index); // 4 byte state string
+	write_bytes_and_shift(buffer,	&timestamp,		sizeof(timestamp),	&index); // 4 byte timestamp
+	write_bytes_and_shift(buffer,	&states,			sizeof(states),		&index); // 4 byte state string
 	write_bytes_and_shift(buffer,	ERROR_PACKETS,	1,					&index); // 1 byte error packet #
-	write_bytes_and_shift(buffer,	data_len,		sizeof(data_len),	&index); // 1 byte data packet #
+	write_bytes_and_shift(buffer,	&data_len,		sizeof(data_len),	&index); // 1 byte data packet #
 	
 	assert(index == START_HEADER);
 	
@@ -70,7 +70,7 @@ void write_errors(uint8_t* buffer, equistack* error_stack) {
 		
 		// we have to fill up the error section, so either write the error or it's null equivalent
 		if (error != NULL) {
-			write_bytes_and_shift(buffer, *error,			sizeof(sat_error_t), &index);
+			write_bytes_and_shift(buffer, error,			sizeof(sat_error_t), &index);
 		} else {
 			write_bytes_and_shift(buffer, ECODE_NO_ERROR,	sizeof(sat_error_t), &index);
 		}
@@ -119,7 +119,7 @@ void write_attitude_data(uint8_t* buffer, equistack* attitude_stack) {
 			write_bytes_and_shift(buffer, attitude_data->accelerometer_data,sizeof(accelerometer_batch) * 2 /* [2] */,		&index);
 			write_bytes_and_shift(buffer, attitude_data->gyro_data,			sizeof(gyro_batch)				/* [2] */,		&index);
 			write_bytes_and_shift(buffer, attitude_data->magnetometer_data,	sizeof(magnetometer_batch)		/* [1] */,		&index); 
-			write_bytes_and_shift(buffer, attitude_data->timestamp,			4 /* uint32_t */,								&index); 
+			write_bytes_and_shift(buffer, &attitude_data->timestamp,			4 /* uint32_t */,								&index); 
 		} else {
 			// overwrite entire section with 0s
 			write_value_and_shift(buffer, 0, ATTITUDE_DATA_PACKET_SIZE, &index);
@@ -143,7 +143,7 @@ void write_flash_data(uint8_t* buffer, equistack* flash_stack) {
 			write_bytes_and_shift(buffer, flash_data->lifepo_volts_data,	sizeof(lifepo_volts_batch)	* 10 /* [10] */,			&index); 
 			write_bytes_and_shift(buffer, flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* 10 /* [10] */,			&index); 
 			write_bytes_and_shift(buffer, flash_data->led_current_data,		sizeof(led_current_batch)	* 10 /* [10] */,			&index); 
-			write_bytes_and_shift(buffer, flash_data->timestamp,			4 /* uint_32_t */,									&index);
+			write_bytes_and_shift(buffer, &flash_data->timestamp,			4 /* uint_32_t */,									&index);
 			
 		} else {
 			// overwrite entire section with 0s
@@ -169,7 +169,7 @@ void write_flash_cmp(uint8_t* buffer, equistack* flash_cmp_stack) {
 			write_bytes_and_shift(buffer, flash_cmp->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */,			&index);
 			write_bytes_and_shift(buffer, flash_cmp->lifepo_current_avg_data,	sizeof(lifepo_current_batch)	/* [1] */,			&index);
 			write_bytes_and_shift(buffer, flash_cmp->led_current_avg_data,		sizeof(led_current_batch)		/* [1] */,			&index);
-			write_bytes_and_shift(buffer, flash_cmp->timestamp,					4 /* uint_32_t */,									&index);
+			write_bytes_and_shift(buffer, &flash_cmp->timestamp,					4 /* uint_32_t */,									&index);
 			
 			} else {
 			// overwrite entire section with 0s
@@ -183,13 +183,14 @@ void write_flash_cmp(uint8_t* buffer, equistack* flash_cmp_stack) {
 
 /* Writes num_bytes from input to data, and shifts the value at index up by num_bytes */
 void write_bytes_and_shift(uint8_t *data, void *input, size_t num_bytes, uint8_t *index) {
-	memcpy(data[*index], (char*) input, num_bytes);
+	// TODO: verify correctness
+	memcpy(data, (char*) input, num_bytes);
 	*index += num_bytes;
 }
 
 /* Writes num_bytes copies of value to data, and shifts the value at index up by num_bytes */
 void write_value_and_shift(uint8_t *data, char value, size_t num_bytes, uint8_t *index) {
-	for (int i = 0; i < num_bytes; i++) {
+	for (uint i = 0; i < num_bytes; i++) {
 		data[*index] = value;
 		(*index)++;
 	}
