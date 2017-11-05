@@ -68,10 +68,11 @@ void run_tests(void) {
 	//assert_rtos_constants();
 	//assert_transmission_constants();
 
+	system_test(); 
 	/************************************************************************/
 	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
 	/************************************************************************/
-	The_Fall_Of_Ryan();
+	//The_Fall_Of_Ryan();
 
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
 	init_tc();
