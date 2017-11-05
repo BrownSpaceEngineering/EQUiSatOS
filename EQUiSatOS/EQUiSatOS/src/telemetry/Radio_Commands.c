@@ -21,7 +21,7 @@ void set_command_mode(void) {
 	delay_ms(150);
 }
 
-static void set_dealer_mode(void) {
+/*void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -93,7 +93,7 @@ void set_link_speed(void){
 	sendbuffer[3] = ~0x08;
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
-}
+}*/
 
 
 int response_check(char arr[]){
