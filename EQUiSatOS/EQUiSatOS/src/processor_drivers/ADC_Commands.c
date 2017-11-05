@@ -84,7 +84,9 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
 	 uint16_t sum = 0;
 	 
 	 for (int i=0; i<num_avg; i++){
-		 adc_enable(&adc_instance);
+		 if (i>0){
+			 adc_enable(&adc_instance);
+		 }
 		 sum = sum +read_adc(adc_instance);
 	 }
 	 return sum/num_avg;
