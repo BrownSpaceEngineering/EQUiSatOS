@@ -40,6 +40,43 @@ void print_error(enum status_code code){
 		
 }
 
+char * get_panel(int panel_addr){
+		////Flight IR Sensors
+		//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
+		//#define MLX90614_TOPPANEL_V4_2		0x6B //
+		//#define MLX90614_TOPPANEL_V4_1		0x6A
+		//#define MLX90614_ACCESSPANEL_V4_1	0x5C
+		//#define MLX90614_SIDEPANEL_V4_2		0x5D //
+		//#define MLX90614_SIDEPANEL_V4_3		0x5F
+		//#define MLX90614_SIDEPANEL_V4_4		0x6D
+	switch (panel_addr){
+		case 0x6C:
+		return "MLX90614_FLASHPANEL_V6_2_1";
+		
+		case 0x6B:
+		return "MLX90614_TOPPANEL_V4_2";
+		
+		case 0x6A:
+		return "MLX90614_TOPPANEL_V4_1";
+		
+		case 0x5C:
+		return "MLX90614_ACCESSPANEL_V4_1";
+		
+		case 0x5D: 
+		return "MLX90614_SIDEPANEL_V4_2";
+		
+		case 0x5F: 
+		return "MLX90614_SIDEPANEL_V4_3";
+		
+		case 0x6D:
+		return "MLX90614_SIDEPANEL_V4_4";
+		
+		default: 
+		return "INVALID FLASH PANEL ADDRESS";
+	}
+	
+}
+
 float MLX90614_test(uint8_t addr){
 	 
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
@@ -101,7 +138,11 @@ void MPU9250_test(int16_t toFill[6]){
 	float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
 	//MPU9250_computeBias(gyroBias,accelBias);
 	enum status_code code1 = MPU9250_read_acc(toFill[0]);
+	print("MPU9250 read accelerometer");
+	print_error(code1);
 	enum status_code code2 = MPU9250_read_gyro(toFill[3]);
+	print("MPU9250 read gyroscope");
+	print_error(code2); 
 	
 }
 
@@ -122,7 +163,6 @@ float HMC5883L_test(){
 void TCA9535_test(return_struct_16 rs){
 	
 	TCA9535_init(&rs);
-	//readTCA9535Levels(rs); 
 	
 }
 
@@ -170,30 +210,19 @@ void AD7991_control_test_all(float *results_f){
 	
 }
 
-//void compare_results(void * results, void * expected, int num, int margin, char * testname){
-	//for (int i = 0; i < num; i++){
-		//if (results[i] > expected[i]){
-			//if((results[i] - expected[i]) >= margin) {
-				//print("Error in test %s number %d \n",testname,i);
-			//}
-			//} else {
-			//if((expected[i] - results[i]) >= margin) {
-				//print("Error in test %s number %d \n",testname,i);
-			//}
-		//}
-	//}
-//}
-
 void system_test(void){
+	
+	print("Initialize system tests...\n"); 
 	
 	MLX90614_init();
 	configure_i2c_master(SERCOM4); //init I2C
 	LTC1380_init(); //init multiplexer
 	
+	print("AD7991 test========================================\n"); 
 	//pass flag
 	int pass = 1; 
 
-	float AD7991_results[4], AD7991_expected[] = {3.6, 3.6, 5, 3.3}, AD7991_err_margin = 0.5; 
+	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5; 
 	
 	AD7991_control_test_all(AD7991_results);
 	
@@ -228,7 +257,7 @@ void system_test(void){
 	//temps[3] = AD590_test(4, 5);
 	
 	//compare_results((void *) temps,(void *) expected,4, 5, "AD590");
-	
+	print("MLX90614 test========================================\n"); 
 	////Flight IR Sensors
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 	//#define MLX90614_TOPPANEL_V4_2		0x6B //
@@ -238,18 +267,42 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
-	print("IR test on Panel: %x yielded approx %d degrees Celsius\n",MLX90614_ACCESSPANEL_V4_1,(int) test1);
+	print("IR test on %s yielded approx %d degrees Celsius\n",get_panel(MLX90614_ACCESSPANEL_V4_1),(int) test1);
 	//float test2 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
 	
+	
+	
+	print("MPU9250 test========================================\n");
+	print("Accelerometer readings in g, gyroscope readings in degrees per second");
 	// IMU 
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
 	uint16_t MPU9250_results[6], MPU9250_err_margin = 20; 
 	MPU9250_test(MPU9250_results);
 	uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0};
-		
+	char * a; 	
 	for (int i = 0; i < 6; i++){
 		
-		print("MPU Reading %d: %d\n",i,MPU9250_results[i]);
+		switch (i) {
+			case 0:
+			a = "acc x";
+			break;
+			case 1:
+			a = "acc y";
+			break;
+			case 2:
+			a = "acc z";
+			break;
+			case 3:
+			a = "gyro x";
+			break;
+			case 4:
+			a = "gyro y";
+			break;
+			case 5:
+			a = "gyro z";
+			break;
+		}
+		print("MPU Reading %s: %d\n",a,MPU9250_results[i]);
 		
 		if (MPU9250_results[i] > MPU9250_expected[i]){
 			if((MPU9250_results[i] - MPU9250_expected[i]) >= MPU9250_err_margin) {
@@ -263,16 +316,18 @@ void system_test(void){
 			}
 		}
 	}
-		
-	//compare_results((void *) fill,(void *) MPU_expect,6, 12, "MPU9250");
 
 	
 	//WILL THESE WORK???? 
+	print("HMC5883L test========================================\n");
 	float test4 = HMC5883L_test(); 
 	print("HMC test: %d\n",test4); 
 	
 	//ADC out of comission
-	//uint16_t test5 = TEMD6200_test(5); 
+	//uint16_t test5 = TEMD6200_test(5);
+	
+	
+	print("TCA9535 test========================================\n"); 
 	return_struct_16 rs;
 	TCA9535_test(rs);
 	print("TCA return status: ");
