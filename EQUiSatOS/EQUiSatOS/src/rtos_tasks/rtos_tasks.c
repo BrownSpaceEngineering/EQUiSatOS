@@ -11,7 +11,7 @@
 /************************************************************************/
 /* TASK CONTROL FUNCTIONS                                               */
 /************************************************************************/
-void init_task_handles(void) {
+static void init_task_handles(void) {
 	//task_handles[WATCHDOG_TASK] = &watchdog_task_handle;
 	task_handles[ANTENNA_DEPLOY_TASK] =			&antenna_deploy_task_handle;
 	task_handles[BATTERY_CHARGING_TASK] =		&battery_charging_task_handle;

@@ -6,8 +6,7 @@
  */ 
 #include "system_test.h"
 
-void print_error(enum status_code code){
-	
+static void print_error(enum status_code code){
 	switch(code){
 		
 		case STATUS_OK:
@@ -40,7 +39,7 @@ void print_error(enum status_code code){
 		
 }
 
-char * get_panel(int panel_addr){
+static void get_panel(int panel_addr, char* buffer){
 		////Flight IR Sensors
 		//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 		//#define MLX90614_TOPPANEL_V4_2		0x6B //
@@ -51,33 +50,33 @@ char * get_panel(int panel_addr){
 		//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	switch (panel_addr){
 		case 0x6C:
-		return "MLX90614_FLASHPANEL_V6_2_1";
+		buffer = "MLX90614_FLASHPANEL_V6_2_1";
 		
 		case 0x6B:
-		return "MLX90614_TOPPANEL_V4_2";
+		buffer = "MLX90614_TOPPANEL_V4_2";
 		
 		case 0x6A:
-		return "MLX90614_TOPPANEL_V4_1";
+		buffer = "MLX90614_TOPPANEL_V4_1";
 		
 		case 0x5C:
-		return "MLX90614_ACCESSPANEL_V4_1";
+		buffer = "MLX90614_ACCESSPANEL_V4_1";
 		
 		case 0x5D: 
-		return "MLX90614_SIDEPANEL_V4_2";
+		buffer = "MLX90614_SIDEPANEL_V4_2";
 		
 		case 0x5F: 
-		return "MLX90614_SIDEPANEL_V4_3";
+		buffer = "MLX90614_SIDEPANEL_V4_3";
 		
 		case 0x6D:
-		return "MLX90614_SIDEPANEL_V4_4";
+		buffer = "MLX90614_SIDEPANEL_V4_4";
 		
 		default: 
-		return "INVALID FLASH PANEL ADDRESS";
+		buffer = "INVALID FLASH PANEL ADDRESS";
 	}
 	
 }
 
-float MLX90614_test(uint8_t addr){
+static float MLX90614_test(uint8_t addr){
 	 
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 	 
@@ -99,8 +98,8 @@ float MLX90614_test(uint8_t addr){
 	 return rs.return_value; 
 }
 
-uint16_t AD590_test(int channel, int num_samples){
 
+static uint16_t AD590_test(int channel){
 	struct adc_module temp_instance; //generate object
 	// TEST BOARD ADC MUX
 	//setup_pin(true, 51);
@@ -120,36 +119,39 @@ uint16_t AD590_test(int channel, int num_samples){
 	return_struct_8 rs;
 	LTC1380_channel_select(0x48, channel, rs);
 	
-	uint16_t sum =0;
+	uint16_t temp = read_adc(temp_instance);
 	
-	for (int j=0; j<num_samples; j++){
-		adc_enable(&temp_instance);
-		sum = sum +read_adc(temp_instance);
-	}
-	
-	return sum/num_samples;	 
+	// temperature conversion from voltage -> current -> degrees celcius 
+	float current = ((float) convertToVoltage(temp))/2197 -0.0001001; //converts from V to A
+	return (current)*1000000-273;// T = 454*V in C
 }
 
 //IMU test
-void MPU9250_test(int16_t toFill[6]){
+static void MPU9250_test(uint16_t toFill[6]){
 	//initalize imu.... probably
 	MPU9250_init();
 	
-	float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
+	uint16_t gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
 	//MPU9250_computeBias(gyroBias,accelBias);
-	enum status_code code1 = MPU9250_read_acc(toFill[0]);
+	enum status_code code1 = MPU9250_read_acc(accelBias);
+	toFill[0] = accelBias[0];
+	toFill[1] = accelBias[1];
+	toFill[2] = accelBias[2];
 	print("MPU9250 read accelerometer");
 	print_error(code1);
-	enum status_code code2 = MPU9250_read_gyro(toFill[3]);
+	enum status_code code2 = MPU9250_read_gyro(gyroBias);
+	toFill[3] = gyroBias[0];
+	toFill[4] = gyroBias[1];
+	toFill[5] = gyroBias[2];
 	print("MPU9250 read gyroscope");
 	print_error(code2); 
 	
 }
 
 //Magnetometer test 
-float HMC5883L_test(){
+static float HMC5883L_test(void){
 	
-	uint8_t *buffer; 
+	uint8_t buffer[10]; 
 	int16_t xyz[3]; 
 	
 	HMC5883L_init(); 
@@ -160,20 +162,20 @@ float HMC5883L_test(){
 }
 
 //GPIO test 
-void TCA9535_test(return_struct_16 rs){
+static void TCA9535_test(return_struct_16 rs){
 	
 	TCA9535_init(&rs);
 	
 }
 
 // Photodiode test 
-uint16_t TEMD6200_test(int num_samples){
+static uint16_t TEMD6200_test(int channel, int num_samples){
 	
 	struct adc_module pd_instance; 
 	
 	configure_adc(&pd_instance,P_AI_PD_OUT);
 	return_struct_8 rs;
-	LTC1380_channel_select(0x4a, 1, rs);
+	LTC1380_channel_select(0x4a, channel, rs);
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
 			 
 	uint16_t sum =0;
@@ -190,7 +192,7 @@ uint16_t TEMD6200_test(int num_samples){
 
 
 
-void AD7991_control_test_all(float *results_f){
+static void AD7991_control_test_all(float *results_f){
 	
 	uint16_t results[4]; 
 	
@@ -221,6 +223,7 @@ void system_test(void){
 	print("AD7991 test========================================\n"); 
 	//pass flag
 	int pass = 1; 
+	char * test_str;
 
 	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5; 
 	
@@ -246,15 +249,43 @@ void system_test(void){
 	}
 	
 	const uint16_t expected_temp = 20;//Celsius
-	uint16_t temps[4], AD590_expected[] = 
-	{expected_temp, expected_temp, expected_temp, expected_temp};
+	uint16_t temps[8];
 	
 	
 	//ADC out of comission at the moment
-	//temps[0] = AD590_test(1, 1);
-	//temps[1] = AD590_test(2, 5);
-	//temps[2] = AD590_test(3, 5);
-	//temps[3] = AD590_test(4, 5);
+	print("AD590 test========================================\n");
+	for (int i = 0; i < 8; i++){
+		switch (i) {
+			case 0:
+			test_str = "LED1TEMP";
+			break;
+			case 1:
+			test_str = "LED2TEMP";
+			break;
+			case 2:
+			test_str = "LED3TEMP";
+			break;
+			case 3:
+			test_str = "LED4TEMP";
+			break;
+			case 4:
+			test_str = "L1_TEMP";
+			break;
+			case 5:
+			test_str = "L2_TEMP";
+			break;
+			case 6: 
+			test_str = "LF1_TEMP";
+			break; 
+			case 7: 
+			test_str = "LF3_TEMP";
+			break; 
+			
+		}
+				
+		temps[i] = AD590_test(i);
+		print("AD590 test %s: %d degrees Celsius\n",test_str,temps[i]); 
+	}
 	
 	//compare_results((void *) temps,(void *) expected,4, 5, "AD590");
 	print("MLX90614 test========================================\n"); 
@@ -267,8 +298,11 @@ void system_test(void){
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
-	print("IR test on %s yielded approx %d degrees Celsius\n",get_panel(MLX90614_ACCESSPANEL_V4_1),(int) test1);
-	//float test2 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
+	get_panel(MLX90614_ACCESSPANEL_V4_1,test_str);
+	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test1);
+	float test2 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
+	get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
+	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test2);
 	
 	
 	
@@ -278,31 +312,30 @@ void system_test(void){
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
 	uint16_t MPU9250_results[6], MPU9250_err_margin = 20; 
 	MPU9250_test(MPU9250_results);
-	uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0};
-	char * a; 	
+	uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0}; 	
 	for (int i = 0; i < 6; i++){
 		
 		switch (i) {
 			case 0:
-			a = "acc x";
+			test_str = "acc x";
 			break;
 			case 1:
-			a = "acc y";
+			test_str = "acc y";
 			break;
 			case 2:
-			a = "acc z";
+			test_str = "acc z";
 			break;
 			case 3:
-			a = "gyro x";
+			test_str = "gyro x";
 			break;
 			case 4:
-			a = "gyro y";
+			test_str = "acc y";
 			break;
 			case 5:
-			a = "gyro z";
+			test_str = "acc z";
 			break;
 		}
-		print("MPU Reading %s: %d\n",a,MPU9250_results[i]);
+		print("MPU Reading %s: %d\n",test_str,MPU9250_results[i]);
 		
 		if (MPU9250_results[i] > MPU9250_expected[i]){
 			if((MPU9250_results[i] - MPU9250_expected[i]) >= MPU9250_err_margin) {
@@ -323,8 +356,36 @@ void system_test(void){
 	float test4 = HMC5883L_test(); 
 	print("HMC test: %d\n",test4); 
 	
-	//ADC out of comission
-	//uint16_t test5 = TEMD6200_test(5);
+	//ADC out of commission
+	print("TEMD6200 test========================================\n");
+	uint16_t pd_tests[6];
+	for (int i = 0; i < 6; i++){
+		
+		switch (i) {
+			case 0:
+			test_str = "PD_FLASH";
+			break;
+			case 1:
+			test_str = "PD_SIDE1";
+			break;
+			case 2:
+			test_str = "PD_SIDE2";
+			break;
+			case 3:
+			test_str = "PD_ACCESS";
+			break;
+			case 4:
+			test_str = "PD_TOP1";
+			break;
+			case 5:
+			test_str = "PD_TOP2";
+			break;
+		}
+		
+		pd_tests[i] = TEMD6200_test(i,5);
+		print("TEMD6200 test %s: %d \n",test_str, pd_tests[i]);
+	}
+	uint16_t test5 = TEMD6200_test(0,5);
 	
 	
 	print("TCA9535 test========================================\n"); 

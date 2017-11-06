@@ -58,8 +58,7 @@ static uint8_t ErasureLocs[256];
 static uint8_t NErasures;
 
 /* From  Cain, Clark, "Error-Correction Coding For Digital Communications", pp. 216. */
-void
-Modified_Berlekamp_Massey (void)
+static void Modified_Berlekamp_Massey (void)
 {	
   int n, L, L2, k, d, i;
   int psi[MAXDEG], psi2[MAXDEG], D[MAXDEG];
@@ -167,8 +166,7 @@ init_gamma (int gamma[])
 	
 	
 	
-void 
-compute_next_omega (int d, int A[], int dst[], int src[])
+static void compute_next_omega (int d, int A[], int dst[], int src[])
 {
   uint8_t i;
   for ( i = 0; i < MAXDEG;  i++) {
@@ -178,8 +176,7 @@ compute_next_omega (int d, int A[], int dst[], int src[])
 	
 
 
-int
-compute_discrepancy (int lambda[], int S[], uint8_t L, uint8_t n)
+static int compute_discrepancy (int lambda[], int S[], uint8_t L, uint8_t n)
 {
   uint8_t i, sum=0;
 	
@@ -238,8 +235,7 @@ static void mul_z_poly (int src[])
  */
 
 
-void 
-Find_Roots (void)
+static void Find_Roots (void)
 {
   uint16_t sum, r, k;	
   NErrors = 0;

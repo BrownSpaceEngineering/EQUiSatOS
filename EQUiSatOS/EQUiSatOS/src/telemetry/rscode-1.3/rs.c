@@ -52,8 +52,7 @@ initialize_ecc ()
     compute_genpoly(NPAR, genPoly);
 }
 
-void
-zero_fill_from (unsigned char buf[], int from, int to)
+static void zero_fill_from (unsigned char buf[], int from, int to)
 {
   uint8_t i;
   for (i = from; i < to; i++) buf[i] = 0;
@@ -82,8 +81,7 @@ print_syndrome (void)
 }*/
 
 /* Append the parity bytes onto the end of the message */
-void
-build_codeword (unsigned char msg[], int nbytes, unsigned char dst[])
+static void build_codeword (unsigned char msg[], int nbytes, unsigned char dst[])
 {
   uint8_t i;
 	

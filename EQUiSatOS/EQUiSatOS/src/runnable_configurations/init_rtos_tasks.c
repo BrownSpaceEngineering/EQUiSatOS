@@ -14,7 +14,7 @@ void run_rtos()
 	/************************************************************************/
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
-	
+
 	// watchdog has some extra initialization
 	watchdog_init();
 
@@ -45,7 +45,7 @@ void run_rtos()
 		TASK_BATTERY_CHARGING_STACK_SIZE,
 		NULL,
 		TASK_BATTERY_CHARGING_PRIORITY,
-		&battery_charging_task_stack,
+		battery_charging_task_stack,
 		&battery_charging_task_buffer);
 
 	// TODO: Should we even store this handle?
@@ -54,7 +54,7 @@ void run_rtos()
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
 		NULL,
 		TASK_ANTENNA_DEPLOY_PRIORITY,
-		&antenna_deploy_task_stack,
+		antenna_deploy_task_stack,
 		&antenna_deploy_task_buffer);
 
 	 // TODO: Should we even store this handle?
@@ -63,7 +63,7 @@ void run_rtos()
 		TASK_WATCHDOG_STACK_SIZE,
 		NULL,
 		TASK_WATCHDOG_STACK_PRIORITY,
-		&watchdog_task_stack,
+		watchdog_task_stack,
 		&watchdog_task_buffer);
 
 	flash_activate_task_handle = xTaskCreateStatic(flash_activate_task,
@@ -71,7 +71,7 @@ void run_rtos()
 		TASK_FLASH_ACTIVATE_STACK_SIZE,
 		NULL,
 		TASK_FLASH_ACTIVATE_PRIORITY,
-		&flash_activate_task_stack,
+		flash_activate_task_stack,
 		&flash_activate_task_buffer);
 
 	transmit_task_handle = xTaskCreateStatic(transmit_task,
@@ -79,7 +79,7 @@ void run_rtos()
 		TASK_TRANSMIT_STACK_SIZE,
 		NULL,
 		TASK_TRANSMIT_PRIORITY,
-		&transmit_task_stack,
+		transmit_task_stack,
 		&transmit_task_buffer);
 
 	/* Data tasks */
@@ -89,7 +89,7 @@ void run_rtos()
 		TASK_IDLE_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_IDLE_DATA_RD_PRIORITY,
-		&idle_data_task_stack,
+		idle_data_task_stack,
 		&idle_data_task_buffer);
 
 	flash_data_task_handle = xTaskCreateStatic(flash_data_task,
@@ -97,7 +97,7 @@ void run_rtos()
 		TASK_FLASH_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_FLASH_DATA_RD_PRIORITY,
-		&flash_data_task_stack,
+		flash_data_task_stack,
 		&flash_data_task_buffer);
 
 	attitude_data_task_handle = xTaskCreateStatic(attitude_data_task,
@@ -105,7 +105,7 @@ void run_rtos()
 		TASK_ATTITUDE_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_ATTITUDE_DATA_DATA_RD_PRIORITY,
-		&attitude_data_task_stack,
+		attitude_data_task_stack,
 		&attitude_data_task_buffer);
 
 // 		xTaskCreate(task_suicide_test,
@@ -128,11 +128,11 @@ void run_rtos()
   		NULL,
   		TASK_SENS_RD_IDLE_PRIORITY,
   		NULL);*/
-	  
+
 	// NOTE: We can't actually set task state before RTOS is started below,
 	// and tasks start as active (resumed), so we have the task themselves set
 	// their initial state (if you look at task you'll see most
-	// will suspend themselves on creation.)	  
+	// will suspend themselves on creation.)
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
@@ -141,11 +141,11 @@ void run_rtos()
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
 void init_task_state(task_type_t task) {
 	// NOTE: The last "true" argument signifies that the suspend functions should
-	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles) 
-	// when RTOS is first starting 
+	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles)
+	// when RTOS is first starting
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
-			//task_suspend(BATTERY_CHARGING_TASK, true); 
+			//task_suspend(BATTERY_CHARGING_TASK, true);
 			task_resume_if_suspended(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
@@ -160,7 +160,7 @@ void init_task_state(task_type_t task) {
 			task_suspend(FLASH_ACTIVATE_TASK, true); // REAL ONE
 			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 			return;
-		case FLASH_DATA_TASK: 
+		case FLASH_DATA_TASK:
 			// ALWAYS suspend because is activated by FLASH_ACTIVATE_TASK
 			task_suspend(FLASH_DATA_TASK, true); // REAL ONE
 			return;
@@ -184,13 +184,13 @@ void init_task_state(task_type_t task) {
 /**
  * The "idle" hook for FreeRTOS - this is is code run in the idle task of RTOS, which
  * runs whenever something else is NOT. It should NOT call hanging RTOS functions
- * or take up much computational power in general. 
+ * or take up much computational power in general.
  * See http://www.freertos.org/RTOS-idle-task.html for more details.
  */
 void vApplicationIdleHook(void) {
-	
+
 	// TODO: TESTING
-	
+
 	static int idle_started = false;
 	// TODO: Doesn't appear to go well when we set_state_idle
 	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
@@ -209,19 +209,19 @@ void set_state_hello_world()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false); 
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
 	task_suspend(IDLE_DATA_TASK, false);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_suspend(TRANSMIT_TASK, false);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
-		
+
 	xTaskResumeAll();
 }
 
@@ -229,7 +229,7 @@ void set_state_idle()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = IDLE;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
@@ -242,7 +242,7 @@ void set_state_idle()
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
-		
+
 	xTaskResumeAll();
 }
 
@@ -250,7 +250,7 @@ void set_state_low_power()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = LOW_POWER;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
@@ -261,6 +261,6 @@ void set_state_low_power()
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_suspend(ATTITUDE_DATA_TASK, false);
 	// TODO: Others?
-	
+
 	xTaskResumeAll();
 }

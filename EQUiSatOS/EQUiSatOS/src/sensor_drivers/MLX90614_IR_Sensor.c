@@ -9,7 +9,7 @@ void MLX90614_init() {
 	Powers on or off the ir sensor.  True is on, false is off.
 */
 void irPower(bool trueIsOn){
-	set_output(trueIsOn, P_IR_PWR_CMD);	
+	set_output(trueIsOn, P_IR_PWR_CMD);
 };
 
 /*
@@ -34,34 +34,34 @@ void MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, return_struct_16
 }
 
 void MLX90614_read_all_obj(MLXDeviceAddr addr, return_struct_16 rs){
-	uint16_t val[2]; 
+	uint16_t val[2];
 	uint8_t read_buffer[2] = {
 		0x0, 0x0
 	};
-	
+
 	MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, rs);
 	enum status_code read_obj1 =  rs.return_status;
-	
+
 	if ((read_obj1 & 0x0F) != 0){
-		rs.return_status = read_obj1; 
-		return; 
+		rs.return_status = read_obj1;
+		return;
 	}
-	
+
 	val[0] = read_buffer[0] | (((uint16_t)read_buffer[1]) << 8);
-	
+
 	MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, rs);
 	enum status_code read_obj2 =  rs.return_status;
-	
+
 	if ((read_obj2 & 0x0F) != 0) {
 		rs.return_status = read_obj2;
 		return;
 	}
-	
+
 	val[1] = read_buffer[0] | (((uint16_t)read_buffer[1]) << 8);
-	
-	rs.return_status = read_obj2; 
+
+	rs.return_status = read_obj2;
 	rs.return_value = (val[0] + val[1])/2;
-		
+
 }
 
 // converts a data value from the sensor corresponding to a temperature memory address to a Celsius temperature
@@ -84,3 +84,11 @@ void MLX90614_getAddress(MLXDeviceAddr addr, return_struct_16 rs) {
 	MLX90614_read2ByteValue(addr, MLX90614_SMBUS, rs);
 }
 
+// set the sensor to SLEEP mode (BROKEN)
+enum status_code MLX90614_setSleepMode(MLXDeviceAddr addr) {
+	// enter SLEEP mode command = 1111_1111 (0xFF)
+	// send PEC (Packet Error Code) (0xF3)
+	uint8_t dataByte[2] = {(uint8_t)0xFF, (uint8_t)0xF3};
+	// write to address with stop condition
+	return writeDataToAddress(dataByte, 2, addr, true);
+}

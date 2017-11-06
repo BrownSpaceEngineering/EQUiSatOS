@@ -106,15 +106,15 @@ void read_bat_temp_batch(bat_temp_batch batch) {
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
-	MPU9250_read_acc(&accel_batch);
+	MPU9250_read_acc((uint16_t*) accel_batch);
 }
 
 void read_gyro_batch(gyro_batch gyr_batch) {
-	MPU9250_read_gyro(&gyr_batch);
+	MPU9250_read_gyro((uint16_t*) gyr_batch);
 }
 
 void read_magnetometer_batch(magnetometer_batch batch) {
-	MPU9250_read_mag(&batch);
+	MPU9250_read_mag((uint16_t*) batch);
 }
 
 void read_led_current_batch(led_current_batch batch) {

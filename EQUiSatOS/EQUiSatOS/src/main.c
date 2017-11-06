@@ -39,9 +39,9 @@ void The_Fall_Of_Ryan(void) {
 	adc_init(&adc_instance, 0x42004000UL, &config_adc);
 	adc_enable(&adc_instance);
 
-	if (!&adc_instance || !adc_instance.hw) {
+	if (!adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
-		return -1;
+		return;
 	}
 
 	uint16_t result;
@@ -49,7 +49,7 @@ void The_Fall_Of_Ryan(void) {
 
 	adc_start_conversion(&adc_instance);
 
-	uint8_t scale = 218;//3300/1.48/1024.0; //3.3V/1.48 reference, 2^10 range
+	//uint8_t scale = 218;//3300/1.48/1024.0; //3.3V/1.48 reference, 2^10 range
 
 	do {
 		// Wait for conversion to be done and read out result
@@ -68,10 +68,11 @@ void run_tests(void) {
 	//assert_rtos_constants();
 	//assert_transmission_constants();
 
+	system_test(); 
 	/************************************************************************/
 	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
 	/************************************************************************/
-	The_Fall_Of_Ryan();
+	//The_Fall_Of_Ryan();
 
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
 	init_tc();
@@ -98,6 +99,10 @@ void global_init(void) {
 	set_output(false, P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
+	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
+	set_output(false, P_L1_RUN_CHG);
+	setup_pin(true,P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);
 
 	//init_rtc();
 	USART_init();

@@ -58,7 +58,7 @@ void* equistack_Get(equistack* S, int16_t n)
 		int get_index = (S->top_index - n) % S->max_size;
 		if (get_index < 0) 
 		{
-			get_index = get_index += S->max_size;
+			get_index += S->max_size;
 		}
 		 
 		xSemaphoreGive(S->mutex);
@@ -129,7 +129,7 @@ void clear_existing_data(void* ptr, size_t slot_size)
 {
 	// convert the pointer to a char pointer to iterate over bytes
 	char* byte_ptr = (char*) ptr;
-	for (int16_t i = 0; i < slot_size; i++)
+	for (uint16_t i = 0; i < slot_size; i++)
 	{
 		// set memory value to zero
 		*(byte_ptr + i) = 0;

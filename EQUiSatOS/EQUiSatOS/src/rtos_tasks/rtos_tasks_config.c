@@ -10,7 +10,7 @@
 #include "rtos_tasks_config.h"
 
 /* Max of array values, of which there must be at least one */
-int arrMax(int* arr, uint8_t len) {
+static int arrMax(int* arr, uint8_t len) {
 	int maxVal = arr[0];
 	for (uint8_t i = 1; i < len; i++) {
 		if (arr[i] > maxVal) {
