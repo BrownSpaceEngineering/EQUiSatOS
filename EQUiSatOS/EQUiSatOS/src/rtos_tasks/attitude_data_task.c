@@ -32,16 +32,20 @@ void attitude_data_task(void *pvParameters)
 		// update current_struct if necessary
 		if (check_if_suspended_and_update(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
+			// FOR TESTING
+			idle_data_t* prev_cur_struct = current_struct;
+			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
 			current_struct->timestamp = get_current_timestamp();
 			
-			// log state read
-			msg_data_type_t last_reading = ATTITUDE_DATA; // need a stack pointer to memcpy from
-			equistack_Push(&last_reading_type_equistack, &last_reading);
-			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+			
+// 			// TESTING
+// 			assert(prev_cur_struct != current_struct);
+// 			assert(data_array_tails[0] == 0 && data_array_tails[1] == 0 && data_array_tails[2] == 0 && data_array_tails[3] == 0 && data_array_tails[4] == 0 && data_array_tails[NUM_DATA_TYPES-1] == 0);
+// 			assert((idle_data_t*) equistack_Get(&idle_readings_equistack, 0) == prev_cur_struct);
 		}
 		
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
@@ -69,6 +73,19 @@ void attitude_data_task(void *pvParameters)
 			read_magnetometer_batch(current_struct->magnetometer_data[data_array_tails[MAGNETOMETER_DATA]]);
 			increment_data_type(MAGNETOMETER_DATA, data_array_tails, loops_since_last_log);
 		}
+		
+		/*
+		// FOR TESTING
+		uint8_t ir_reads_since = loops_since_last_log[0];
+		uint8_t last_sens_reads_since = loops_since_last_log[NUM_DATA_TYPES-1];
+			
+		// increment reads in loops_since_last_log
+		increment_all(data_array_tails, NUM_DATA_TYPES);
+			
+		// TESTING
+		assert(loops_since_last_log[0] == ir_reads_since + 1);
+		assert(loops_since_last_log[NUM_DATA_TYPES-1] == last_sens_reads_since + 1);
+		*/
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

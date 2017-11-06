@@ -38,13 +38,6 @@ void watchdog_task(void *pvParameters) {
 bool watchdog_as_function(void) {
 	xSemaphoreTake(mutex, (TickType_t) WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 	
-	eTaskState current_data_state = eTaskGetState(task_handles[CURRENT_DATA_TASK]);
-	eTaskState flash_state = eTaskGetState(*task_handles[FLASH_ACTIVATE_TASK]);
-	eTaskState transmit_state = eTaskGetState(*task_handles[TRANSMIT_TASK]);
-	trace_print("State current data task: %d", current_data_state);
-	trace_print("State flash task: %d", flash_state);
-	trace_print("State transmit task: %d", transmit_state);
-		
 	// make sure the battery task is definitely set to run
 	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
 	if (battery_task_state == eDeleted || battery_task_state == eSuspended) {

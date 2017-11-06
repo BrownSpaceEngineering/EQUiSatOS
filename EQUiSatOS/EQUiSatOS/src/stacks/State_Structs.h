@@ -12,7 +12,33 @@
 #include "../rtos_tasks/rtos_tasks_config.h"
 #include <global.h>
 
+// for packet header
+typedef struct current_data_t
+{
+	lion_volts_batch lion_volts_data;
+	lion_current_batch lion_current_data;
+	bat_charge_volts_batch bat_charge_volts_data;
+	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
+	digital_out_batch digital_out_data;
+	
+} current_data_t;
+
+// for idle data package
 typedef struct idle_data_t
+{
+	uint32_t timestamp;
+
+	bat_temp_batch bat_temp_data;
+	radio_volts_batch radio_volts_data;
+	radio_temp_batch radio_temp_data;
+	imu_temp_batch imu_temp_data;
+	ir_temps_batch ir_temps_data;
+	rail_3v_batch rail_3v_data;
+	rail_5v_batch rail_5v_data;
+	
+} idle_data_t;
+
+typedef struct attitude_data_t
 {
 	uint32_t timestamp;
 	/* lists sizes are proportional to the max LOOPS_PER_LOG
@@ -22,28 +48,6 @@ typedef struct idle_data_t
 	They are also inversely proportional to the LOOPS_PER_LOG of each 
 	corresponding sensor because if MORE reads are required for each log,
 	the data is of LOWER frequency and thus needs a SMALLER array. */
-	
-	// for packet header
-	lion_volts_batch lion_volts_data 							[idle_LION_VOLTS_DATA_ARR_LEN];
-	lion_current_batch lion_current_data						[idle_LION_CURRENT_DATA_ARR_LEN];
-	bat_charge_volts_batch bat_charge_volts_data 				[idle_BAT_CHARGE_VOLTS_DATA_ARR_LEN];
-	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data 			[idle_BAT_CHARGE_DIG_SIGS_DATA_ARR_LEN];
-	digital_out_batch digital_out_data 							[idle_DIGITAL_OUT_DATA_ARR_LEN];
-	// for idle data package
-	bat_temp_batch bat_temp_data 								[idle_BAT_TEMP_DATA_ARR_LEN];
-	radio_volts_batch radio_volts_data 							[idle_RADIO_VOLTS_DATA_ARR_LEN];
-	radio_temp_batch radio_temp_data 							[idle_RADIO_TEMP_DATA_ARR_LEN];
-	imu_temp_batch imu_temp_data								[idle_IMU_TEMP_DATA_ARR_LEN];
-	ir_temps_batch ir_temps_data 								[idle_IR_TEMPS_DATA_ARR_LEN];
-	rail_3v_batch rail_3v_data									[idle_RAIL_3V_DATA_ARR_LEN];
-	rail_5v_batch rail_5v_data									[idle_RAIL_5V_DATA_ARR_LEN];
-	
-} idle_data_t;
-
-typedef struct attitude_data_t
-{
-	uint32_t timestamp;
-	/* ibid */
 	ir_batch ir_data								[attitude_IR_DATA_ARR_LEN];
 	pdiode_batch diode_data							[attitude_DIODE_DATA_ARR_LEN];
 	accelerometer_batch accelerometer_data			[attitude_ACCELEROMETER_DATA_ARR_LEN];

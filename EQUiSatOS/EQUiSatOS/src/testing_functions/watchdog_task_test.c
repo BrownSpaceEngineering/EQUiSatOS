@@ -36,9 +36,9 @@ void watch_test(void) {
 	report_task_running(FLASH_ACTIVATE_TASK);
 	check_out_task(FLASH_ACTIVATE_TASK);
 	
-	check_in_task(CURRENT_DATA_TASK);
-	report_task_running(CURRENT_DATA_TASK);
-	check_out_task(CURRENT_DATA_TASK);
+	check_in_task(IDLE_DATA_TASK);
+	report_task_running(IDLE_DATA_TASK);
+	check_out_task(IDLE_DATA_TASK);
 	
 	check_in_task(ATTITUDE_DATA_TASK);
 	report_task_running(ATTITUDE_DATA_TASK);
@@ -62,9 +62,9 @@ void watch_test(void) {
 	report_task_running(FLASH_ACTIVATE_TASK);
 	check_out_task(FLASH_ACTIVATE_TASK);
 	
-	check_in_task(CURRENT_DATA_TASK);
-	report_task_running(CURRENT_DATA_TASK);
-	check_out_task(CURRENT_DATA_TASK);
+	check_in_task(IDLE_DATA_TASK);
+	report_task_running(IDLE_DATA_TASK);
+	check_out_task(IDLE_DATA_TASK);
 	
 	check_in_task(ATTITUDE_DATA_TASK);
 	assert(!watchdog_as_function());

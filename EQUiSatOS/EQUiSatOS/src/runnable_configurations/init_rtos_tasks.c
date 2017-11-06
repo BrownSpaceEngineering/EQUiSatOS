@@ -14,20 +14,17 @@ void run_rtos()
 	/************************************************************************/
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
-	
+
 	// watchdog has some extra initialization
 	watchdog_init();
 
 	// Initialize EQUiStack mutexes
-	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
 	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
 	_flash_cmp_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_cmp_equistack_mutex_d);
 
 	// Initialize EQUiStacks
-	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr,
-		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, &_last_reading_type_equistack_mutex);
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
 		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
@@ -87,13 +84,13 @@ void run_rtos()
 
 	/* Data tasks */
 
-	current_data_task_handle = xTaskCreateStatic(current_data_task,
+	idle_data_task_handle = xTaskCreateStatic(idle_data_task,
 		"current data reader task",
-		TASK_CURRENT_DATA_RD_STACK_SIZE,
+		TASK_IDLE_DATA_RD_STACK_SIZE,
 		NULL,
-		TASK_CURRENT_DATA_RD_PRIORITY,
-		current_data_task_stack,
-		&current_data_task_buffer);
+		TASK_IDLE_DATA_RD_PRIORITY,
+		idle_data_task_stack,
+		&idle_data_task_buffer);
 
 	flash_data_task_handle = xTaskCreateStatic(flash_data_task,
 		"flash data reader task",
@@ -131,11 +128,11 @@ void run_rtos()
   		NULL,
   		TASK_SENS_RD_IDLE_PRIORITY,
   		NULL);*/
-	  
+
 	// NOTE: We can't actually set task state before RTOS is started below,
 	// and tasks start as active (resumed), so we have the task themselves set
 	// their initial state (if you look at task you'll see most
-	// will suspend themselves on creation.)	  
+	// will suspend themselves on creation.)
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
@@ -144,26 +141,26 @@ void run_rtos()
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
 void init_task_state(task_type_t task) {
 	// NOTE: The last "true" argument signifies that the suspend functions should
-	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles) 
-	// when RTOS is first starting 
+	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles)
+	// when RTOS is first starting
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
-			//task_suspend(BATTERY_CHARGING_TASK, true); 
+			//task_suspend(BATTERY_CHARGING_TASK, true);
 			task_resume_if_suspended(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
 			task_suspend(ANTENNA_DEPLOY_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
 			return;
-		case CURRENT_DATA_TASK:
-			task_suspend(CURRENT_DATA_TASK, true); // REAL ONE
-			//task_resume_if_suspended(CURRENT_DATA_TASK);
+		case IDLE_DATA_TASK:
+			task_suspend(IDLE_DATA_TASK, true); // REAL ONE
+			//task_resume_if_suspended(IDLE_DATA_TASK);
 			return;
 		case FLASH_ACTIVATE_TASK:
 			task_suspend(FLASH_ACTIVATE_TASK, true); // REAL ONE
 			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 			return;
-		case FLASH_DATA_TASK: 
+		case FLASH_DATA_TASK:
 			// ALWAYS suspend because is activated by FLASH_ACTIVATE_TASK
 			task_suspend(FLASH_DATA_TASK, true); // REAL ONE
 			return;
@@ -174,9 +171,6 @@ void init_task_state(task_type_t task) {
 		case ATTITUDE_DATA_TASK:
 			task_suspend(ATTITUDE_DATA_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
-			return;
-		case TRANSMIT_DATA_TASK:
-			//TODO?
 			return;
 		case NUM_TASKS:
 			//TODO?
@@ -190,13 +184,13 @@ void init_task_state(task_type_t task) {
 /**
  * The "idle" hook for FreeRTOS - this is is code run in the idle task of RTOS, which
  * runs whenever something else is NOT. It should NOT call hanging RTOS functions
- * or take up much computational power in general. 
+ * or take up much computational power in general.
  * See http://www.freertos.org/RTOS-idle-task.html for more details.
  */
 void vApplicationIdleHook(void) {
-	
+
 	// TODO: TESTING
-	
+
 	static int idle_started = false;
 	// TODO: Doesn't appear to go well when we set_state_idle
 	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
@@ -215,19 +209,19 @@ void set_state_hello_world()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = HELLO_WORLD;
 
 	// run only the attitude data task
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false); 
-	task_suspend(CURRENT_DATA_TASK, false);
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_suspend(IDLE_DATA_TASK, false);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_suspend(TRANSMIT_TASK, false);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
-		
+
 	xTaskResumeAll();
 }
 
@@ -235,12 +229,12 @@ void set_state_idle()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = IDLE;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_resume_if_suspended(IDLE_DATA_TASK);
 	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 	// we'll try to resume the flash data task, in case we went to LOW_POWER
 	// in the middle of the flash (this will allow it to suspend itself)
@@ -248,7 +242,7 @@ void set_state_idle()
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_resume_if_suspended(ATTITUDE_DATA_TASK);
 		// TODO: Others?
-		
+
 	xTaskResumeAll();
 }
 
@@ -256,17 +250,17 @@ void set_state_low_power()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
-	
+
 	CurrentState = LOW_POWER;
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_resume_if_suspended(IDLE_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_resume_if_suspended(TRANSMIT_TASK);
 	task_suspend(ATTITUDE_DATA_TASK, false);
 	// TODO: Others?
-	
+
 	xTaskResumeAll();
 }

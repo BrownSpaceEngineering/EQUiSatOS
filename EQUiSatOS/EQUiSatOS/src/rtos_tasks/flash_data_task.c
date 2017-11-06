@@ -29,25 +29,13 @@ void flash_data_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_DATA_TASK);
 		
-		// update current_struct if necessary
-		if (check_if_suspended_and_update(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
-		{
-			// validate previous stored value in stack, getting back the next staged address we can start adding to
-			current_struct = (flash_data_t*) equistack_Stage(&attitude_readings_equistack);
-			current_struct->timestamp = get_current_timestamp();
-			
-			// log state read
-			msg_data_type_t last_reading = FLASH_DATA; // need a stack pointer to memcpy from
-			equistack_Push(&last_reading_type_equistack, &last_reading);
-			
-			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
-			set_all(data_array_tails, NUM_DATA_TYPES, 0);
-		}
+		// clear any previous suspend flags
+		check_if_suspended_and_update(FLASH_DATA_TASK);
 		
-		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
-		
-		
-		// 		// see if each sensor is ready to add a batch, and do so if we need to
+		// set start timestamp
+		current_struct->timestamp = get_current_timestamp();
+					
+		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {
 			read_led_temps_batch(current_struct->led_temps_data[data_array_tails[LED_TEMPS_DATA]]);
 			increment_data_type(LED_TEMPS_DATA, data_array_tails, loops_since_last_log);
@@ -64,8 +52,19 @@ void flash_data_task(void *pvParameters)
 			read_led_current_batch(current_struct->led_current_data[data_array_tails[LED_CURRENT_DATA]]);
 			increment_data_type(LED_CURRENT_DATA, data_array_tails, loops_since_last_log);
 		}
+				
+		// update current_struct if necessary
+		if (check_if_suspended_and_update(FLASH_DATA_TASK) || data_array_tails[LED_TEMPS_DATA] >= flash_LED_TEMPS_DATA_ARR_LEN)
+		{
+			// validate previous stored value in stack, getting back the next staged address we can start adding to
+			current_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
+					
+			// reset data array tails so we're writing at the start
+			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+			set_all(loops_since_last_log, NUM_DATA_TYPES, 0);
+		}
 		
-		// TODO: Do averages too!
+		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

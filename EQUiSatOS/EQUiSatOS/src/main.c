@@ -87,9 +87,9 @@ void run_tests(void) {
 /* DO NOT MODIFY BELOW HERE BESIDES COMMENTING - sid will come for you  */
 /************************************************************************/
 void global_init(void) {
-	//init_tracelyzer();	
+	init_tracelyzer();	
 	
-	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
+	init_errors();
 	
 	// Initialize the SAM system
 	system_init();
@@ -99,6 +99,10 @@ void global_init(void) {
 	set_output(false, P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
+	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
+	set_output(false, P_L1_RUN_CHG);
+	setup_pin(true,P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);
 
 	//init_rtc();
 	USART_init();
@@ -108,5 +112,5 @@ int main(void)
 {
 	global_init();
 	run_tests();
-	//run_rtos();	
+	run_rtos();	
 }
