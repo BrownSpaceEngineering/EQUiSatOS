@@ -86,9 +86,9 @@ void run_tests(void) {
 /* DO NOT MODIFY BELOW HERE BESIDES COMMENTING - sid will come for you  */
 /************************************************************************/
 void global_init(void) {
-	//init_tracelyzer();	
+	init_tracelyzer();	
 	
-	//init_errors(); // init error stack? (TODO: do this here or start of RTOS?)
+	init_errors();
 	
 	// Initialize the SAM system
 	system_init();
@@ -107,5 +107,5 @@ int main(void)
 {
 	global_init();
 	run_tests();
-	//run_rtos();	
+	run_rtos();	
 }

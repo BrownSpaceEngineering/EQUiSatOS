@@ -8,21 +8,21 @@
 
 void assert_transmission_constants(void) {
 	// check things will fit in buffer (one space for \0)
-	int top_length = MSG_PREAMBLE_LENGTH + MSG_HEADER_LENGTH + ERROR_PACKET_SIZE * ERROR_PACKETS;
+	int top_length = MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + ERROR_PACKET_SIZE * ERROR_PACKETS;
 	assert(top_length + ATTITUDE_DATA_PACKET_SIZE * ATTITUDE_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
 	assert(top_length + FLASH_DATA_PACKET_SIZE * FLASH_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
 	assert(top_length + FLASH_CMP_PACKET_SIZE * FLASH_DATA_PACKETS < MSG_BUFFER_SIZE - 1);
 	
 	// check that starts line up with data sizes
-	assert(MSG_PREAMBLE_LENGTH == START_HEADER);
-	assert(MSG_PREAMBLE_LENGTH + MSG_HEADER_LENGTH == START_ERRORS);
-	assert(MSG_PREAMBLE_LENGTH + MSG_HEADER_LENGTH + ERROR_PACKET_SIZE * ERROR_PACKETS == START_DATA);
+	assert(MSG_PREAMBLE_LENGTH == START_CUR_DATA);
+	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN == START_ERRORS);
+	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + ERROR_PACKET_SIZE * ERROR_PACKETS == START_DATA);
 }
 
 /**
  * Writes the given data to the preamble of the message buffer.
  */
-void write_preamble(uint8_t* buffer, uint32_t timestamp, uint32_t states, uint8_t data_len) {
+void write_preamble(uint8_t* buffer, uint32_t timestamp, uint8_t states, uint8_t data_len) {
 	uint8_t index = START_PREAMBLE;
 	
 	// write callsign
@@ -32,31 +32,34 @@ void write_preamble(uint8_t* buffer, uint32_t timestamp, uint32_t states, uint8_
 	buffer[index++] = 'D';
 	
 	write_bytes_and_shift(buffer,	timestamp,		sizeof(timestamp),	&index); // 4 byte timestamp
-	write_bytes_and_shift(buffer,	states,			sizeof(states),		&index); // 4 byte state string
+	write_bytes_and_shift(buffer,	states,			sizeof(states),		&index); // 1 byte state string
 	write_bytes_and_shift(buffer,	ERROR_PACKETS,	1,					&index); // 1 byte error packet #
 	write_bytes_and_shift(buffer,	data_len,		sizeof(data_len),	&index); // 1 byte data packet #
 	
-	assert(index == START_HEADER);
+	assert(index == START_CUR_DATA);
 	
 	// just in case we miss a \0... it should normally be written at the end of data
 	buffer[MSG_BUFFER_SIZE - 1] = '\0'; 
 }
 
-void write_header(uint8_t* buffer, idle_data_t *idle_data) {
-	uint8_t index = START_HEADER;
+/* read actual sensors to write to message buffer - saves memory */
+void write_current_data(uint8_t* buffer) {
+	uint8_t index = START_CUR_DATA;
 	
-	if (idle_data != NULL) {
-		// TODO: drop two LSB (see write_bytes_and_shift_truncating)
-		write_bytes_and_shift(buffer, idle_data->lion_volts_data,			sizeof(lion_volts_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->lion_current_data,			sizeof(lion_current_batch),			&index);
-		write_bytes_and_shift(buffer, idle_data->bat_charge_volts_data,		sizeof(bat_charge_volts_batch),		&index);
-		write_bytes_and_shift(buffer, idle_data->bat_charge_dig_sigs_data,	sizeof(bat_charge_dig_sigs_batch),	&index);
-		write_bytes_and_shift(buffer, idle_data->digital_out_data,			sizeof(digital_out_batch),			&index);
-	} else {
-		// write all 0s to buffer for idle data
-		write_value_and_shift(buffer, 0, MSG_HEADER_LENGTH, &index);
-		log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IDLE_DATA);
-	}
+	read_lion_volts_batch(index);
+	index += sizeof(lion_volts_batch);
+		
+	read_lion_current_batch(index);
+	index += sizeof(lion_current_batch);
+		
+	read_bat_charge_volts_batch(index);
+	index += sizeof(bat_charge_volts_batch);
+		
+	read_bat_charge_dig_sigs_batch(index);
+	index += sizeof(bat_charge_dig_sigs_batch);
+	
+	read_digital_out_batch(index);
+	index += sizeof(digital_out_batch);
 		
 	assert(index == START_ERRORS);
 }
@@ -179,6 +182,12 @@ void write_flash_cmp(uint8_t* buffer, equistack* flash_cmp_stack) {
 	
 	assert(index == START_DATA + FLASH_CMP_PACKET_SIZE * FLASH_CMP_PACKETS);
 	// TODO: Write padding
+}
+
+/* writes error correction bytes. Must be called after full message before it was written, obviously. */
+void write_parity(uint8_t* buffer) {
+	// encode using Reed-Solomon (START_PARITY is the number of bytes in buffer before parity section)
+	encode_data(buffer + CALLSIGN_SIZE, START_PARITY - CALLSIGN_SIZE, buffer + CALLSIGN_SIZE);
 }
 
 /* Writes num_bytes from input to data, and shifts the value at index up by num_bytes */

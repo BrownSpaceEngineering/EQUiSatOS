@@ -132,8 +132,9 @@ void read_led_current_batch(led_current_batch batch) {
 	batch[3] = read_adc(adc_instance4);
 }
 
-void read_radio_temp_batch(radio_temp_batch batch) {
+void read_radio_temp_batch(radio_temp_batch* batch) {
 	// TODO: Tyler will implement later
+	// eventually: XDL_get_temperature(batch);
 }
 	
 void read_radio_volts_batch(radio_volts_batch batch) {
@@ -158,7 +159,7 @@ void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 	batch[1] = results[3];
 }
 
-void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
+void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	// L1_RUN_CHG to LF_B2_OUTEN
 	uint16_t accum = 0;
 	setup_pin(false, P_L1_FAULTN);
@@ -184,9 +185,21 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	setup_pin(false, P_SPF_ST);
 	accum = (accum << 1) & get_input(P_SPF_ST);
 	
-	batch = accum;
+	*batch = accum;
 }
 	
-void read_digital_out_batch(digital_out_batch batch) {
+void read_digital_out_batch(digital_out_batch* batch) {
 	// yet to be defined, mapped to certain events
+}
+
+void read_imu_temp_batch(imu_temp_batch* batch) {
+	
+}
+
+void read_rail_3v_batch(rail_3v_batch* batch) {
+	
+}
+
+void read_rail_5v_batch(rail_5v_batch* batch) {
+		
 }

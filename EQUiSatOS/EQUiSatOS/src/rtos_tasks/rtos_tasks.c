@@ -13,13 +13,13 @@
 /************************************************************************/
 void init_task_handles(void) {
 	//task_handles[WATCHDOG_TASK] = &watchdog_task_handle;
-	task_handles[ANTENNA_DEPLOY_TASK] = &antenna_deploy_task_handle;
-	task_handles[BATTERY_CHARGING_TASK] = &battery_charging_task_handle;
-	task_handles[FLASH_ACTIVATE_TASK] = &flash_activate_task_handle;
-	task_handles[TRANSMIT_TASK] = &transmit_task_handle;
-	task_handles[CURRENT_DATA_TASK] = &current_data_task_handle;
-	task_handles[FLASH_DATA_TASK] = &flash_data_task_handle;
-	task_handles[ATTITUDE_DATA_TASK] = &attitude_data_task_handle;
+	task_handles[ANTENNA_DEPLOY_TASK] =			&antenna_deploy_task_handle;
+	task_handles[BATTERY_CHARGING_TASK] =		&battery_charging_task_handle;
+	task_handles[FLASH_ACTIVATE_TASK] =			&flash_activate_task_handle;
+	task_handles[TRANSMIT_TASK] =				&transmit_task_handle;
+	task_handles[IDLE_DATA_TASK] =				&idle_data_task_handle;
+	task_handles[FLASH_DATA_TASK] =				&flash_data_task_handle;
+	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
 }
 
 void pre_init_rtos_tasks(void) {

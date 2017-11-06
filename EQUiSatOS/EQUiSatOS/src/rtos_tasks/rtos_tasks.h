@@ -42,7 +42,7 @@ void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
 
 // Data read tasks
-void current_data_task(void *pvParameters);
+void idle_data_task(void *pvParameters);
 void transmit_data_task(void *pvParameters);
 void flash_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
@@ -60,8 +60,8 @@ StaticTask_t transmit_task_buffer;
 StackType_t transmit_task_stack					[TASK_TRANSMIT_STACK_SIZE];
 StaticTask_t flash_activate_task_buffer;
 StackType_t flash_activate_task_stack			[TASK_FLASH_ACTIVATE_STACK_SIZE];
-StaticTask_t current_data_task_buffer;
-StackType_t current_data_task_stack				[TASK_CURRENT_DATA_RD_STACK_SIZE];
+StaticTask_t idle_data_task_buffer;
+StackType_t idle_data_task_stack				[TASK_IDLE_DATA_RD_STACK_SIZE];
 StaticTask_t flash_data_task_buffer;
 StackType_t flash_data_task_stack				[TASK_FLASH_DATA_RD_STACK_SIZE];
 StaticTask_t attitude_data_task_buffer;
@@ -70,22 +70,18 @@ StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
 /************************************************************************/
 /* Equistack definitions                                                */
 /************************************************************************/
-equistack last_reading_type_equistack; // of msg_data_type_t
 equistack idle_readings_equistack; // of idle_data_t
 equistack attitude_readings_equistack; // of attitude_data_t
 equistack flash_readings_equistack; // of flash_data_t
 equistack flash_cmp_readings_equistack; // of flash_cmp_t
 
 /* Global (but don't use them!) arrays used in equistack (put here as an alternative to mallocing) */
-msg_data_type_t _last_reading_equistack_arr[LAST_READING_TYPE_STACK_MAX];
-idle_data_t _idle_equistack_arr[IDLE_STACK_MAX];
-flash_data_t _flash_equistack_arr[FLASH_STACK_MAX];
-flash_cmp_t _flash_cmp_equistack_arr[FLASH_CMP_STACK_MAX];
-attitude_data_t _attitude_equistack_arr[ATTITUDE_STACK_MAX];
+idle_data_t _idle_equistack_arr			[IDLE_STACK_MAX];
+flash_data_t _flash_equistack_arr		[FLASH_STACK_MAX];
+flash_cmp_t _flash_cmp_equistack_arr	[FLASH_CMP_STACK_MAX];
+attitude_data_t _attitude_equistack_arr	[ATTITUDE_STACK_MAX];
 
 /* Global (but don't use them!) mutex data and mutex handles used inside equistacks (alt. to malloc) */
-StaticSemaphore_t _last_reading_type_equistack_mutex_d;
-SemaphoreHandle_t _last_reading_type_equistack_mutex;
 StaticSemaphore_t _idle_equistack_mutex_d;
 SemaphoreHandle_t _idle_equistack_mutex;
 StaticSemaphore_t _attitude_equistack_mutex_d;
@@ -108,7 +104,7 @@ TaskHandle_t antenna_deploy_task_handle;
 TaskHandle_t battery_charging_task_handle; // Should we have this?
 TaskHandle_t flash_activate_task_handle;
 TaskHandle_t transmit_task_handle;
-TaskHandle_t current_data_task_handle;
+TaskHandle_t idle_data_task_handle;
 TaskHandle_t flash_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 

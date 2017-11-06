@@ -31,8 +31,8 @@
 #define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
 
-#define TASK_CURRENT_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_CURRENT_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_IDLE_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
@@ -108,7 +108,8 @@ typedef enum
 	IDLE_DATA,
 	ATTITUDE_DATA,
 	FLASH_DATA,
-	FLASH_CMP
+	FLASH_CMP,
+	NUM_MSG_TYPE, // = FLASH_CMP + 1
 } msg_data_type_t;
 
 /************************************************************************/
@@ -120,9 +121,8 @@ typedef enum
 	BATTERY_CHARGING_TASK,
 	TRANSMIT_TASK,
 	FLASH_ACTIVATE_TASK,
-	CURRENT_DATA_TASK,
+	IDLE_DATA_TASK,
 	ATTITUDE_DATA_TASK,
-	TRANSMIT_DATA_TASK,
 	FLASH_DATA_TASK,
 	NUM_TASKS, //= FLASH_DATA_TASK + 1
 } task_type_t;
@@ -139,52 +139,17 @@ typedef enum
 #define BATTERY_CHARGING_TASK_FREQ				100
 #define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
 
-#define TRANSMIT_TASK_FREQ						60000	// 1 minute; how often to transmit
+#define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit
 #define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
 #define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
-#define TRANSMIT_TASK_MSG_REPEATS				3		// number of times to send the same transmission
+#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
+
+#define IDLE_DATA_TASK_FREQ						1000
+#define IDLE_DATA_LOW_POWER_TASK_FREQ			10000
 
 /* 
- * NOTE: The idle data collection doesn't really need these constants;
- * all sensors are being read at the same frequency, but we're doing it here for consistency
- */
-
-#define CURRENT_DATA_TASK_FREQ					1000
-#define CURRENT_DATA_LOW_POWER_TASK_FREQ		10000
-/* Data array lengths for current data reader task */
-// for packet header
-#define idle_LION_VOLTS_DATA_ARR_LEN				1
-#define idle_LION_CURRENT_DATA_ARR_LEN				1
-#define idle_BAT_CHARGE_VOLTS_DATA_ARR_LEN			1
-#define idle_BAT_CHARGE_DIG_SIGS_DATA_ARR_LEN		1
-#define idle_DIGITAL_OUT_DATA_ARR_LEN				1
-// for idle data package
-#define idle_BAT_TEMP_DATA_ARR_LEN					1
-#define idle_RADIO_TEMP_DATA_ARR_LEN				1
-#define idle_RADIO_VOLTS_DATA_ARR_LEN				1
-#define idle_IMU_TEMP_DATA_ARR_LEN					1
-#define idle_IR_TEMPS_DATA_ARR_LEN					1
-#define idle_RAIL_3V_DATA_ARR_LEN					1
-#define idle_RAIL_5V_DATA_ARR_LEN					1
-
-/* Current data reader reads per log */
-// for packet header
-#define idle_LION_VOLTS_LOOPS_PER_LOG				1
-#define idle_LION_CURRENT_LOOPS_PER_LOG				1
-#define idle_BAT_CHARGE_VOLTS_LOOPS_PER_LOG			1
-#define idle_BAT_CHARGE_DIG_SIGS_LOOPS_PER_LOG		1
-#define idle_DIGITAL_OUT_LOOPS_PER_LOG				1
-// for idle data package
-#define idle_BAT_TEMP_LOOPS_PER_LOG					1
-#define idle_RADIO_TEMP_LOOPS_PER_LOG				1
-#define idle_RADIO_VOLTS_LOOPS_PER_LOG				1
-#define idle_IMU_TEMP_LOOPS_PER_LOG					1
-#define idle_IR_TEMPS_LOOPS_PER_LOG					1
-#define idle_RAIL_3V_LOOPS_PER_LOG					1
-#define idle_RAIL_5V_LOOPS_PER_LOG					1
-
-/*
- * These may have data array lists longer than 1
+ * NOTE: The idle data collection task doesn't really need these constants;
+ * all sensors are being read at the same frequency, unlike below.
  */
 
 #define ATTITUDE_DATA_TASK_FREQ					10000

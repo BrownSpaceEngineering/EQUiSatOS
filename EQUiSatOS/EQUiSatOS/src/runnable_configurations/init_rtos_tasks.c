@@ -19,15 +19,12 @@ void run_rtos()
 	watchdog_init();
 
 	// Initialize EQUiStack mutexes
-	_last_reading_type_equistack_mutex = xSemaphoreCreateMutexStatic(&_last_reading_type_equistack_mutex_d);
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
 	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
 	_flash_cmp_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_cmp_equistack_mutex_d);
 
 	// Initialize EQUiStacks
-	equistack_Init(&last_reading_type_equistack, &_last_reading_equistack_arr,
-		sizeof(msg_data_type_t), LAST_READING_TYPE_STACK_MAX, &_last_reading_type_equistack_mutex);
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
 		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
@@ -87,13 +84,13 @@ void run_rtos()
 
 	/* Data tasks */
 
-	current_data_task_handle = xTaskCreateStatic(current_data_task,
+	idle_data_task_handle = xTaskCreateStatic(idle_data_task,
 		"current data reader task",
-		TASK_CURRENT_DATA_RD_STACK_SIZE,
+		TASK_IDLE_DATA_RD_STACK_SIZE,
 		NULL,
-		TASK_CURRENT_DATA_RD_PRIORITY,
-		&current_data_task_stack,
-		&current_data_task_buffer);
+		TASK_IDLE_DATA_RD_PRIORITY,
+		&idle_data_task_stack,
+		&idle_data_task_buffer);
 
 	flash_data_task_handle = xTaskCreateStatic(flash_data_task,
 		"flash data reader task",
@@ -155,9 +152,9 @@ void init_task_state(task_type_t task) {
 			task_suspend(ANTENNA_DEPLOY_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
 			return;
-		case CURRENT_DATA_TASK:
-			task_suspend(CURRENT_DATA_TASK, true); // REAL ONE
-			//task_resume_if_suspended(CURRENT_DATA_TASK);
+		case IDLE_DATA_TASK:
+			task_suspend(IDLE_DATA_TASK, true); // REAL ONE
+			//task_resume_if_suspended(IDLE_DATA_TASK);
 			return;
 		case FLASH_ACTIVATE_TASK:
 			task_suspend(FLASH_ACTIVATE_TASK, true); // REAL ONE
@@ -174,9 +171,6 @@ void init_task_state(task_type_t task) {
 		case ATTITUDE_DATA_TASK:
 			task_suspend(ATTITUDE_DATA_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
-			return;
-		case TRANSMIT_DATA_TASK:
-			//TODO?
 			return;
 		case NUM_TASKS:
 			//TODO?
@@ -221,7 +215,7 @@ void set_state_hello_world()
 	// run only the attitude data task
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_suspend(ANTENNA_DEPLOY_TASK, false); 
-	task_suspend(CURRENT_DATA_TASK, false);
+	task_suspend(IDLE_DATA_TASK, false);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_suspend(TRANSMIT_TASK, false);
@@ -240,7 +234,7 @@ void set_state_idle()
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_resume_if_suspended(IDLE_DATA_TASK);
 	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 	// we'll try to resume the flash data task, in case we went to LOW_POWER
 	// in the middle of the flash (this will allow it to suspend itself)
@@ -261,7 +255,7 @@ void set_state_low_power()
 
 	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(CURRENT_DATA_TASK);
+	task_resume_if_suspended(IDLE_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_resume_if_suspended(TRANSMIT_TASK);
