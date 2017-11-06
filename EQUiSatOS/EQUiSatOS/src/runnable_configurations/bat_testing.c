@@ -122,7 +122,7 @@ void readRemoteADC_0(float* readings){
 void readBatBoard(float* batBoardReadings){
 	uint16_t raw[LEN_BAT_ADC];
 	for (int i=0; i<LEN_BAT_ADC; i++){
-		raw[i] = readFromADC(bat_adc_pins[i],5);
+		raw[i] = readFromADC(bat_adc_pins[i],10);
 		batBoardReadings[i] = convertToVoltage(raw[i]);
 	}
 	
@@ -147,8 +147,8 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 
 	
 	readRemoteADC_0(remoteBatReadings);
-	data->l1_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.021)*2000;	// mA
-	data->l2_sns 		= (((float) remoteBatReadings[1])/4096*3.3-1.019)*2000;	// mA
+	data->l1_sns 		= (((float) remoteBatReadings[1])/4096*3.3-1.021)*2000;	// mA
+	data->l2_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.019)*2000;	// mA
 	data->lion_ref 		= ((float)  remoteBatReadings[2])/4096*3.3*2717;	// mV
 	data->sp_out_ref	= ((float) remoteBatReadings[3])/4096*3.3*5580;		// mV
 
