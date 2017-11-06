@@ -79,43 +79,26 @@ void flatsat_init(void) {
 //Cycles through temperatures sensor and photodiode external muxes and does 10x software averaging on each channel
 static void readMuxs(uint16_t* tempBuffer, uint16_t* pdBuffer){
 	 
-	 for (int i=0; i<4; i++){
-		 configure_adc(&temp_instance,P_AI_TEMP_OUT);
+	 for (int i=0; i<8; i++){
+		 
 		 return_struct_8 rs;
 		 LTC1380_channel_select(0x48, i, rs);
 		 
-		uint16_t sum = 0;
-		
-		for (int j=0; j<num_samples; j++){
-			adc_enable(&temp_instance);
-			sum = sum +read_adc(temp_instance);
-		}
-		tempBuffer[i] = sum/num_samples;
+		tempBuffer[i] = readFromADC(P_AI_TEMP_OUT,num_samples);
 	 }
 	 
-	 for (int i=0; i<1; i++){
-		configure_adc(&pd_instance,P_AI_PD_OUT);
+	 for (int i=0; i<6; i++){
 		return_struct_8 rs;
 		LTC1380_channel_select(0x4a, i, rs); 
-		//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
-		
-		uint16_t sum =0;
-		
-		for (int j=0; j<num_samples; j++){
-			adc_enable(&pd_instance);
-			sum = sum +read_adc(pd_instance);
-		}
-		uint16_t value = sum/num_samples;
-		pdBuffer[i] = value;
+
+		pdBuffer[i] = readFromADC(P_AI_PD_OUT,num_samples);
 	 }
  }
  
  //Cycles through all of the ADC channels that are not externally mux'd
 static void readOtherADC(uint16_t* buffer){
 	 for (int i=0; i<LEN_ADC; i++){
-		 //buffer[i] = readVoltagemV(modules[i]);
-		 //buffer[i] = readFromADC(adc_pins[i], num_samples);
-		 //delay_ms(10);
+		 buffer[i] = readFromADC(adc_pins[i], num_samples);
 	 }
  }
  
@@ -149,8 +132,8 @@ static void readAnalog(float* temperatures, float* photodiodes, float* analogs){
 	
 	readMuxs(temp_buffer, pd_buffer);
 	for (int i=0; i<8; i++){
-		float current = ((float) convertToVoltage(temp_buffer[i]))/2197 -0.0001001; //converts from V to A
-		temperatures[i] = (current)*1000000-273;// T = 454*V in C
+		float current = ((float) convertToVoltage(temp_buffer[i]))/2197-0.0002142; //converts from V to A
+		temperatures[i] = (current)*1000000;// T = 454*V in K
 	}
 	for (int i=0; i<6; i++){
 		photodiodes[i] = convertToVoltage(pd_buffer[i]);
@@ -195,7 +178,7 @@ void flatsat_run(void) {
 		
 		readRemoteADC_1(cntrlReadings);
 		
-		usart_send_string((uint8_t*) "\n___________________\n");
+		/*usart_send_string((uint8_t*) "\n___________________\n");
 		sprintf(temp,"Sending new batch of data. Counts Since Boot = %d.\n\n",count );
 		usart_send_string((uint8_t*) temp);
 
@@ -215,7 +198,7 @@ void flatsat_run(void) {
 			usart_send_string((uint8_t*) "3V6 rail looking funky\n\n\n\n\n\n\n\n*****************");
 		}
 	
-		usart_send_string((uint8_t*) "--------------------\n");
+		usart_send_string((uint8_t*) "--------------------\n");*/
 		//set_output(true, P_RAD_PWR_RUN);
  		//set_output(false,P_LED_CMD); //Turns on LEDs for 100ms (hardware timed). Any breakpoints placed during flashing are not guaranteed to be accurate
 		//readAnalog(dur1_temp,dur1_pd, dur1_analog);

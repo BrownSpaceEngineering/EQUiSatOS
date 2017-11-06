@@ -61,14 +61,14 @@ void The_Fall_Of_Ryan(void) {
 
 
 void run_tests(void) {
-	//flatsat_run(); //calls flatsat init
+	flatsat_run(); //calls flatsat init
 
 	//bat_testing_run();
 	//test_equistack();
 	//assert_rtos_constants();
 	//assert_transmission_constants();
 
-	system_test(); 
+	//system_test(); 
 	/************************************************************************/
 	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
 	/************************************************************************/

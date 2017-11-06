@@ -75,23 +75,22 @@ void bat_testing_init(bat_testing_struct *data){
 	if (!(tca9535_rs.return_value && 0xf4f0)){
 		//TODO: some sort of check here. As long as we're not charging or balancing (and no batteries or solar panels are connected), f4f0 should be the return value.
 	} else{
-		//TODO: Please tell me there's a better way to do this -Ryan
 		uint16_t res = tca9535_rs.return_value;
-		data->l2_st 		= !(!(res&0b0000000100000000));	//8
-		data->l1_st 		= !(!(res&0b0000001000000000));	//9
-		data->spf_st 		= !(!(res&0b0000010000000000));	//10
-		data->l1_chgn 		= !(!(res&0b0001000000000000)); //12
-		data->l1_faultn 	= !(!(res&0b0010000000000000)); //13
-		data->l2_chgn 		= !(!(res&0b0100000000000000)); //14
-		data->l2_faultn 	= !(!(res&0b1000000000000000)); //15
-		data->lf_b1_bt 		= !(!(res&0b0000000000000001));//0
-		data->lf_b1_tt 		= !(!(res&0b0000000000000010)); //1
-		data->lf_b2_tt 		= !(!(res&0b0000000000000100)); //2
-		data->lf_b2_bt 		= !(!(res&0b0000000000001000)); //3
-		data->lf_b2_chgn 	= !(!(res&0b0000000000010000)); //4
-		data->lf_b2_faultn 	= !(!(res&0b0000000000100000)); //5
-		data->lf_b1_chgn 	= !(!(res&0b0000000001000000)); //6
-		data->lf_b1_faultn 	= !(!(res&0b0000000010000000)); //7
+		data->l2_st 		= (res>>8)&0x1;	//8
+		data->l1_st 		= (res>>9)&0x1;//9
+		data->spf_st 		= (res>>10)&0x1;	//10
+		data->l1_chgn 		= (res>>12)&0x1; //12
+		data->l1_faultn 	= (res>>13)&0x1; //13
+		data->l2_chgn 		= (res>>14)&0x1; //14
+		data->l2_faultn 	= (res>>15)&0x1; //15
+		data->lf_b1_bt 		= res&0x1;//0
+		data->lf_b1_tt 		= (res>>1)&0x1; //1
+		data->lf_b2_tt 		= (res>>2)&0x1; //2
+		data->lf_b2_bt 		= (res>>3)&0x1; //3
+		data->lf_b2_chgn 	= (res>>4)&0x1; //4
+		data->lf_b2_faultn 	= (res>>5)&0x1; //5
+		data->lf_b1_chgn 	= (res>>6)&0x1; //6
+		data->lf_b1_faultn 	= (res>>7)&0x1; //7
 		}
 	
 }
@@ -174,17 +173,17 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	setBatOutputs(setOutputs[0]);
 	readTCA9535Levels(&gpio_rs);
 	uint16_t res = gpio_rs.return_value;
-	data->l2_st 		= !(!(res&0b0000000100000000));	//8
-	data->l1_st 		= !(!(res&0b0000001000000000));	//9
-	data->spf_st 		= !(!(res&0b0000010000000000));	//10
-	data->l1_chgn 		= !(!(res&0b0001000000000000)); //12
-	data->l1_faultn 	= !(!(res&0b0010000000000000)); //13
-	data->l2_chgn 		= !(!(res&0b0100000000000000)); //14
-	data->l2_faultn 	= !(!(res&0b1000000000000000)); //15
-	data->lf_b2_chgn 	= !(!(res&0b0000000000010000)); //4
-	data->lf_b2_faultn 	= !(!(res&0b0000000000100000)); //5
-	data->lf_b1_chgn 	= !(!(res&0b0000000001000000)); //6
-	data->lf_b1_faultn 	= !(!(res&0b0000000010000000)); //7
+	data->l2_st 		= (res>>8)&0x1;		//8
+	data->l1_st 		= (res>>9)&0x1;		//9
+	data->spf_st 		= (res>>10)&0x1;	//10
+	data->l1_chgn 		= (res>>12)&0x1;	//12
+	data->l1_faultn 	= (res>>13)&0x1;	//13
+	data->l2_chgn 		= (res>>14)&0x1;	//14
+	data->l2_faultn 	= (res>>15)&0x1;	//15
+	data->lf_b2_chgn 	= (res>>4)&0x1;		//4
+	data->lf_b2_faultn 	= (res>>5)&0x1;		//5
+	data->lf_b1_chgn 	= (res>>6)&0x1;		//6
+	data->lf_b1_faultn 	= (res>>7)&0x1;		//7
 	// could also grab the outputs, indices 0,1,2,3 and verify that they match what we chose the output to be at that moment
 
 	
@@ -241,7 +240,7 @@ void bat_testing_run(){
 	while (true){
 		delay_ms(1000);
 		readCommandAndSend(remoteBatReadings, batReadings, gpio_rs, &bat_test_data);
-
+		
 		/*if (!areVoltagesNominal(bat_test_data)){
 			print("A voltage has been detected as being an anomaly. Automatically resetting outputs and exiting.\n");
 			resetState();

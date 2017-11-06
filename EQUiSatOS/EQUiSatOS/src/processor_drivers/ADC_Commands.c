@@ -10,18 +10,14 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
 
-	config_adc.resolution = ADC_RESOLUTION_10BIT;
+	config_adc.resolution = ADC_RESOLUTION_CUSTOM;
 	config_adc.correction.correction_enable = true;
-	if (pin == P_AI_TEMP_OUT){
-		config_adc.correction.offset_correction = 22;
-		config_adc.correction.gain_correction = 2920; // 2048 = 1x
-	}else{
-		config_adc.correction.offset_correction = 48;
-		config_adc.correction.gain_correction = 2220; // 2048 = 1x
-	}
 	
-	config_adc.correction.gain_correction = 2220; // 2048 = 1x
-	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
+	config_adc.correction.offset_correction = 10;
+	config_adc.correction.gain_correction = 2049; // 2048 = 1x
+
+	
+	//config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;
 	config_adc.reference = ADC_REFERENCE_INTVCC0; //VCC/1.48
 	
 	//Maybe add this or similar things for other pins
@@ -31,8 +27,8 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 	}*/
 	
 	//Hardware averaging - couldn't get this to work
-	//config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_1024;
-	//config_adc.divide_result = ADC_DIVIDE_RESULT_16;
+	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_16;
+	config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 	
 	//Set the pin
 	config_adc.positive_input = pin;
@@ -79,21 +75,13 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
  uint16_t readFromADC(enum adc_positive_input pin, int num_avg){
 	 struct adc_module adc_instance;
 	 configure_adc(&adc_instance,pin);
-	 //read_adc(adc_instance);
+	 //read_adc(adc_instance); //TODO determine if we need to throw away the first reading
 	 //adc_enable(&adc_instance);
-	 uint16_t sum = 0;
-	 
-	 for (int i=0; i<num_avg; i++){
-		 if (i>0){
-			 adc_enable(&adc_instance);
-		 }
-		 sum = sum +read_adc(adc_instance);
-	 }
-	 return sum/num_avg;
+	 return read_adc(adc_instance);
  }
 
 //Converts from 10bit ADC reading to float voltage
 //Todo - remove this because no floats for real sat
 float convertToVoltage(uint16_t reading){
-	return (((float) (reading))/1024*3.300/1.48); //converts from 10 bit to V
+	return (((float) (reading))/4095*3.300/1.48); //converts from 12 bit to V
 }
