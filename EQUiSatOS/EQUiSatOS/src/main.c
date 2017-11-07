@@ -112,5 +112,5 @@ int main(void)
 {
 	global_init();
 	run_tests();
-	run_rtos();	
+	//run_rtos();	
 }

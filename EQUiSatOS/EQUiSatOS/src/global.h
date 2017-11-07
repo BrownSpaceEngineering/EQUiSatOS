@@ -48,6 +48,7 @@ typedef struct {
 #include "sensor_drivers/AD7991_ADC.h"
 #include "sensor_drivers/TCA9535_GPIO.h"
 #include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
+#include "sensor_drivers/M24M01_EEPROM_Commands.h"
 #include "stacks/Sensor_Structs.h"
 #include "telemetry/Radio_Commands.h"
 #include "testing_functions/system_test.h"

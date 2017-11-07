@@ -169,45 +169,46 @@ void flatsat_run(void) {
 
 	
 	int count =0; //Run only 15 times in case we get out of debug mode.
-	usart_send_string((uint8_t*) "Begin\n");
-	char temp[50];
 	while (count<1000){	
 		
 		//int curtime = get_count(); //gets the current time since build in seconds
-		readAnalog(pre_temp,pre_pd, pre_analog);
+		//readAnalog(pre_temp,pre_pd, pre_analog);
 		
-		readRemoteADC_1(cntrlReadings);
+		//readRemoteADC_1(cntrlReadings);
 		
-		/*usart_send_string((uint8_t*) "\n___________________\n");
-		sprintf(temp,"Sending new batch of data. Counts Since Boot = %d.\n\n",count );
-		usart_send_string((uint8_t*) temp);
-
-		sprintf(temp,"3V3 Regulator Voltage Sense\t=%dmV\n",((uint16_t)(cntrlReadings[3]*1000)));
-		usart_send_string((uint8_t*) temp);
 		
-		sprintf(temp,"5V Regulator Voltage Sense\t=%dmV\n", ((uint16_t)(cntrlReadings[2]*1000)));
-		usart_send_string((uint8_t*) temp);
+		uint8_t value = 19 +count;
+		uint8_t rtn;
+		EEPROM_addr_struct addr;
+		addr.LSB_8=1;
+		addr.MSB_8=0;
+		addr.MSB_2=0;
+		enum status_code statc1 = writeByteToM24M01(addr,value);
+		enum status_code statc2 = readByteFromM24M01(addr,&rtn);
 		
-		sprintf(temp,"3V6 Regulator Voltage Sense\t=%dmV\n", ((uint16_t)(cntrlReadings[0]*1000)));
-		usart_send_string((uint8_t*) temp);
-		
-		sprintf(temp,"3V6 Regulator Current Sense\t=%dmA\n", ((uint16_t)(cntrlReadings[1]*1000)));
-		usart_send_string((uint8_t*) temp);
-		
-		if (((uint16_t)(cntrlReadings[0]*1000))<3000){
-			usart_send_string((uint8_t*) "3V6 rail looking funky\n\n\n\n\n\n\n\n*****************");
+		int len = 6;
+		uint8_t values[len];
+		for (int i=0; i<len; i++){
+			values[i] = 0x40+count+i;
 		}
-	
-		usart_send_string((uint8_t*) "--------------------\n");*/
+		uint8_t rtn2[len];
+		EEPROM_addr_struct addr2;
+		addr2.LSB_8=0;
+		addr2.MSB_8=1;
+		addr2.MSB_2=0;
+		enum status_code statc3 = writeBytesToM24M01(addr2,values,len);
+		
+		enum status_code statc4 = readBytesFromM24M01(addr2,rtn2,len);
+		
+		
+		
 		//set_output(true, P_RAD_PWR_RUN);
  		//set_output(false,P_LED_CMD); //Turns on LEDs for 100ms (hardware timed). Any breakpoints placed during flashing are not guaranteed to be accurate
 		//readAnalog(dur1_temp,dur1_pd, dur1_analog);
 		//set_output(true,P_LED_CMD);
-		delay_ms(10);
 		
 		count = count +1;
 	}
-	usart_send_string((uint8_t*) "end\n");
 	
 		
 	

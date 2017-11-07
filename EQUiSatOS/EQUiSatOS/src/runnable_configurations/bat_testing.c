@@ -146,10 +146,10 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 
 	
 	readRemoteADC_0(remoteBatReadings);
-	data->l1_sns 		= (((float) remoteBatReadings[1])/4096*3.3-1.021)*2000;	// mA
-	data->l2_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.019)*2000;	// mA
-	data->lion_ref 		= ((float)  remoteBatReadings[2])/4096*3.3*2717;	// mV
-	data->sp_out_ref	= ((float) remoteBatReadings[3])/4096*3.3*5580;		// mV
+	data->l1_sns 		= (((float) remoteBatReadings[1])/4096*3.3-0.985)*2000;	// mA
+	data->l2_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.022)*2000;	// mA
+	data->lion_ref 		= ((float)  (remoteBatReadings[2])/4096*3.3-0.05)*2717;	// mV
+	data->sp_out_ref	= ((float) (remoteBatReadings[3])/4096*3.3-0.13)*5580;		// mV
 
 	
 	readBatBoard(batReadings);
@@ -236,17 +236,25 @@ void bat_testing_run(){
 	print("LFB1OSNS[A];LFB1SNS[A];LFB2OSNS[A];LFB2SNS[A];LF1REF[mV];LF2REF[mV];LF3REF[mV];LF4REF[mV];L1_REF[mV];L2_REF[mV];");
 	print("l2_st[bool];l1_st[bool];spf_st[bool];l1_chgn[bool];l1_faultn[bool];l2_chgn[bool];l2_faultn[bool];lf_b1_bt[bool];lf_b1_tt[bool];lf_b2_bt[bool];lf_b2_tt[bool];lf_b2_chgn[bool];lf_b2_faultn[bool];lf_b1_chgn[bool];lf_b1_faultn[bool]\n");
 	
-	
-	while (true){
-		delay_ms(1000);
+	int count = 0;
+	while (count<3600){
+		delay_ms(961); //calibrated delay
 		readCommandAndSend(remoteBatReadings, batReadings, gpio_rs, &bat_test_data);
 		
 		/*if (!areVoltagesNominal(bat_test_data)){
 			print("A voltage has been detected as being an anomaly. Automatically resetting outputs and exiting.\n");
 			resetState();
 		}*/
+		if(bat_test_data.l1_sns>250 || bat_test_data.L1_REF>4400){
+			set_output(false,P_L1_RUN_CHG);
+		}
+		if(count==30){
+			set_output(true,P_L1_RUN_CHG);
+		}else if (count ==3000){
+			set_output(false,P_L1_RUN_CHG);
+		}
 		
-		int x =45;
+		count = count +1;
 	}
 }
 

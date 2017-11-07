@@ -26,7 +26,7 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 		config_adc.reference = ADC_REFERENCE_INT1V;
 	}*/
 	
-	//Hardware averaging - couldn't get this to work
+	//Hardware averaging - couldn't g et this to work
 	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_16;
 	config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 	
@@ -77,7 +77,14 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
 	 configure_adc(&adc_instance,pin);
 	 //read_adc(adc_instance); //TODO determine if we need to throw away the first reading
 	 //adc_enable(&adc_instance);
-	 return read_adc(adc_instance);
+	 uint16_t sum = 0;
+	 for(int i=0; i<num_avg; i++){
+		 if(i>0){
+			 adc_enable(&adc_instance);
+		 }
+		 sum = sum + read_adc(adc_instance);
+	 }
+	 return sum/num_avg;
  }
 
 //Converts from 10bit ADC reading to float voltage
