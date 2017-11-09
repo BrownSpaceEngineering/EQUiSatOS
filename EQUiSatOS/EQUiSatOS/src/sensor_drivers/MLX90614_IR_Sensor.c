@@ -88,7 +88,7 @@ void MLX90614_getAddress(MLXDeviceAddr addr, return_struct_16 rs) {
 enum status_code MLX90614_setSleepMode(MLXDeviceAddr addr) {
 	// enter SLEEP mode command = 1111_1111 (0xFF)
 	// send PEC (Packet Error Code) (0xF3)
-	uint8_t dataByte[2] = {(uint8_t)0xFF, (uint8_t)0xF3};
+	uint8_t dataByte[2] = {(uint8_t)0xFF, (uint8_t)0xE8};
 	// write to address with stop condition
 	return writeDataToAddress(dataByte, 2, addr, true);
 }
