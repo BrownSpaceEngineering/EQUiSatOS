@@ -84,18 +84,18 @@ static float MLX90614_test(uint8_t addr){
 	 //MLX90614_init(); //Turns on the IR sensor and sets up the Port DO THIS IN MAIN()
 	 
 	 //Read -> return_struct_float
-	 return_struct_16 rs;
-	 MLX90614_read_all_obj(addr,rs);
+	 uint16_t rs;
+	 enum status_code sc = MLX90614_read_all_obj(addr,&rs);
 	 
 	 print("MLX90614 status: ");
-	 print_error(rs.return_status); 
+	 print_error(sc); 
 	 
 	 //If return status is return status is category OK
-	 if ((rs.return_status & 0x0F) != 0){
+	 if ((sc & 0x0F) != 0){
 		 // return_value = NULL;
 	 }
 	 
-	 return rs.return_value; 
+	 return rs; 
 }
 
 
@@ -116,10 +116,11 @@ static uint16_t AD590_test(int channel){
 	//return read_adc(temp_instance);
 	
 	configure_adc(&temp_instance,P_AI_TEMP_OUT);
-	return_struct_8 rs;
-	LTC1380_channel_select(0x48, channel, rs);
+	uint8_t rs;
+	LTC1380_channel_select(0x48, channel, &rs);
 	
-	uint16_t temp = read_adc(temp_instance);
+	uint16_t temp;
+	read_adc(temp_instance, &temp);
 	
 	// temperature conversion from voltage -> current -> degrees celcius 
 	float current = ((float) convertToVoltage(temp))/2197 -0.0001001; //converts from V to A
@@ -162,32 +163,29 @@ static float HMC5883L_test(void){
 }
 
 //GPIO test 
-static void TCA9535_test(return_struct_16 rs){
-	
-	TCA9535_init(&rs);
-	
+static enum status_code TCA9535_test(uint16_t* rs){
+	return TCA9535_init(rs);
 }
 
 // Photodiode test 
 static uint16_t TEMD6200_test(int channel, int num_samples){
-	
 	struct adc_module pd_instance; 
 	
 	configure_adc(&pd_instance,P_AI_PD_OUT);
-	return_struct_8 rs;
-	LTC1380_channel_select(0x4a, channel, rs);
+	uint8_t rs;
+	LTC1380_channel_select(0x4a, channel, &rs);
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
 			 
 	uint16_t sum =0;
 			 
 	for (int j=0; j<num_samples; j++){
 		adc_enable(&pd_instance);
-		sum = sum +read_adc(pd_instance);
+		uint16_t buf;
+		read_adc(pd_instance, &buf);
+		sum = sum + buf;
 	}
 	
-	return sum/num_samples;
-
-		
+	return sum/num_samples;	
 }
 
 
@@ -389,10 +387,10 @@ void system_test(void){
 	
 	
 	print("TCA9535 test========================================\n"); 
-	return_struct_16 rs;
-	TCA9535_test(rs);
+	uint16_t rs;
+	enum status_code sc = TCA9535_test(&rs);
 	print("TCA return status: ");
-	print_error(rs.return_status); 
-	print("TCA test: %d\n",rs.return_value);
+	print_error(sc); 
+	print("TCA test: %d\n",rs);
 	
 }

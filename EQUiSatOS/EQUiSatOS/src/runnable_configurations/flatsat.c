@@ -81,24 +81,30 @@ static void readMuxs(uint16_t* tempBuffer, uint16_t* pdBuffer){
 	 
 	 for (int i=0; i<8; i++){
 		 
-		 return_struct_8 rs;
-		 LTC1380_channel_select(0x48, i, rs);
+		 uint8_t rs;
+		 LTC1380_channel_select(0x48, i, &rs);
 		 
-		tempBuffer[i] = readFromADC(P_AI_TEMP_OUT,num_samples);
+		 uint16_t buf;
+		 readFromADC(P_AI_TEMP_OUT,num_samples,&buf);
+		 tempBuffer[i] = buf;
 	 }
 	 
 	 for (int i=0; i<6; i++){
-		return_struct_8 rs;
-		LTC1380_channel_select(0x4a, i, rs); 
+		uint8_t rs;
+		LTC1380_channel_select(0x4a, i, &rs); 
 
-		pdBuffer[i] = readFromADC(P_AI_PD_OUT,num_samples);
+		uint16_t buf;
+		readFromADC(P_AI_PD_OUT,num_samples,&buf);
+		pdBuffer[i] = buf;
 	 }
  }
  
  //Cycles through all of the ADC channels that are not externally mux'd
 static void readOtherADC(uint16_t* buffer){
 	 for (int i=0; i<LEN_ADC; i++){
-		 buffer[i] = readFromADC(adc_pins[i], num_samples);
+		 uint16_t buf;
+		 readFromADC(adc_pins[i], num_samples,&buf);
+		 buffer[i] = buf;
 	 }
  }
  
@@ -107,9 +113,9 @@ static void readOtherADC(uint16_t* buffer){
 void read_IR(uint16_t* buffer) {
 	for (int i = 0; i < LEN_IR; i++)
 	{
-		return_struct_16 rs;
-		MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1, rs);
-		buffer[i] = rs.return_value;
+		uint16_t rs;
+		MLX90614_read2ByteValue(irs[i], MLX90614_TOBJ1, &rs);
+		buffer[i] = rs;
 	}
 }
 

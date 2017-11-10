@@ -10,12 +10,6 @@
 
 #include "../global.h"
 
-// will be used to read all ADCs
-return_struct_8 rs;
-return_struct_16 rs_obj1;
-return_struct_16 rs_obj2;
-return_struct_16 rs_ambient;
-
 /**
  * Helpful regex: (\w*)_DATA -> $1_batch read_$1_batch(void);
  */

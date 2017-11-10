@@ -29,25 +29,28 @@ uint8_t IR_ELOCS[6] = {
 
 void read_ir_batch(ir_batch batch) {
 	for (int i = 0; i < 6; i ++) {
-		MLX90614_read2ByteValue(IRs[i] / 2, OBJ1, rs_obj1);
-		if (rs_obj1.return_status != STATUS_OK) {
-			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_obj1.return_status), false);
+		uint16_t obj1;
+		enum status_code sc = MLX90614_read2ByteValue(IRs[i] / 2, OBJ1, &obj1);
+		if (sc != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(sc), false);
 		}
-		MLX90614_read2ByteValue(IRs[i] / 2, OBJ2, rs_obj2);
-		if (rs_obj2.return_status != STATUS_OK) {
-			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_obj2.return_status), false);
+		uint16_t obj2;
+		sc = MLX90614_read2ByteValue(IRs[i] / 2, OBJ2, &obj2);
+		if (sc != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(sc), false);
 		}
-		batch[i] = (rs_obj1.return_value + rs_obj2.return_value) / 2;
+		batch[i] = (obj1 + obj2) / 2;
 	}
 }
 
 void read_ir_temps_batch(ir_temps_batch batch) {
 	for (int i = 0; i < 6; i++) {
-		MLX90614_read2ByteValue(IRs[i] / 2, AMBIENT, rs_ambient);
-		if (rs_ambient.return_status != STATUS_OK) {
-			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_ambient.return_status), false);
+		uint16_t amb;
+		enum status_code sc = MLX90614_read2ByteValue(IRs[i] / 2, AMBIENT, &amb);
+		if (sc != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(sc), false);
 		}
-		batch[i] = rs_ambient.return_value;
+		batch[i] = amb;
 	}
 }
 
@@ -55,16 +58,19 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 	// readFromADC?
 	struct adc_module adc_instance1;
 	struct adc_module adc_instance2;
-	configure_adc(&adc_instance1, P_AI_L1_REF);
-	batch[0] = read_adc(adc_instance1);
-	configure_adc(&adc_instance2, P_AI_L2_REF);
-	batch[1] = read_adc(adc_instance2);
+	uint16_t buf;
+	enum status_code sc = configure_adc(&adc_instance1, P_AI_L1_REF);
+	read_adc(adc_instance1, &buf);
+	batch[0] = buf;
+	sc = configure_adc(&adc_instance2, P_AI_L2_REF);
+	read_adc(adc_instance2, &buf);
+	batch[1] = buf;
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
 	uint16_t results[4];
 	// 0 is the battery board
-	AD7991_read_all(results, AD7991_ADDR_0);
+	enum status_code sc = AD7991_read_all(results, AD7991_ADDR_0);
 	// battery 1 voltage is Vin1
 	batch[0] = results[1];
 	// battery 2 voltage is Vin0
@@ -74,8 +80,9 @@ void read_lion_current_batch(lion_current_batch batch) {
 void read_led_temps_batch(led_temps_batch batch) {
 	// LTC addresses may need to be disabled
 	for (int i = 0; i < 4; i++) {
-		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, rs);
-		batch[i] = rs.return_value;
+		uint8_t rs;
+		enum status_code sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
+		batch[i] = rs;
 	}
 }
 
@@ -84,15 +91,20 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 	struct adc_module adc_instance2;
 	struct adc_module adc_instance3;
 	struct adc_module adc_instance4;
+	uint16_t buf;
 	// order is bank 1, bank 1 out, bank 2, bank 2 out
 	configure_adc(&adc_instance1, P_AI_LFB1SNS);
-	batch[0] = read_adc(adc_instance1);
+	read_adc(adc_instance1, &buf);
+	batch[0] = buf;
 	configure_adc(&adc_instance2, P_AI_LFB1OSNS);
-	batch[1] = read_adc(adc_instance2);
+	read_adc(adc_instance2, &buf);
+	batch[1] = buf;
 	configure_adc(&adc_instance3, P_AI_LFB2SNS);
-	batch[2] = read_adc(adc_instance3);
+	read_adc(adc_instance3, &buf);
+	batch[2] = buf;
 	configure_adc(&adc_instance4, P_AI_LFB2OSNS);
-	batch[3] = read_adc(adc_instance4);
+	read_adc(adc_instance4, &buf);
+	batch[3] = buf;
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
@@ -100,27 +112,35 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	struct adc_module adc_instance2;
 	struct adc_module adc_instance3;
 	struct adc_module adc_instance4;
+	uint16_t buf;
+	// order is bank 1, bank 1 out, bank 2, bank 2 out
 	configure_adc(&adc_instance1, P_AI_LF1REF);
-	batch[0] = read_adc(adc_instance1);
+	read_adc(adc_instance1, &buf);
+	batch[0] = buf;
 	configure_adc(&adc_instance2, P_AI_LF2REF);
-	batch[1] = read_adc(adc_instance2);
+	read_adc(adc_instance2, &buf);
+	batch[1] = buf;
 	configure_adc(&adc_instance3, P_AI_LF3REF);
-	batch[2] = read_adc(adc_instance3);
+	read_adc(adc_instance3, &buf);
+	batch[2] = buf;
 	configure_adc(&adc_instance4, P_AI_LF4REF);
-	batch[3] = read_adc(adc_instance4);
+	read_adc(adc_instance4, &buf);
+	batch[3] = buf;
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
 	for (int i = 0; i < 6; i++) {
-		LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, rs);
-		batch[i] = rs.return_value;
+		uint8_t rs;
+		LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
+		batch[i] = rs;
 	}
 }
 
 void read_bat_temp_batch(bat_temp_batch batch) {
 	for (int i = 4; i < 8; i++) {
-		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, rs);
-		batch[i - 4] = rs.return_value;
+		uint8_t rs;
+		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
+		batch[i - 4] = rs;
 	}
 }
 
@@ -150,14 +170,20 @@ void read_led_current_batch(led_current_batch batch) {
 	struct adc_module adc_instance2;
 	struct adc_module adc_instance3;
 	struct adc_module adc_instance4;
+	uint16_t buf;
+	// order is bank 1, bank 1 out, bank 2, bank 2 out
 	configure_adc(&adc_instance1, P_AI_LED1SNS);
-	batch[0] = read_adc(adc_instance1);
+	read_adc(adc_instance1, &buf);
+	batch[0] = buf;
 	configure_adc(&adc_instance2, P_AI_LED2SNS);
-	batch[1] = read_adc(adc_instance2);
+	read_adc(adc_instance2, &buf);
+	batch[1] = buf;
 	configure_adc(&adc_instance3, P_AI_LED3SNS);
-	batch[2] = read_adc(adc_instance3);
+	read_adc(adc_instance3, &buf);
+	batch[2] = buf;
 	configure_adc(&adc_instance4, P_AI_LED4SNS);
-	batch[3] = read_adc(adc_instance4);
+	read_adc(adc_instance4, &buf);
+	batch[3] = buf;
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {

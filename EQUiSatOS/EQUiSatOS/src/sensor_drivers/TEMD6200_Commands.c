@@ -8,6 +8,7 @@
 #include "TEMD6200_Commands.h"
 
 float brightness(struct adc_module adc_reader){
-	float voltage = read_adc(adc_reader);
-	return voltage;
+	uint16_t buf;
+	read_adc(adc_reader, &buf);
+	return (float)buf;
 }

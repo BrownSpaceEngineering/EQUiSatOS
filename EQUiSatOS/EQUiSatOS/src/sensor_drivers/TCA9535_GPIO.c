@@ -7,23 +7,23 @@
 
 #include "TCA9535_GPIO.h"
 
-void TCA9535_init(return_struct_16 *rs){
+enum status_code TCA9535_init(uint16_t *rs){
 	//return_struct_16 *rs_before;
 	//readTCA9535Levels(rs_before);
 	enum status_code statc1 = setIOMask(IOMask0,IOMask1);
 	if ((statc1 & 0xf0) != 0) {
-		rs->return_status = statc1;
 		// PLACEHOLDER
-		rs->return_value = -1;
+		*rs = -1;
+		return statc1;
 	}
 	//rs->return_value = rs.return_value;
 	enum status_code statc2 = setBatOutputs(initial_outputs);
 	if ((statc2 & 0xf0) != 0) {
-		rs->return_status = statc2;
 		// PLACEHOLDER
-		rs->return_value = -1;
+		*rs = -1;
+		return statc2;
 	}
-	readTCA9535Levels(rs);
+	return readTCA9535Levels(rs);
 }
 
 //Set the mask for the configuration register
@@ -38,19 +38,19 @@ enum status_code setIOMask(uint8_t reg0, uint8_t reg1){
 	return writeDataToAddress(data1, 2, TCA_ADDR, TCA_SHOULD_STOP_WRITE);
 }
 
-void readTCA9535Levels(return_struct_16 *rs){
+enum status_code readTCA9535Levels(uint16_t* rs){
 	uint8_t data[2] = {0x0, 0x0};
 	
 	enum status_code statc1 = readFromAddressAndMemoryLocation(&(data[0]), 1, TCA_ADDR, INPUTS_REGISTER_0, TCA_SHOULD_STOP_READ);
 	if ((statc1 & 0xf0) != 0) {
-		rs->return_status = statc1;
 		// PLACEHOLDER
-		rs->return_value = -1;
+		*rs = -1;
+		return statc1;
 	}
 	enum status_code statc2 = readFromAddressAndMemoryLocation(&(data[1]), 1, TCA_ADDR, INPUTS_REGISTER_1, TCA_SHOULD_STOP_READ);
 	
-	rs->return_status = statc2;
-	rs->return_value = (((uint16_t) data[0]) << 8) + data[1];
+	*rs = (((uint16_t) data[0]) << 8) + data[1];
+	return statc2;
 }
 
 //Set the mask value in array indicated by isArray1 (where arrays have indices 1 and 0) and index char_index_in_register to targetLevel

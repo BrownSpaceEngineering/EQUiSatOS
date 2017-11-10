@@ -6,7 +6,7 @@
  */ 
 
 #include "ADC_Commands.h"
-void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
+enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
 
@@ -35,18 +35,18 @@ void configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin)
 	
 	//setup_set_config
 	adc_init(adc_instance, ADC, &config_adc);
-	adc_enable(adc_instance);
+	// TODO: handle other errors for whole file
+	return adc_enable(adc_instance);
 }
 
 //reads the current voltage from the ADC connection
 // Currently reads a 10 bit value
-uint16_t read_adc(struct adc_module adc_instance) {
+enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	if (!adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
 		return -1;
 	}
 	
-	uint16_t result;
 	int status;
 	
 	adc_start_conversion(&adc_instance);
@@ -55,11 +55,10 @@ uint16_t read_adc(struct adc_module adc_instance) {
 	
 	do {
 		// Wait for conversion to be done and read out result
-		status = adc_read(&adc_instance, &result);
+		status = adc_read(&adc_instance, buf);
 	} while (status == STATUS_BUSY);
 	
-	adc_disable(&adc_instance);
-	return result;
+	return adc_disable(&adc_instance);
 }
 
 uint8_t convert_ir_to_8_bit(uint16_t input) {
@@ -72,19 +71,23 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
 }
 
  // Given an ADC channel, reads from ADC with <num_avg> software averaging
- uint16_t readFromADC(enum adc_positive_input pin, int num_avg){
+enum status_code readFromADC(enum adc_positive_input pin, int num_avg, uint16_t* buf){
 	 struct adc_module adc_instance;
 	 configure_adc(&adc_instance,pin);
 	 //read_adc(adc_instance); //TODO determine if we need to throw away the first reading
 	 //adc_enable(&adc_instance);
 	 uint16_t sum = 0;
+	 uint16_t in;
+	 enum status_code sc;
 	 for(int i=0; i<num_avg; i++){
 		 if(i>0){
 			 adc_enable(&adc_instance);
 		 }
-		 sum = sum + read_adc(adc_instance);
+		 sc = read_adc(adc_instance, &in);
+		 sum += buf;
 	 }
-	 return sum/num_avg;
+	 *buf = sum/num_avg;
+	 return sc;
  }
 
 //Converts from 10bit ADC reading to float voltage

@@ -46,13 +46,13 @@ typedef enum {AMBIENT = MLX90614_TA,
               OBJ2 = MLX90614_TOBJ2} IRTempTarget;
 
 void MLX90614_init(void);
-void MLX90614_read_all_obj(MLXDeviceAddr addr, return_struct_16 rs);
-void MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr, return_struct_16 rs);
-void MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, return_struct_16 rs);
+enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf);
+enum status_code MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr, uint16_t* buf);
+enum status_code MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, uint16_t* buf);
 float dataToTemp(uint16_t data);
-void MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target, return_struct_float returner);
+enum status_code MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target, float* buf);
 
-void MLX90614_getAddress(MLXDeviceAddr addr, return_struct_16 rs);
+enum status_code MLX90614_getAddress(MLXDeviceAddr addr, uint16_t* rs);
 
 enum status_code MLX90614_setSleepMode(MLXDeviceAddr addr);
 

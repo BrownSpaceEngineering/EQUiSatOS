@@ -16,7 +16,7 @@
 #define PHOTO_MULTIPLEXER_I2C 0x49
 
 void LTC1380_init(void);
-void LTC1380_channel_select(uint8_t addr, uint8_t target, return_struct_8 rs);
-void LTC1380_disable(uint8_t addr, return_struct_8 rs);
+enum status_code LTC1380_channel_select(uint8_t addr, uint8_t target, uint8_t* rs);
+enum status_code LTC1380_disable(uint8_t addr, uint8_t* rs);
 
 #endif /* LTC1380_MULTIPLEXER_COMMANDS_H_ */

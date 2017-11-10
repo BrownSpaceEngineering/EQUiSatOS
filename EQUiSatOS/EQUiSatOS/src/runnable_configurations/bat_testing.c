@@ -70,12 +70,12 @@ void bat_testing_init(bat_testing_struct *data){
 	
 	LTC1380_init();
 	AD7991_init();
-	return_struct_16 tca9535_rs;
+	uint16_t tca9535_rs;
 	TCA9535_init(&tca9535_rs);
-	if (!(tca9535_rs.return_value && 0xf4f0)){
+	if (!(tca9535_rs && 0xf4f0)){
 		//TODO: some sort of check here. As long as we're not charging or balancing (and no batteries or solar panels are connected), f4f0 should be the return value.
 	} else{
-		uint16_t res = tca9535_rs.return_value;
+		uint16_t res = tca9535_rs;
 		data->l2_st 		= (res>>8)&0x1;	//8
 		data->l1_st 		= (res>>9)&0x1;//9
 		data->spf_st 		= (res>>10)&0x1;	//10
@@ -121,7 +121,9 @@ void readRemoteADC_0(float* readings){
 void readBatBoard(float* batBoardReadings){
 	uint16_t raw[LEN_BAT_ADC];
 	for (int i=0; i<LEN_BAT_ADC; i++){
-		raw[i] = readFromADC(bat_adc_pins[i],10);
+		uint16_t buf;
+		readFromADC(bat_adc_pins[i],10,&buf);
+		raw[i] = buf;
 		batBoardReadings[i] = convertToVoltage(raw[i]);
 	}
 	
@@ -142,7 +144,7 @@ void readBatBoard(float* batBoardReadings){
 	return sum/num_avg;
 }*/
 
-void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_struct_16 gpio_rs, bat_testing_struct *data){
+void readCommandAndSend(float* remoteBatReadings, float* batReadings, uint16_t* gpio_rs, bat_testing_struct *data){
 
 	
 	readRemoteADC_0(remoteBatReadings);
@@ -171,8 +173,8 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	
 	uint8_t setOutputs[] = {data->lf_b2_bt,data->lf_b2_tt,data->lf_b1_tt,data->lf_b1_bt};
 	setBatOutputs(setOutputs[0]);
-	readTCA9535Levels(&gpio_rs);
-	uint16_t res = gpio_rs.return_value;
+	readTCA9535Levels(gpio_rs);
+	uint16_t res = gpio_rs;
 	data->l2_st 		= (res>>8)&0x1;		//8
 	data->l1_st 		= (res>>9)&0x1;		//9
 	data->spf_st 		= (res>>10)&0x1;	//10
@@ -217,7 +219,7 @@ void bat_testing_run(){
 	
 	float remoteBatReadings[4];
 	float batReadings[LEN_BAT_ADC];
-	return_struct_16 gpio_rs;
+	uint16_t gpio_rs;
 
 	bat_testing_struct bat_test_data;
 	
@@ -239,7 +241,7 @@ void bat_testing_run(){
 	int count = 0;
 	while (count<3600){
 		delay_ms(961); //calibrated delay
-		readCommandAndSend(remoteBatReadings, batReadings, gpio_rs, &bat_test_data);
+		readCommandAndSend(remoteBatReadings, batReadings, &gpio_rs, &bat_test_data);
 		
 		/*if (!areVoltagesNominal(bat_test_data)){
 			print("A voltage has been detected as being an anomaly. Automatically resetting outputs and exiting.\n");
