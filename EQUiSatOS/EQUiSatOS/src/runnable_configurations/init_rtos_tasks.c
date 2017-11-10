@@ -146,7 +146,7 @@ void init_task_state(task_type_t task) {
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
 			//task_suspend(BATTERY_CHARGING_TASK, true);
-			task_resume_if_suspended(BATTERY_CHARGING_TASK); // REAL ONE
+			task_resume(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
 			task_suspend(ANTENNA_DEPLOY_TASK, true); // REAL ONE
@@ -194,7 +194,7 @@ void vApplicationIdleHook(void) {
 	static int idle_started = false;
 	// TODO: Doesn't appear to go well when we set_state_idle
 	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
-		set_state_idle();
+		set_state_idle_no_flash();
 		idle_started = true;
 	}
 }
@@ -203,8 +203,44 @@ void vApplicationIdleHook(void) {
 /* STATE SETTING METHODS                                                */
 /************************************************************************/
 
-// TODO: is this useful? just encoded in task initial state or executed via watchdog reset?
-// TODO: May be deprecated for above, unless we need to change BACK TO THIS STATE
+void set_states_of_idle_no_flash();
+
+void set_state_initial()
+{
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+
+	CurrentState = INITIAL;
+
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_suspend(IDLE_DATA_TASK, false);
+	task_suspend(FLASH_ACTIVATE_TASK, false);
+	task_suspend(FLASH_DATA_TASK, false);
+	task_suspend(TRANSMIT_TASK, false);
+	task_resume(ATTITUDE_DATA_TASK);
+
+	xTaskResumeAll();
+}
+
+void set_state_antenna_deploy()
+{
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+
+	CurrentState = ANTENNA_DEPLOY;
+
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume(ANTENNA_DEPLOY_TASK);
+	task_suspend(IDLE_DATA_TASK, false);
+	task_suspend(FLASH_ACTIVATE_TASK, false);
+	task_suspend(FLASH_DATA_TASK, false);
+	task_suspend(TRANSMIT_TASK, false);
+	task_resume(ATTITUDE_DATA_TASK);
+
+	xTaskResumeAll();
+}
+
 void set_state_hello_world()
 {
 	// Don't allow other tasks to run while we're changing state
@@ -212,36 +248,51 @@ void set_state_hello_world()
 
 	CurrentState = HELLO_WORLD;
 
-	// run only the attitude data task
-	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false);
-	task_suspend(IDLE_DATA_TASK, false);
-	task_suspend(FLASH_ACTIVATE_TASK, false);
-	task_suspend(FLASH_DATA_TASK, false);
-	task_suspend(TRANSMIT_TASK, false);
-	task_resume_if_suspended(ATTITUDE_DATA_TASK);
-		// TODO: Others?
+	set_states_of_idle_no_flash();
 
 	xTaskResumeAll();
 }
 
-void set_state_idle()
+void set_state_idle_flash()
 {
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = IDLE;
+	CurrentState = IDLE_FLASH;
 
-	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(IDLE_DATA_TASK);
-	task_resume_if_suspended(FLASH_ACTIVATE_TASK);
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_resume(IDLE_DATA_TASK);
+	task_resume(FLASH_ACTIVATE_TASK);
 	// we'll try to resume the flash data task, in case we went to LOW_POWER
 	// in the middle of the flash (this will allow it to suspend itself)
-	task_resume_if_suspended(FLASH_DATA_TASK);
-	task_resume_if_suspended(TRANSMIT_TASK);
-	task_resume_if_suspended(ATTITUDE_DATA_TASK);
-		// TODO: Others?
+	task_resume(FLASH_DATA_TASK);
+	task_resume(TRANSMIT_TASK);
+	task_resume(ATTITUDE_DATA_TASK);
+
+	xTaskResumeAll();
+}
+
+/* Shortcut because several states are technically the same as idle not flash, 
+   but just lead to different operations due to the CurrentState global */
+void set_states_of_idle_no_flash() {
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_resume(IDLE_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK, false);
+	task_suspend(FLASH_DATA_TASK, false);
+	task_resume(TRANSMIT_TASK);
+	task_resume(ATTITUDE_DATA_TASK);
+}
+
+void set_state_idle_no_flash()
+{
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+
+	CurrentState = IDLE_NO_FLASH;
+
+	set_states_of_idle_no_flash();
 
 	xTaskResumeAll();
 }
@@ -253,14 +304,25 @@ void set_state_low_power()
 
 	CurrentState = LOW_POWER;
 
-	task_resume_if_suspended(BATTERY_CHARGING_TASK); // should never be stopped
-	task_resume_if_suspended(ANTENNA_DEPLOY_TASK); // should this be stopped at some point?
-	task_resume_if_suspended(IDLE_DATA_TASK);
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_resume(IDLE_DATA_TASK);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
-	task_resume_if_suspended(TRANSMIT_TASK);
+	task_resume(TRANSMIT_TASK);
 	task_suspend(ATTITUDE_DATA_TASK, false);
-	// TODO: Others?
+	
+	xTaskResumeAll();
+}
 
+void set_state_rip()
+{
+	// Don't allow other tasks to run while we're changing state
+	vTaskSuspendAll();
+
+	CurrentState = RIP;
+
+	set_states_of_idle_no_flash();
+	
 	xTaskResumeAll();
 }

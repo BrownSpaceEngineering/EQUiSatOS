@@ -35,6 +35,6 @@
 #endif
 
 void init_tracelyzer(void);
-void trace_print(const char *format, ...);
+void trace_print(const char *format);
 
 #endif /* DEBUG_UTILS_H */

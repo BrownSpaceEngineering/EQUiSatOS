@@ -76,7 +76,7 @@ void transmit_task(void *pvParameters)
 
 			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
 			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
-				log_error(ELOC_PACKAGE_TRANS, ECODE_TRANS_CONFIRM_TIMEOUT); // TODO: not the best error location
+				log_error(ELOC_RADIO, ECODE_TRANS_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
 				break;
 			}
 		}
@@ -125,7 +125,7 @@ void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size_data, 
 	state_string |= (CurrentState & 0b111) << 2; // three LSB of satellite state
 
 	// write preamble
-	write_preamble(msg_buffer, get_current_timestamp(), state_string,
+	write_preamble(msg_buffer, get_rtc_count(), state_string,
 		num_data * size_data);
 
 	// read sensors and write current data to buffer; it's not dependent on state

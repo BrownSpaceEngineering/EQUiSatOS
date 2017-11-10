@@ -189,7 +189,7 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, return_str
 	
 	
 	
-	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;",get_count(), (int) data->LF_B2_OUTEN, (int) data->LF_B1_OUTEN, (int) data->L1_RUN_CHG, (int) data->L2_RUN_CHG, (int) data->LF_B1_RUNCHG, (int) data->LF_B2_RUNCHG, (int) data->L1_DISG, (int) data->L2_DISG);
+	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;",get_rtc_count(), (int) data->LF_B2_OUTEN, (int) data->LF_B1_OUTEN, (int) data->L1_RUN_CHG, (int) data->L2_RUN_CHG, (int) data->LF_B1_RUNCHG, (int) data->LF_B2_RUNCHG, (int) data->L1_DISG, (int) data->L2_DISG);
 	print("%d;%d;%d;%d;", (int) data->l1_sns, (int) data->l2_sns, (int) data->lion_ref, (int) data->sp_out_ref);
 	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;", (int) data->LFB1OSNS, (int) data->LFB1SNS, (int) data->LFB2OSNS, (int) data->LFB2SNS, (int) data->LF1REF, (int) data->LF2REF, (int) data->LF3REF, (int) data->LF4REF, (int) data->L1_REF, (int) data->L2_REF);
 	print("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n", (int) data->l2_st, (int) data->l1_st, (int) data->spf_st, (int) data->l1_chgn, (int) data->l1_faultn, (int) data->l2_chgn, (int) data->l2_faultn, (int) data->lf_b1_bt, (int) data->lf_b1_tt, (int) data->lf_b2_bt, (int) data->lf_b2_tt, (int) data->lf_b2_chgn, (int) data->lf_b2_faultn, (int) data->lf_b1_chgn, (int) data->lf_b1_faultn);

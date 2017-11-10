@@ -39,7 +39,7 @@ void init_rtc(void)
 	}
 }
 
-int get_count(void)
+int get_rtc_count(void)
 {
 	return rtc_count_get_count(&rtc_instance);
 }

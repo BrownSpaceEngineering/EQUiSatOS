@@ -47,7 +47,7 @@ void task_suspend(task_type_t task_id, int suspend_current_task) {
 	}
 }
 
-void task_resume_if_suspended(task_type_t task_id)
+void task_resume(task_type_t task_id)
 {
 	check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
 	TaskHandle_t* task_handle = task_handles[task_id];
@@ -76,12 +76,6 @@ void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t 
 	// increment array tail marker and reset reads-per-log counter
 	data_array_tails[data_type] = data_array_tails[data_type] + 1;
 	loops_since_last_log[data_type] = 0;
-}
-
-uint32_t get_current_timestamp()
-{
-	// TODO: get a more accurate and persistent timestamp (relative to an alive message)
-	return xTaskGetTickCount(); // represents the ms from vstartscheduler
 }
 
 void increment_all(uint8_t* int_arr, uint8_t length)

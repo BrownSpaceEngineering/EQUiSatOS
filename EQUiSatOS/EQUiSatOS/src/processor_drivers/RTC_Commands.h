@@ -14,6 +14,6 @@
 struct rtc_module rtc_instance;
 
 void init_rtc(void);
-int get_count(void);
+int get_rtc_count(void);
 
 #endif

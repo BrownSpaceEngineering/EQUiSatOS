@@ -33,7 +33,7 @@ void flash_data_task(void *pvParameters)
 		check_if_suspended_and_update(FLASH_DATA_TASK);
 		
 		// set start timestamp
-		current_struct->timestamp = get_current_timestamp();
+		current_struct->timestamp = get_rtc_count();
 					
 		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[LED_TEMPS_DATA] >= flash_LED_TEMPS_LOOPS_PER_LOG) {

@@ -15,12 +15,10 @@ void init_tracelyzer(void) {
 	#endif
 }
 
-void trace_print(const char *format, ...)
+void trace_print(const char *format)
 {
+	// NOTE: va_args won't work; no function that takes that :(
 	#if configUSE_TRACE_FACILITY == 1
-		va_list arg;
-		va_start (arg, format);
-		vTracePrintF(global_trace_channel, format, arg);
-		va_end (arg);
+		vTracePrintF(global_trace_channel, format);
 	#endif
 }
