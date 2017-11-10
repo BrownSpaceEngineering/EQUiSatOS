@@ -14,6 +14,8 @@ void antenna_deploy_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot
+	// set DET_RTN (antenna deployment pin) as input
+	setup_pin(false, P_DET_RTN);
 
 	for( ;; )
 	{		
@@ -22,12 +24,11 @@ void antenna_deploy_task(void *pvParameters) {
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);
 		
-		// set DET_RTN (antenna deployment pin) as input
-		setup_pin(false, P_DET_RTN);
 		// if it's open kill the task because the antenna has been deployed
 		// or kill it if it's run more than 5 times because it's a lost cause
-		if (get_input(P_DET_RTN) || num_tries >= 5) {
-			vTaskDelete(NULL);
+		if ((get_input(P_DET_RTN) && num_tries > 0) || num_tries >= 5) {
+			// TODO: also change state
+			vTaskSuspend(NULL);
 		} else {
 			int mod_tries = num_tries % 3;
 			if (mod_tries == 0 && true /* LiON is sufficiently charged and enough time has passed*/) {

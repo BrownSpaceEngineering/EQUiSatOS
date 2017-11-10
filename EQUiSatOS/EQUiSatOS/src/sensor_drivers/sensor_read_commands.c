@@ -15,12 +15,28 @@ uint8_t IRs[6] = {
 	MLX90614_ACCESSPANEL_V3_1,
 	MLX90614_SIDEPANEL_V4_2,
 	MLX90614_SIDEPANEL_V4_3,
-	MLX90614_SIDEPANEL_V4_4 };
+	MLX90614_SIDEPANEL_V4_4
+};
+	
+uint8_t IR_ELOCS[6] = {
+	ELOC_IR_1,
+	ELOC_IR_2,
+	ELOC_IR_3,
+	ELOC_IR_4,
+	ELOC_IR_5,
+	ELOC_IR_6
+};
 
 void read_ir_batch(ir_batch batch) {
 	for (int i = 0; i < 6; i ++) {
 		MLX90614_read2ByteValue(IRs[i] / 2, OBJ1, rs_obj1);
+		if (rs_obj1.return_status != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_obj1.return_status), false);
+		}
 		MLX90614_read2ByteValue(IRs[i] / 2, OBJ2, rs_obj2);
+		if (rs_obj2.return_status != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_obj2.return_status), false);
+		}
 		batch[i] = (rs_obj1.return_value + rs_obj2.return_value) / 2;
 	}
 }
@@ -28,6 +44,9 @@ void read_ir_batch(ir_batch batch) {
 void read_ir_temps_batch(ir_temps_batch batch) {
 	for (int i = 0; i < 6; i++) {
 		MLX90614_read2ByteValue(IRs[i] / 2, AMBIENT, rs_ambient);
+		if (rs_ambient.return_status != STATUS_OK) {
+			log_error(IR_ELOCS[i], atmel_to_equi_error(rs_ambient.return_status), false);
+		}
 		batch[i] = rs_ambient.return_value;
 	}
 }
@@ -106,15 +125,24 @@ void read_bat_temp_batch(bat_temp_batch batch) {
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
-	MPU9250_read_acc((uint16_t*) accel_batch);
+	enum status_code sc = MPU9250_read_acc((uint16_t*) accel_batch);
+	if (sc != STATUS_OK) {
+		log_error(ELOC_IMU_ACC, atmel_to_equi_error(sc), false);
+	}
 }
 
 void read_gyro_batch(gyro_batch gyr_batch) {
-	MPU9250_read_gyro((uint16_t*) gyr_batch);
+	enum status_code sc = MPU9250_read_gyro((uint16_t*) gyr_batch);
+	if (sc != STATUS_OK) {
+		log_error(ELOC_IMU_GYRO, atmel_to_equi_error(sc), false);
+	}
 }
 
 void read_magnetometer_batch(magnetometer_batch batch) {
-	MPU9250_read_mag((uint16_t*) batch);
+	enum status_code sc = MPU9250_read_mag((uint16_t*) batch);
+	if (sc != STATUS_OK) {
+		log_error(ELOC_IMU_MAG, atmel_to_equi_error(sc), false);
+	}
 }
 
 void read_led_current_batch(led_current_batch batch) {

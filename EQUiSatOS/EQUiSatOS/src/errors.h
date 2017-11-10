@@ -123,6 +123,7 @@ StaticSemaphore_t _error_equistack_mutex_d;
 SemaphoreHandle_t _error_equistack_mutex;
 
 void init_errors(void);
-void log_error(uint8_t loc, uint8_t err);
+void log_error(uint8_t loc, uint8_t err, bool priority_error);
+uint8_t atmel_to_equi_error(enum status_code sc);
 
 #endif /* ERRORS_H_ */
