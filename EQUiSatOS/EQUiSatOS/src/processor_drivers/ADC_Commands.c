@@ -34,9 +34,12 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 	config_adc.positive_input = pin;
 	
 	//setup_set_config
-	adc_init(adc_instance, ADC, &config_adc);
-	// TODO: handle other errors for whole file
-	return adc_enable(adc_instance);
+	enum status_code sc = adc_init(adc_instance, ADC, &config_adc);
+	if (is_error(sc)) {
+		return sc;
+	} else {
+		return adc_enable(adc_instance);
+	}
 }
 
 //reads the current voltage from the ADC connection
@@ -56,6 +59,9 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	do {
 		// Wait for conversion to be done and read out result
 		status = adc_read(&adc_instance, buf);
+		if (is_error(status)) {
+			return status;
+		}
 	} while (status == STATUS_BUSY);
 	
 	return adc_disable(&adc_instance);
@@ -73,17 +79,25 @@ uint8_t convert_ir_to_8_bit(uint16_t input) {
  // Given an ADC channel, reads from ADC with <num_avg> software averaging
 enum status_code readFromADC(enum adc_positive_input pin, int num_avg, uint16_t* buf){
 	 struct adc_module adc_instance;
-	 configure_adc(&adc_instance,pin);
+	 enum status_code sc = configure_adc(&adc_instance,pin);
+	 if (is_error(sc)) {
+		 return sc;
+	 }
 	 //read_adc(adc_instance); //TODO determine if we need to throw away the first reading
 	 //adc_enable(&adc_instance);
 	 uint16_t sum = 0;
 	 uint16_t in;
-	 enum status_code sc;
 	 for(int i=0; i<num_avg; i++){
 		 if(i>0){
-			 adc_enable(&adc_instance);
+			 sc = adc_enable(&adc_instance);
+			 if (is_error(sc)) {
+				 return sc;
+			 }
 		 }
 		 sc = read_adc(adc_instance, &in);
+		 if (is_error(sc)) {
+			 return sc;
+		 }
 		 sum += buf;
 	 }
 	 *buf = sum/num_avg;

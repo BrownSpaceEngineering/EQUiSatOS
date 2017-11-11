@@ -70,6 +70,8 @@
 #define ELOC_DET_RTN					39
 
 #define ELOC_RADIO						40
+#define ELOC_AD7991_0					41
+#define ELOC_AD7991_1					42
 
 /******************** PROBLEM CODES ********************/
 
@@ -134,6 +136,8 @@ SemaphoreHandle_t _normal_error_equistack_mutex;
 
 void init_errors(void);
 uint8_t atmel_to_equi_error(enum status_code sc);
+bool is_error(enum status_code sc);
+void log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
 
 #endif /* ERRORS_H_ */

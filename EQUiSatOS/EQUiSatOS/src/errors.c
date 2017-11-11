@@ -17,6 +17,19 @@ void init_errors(void) {
 		NORMAL_ERROR_STACK_MAX, &_normal_error_equistack_mutex);
 }
 
+/*
+ * returns true if sc is not OK, VALID_DATA, or NO_CHANGE
+ */
+bool is_error(enum status_code sc) {
+	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE);
+}
+
+void log_if_error(uint8_t loc, enum status_code sc, bool priority) {
+	if (is_error(sc)) {
+		log_error(loc, atmel_to_equi_error(sc), priority);
+	}
+}
+
 uint8_t atmel_to_equi_error(enum status_code sc) {
 	// needing this switch statement makes me really sad but here you have it 
 	//   -Jacob
