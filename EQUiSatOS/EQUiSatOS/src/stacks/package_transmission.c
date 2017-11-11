@@ -100,7 +100,7 @@ void write_idle_data(uint8_t* buffer, equistack* idle_stack) {
 		} else {
 			// write all 0s to buffer for idle data
 			write_value_and_shift(buffer, 0, IDLE_DATA_PACKET_SIZE, &index);
-			log_error(ELOC_PACKAGE_TRANS, ECODE_NULL_IDLE_DATA, true);
+			log_error(ELOC_RADIO, ECODE_NULL_IDLE_DATA, TRUE);
 		}
 	}
 

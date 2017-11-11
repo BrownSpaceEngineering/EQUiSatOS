@@ -26,7 +26,7 @@ void flash_activate_task(void *pvParameters)
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
 		// start taking data
-		task_resume_if_suspended(FLASH_DATA_TASK);
+		task_resume(FLASH_DATA_TASK);
 		
 		// actually flash leds
 		for (int i = 0; i < NUM_FLASHES; i++) {

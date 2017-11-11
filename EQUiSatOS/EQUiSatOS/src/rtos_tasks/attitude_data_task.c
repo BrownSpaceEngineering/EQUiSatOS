@@ -37,7 +37,7 @@ void attitude_data_task(void *pvParameters)
 			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
-			current_struct->timestamp = get_current_timestamp();
+			current_struct->timestamp = get_rtc_count();
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all(data_array_tails, NUM_DATA_TYPES, 0);

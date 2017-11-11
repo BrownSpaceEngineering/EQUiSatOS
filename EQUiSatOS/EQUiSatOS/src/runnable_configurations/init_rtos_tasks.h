@@ -19,8 +19,12 @@ void run_rtos(void);
 
 void init_task_state(task_type_t task);
 /* State setting functions */
+void set_state_initial(void);
+void set_state_antenna_deploy(void);
 void set_state_hello_world(void);
-void set_state_idle(void);
+void set_state_idle_flash(void);
+void set_state_idle_no_flash(void);
 void set_state_low_power(void);
+void set_state_rip(void);
 
 #endif

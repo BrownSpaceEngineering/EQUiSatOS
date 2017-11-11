@@ -125,14 +125,13 @@ uint8_t task_suspended_states; // no tasks suspended
 /************************************************************************/
 void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
 void task_suspend(task_type_t task_id, int suspend_current_task);
-void task_resume_if_suspended(task_type_t taskId);
+void task_resume(task_type_t taskId);
 bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
 
 /************************************************************************/
 /* Helper Functions                                                     */
 /************************************************************************/
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
-uint32_t get_current_timestamp(void);
 void increment_all(uint8_t* int_arr, uint8_t length);
 void set_all(uint8_t* int_arr, uint8_t length, int value);
 

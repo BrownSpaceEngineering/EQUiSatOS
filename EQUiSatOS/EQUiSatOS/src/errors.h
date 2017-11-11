@@ -69,7 +69,7 @@
 #define ELOC_L2_REF						38
 #define ELOC_DET_RTN					39
 
-#define ELOC_PACKAGE_TRANS				40
+#define ELOC_RADIO						40
 
 /******************** PROBLEM CODES ********************/
 
@@ -112,18 +112,28 @@
 
 
 /* Error storage and interfaces */
-#define ERROR_STACK_MAX					40
+#define PRIORITY_ERROR_STACK_MAX		40
+#define NORMAL_ERROR_STACK_MAX			40
 
-typedef uint16_t sat_error_t;
-equistack error_equistack; // of sat_error_t
+typedef struct {
+	uint32_t timestamp;
+	uint8_t eloc;
+	uint8_t ecode; // top bit is priority of error
+} sat_error_t;
+
+equistack priority_error_equistack; // of sat_error_t
+equistack normal_error_equistack; // of sat_error_t
 
 // static data used inside error equistack
-sat_error_t _error_equistack_arr[ERROR_STACK_MAX];
-StaticSemaphore_t _error_equistack_mutex_d;
-SemaphoreHandle_t _error_equistack_mutex;
+sat_error_t _priority_error_equistack_arr[PRIORITY_ERROR_STACK_MAX];
+StaticSemaphore_t _priority_error_equistack_mutex_d;
+SemaphoreHandle_t _priority_error_equistack_mutex;
+sat_error_t _normal_error_equistack_arr[NORMAL_ERROR_STACK_MAX];
+StaticSemaphore_t _normal_error_equistack_mutex_d;
+SemaphoreHandle_t _normal_error_equistack_mutex;
 
 void init_errors(void);
-void log_error(uint8_t loc, uint8_t err, bool priority_error);
 uint8_t atmel_to_equi_error(enum status_code sc);
+void log_error(uint8_t loc, uint8_t err, bool priority);
 
 #endif /* ERRORS_H_ */

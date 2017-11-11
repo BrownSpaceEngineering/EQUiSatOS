@@ -84,13 +84,9 @@ void run_tests(void) {
 }
 
 /************************************************************************/
-/* DO NOT MODIFY BELOW HERE BESIDES COMMENTING - sid will come for you  */
+/* DO NOT MODIFY BELOW HERE FOR SCRATCH TESTING - sid will come for you */
 /************************************************************************/
 void global_init(void) {
-	init_tracelyzer();	
-	
-	init_errors();
-	
 	// Initialize the SAM system
 	system_init();
 
@@ -104,8 +100,12 @@ void global_init(void) {
 	setup_pin(true,P_L2_RUN_CHG);
 	set_output(false, P_L2_RUN_CHG);
 
-	//init_rtc();
+	init_rtc();
 	USART_init();
+	
+	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
+	
+	init_errors();
 }
 
 int main(void)

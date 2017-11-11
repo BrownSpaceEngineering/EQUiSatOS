@@ -16,7 +16,7 @@ void idle_data_task(void *pvParameters)
 	// initialize first struct
 	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(&idle_readings_equistack);
 	assert(current_struct != NULL); // TESTING
-	current_struct->timestamp = get_current_timestamp();
+	current_struct->timestamp = get_rtc_count();
 	
 	init_task_state(IDLE_DATA_TASK); // suspend or run on boot
 	
@@ -37,7 +37,7 @@ void idle_data_task(void *pvParameters)
 		check_if_suspended_and_update(IDLE_DATA_TASK);
 		
 		// set start timestamp
-		current_struct->timestamp = get_current_timestamp();
+		current_struct->timestamp = get_rtc_count();
 		
 		// add all sensors to batch
 		// read radio temp first because it takes a while to write & reset the radio

@@ -55,9 +55,13 @@
 /************************************************************************/
 typedef enum
 {
+	INITIAL,
+	ANTENNA_DEPLOY,
 	HELLO_WORLD,
-	IDLE,
-	LOW_POWER
+	IDLE_NO_FLASH,
+	IDLE_FLASH,
+	LOW_POWER,
+	RIP
 } global_state_t;
 
 /************************************************************************/
