@@ -188,11 +188,12 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 	
 	// TODO: big change -- want to be fully charging
 				
-	// if either of the lion's are low
-	if (lion_one_percentage < low || lion_two_percentage < low)
-	{
+	if ((lion_one_percentage > high && lion_two_percentage > high) &&
+		!(life_po_bank_one_percentage > high && life_po_bank_two_percentage > high)) {
+		state = FULL_LIFE_PO;
+	} else {
 		state = FULL_LION;
-					
+		
 		if (lion_one_percentage < low && lion_two_percentage < low)
 		{
 			// TODO: send an error message
@@ -202,36 +203,6 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 		{
 			// TODO: send a stronger error message
 			// TODO: go into low power mode
-		}
-	}
-	// if both lion's are full
-	else if (lion_one_percentage > high && lion_two_percentage > high)
-	{
-		// if both life po's aren't also full
-		if (!(life_po_bank_two_percentage > high && life_po_bank_two_percentage > high))
-		{
-			state = FULL_LIFE_PO;
-		}
-		// everything is full!
-		else
-		{
-			state = FULL_LION;
-		}
-	}
-	// it isn't the case that a lion is in danger -- and we have to focus fully there --
-	// and it isn't the case that the lions are totally full -- and we can afford to ignore them --
-	// we should be dividing our power unless both lifepo's are full
-	else
-	{
-		// if both life po's aren't also full
-		if (!(life_po_bank_two_percentage > high && life_po_bank_two_percentage > high))
-		{
-			state = HALF_LION_HALF_LIFE_PO;
-		}
-		// both life po's are full -- let's just focus on the lions
-		else
-		{
-			state = FULL_LION;
 		}
 	}
 				
@@ -263,7 +234,7 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 			charging[LIFE_PO_BANK_TWO] = 1;
 		}
 	}
-	else // if (state == FULL_LION || state == HALF_LION_HALF_LIFE_PO)
+	else // if (state == FULL_LION)
 	{
 		// was charging one or the other
 		// will try to stick with the battery we had been charging previously
@@ -315,21 +286,6 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 		// start out with neither life po charging
 		charging[LIFE_PO_BANK_ONE] = 0;
 		charging[LIFE_PO_BANK_TWO] = 0;
-					
-		// if we're splitting half, also add the life po bank with the lower
-		// percentage
-		if (state == HALF_LION_HALF_LIFE_PO)
-		{
-			// charge the life po bank with the lower percentage
-			if (life_po_bank_one_percentage <= life_po_bank_two_percentage)
-			{
-				charging[LIFE_PO_BANK_ONE] = 1;
-			}
-			else
-			{
-				charging[LIFE_PO_BANK_TWO] = 1;
-			}
-		}
 	}
 				
 	/////

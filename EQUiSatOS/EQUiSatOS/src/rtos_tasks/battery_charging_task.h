@@ -26,9 +26,7 @@
 typedef enum
 {
 	FULL_LION,
-	HALF_LION_HALF_LIFE_PO,
-	FULL_LIFE_PO,
-	FULL_LION_SPLIT
+	FULL_LIFE_PO
 } charge_state;
 
 // defines each battery and/or bank
