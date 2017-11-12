@@ -22,12 +22,7 @@
 // difference between battery percentages that's considered significant enough to change the charhing plan
 #define difference 10
 
-// defines the distribution of power between Lion and LifePo
-typedef enum
-{
-	FULL_LION,
-	FULL_LIFE_PO
-} charge_state;
+#define ITERATIONS_FOR_BATTERY_LOGIC    BATTERY_LOGIC_FREQ / BATTERY_CHARGING_TASK_FREQ
 
 // defines each battery and/or bank
 typedef enum
@@ -37,14 +32,6 @@ typedef enum
 	LIFE_PO_BANK_ONE,
 	LIFE_PO_BANK_TWO
 } battery;
-
-///
-// current state of the battery charging task
-// (exposed here, so the tester can initialize and manipulate the state)
-///
-
-// current state
-int state = FULL_LION;
 
 // the batteries that are currently charging
 // zero -- not charging, one -- charging
