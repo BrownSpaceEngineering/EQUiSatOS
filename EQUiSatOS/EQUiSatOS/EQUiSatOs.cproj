@@ -1037,6 +1037,12 @@
     <Compile Include="src\runnable_configurations\isItOn.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\testing_functions\battery_charging_tester.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\battery_charging_tester.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">
       <SubType>compile</SubType>
     </Compile>
