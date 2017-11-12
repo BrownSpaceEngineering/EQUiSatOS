@@ -67,7 +67,7 @@ float dataToTemp(uint16_t data){
 // Read target temperature in degrees Celsius
 // temp_target can be AMBIENT, OBJ1, OBJ2
 enum status_code MLX90614_readTempC(MLXDeviceAddr addr, IRTempTarget temp_target, float* buf) {
-	return MLX90614_read2ByteValue(addr, (uint8_t) temp_target, buf);
+	return MLX90614_read2ByteValue(addr, (uint8_t) temp_target, (uint16_t*) buf);
 }
 
 // sanity check, should always return the same value as device_addr

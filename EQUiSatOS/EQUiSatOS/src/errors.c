@@ -21,7 +21,7 @@ void init_errors(void) {
  * returns true if sc is not OK, VALID_DATA, or NO_CHANGE
  */
 bool is_error(enum status_code sc) {
-	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE);
+	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE || sc == STATUS_BUSY);
 }
 
 void log_if_error(uint8_t loc, enum status_code sc, bool priority) {

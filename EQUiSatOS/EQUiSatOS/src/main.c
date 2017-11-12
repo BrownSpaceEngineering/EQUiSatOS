@@ -111,6 +111,11 @@ void global_init(void) {
 int main(void)
 {
 	global_init();
-	run_tests();
+	uint16_t buf[2];
+	buf[0] = 0;
+	buf[1] = 0;
+	read_lion_volts_batch(buf);
+	int x = 1;
+	//run_tests();
 	//run_rtos();	
 }

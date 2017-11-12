@@ -38,6 +38,7 @@ int8_t CurrentState;
 #include "telemetry/Radio_Commands.h"
 #include "testing_functions/system_test.h"
 #include "errors.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 #include "debug_utils.h"
 

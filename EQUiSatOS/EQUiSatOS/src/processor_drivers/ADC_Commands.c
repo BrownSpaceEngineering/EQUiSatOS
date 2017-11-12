@@ -26,7 +26,7 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 		config_adc.reference = ADC_REFERENCE_INT1V;
 	}*/
 	
-	//Hardware averaging - couldn't g et this to work
+	//Hardware averaging - couldn't get this to work
 	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_16;
 	config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 	
@@ -98,7 +98,7 @@ enum status_code readFromADC(enum adc_positive_input pin, int num_avg, uint16_t*
 		 if (is_error(sc)) {
 			 return sc;
 		 }
-		 sum += buf;
+		 sum += in;
 	 }
 	 *buf = sum/num_avg;
 	 return sc;
