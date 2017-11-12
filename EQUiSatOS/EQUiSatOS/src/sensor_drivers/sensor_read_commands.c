@@ -69,7 +69,7 @@ void read_ir_batch(ir_batch batch) {
 	}
 }
 
-void read_ir_temps_batch(ir_temps_batch batch) {
+void read_ir_amb_batch(ir_amb_batch batch) {
 	for (int i = 0; i < 6; i++) {
 		uint16_t amb;
 		sc = MLX90614_read2ByteValue(IRs[i] / 2, AMBIENT, &amb);

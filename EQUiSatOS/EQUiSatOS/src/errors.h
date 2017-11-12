@@ -111,6 +111,8 @@
 
 #define ECODE_TRANS_CONFIRM_TIMEOUT		30
 #define ECODE_NULL_IDLE_DATA			31
+#define ECODE_INCONSISTENT_CELL_VOLT	32
+#define ECODE_GYRO_HIGH					33
 
 
 /* Error storage and interfaces */

@@ -32,7 +32,7 @@ typedef struct idle_data_t
 	radio_volts_batch radio_volts_data;
 	radio_temp_batch radio_temp_data;
 	imu_temp_batch imu_temp_data;
-	ir_temps_batch ir_temps_data;
+	ir_amb_batch ir_temps_data;
 	rail_3v_batch rail_3v_data;
 	rail_5v_batch rail_5v_data;
 	

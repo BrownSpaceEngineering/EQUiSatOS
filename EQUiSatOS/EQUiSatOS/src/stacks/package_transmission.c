@@ -94,7 +94,7 @@ void write_idle_data(uint8_t* buffer, equistack* idle_stack) {
 			write_bytes_and_shift(buffer, idle_data->radio_temp_data,		sizeof(radio_temp_batch),			&index);
 			write_bytes_and_shift(buffer, idle_data->radio_volts_data,		sizeof(radio_volts_batch),			&index);
 			write_bytes_and_shift(buffer, idle_data->imu_temp_data,			sizeof(imu_temp_batch),				&index);
-			write_bytes_and_shift(buffer, idle_data->ir_temps_data,			sizeof(ir_temps_batch),				&index);
+			write_bytes_and_shift(buffer, idle_data->ir_temps_data,			sizeof(ir_amb_batch),				&index);
 			write_bytes_and_shift(buffer, idle_data->rail_3v_data,			sizeof(rail_3v_batch),				&index);
 			write_bytes_and_shift(buffer, idle_data->rail_5v_data,			sizeof(rail_5v_batch),				&index);
 		} else {

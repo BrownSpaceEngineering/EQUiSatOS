@@ -8,6 +8,20 @@
 #ifndef SENSOR_READ_COMMANDS_H
 #define	SENSOR_READ_COMMANDS_H
 
+#define AMB_TEMP_HIGH				0
+#define AMB_TEMP_LOW				0
+#define LF_CUR_HIGH					0
+#define LF_CUR_HIGH					0
+#define L_CUR_HIGH					0
+#define L_CUR_LOW					0
+#define LF_VOLT_HIGH				0
+#define LF_VOLT_LOW					0
+#define L_VOLT_HIGH					0
+#define L_VOLT_LOW					0
+#define GYRO_HIGH					0
+#define RAD_VOLT_LOW				3500
+#define RAD_VOLT_HIGH				3700
+
 #include "../global.h"
 
 /**
@@ -21,7 +35,7 @@ void read_lifepo_volts_batch(		lifepo_volts_batch batch);
 void read_ir_batch(					ir_batch batch);
 void read_pdiode_batch(				pdiode_batch batch);
 void read_bat_temp_batch(			bat_temp_batch batch);
-void read_ir_temps_batch(			ir_temps_batch batch);
+void read_ir_amb_batch(				ir_amb_batch batch);
 void read_radio_temp_batch(			radio_temp_batch* batch);			// pointer to single value
 void read_accel_batch(				accelerometer_batch accel_batch);
 void read_gyro_batch(				gyro_batch gyr_batch);

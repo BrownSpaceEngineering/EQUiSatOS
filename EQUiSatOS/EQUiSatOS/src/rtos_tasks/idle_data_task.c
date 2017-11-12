@@ -46,7 +46,7 @@ void idle_data_task(void *pvParameters)
 		read_bat_temp_batch(			current_struct->bat_temp_data); 
 		read_radio_volts_batch(			current_struct->radio_volts_data);
 		read_imu_temp_batch(			&(current_struct->imu_temp_data));
-		read_ir_temps_batch(			current_struct->ir_temps_data);
+		read_ir_amb_batch(			current_struct->ir_temps_data);
 		read_rail_3v_batch(				&(current_struct->rail_3v_data));
 		read_rail_5v_batch(				&(current_struct->rail_5v_data));
 		
