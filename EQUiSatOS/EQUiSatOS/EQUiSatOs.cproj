@@ -1093,6 +1093,9 @@
     <Compile Include="src\rtos_tasks\flash_data_task.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\rtos_tasks\low_power_data_task.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\rtos_tasks\rtos_tasks.c">
       <SubType>compile</SubType>
     </Compile>

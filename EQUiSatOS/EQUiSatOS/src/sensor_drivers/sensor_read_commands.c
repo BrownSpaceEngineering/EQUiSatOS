@@ -3,7 +3,7 @@
  *
  * Created: 11/1/2016 8:18:16 PM
  *  Author: mckenna
- */ 
+ */
 
 #include "sensor_read_commands.h"
 
@@ -17,7 +17,7 @@ static uint8_t IRs[6] = {
 	MLX90614_SIDEPANEL_V4_3,
 	MLX90614_SIDEPANEL_V4_4
 };
-	
+
 static uint8_t IR_ELOCS[6] = {
 	ELOC_IR_1,
 	ELOC_IR_2,
@@ -57,7 +57,7 @@ static void commands_read_adc(uint16_t* dest, uint8_t pin, uint8_t eloc, bool pr
 	log_if_error(eloc, sc, priority);
 }
 
-void read_ir_batch(ir_batch batch) {
+void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 	for (int i = 0; i < 6; i ++) {
 		uint16_t obj1;
 		sc = MLX90614_read2ByteValue(IRs[i] / 2, OBJ1, &obj1);
@@ -69,7 +69,7 @@ void read_ir_batch(ir_batch batch) {
 	}
 }
 
-void read_ir_amb_batch(ir_amb_batch batch) {
+void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	for (int i = 0; i < 6; i++) {
 		uint16_t amb;
 		sc = MLX90614_read2ByteValue(IRs[i] / 2, AMBIENT, &amb);
@@ -118,6 +118,20 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, true);
 }
 
+void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
+
+
+
+
+
+	// TODO
+
+
+
+
+
+}
+
 void read_pdiode_batch(pdiode_batch batch) {
 	for (int i = 0; i < 6; i++) {
 		uint8_t rs;
@@ -127,7 +141,7 @@ void read_pdiode_batch(pdiode_batch batch) {
 	}
 }
 
-void read_bat_temp_batch(bat_temp_batch batch) {
+void read_lion_temps_batch(lion_temps_batch batch) {
 	for (int i = 4; i < 8; i++) {
 		uint8_t rs;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
@@ -162,7 +176,7 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 	// TODO: Tyler will implement later
 	// eventually: XDL_get_temperature(batch);
 }
-	
+
 void read_radio_volts_batch(radio_volts_batch batch) {
 	// 3v6_ref and 3v6_sns
 	uint16_t results[4];
@@ -212,22 +226,18 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	accum = (accum << 1) & get_input(P_LF_B2_FAULTN);
 	setup_pin(false, P_SPF_ST);
 	accum = (accum << 1) & get_input(P_SPF_ST);
-	
+
 	*batch = accum;
 }
-	
+
 void read_digital_out_batch(digital_out_batch* batch) {
 	// yet to be defined, mapped to certain events
 }
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
-	
-}
 
-void read_rail_3v_batch(rail_3v_batch* batch) {
-	
 }
 
 void read_rail_5v_batch(rail_5v_batch* batch) {
-		
+
 }

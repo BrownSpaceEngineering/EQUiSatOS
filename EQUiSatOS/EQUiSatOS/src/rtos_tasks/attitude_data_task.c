@@ -53,7 +53,7 @@ void attitude_data_task(void *pvParameters)
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[IR_DATA] >= attitude_IR_LOOPS_PER_LOG) {
-			read_ir_batch(current_struct->ir_data[data_array_tails[IR_DATA]]);
+			read_ir_object_temps_batch(current_struct->ir_data[data_array_tails[IR_DATA]]);
 			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[DIODE_DATA] >= attitude_DIODE_LOOPS_PER_LOG) {

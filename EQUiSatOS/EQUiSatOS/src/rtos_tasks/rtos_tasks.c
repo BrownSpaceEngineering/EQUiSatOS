@@ -18,6 +18,7 @@ static void init_task_handles(void) {
 	task_handles[FLASH_ACTIVATE_TASK] =			&flash_activate_task_handle;
 	task_handles[TRANSMIT_TASK] =				&transmit_task_handle;
 	task_handles[IDLE_DATA_TASK] =				&idle_data_task_handle;
+	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 	task_handles[FLASH_DATA_TASK] =				&flash_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
 }

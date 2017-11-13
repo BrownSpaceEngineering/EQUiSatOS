@@ -32,7 +32,10 @@
 #define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
 
 #define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_IDLE_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_IDLE_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
+
+#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_LOW_POWER_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
 #define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
@@ -43,9 +46,8 @@
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
 /********************************************************************************/
-// it doesn't make sense of this to be greater than the sum of the other _MAXs
-#define LAST_READING_TYPE_STACK_MAX		32
 #define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
+#define LOW_POWER_STACK_MAX				2
 #define ATTITUDE_STACK_MAX				10
 #define FLASH_STACK_MAX					10
 #define FLASH_CMP_STACK_MAX				10
@@ -98,7 +100,6 @@ typedef enum
 	BAT_CHARGE_VOLTS_DATA,
 	BAT_CHARGE_DIG_SIGS_DATA,
 	DIGITAL_OUT_DATA,
-	RAIL_3V_DATA,
 	RAIL_5V_DATA,
 	NUM_DATA_TYPES //= RAIL_5V_DATA + 1
 } sensor_type_t;
@@ -112,8 +113,9 @@ typedef enum
 	IDLE_DATA,
 	ATTITUDE_DATA,
 	FLASH_DATA,
-	FLASH_CMP,
-	NUM_MSG_TYPE, // = FLASH_CMP + 1
+	FLASH_CMP_DATA,
+	LOW_POWER_DATA,
+	NUM_MSG_TYPE, // = LOW_POWER_DATA + 1
 } msg_data_type_t;
 
 /************************************************************************/
@@ -126,6 +128,7 @@ typedef enum
 	TRANSMIT_TASK,
 	FLASH_ACTIVATE_TASK,
 	IDLE_DATA_TASK,
+	LOW_POWER_DATA_TASK,
 	ATTITUDE_DATA_TASK,
 	FLASH_DATA_TASK,
 	NUM_TASKS, //= FLASH_DATA_TASK + 1
@@ -149,7 +152,7 @@ typedef enum
 #define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
 
 #define IDLE_DATA_TASK_FREQ						1000
-#define IDLE_DATA_LOW_POWER_TASK_FREQ			10000
+#define LOW_POWER_DATA_TASK_FREQ				10000
 
 /* 
  * NOTE: The idle data collection task doesn't really need these constants;

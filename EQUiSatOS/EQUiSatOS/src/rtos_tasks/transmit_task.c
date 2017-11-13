@@ -106,8 +106,8 @@ void write_packet(uint8_t* msg_buffer, int state) {
 			write_flash_data(msg_buffer, &flash_readings_equistack);
 			break;
 
-		case FLASH_CMP:
-			write_message_top(msg_buffer, FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE, FLASH_CMP);
+		case FLASH_CMP_DATA:
+			write_message_top(msg_buffer, FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE, FLASH_CMP_DATA);
 			write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
 			break;
 
@@ -121,16 +121,18 @@ void write_packet(uint8_t* msg_buffer, int state) {
 void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size_data, msg_data_type_t msg_type) {
 	// configure state string
 	uint8_t state_string = 0;
-	state_string |= msg_type & 0b11; // two LSB of msg_type (4 types)
+	state_string |=  msg_type & 0b11; // two LSB of msg_type (4 types)
 	state_string |= (CurrentState & 0b111) << 2; // three LSB of satellite state
 
+	uint32_t current_timestamp = get_rtc_count();
+
 	// write preamble
-	write_preamble(msg_buffer, get_rtc_count(), state_string,
+	write_preamble(msg_buffer, current_timestamp, state_string,
 		num_data * size_data);
 
 	// read sensors and write current data to buffer; it's not dependent on state
 	write_current_data(msg_buffer);
 
-	// TOOD: grab errors and write to section
-	//write_errors(buffer, &errors_equistack);
+	// write relevant errors from both error stacks
+	write_errors(msg_buffer, &priority_error_equistack, &normal_error_equistack, current_timestamp);
 }

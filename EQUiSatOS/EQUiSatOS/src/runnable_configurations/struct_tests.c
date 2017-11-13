@@ -27,7 +27,7 @@ void init_test_struct(void){
 	dob = 0b1010100101011011;
 	CDT->digital_out_data = dob;
 
-	IDT->bat_temp_data[3] = 5;
+	IDT->lion_temps_data[3] = 5;
 	
 	IDT->radio_volts_data[1] = 5;
 	
@@ -37,7 +37,5 @@ void init_test_struct(void){
 	
 	IDT->ir_temps_data[5] = 5;
 
-	IDT->rail_3v_data = 5;
-	
-	IDT->rail_3v_data = 5;
+	IDT->rail_5v_data = 5;
 }

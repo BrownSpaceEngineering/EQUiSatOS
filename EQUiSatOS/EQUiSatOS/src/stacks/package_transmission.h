@@ -33,7 +33,9 @@
 #define START_PARITY				239
 
 // Set number of packets for each packet type
-#define ERROR_PACKETS				13
+#define PRIORITY_ERROR_PACKETS		9
+#define NORMAL_ERROR_PACKETS		4
+#define ERROR_PACKETS				PRIORITY_ERROR_PACKETS + NORMAL_ERROR_PACKETS
 #define IDLE_DATA_PACKETS			7
 #define ATTITUDE_DATA_PACKETS		3
 #define FLASH_DATA_PACKETS			1
@@ -41,18 +43,23 @@
 
 // size of each packet
 #define CALLSIGN_SIZE				4
-#define ERROR_PACKET_SIZE			2
+#define ERROR_PACKET_SIZE			3
 #define IDLE_DATA_PACKET_SIZE		22
 #define ATTITUDE_DATA_PACKET_SIZE	52
 #define FLASH_DATA_PACKET_SIZE		164
 #define FLASH_CMP_PACKET_SIZE		20
+
+// the time resolution to store error time deltas in;
+// we have chosen 300s = 5min because it gives approximately a
+// day of errors (1280 mins = 21.33 hours = 13.8 orbits)
+#define ERROR_TIME_BUCKET_SIZE		300 // s
 
 // methods
 void assert_transmission_constants(void);
 
 void write_preamble(		uint8_t* buffer, uint32_t timestamp, uint8_t states, uint8_t data_len);
 void write_current_data(	uint8_t* buffer);
-void write_errors(			uint8_t* buffer, equistack *error_stack);
+void write_errors(			uint8_t* buffer, equistack* priority_equistack, equistack* normal_equistack, uint32_t timestamp);
 
 void write_idle_data(		uint8_t* buffer, equistack *idle_stack);
 void write_attitude_data(	uint8_t* buffer, equistack *attitude_stack);

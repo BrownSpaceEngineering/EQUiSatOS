@@ -23,6 +23,7 @@ void run_rtos()
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
 	_flash_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_equistack_mutex_d);
 	_flash_cmp_equistack_mutex = xSemaphoreCreateMutexStatic(&_flash_cmp_equistack_mutex_d);
+	_low_power_equistack_mutex = xSemaphoreCreateMutexStatic(&_low_power_equistack_mutex_d);
 
 	// Initialize EQUiStacks
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
@@ -32,7 +33,9 @@ void run_rtos()
 	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr,
 		sizeof(flash_data_t), FLASH_STACK_MAX, &_flash_equistack_mutex);
  	equistack_Init(&flash_cmp_readings_equistack, &_flash_cmp_equistack_arr,
-		sizeof(flash_cmp_t), FLASH_CMP_STACK_MAX, &_flash_cmp_equistack_mutex);
+		sizeof(flash_cmp_data_t), FLASH_CMP_STACK_MAX, &_flash_cmp_equistack_mutex);
+ 	equistack_Init(&low_power_readings_equistack, &_low_power_equistack_arr,
+		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, &_low_power_equistack_mutex);
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */
@@ -172,8 +175,11 @@ void init_task_state(task_type_t task) {
 			task_suspend(ATTITUDE_DATA_TASK, true); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
 			return;
-		case NUM_TASKS:
-			//TODO?
+		case LOW_POWER_DATA_TASK:
+			task_suspend(LOW_POWER_DATA_TASK, true); // REAL ONE
+			//task_resume_if_suspended(LOW_POWER_DATA_TASK);
+			return;
+		default:
 			return;
 	}
 }
@@ -219,6 +225,7 @@ void set_state_initial()
 	task_suspend(FLASH_DATA_TASK, false);
 	task_suspend(TRANSMIT_TASK, false);
 	task_resume(ATTITUDE_DATA_TASK);
+	task_suspend(LOW_POWER_DATA_TASK, false);
 
 	xTaskResumeAll();
 }
@@ -237,6 +244,7 @@ void set_state_antenna_deploy()
 	task_suspend(FLASH_DATA_TASK, false);
 	task_suspend(TRANSMIT_TASK, false);
 	task_resume(ATTITUDE_DATA_TASK);
+	task_suspend(LOW_POWER_DATA_TASK, true); 
 
 	xTaskResumeAll();
 }
@@ -269,6 +277,7 @@ void set_state_idle_flash()
 	task_resume(FLASH_DATA_TASK);
 	task_resume(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
+	task_suspend(LOW_POWER_DATA_TASK, true);
 
 	xTaskResumeAll();
 }
@@ -283,6 +292,7 @@ void set_states_of_idle_no_flash() {
 	task_suspend(FLASH_DATA_TASK, false);
 	task_resume(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
+	task_suspend(LOW_POWER_DATA_TASK, true);
 }
 
 void set_state_idle_no_flash()
@@ -306,11 +316,12 @@ void set_state_low_power()
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_suspend(ANTENNA_DEPLOY_TASK, false);
-	task_resume(IDLE_DATA_TASK);
+	task_suspend(IDLE_DATA_TASK, false);
 	task_suspend(FLASH_ACTIVATE_TASK, false);
 	task_suspend(FLASH_DATA_TASK, false);
 	task_resume(TRANSMIT_TASK);
 	task_suspend(ATTITUDE_DATA_TASK, false);
+	task_resume(LOW_POWER_DATA_TASK); 
 	
 	xTaskResumeAll();
 }

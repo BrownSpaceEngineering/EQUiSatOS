@@ -46,6 +46,7 @@ void idle_data_task(void *pvParameters);
 void transmit_data_task(void *pvParameters);
 void flash_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
+void low_power_data_task(void *pvParameters);
 
 /******************************************************************************/
 /* Global static memory allocated for tasks; stack and data structure holding */
@@ -66,6 +67,8 @@ StaticTask_t flash_data_task_buffer;
 StackType_t flash_data_task_stack				[TASK_FLASH_DATA_RD_STACK_SIZE];
 StaticTask_t attitude_data_task_buffer;
 StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
+StaticTask_t low_power_data_task_buffer;
+StackType_t low_power_data_task_stack			[TASK_LOW_POWER_DATA_RD_STACK_SIZE];
 
 /************************************************************************/
 /* Equistack definitions                                                */
@@ -74,12 +77,14 @@ equistack idle_readings_equistack; // of idle_data_t
 equistack attitude_readings_equistack; // of attitude_data_t
 equistack flash_readings_equistack; // of flash_data_t
 equistack flash_cmp_readings_equistack; // of flash_cmp_t
+equistack low_power_readings_equistack; // of low_power_data_t
 
 /* Global (but don't use them!) arrays used in equistack (put here as an alternative to mallocing) */
 idle_data_t _idle_equistack_arr			[IDLE_STACK_MAX];
-flash_data_t _flash_equistack_arr		[FLASH_STACK_MAX];
-flash_cmp_t _flash_cmp_equistack_arr	[FLASH_CMP_STACK_MAX];
 attitude_data_t _attitude_equistack_arr	[ATTITUDE_STACK_MAX];
+flash_data_t _flash_equistack_arr		[FLASH_STACK_MAX];
+flash_cmp_data_t _flash_cmp_equistack_arr	[FLASH_CMP_STACK_MAX];
+idle_data_t _low_power_equistack_arr	[LOW_POWER_STACK_MAX];
 
 /* Global (but don't use them!) mutex data and mutex handles used inside equistacks (alt. to malloc) */
 StaticSemaphore_t _idle_equistack_mutex_d;
@@ -90,6 +95,8 @@ StaticSemaphore_t _flash_equistack_mutex_d;
 SemaphoreHandle_t _flash_equistack_mutex;
 StaticSemaphore_t _flash_cmp_equistack_mutex_d;
 SemaphoreHandle_t _flash_cmp_equistack_mutex;
+StaticSemaphore_t _low_power_equistack_mutex_d;
+SemaphoreHandle_t _low_power_equistack_mutex;
 
 /************************************************************************/
 /* TASK STATE MANAGEMENT                                               */
@@ -107,6 +114,7 @@ TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
 TaskHandle_t flash_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
+TaskHandle_t low_power_data_task_handle;
 
 /* List (series of bits) of whether a given task is RESUMING from suspension.
  * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
