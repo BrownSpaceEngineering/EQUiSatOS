@@ -6,6 +6,7 @@
  */ 
 #include "system_test.h"
 
+// Function that takes in a status code and prints out the matching status
 static void print_error(enum status_code code){
 	switch(code){
 		
@@ -39,15 +40,9 @@ static void print_error(enum status_code code){
 		
 }
 
+// function that take in a panel address (hex) and puts the name of that pannel into buffer
 static void get_panel(int panel_addr, char* buffer){
-		////Flight IR Sensors
-		//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
-		//#define MLX90614_TOPPANEL_V4_2		0x6B //
-		//#define MLX90614_TOPPANEL_V4_1		0x6A
-		//#define MLX90614_ACCESSPANEL_V4_1	0x5C
-		//#define MLX90614_SIDEPANEL_V4_2		0x5D //
-		//#define MLX90614_SIDEPANEL_V4_3		0x5F
-		//#define MLX90614_SIDEPANEL_V4_4		0x6D
+
 	switch (panel_addr){
 		case 0x6C:
 		buffer = "MLX90614_FLASHPANEL_V6_2_1";
@@ -76,26 +71,27 @@ static void get_panel(int panel_addr, char* buffer){
 	
 }
 
-static float MLX90614_test(uint8_t addr){
+static uint16_t MLX90614_test(uint8_t addr){
 	 
 	 //configure_i2c_standard(SERCOM4); //SERCOM4 -> I2C serial port
 	 
 	 //DON'T NEED TO TURN ON FOR TEST BOARD. UNCOMMENT WHEN REAL TESTING
 	 //MLX90614_init(); //Turns on the IR sensor and sets up the Port DO THIS IN MAIN()
 	 
-	 //Read -> return_struct_float
+	 //read the value from the sensor specified by (addr) and put value in rs
 	 uint16_t rs;
 	 enum status_code sc = MLX90614_read_all_obj(addr,&rs);
 	 
+	 // what was the status code of the read?
 	 print("MLX90614 status: ");
 	 print_error(sc); 
 	 
 	 //If return status is return status is category OK
 	 if ((sc & 0x0F) != 0){
-		 // return_value = NULL;
+		 return rs; 
 	 }
 	 
-	 return rs; 
+	 return 0;  
 }
 
 
@@ -127,36 +123,66 @@ static uint16_t AD590_test(int channel){
 	return (current)*1000000-273;// T = 454*V in C
 }
 
-//IMU test
-static void MPU9250_test(uint16_t toFill[6]){
+//IMU test if rebias = 0 then don't compute the bias again 
+// input length 3 array (sensors) each array entry corresponds to a sensor, 0 means don't read, else read
+// sensors[0] -> acc, sensors[1] -> gyro, sensors[3] -> mag  (length of toFill should correspond to sensor reads) 
+static void MPU9250_test(uint16_t toFill[],int[] sensors, int rebias){
 	//initalize imu.... probably
 	MPU9250_init();
 	
-	uint16_t gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
-	//MPU9250_computeBias(gyroBias,accelBias);
-	enum status_code code1 = MPU9250_read_acc(accelBias);
-	toFill[0] = accelBias[0];
-	toFill[1] = accelBias[1];
-	toFill[2] = accelBias[2];
-	print("MPU9250 read accelerometer");
-	print_error(code1);
-	enum status_code code2 = MPU9250_read_gyro(gyroBias);
-	toFill[3] = gyroBias[0];
-	toFill[4] = gyroBias[1];
-	toFill[5] = gyroBias[2];
-	print("MPU9250 read gyroscope");
-	print_error(code2); 
+	// re compute bias on call 
+	if (rebias) {
+		uint16_t gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0};
+		MPU9250_computeBias(gyroBias,accelBias);
+	}
+		
+	uint16_t reader[3]; 
+	enum status_code code; 
+	
+	if (sensors[0]){
+		code = MPU9250_read_acc(reader);
+		toFill[0] = reader[0];
+		toFill[1] = reader[1];
+		toFill[2] = reader[2];
+		
+		// status code ? 
+		print("MPU9250 read accelerometer");
+		print_error(code);
+	} 
+	
+	if (sensors[1]){
+		code = MPU9250_read_gyro(reader);
+		toFill[3] = reader[0];
+		toFill[4] = reader[1];
+		toFill[5] = reader[2];
+		
+		// status code? 
+		print("MPU9250 read gyroscope");
+		print_error(code);
+	}
+	
+	if (sensors[2]){
+		code = MPU9250_read_mag(reader);
+		toFill[6] = reader[0];
+		toFill[7] = reader[1];
+		toFill[8] = reader[2];
+		
+		// status code?
+		print("MPU9250 read magnetometer");
+		print_error(code);
+	}
+	
 	
 }
 
 //Magnetometer test 
 static float HMC5883L_test(void){
 	
-	uint8_t buffer[10]; 
+	uint8_t buffer[6]; 
 	int16_t xyz[3]; 
 	
 	HMC5883L_init(); 
-	HMC5883L_read(buffer); 
+	HMC5883L_read(buffer); // pretty sure this doesn't do anything ~l m a o~
 	HMC5883L_getXYZ(buffer, xyz); 
 	return HMC5883L_computeCompassDir(xyz[0],xyz[1],xyz[2]); 
 	

@@ -34,6 +34,7 @@ enum status_code MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, uint
 	return MLX90614_read2ByteValue(addr, (uint8_t)chan, buf);
 }
 
+// average obj1 and obj2 
 enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf){
 	uint16_t val[2];
 	uint8_t read_buffer[2] = {
