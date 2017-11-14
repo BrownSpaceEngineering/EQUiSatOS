@@ -54,7 +54,7 @@ static void get_panel(int panel_addr, char* buffer){
 		buffer = "MLX90614_TOPPANEL_V4_1";
 		
 		case 0x5C:
-		buffer = "MLX90614_ACCESSPANEL_V4_1";
+		buffer = "MLX90614_ACCESSPANEL_V4_6";
 		
 		case 0x5D: 
 		buffer = "MLX90614_SIDEPANEL_V4_2";
@@ -316,13 +316,13 @@ void system_test(void){
 	////Flight IR Sensors
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 	//#define MLX90614_TOPPANEL_V4_2		0x6B //
-	//#define MLX90614_TOPPANEL_V4_1		0x6A
-	//#define MLX90614_ACCESSPANEL_V4_1	0x5C
+	//#define MLX90614_TOPPANEL_V4_1		0x6A Flatsat 
+	//#define MLX90614_ACCESSPANEL_V4_6s	0x5C Flatsat 
 	//#define MLX90614_SIDEPANEL_V4_2		0x5D //
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
-	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_1);
-	get_panel(MLX90614_ACCESSPANEL_V4_1,test_str);
+	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_6);
+	get_panel(MLX90614_ACCESSPANEL_V4_6,test_str);
 	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test1);
 	float test2 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
 	get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
