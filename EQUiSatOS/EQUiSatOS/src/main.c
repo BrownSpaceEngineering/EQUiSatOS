@@ -61,8 +61,7 @@ void The_Fall_Of_Ryan(void) {
 
 
 void run_tests(void) {
-	flatsat_run(); //calls flatsat init
-
+	//flatsat_run(); //calls flatsat init
 	//bat_testing_run();
 	//test_equistack();
 	//assert_rtos_constants();
@@ -91,21 +90,21 @@ void global_init(void) {
 	system_init();
 
 	// Get this false as fast as possible.
-	setup_pin(true,P_LF_B2_OUTEN);
+	/*setup_pin(true,P_LF_B2_OUTEN);
 	set_output(false, P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
 	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
 	set_output(false, P_L1_RUN_CHG);
 	setup_pin(true,P_L2_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);*/
 
-	init_rtc();
+	//init_rtc();
 	USART_init();
 	
-	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
+	//init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
 	
-	init_errors();
+	//init_errors();
 }
 
 int main(void)
@@ -114,8 +113,9 @@ int main(void)
 	uint16_t buf[2];
 	buf[0] = 0;
 	buf[1] = 0;
-	read_lion_volts_batch(buf);
-	int x = 1;
+	system_test();
+	//read_lion_volts_batch(buf);
+	int x = 1; 
 	//run_tests();
 	//run_rtos();	
 }

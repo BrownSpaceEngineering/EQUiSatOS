@@ -79,23 +79,23 @@ static uint16_t MLX90614_test(uint8_t addr){
 	 //MLX90614_init(); //Turns on the IR sensor and sets up the Port DO THIS IN MAIN()
 	 
 	 //read the value from the sensor specified by (addr) and put value in rs
-	 uint16_t rs;
-	 enum status_code sc = MLX90614_read_all_obj(addr,&rs);
+	 uint16_t buf;
+	 enum status_code sc = MLX90614_read_all_obj(addr,&buf);
 	 
 	 // what was the status code of the read?
 	 print("MLX90614 status: ");
 	 print_error(sc); 
 	 
 	 //If return status is return status is category OK
-	 if ((sc & 0x0F) != 0){
-		 return rs; 
+	 if ((sc & 0x0F) == 0){
+		 return dataToTemp(buf); 
 	 }
 	 
 	 return 0;  
 }
 
 
-static uint16_t AD590_test(int channel){
+static float AD590_test(int channel){
 	struct adc_module temp_instance; //generate object
 	// TEST BOARD ADC MUX
 	//setup_pin(true, 51);
@@ -116,8 +116,9 @@ static uint16_t AD590_test(int channel){
 	LTC1380_channel_select(0x48, channel, &rs);
 	
 	uint16_t temp;
-	read_adc(temp_instance, &temp);
+	read_adc(temp_instance,&temp);
 	
+	// I do not know if this was done yet :/ 
 	// temperature conversion from voltage -> current -> degrees celcius 
 	float current = ((float) convertToVoltage(temp))/2197 -0.0001001; //converts from V to A
 	return (current)*1000000-273;// T = 454*V in C
@@ -126,7 +127,7 @@ static uint16_t AD590_test(int channel){
 //IMU test if rebias = 0 then don't compute the bias again 
 // input length 3 array (sensors) each array entry corresponds to a sensor, 0 means don't read, else read
 // sensors[0] -> acc, sensors[1] -> gyro, sensors[3] -> mag  (length of toFill should correspond to sensor reads) 
-static void MPU9250_test(uint16_t toFill[],int[] sensors, int rebias){
+static void MPU9250_test(uint16_t toFill[],int* sensors, int rebias){
 	//initalize imu.... probably
 	MPU9250_init();
 	
@@ -194,7 +195,7 @@ static enum status_code TCA9535_test(uint16_t* rs){
 }
 
 // Photodiode test 
-static uint16_t TEMD6200_test(int channel, int num_samples){
+static float TEMD6200_test(int channel){
 	struct adc_module pd_instance; 
 	
 	configure_adc(&pd_instance,P_AI_PD_OUT);
@@ -202,16 +203,13 @@ static uint16_t TEMD6200_test(int channel, int num_samples){
 	LTC1380_channel_select(0x4a, channel, &rs);
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA
 			 
-	uint16_t sum =0;
+	uint16_t read;
 			 
-	for (int j=0; j<num_samples; j++){
-		adc_enable(&pd_instance);
-		uint16_t buf;
-		read_adc(pd_instance, &buf);
-		sum = sum + buf;
-	}
+	adc_enable(&pd_instance);
+	uint16_t buf;
+	read_adc(pd_instance, &read);
 	
-	return sum/num_samples;	
+	return convertToVoltage(read); 
 }
 
 
@@ -238,12 +236,19 @@ static void AD7991_control_test_all(float *results_f){
 
 void system_test(void){
 	
-	print("Initialize system tests...\n"); 
+	//print("Initialize system tests...\n"); 
 	
 	MLX90614_init();
 	configure_i2c_master(SERCOM4); //init I2C
-	LTC1380_init(); //init multiplexer
+	LTC1380_init(); //init multiplexer	
 	
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
+	print("AD7991 test========================================\n"); 
 	print("AD7991 test========================================\n"); 
 	//pass flag
 	int pass = 1; 
@@ -273,7 +278,7 @@ void system_test(void){
 	}
 	
 	const uint16_t expected_temp = 20;//Celsius
-	uint16_t temps[8];
+	float temps[8];
 	
 	
 	//ADC out of comission at the moment
@@ -317,25 +322,28 @@ void system_test(void){
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
 	//#define MLX90614_TOPPANEL_V4_2		0x6B //
 	//#define MLX90614_TOPPANEL_V4_1		0x6A Flatsat 
-	//#define MLX90614_ACCESSPANEL_V4_6s	0x5C Flatsat 
-	//#define MLX90614_SIDEPANEL_V4_2		0x5D //
+	//#define MLX90614_ACCESSPANEL_V4_6	0x5C Flatsat 
+	//#define MLX90614_SIDEPANEL_V4_2		0x5D Flatsat
 	//#define MLX90614_SIDEPANEL_V4_3		0x5F
 	//#define MLX90614_SIDEPANEL_V4_4		0x6D
 	float test1 = MLX90614_test(MLX90614_ACCESSPANEL_V4_6);
 	get_panel(MLX90614_ACCESSPANEL_V4_6,test_str);
 	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test1);
-	float test2 = MLX90614_test(MLX90614_FLASHPANEL_V6_2_1);
+	float test2 = MLX90614_test(MLX90614_TOPPANEL_V4_1);
 	get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
 	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test2);
-	
-	
+	//float test3 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
+	//get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
+	//print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test2);
+	//
 	
 	print("MPU9250 test========================================\n");
 	print("Accelerometer readings in g, gyroscope readings in degrees per second");
 	// IMU 
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
 	uint16_t MPU9250_results[6], MPU9250_err_margin = 20; 
-	MPU9250_test(MPU9250_results);
+	int sensors[] = {1, 1, 0};
+	MPU9250_test(MPU9250_results,sensors,0);
 	uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0}; 	
 	for (int i = 0; i < 6; i++){
 		
@@ -382,7 +390,7 @@ void system_test(void){
 	
 	//ADC out of commission
 	print("TEMD6200 test========================================\n");
-	uint16_t pd_tests[6];
+	float pd_tests[6];
 	for (int i = 0; i < 6; i++){
 		
 		switch (i) {
@@ -406,10 +414,10 @@ void system_test(void){
 			break;
 		}
 		
-		pd_tests[i] = TEMD6200_test(i,5);
-		print("TEMD6200 test %s: %d \n",test_str, pd_tests[i]);
+		pd_tests[i] = TEMD6200_test(i);
+		print("TEMD6200 test %s: %3.5f \n",test_str, pd_tests[i]);
 	}
-	uint16_t test5 = TEMD6200_test(0,5);
+	//uint16_t test5 = TEMD6200_test(0,5);
 	
 	
 	print("TCA9535 test========================================\n"); 
