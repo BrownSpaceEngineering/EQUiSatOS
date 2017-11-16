@@ -7,6 +7,16 @@
 
 #include "battery_charging_task.h"
 
+// the batteries that are currently charging
+// zero -- not charging, one -- charging
+// this array represents both the past state and the current state
+// it's smartly refreshed such that if it's old values are needed,
+// they aren't overwritten until after they're needed
+extern bool batt_charging[4] = {0, 0, 0, 0};
+
+// number of strikes for each battery
+extern int batt_strikes[4] = {0, 0, 0, 0};
+
 int get_battery_percentage(battery batt)
 {
 	struct adc_module adc_instance;
@@ -78,7 +88,7 @@ void reset_charging()
 {
 	for (int i = 0; i < 4; i++)
 	{
-		charging[i] = 0;
+		batt_charging[i] = 0;
 	}
 }
 
@@ -217,30 +227,33 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 	//   - the other lion has dropped considerably below: this is a case we want to avoid, too
 				
 	if ((lion_one_percentage > high && lion_two_percentage > high) &&
-		!(life_po_bank_one_percentage > high && life_po_bank_two_percentage > high)) {
+		!(life_po_bank_one_percentage > high && life_po_bank_two_percentage > high)) 
+	{
 		reset_charging();
 				
 		// charge the life po bank with the lower percentage
 		if (life_po_bank_one_percentage <= life_po_bank_two_percentage)
 		{
-			charging[LIFE_PO_BANK_ONE] = 1;
+			batt_charging[LIFE_PO_BANK_ONE] = 1;
 		}
 		else
 		{
-			charging[LIFE_PO_BANK_TWO] = 1;
+			batt_charging[LIFE_PO_BANK_TWO] = 1;
 		}
-	} else {
+	} 
+	else 
+	{
 		// neither life po should be charging
-		charging[LIFE_PO_BANK_ONE] = 0;
-		charging[LIFE_PO_BANK_TWO] = 0;
+		batt_charging[LIFE_PO_BANK_ONE] = 0;
+		batt_charging[LIFE_PO_BANK_TWO] = 0;
 		
 		// was charging one or the other
 		// will try to stick with the battery we had been charging previously
-		if (charging[LION_ONE] ^ charging[LION_TWO])
+		if (batt_charging[LION_ONE] ^ batt_charging[LION_TWO])
 		{
 			// grab the percentage of the battery that's current charging
-			int charging_percentage = charging[LION_ONE] ? lion_one_percentage : lion_two_percentage;
-			int other_percentage = charging[LION_ONE] ? lion_two_percentage : lion_one_percentage;
+			int charging_percentage = batt_charging[LION_ONE] ? lion_one_percentage : lion_two_percentage;
+			int other_percentage = batt_charging[LION_ONE] ? lion_two_percentage : lion_one_percentage;
 					
 			// either the battery that's currently charging is full,
 			// or it's significantly higher than the other batter
@@ -248,8 +261,8 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 			if ((charging_percentage >= high && other_percentage < high) ||
 			(other_percentage <= charging_percentage - difference))
 			{
-				charging[LION_ONE] = !charging[LION_ONE];
-				charging[LION_TWO] = !charging[LION_TWO];
+				batt_charging[LION_ONE] = !batt_charging[LION_ONE];
+				batt_charging[LION_TWO] = !batt_charging[LION_TWO];
 			}
 					
 			// otherwise we do nothing else -- we want to keep charging the lions that
@@ -261,13 +274,13 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 			// charge the lion with the the lower percentage
 			if (lion_one_percentage <= lion_two_percentage)
 			{
-				charging[LION_ONE] = 1;
-				charging[LION_TWO] = 0;
+				batt_charging[LION_ONE] = 1;
+				batt_charging[LION_TWO] = 0;
 			}
 			else
 			{
-				charging[LION_ONE] = 0;
-				charging[LION_TWO] = 1;
+				batt_charging[LION_ONE] = 0;
+				batt_charging[LION_TWO] = 1;
 			}
 		}
 	}
@@ -278,20 +291,20 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 		
 	// this is redundant code, but really want to be sure that we're not going to charge 
 	// both lion's at the same time
-	if (charging[LION_ONE] && charging[LION_TWO]) 
+	if (batt_charging[LION_ONE] && batt_charging[LION_TWO]) 
 	{
 		// TODO: send error message!!
 		
 		// we'll just charge the lion with the the lower percentage
 		if (lion_one_percentage <= lion_two_percentage)
 		{
-			charging[LION_ONE] = 1;
-			charging[LION_TWO] = 0;
+			batt_charging[LION_ONE] = 1;
+			batt_charging[LION_TWO] = 0;
 		}
 		else
 		{
-			charging[LION_ONE] = 0;
-			charging[LION_TWO] = 1;
+			batt_charging[LION_ONE] = 0;
+			batt_charging[LION_TWO] = 1;
 		}
 	}
 	
@@ -300,9 +313,9 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 	for (int i = 0; i < 4; i++) 
 	{
 		#ifndef BATTERY_DEBUG
-		if (!charging[i]) 
+		if (!batt_charging[i]) 
 		{
-			set_battery_charge(i, charging[i]);
+			set_battery_charge(i, batt_charging[i]);
 		}
 		#endif
 	}
@@ -311,9 +324,9 @@ void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po
 	for (int i = 0; i < 4; i++)
 	{
 		#ifndef BATTERY_DEBUG
-		if (charging[i])
+		if (batt_charging[i])
 		{
-			set_battery_charge(i, charging[i]);
+			set_battery_charge(i, batt_charging[i]);
 		}
 		#endif
 	}		

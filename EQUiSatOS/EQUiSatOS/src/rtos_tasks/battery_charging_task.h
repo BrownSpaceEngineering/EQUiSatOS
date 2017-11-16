@@ -11,6 +11,7 @@
 
 #define BATTERY_DEBUG
 
+#include "global.h"
 #include "rtos_tasks.h"
 
 // thresholds for making very critical charging decisions, including when to go into low power mode
@@ -24,6 +25,9 @@
 
 #define ITERATIONS_FOR_BATTERY_LOGIC    BATTERY_LOGIC_FREQ / BATTERY_CHARGING_TASK_FREQ
 
+extern bool batt_charging[4];
+extern int batt_strikes[4];
+
 // defines each battery and/or bank
 typedef enum
 {	
@@ -32,16 +36,6 @@ typedef enum
 	LIFE_PO_BANK_ONE,
 	LIFE_PO_BANK_TWO
 } battery;
-
-// the batteries that are currently charging
-// zero -- not charging, one -- charging
-// this array represents both the past state and the current state
-// it's smartly refreshed such that if it's old values are needed,
-// they aren't overwritten until after they're needed
-bool charging[4] = {false, false, false, false};
-
-// number of strikes for each battery
-int strikes[4] = {0, 0, 0, 0};
 
 void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage);
 void check_for_end_of_life(int lion_one_percentage, int lion_two_percentage);

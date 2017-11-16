@@ -5,6 +5,8 @@
  *  Author: rj16
  */ 
 
+#include "battery_charging_tester.h"
+
 // Note: we need the test flag to be set as true
 
 // The goals of testing are as follow:
@@ -21,14 +23,18 @@ void run_unit_test_one()
 	int lion_two_percentage = low - 4;
 	int lion_bank_one_percentage = 80;
 	int lion_bank_two_percentage = 84;
-	charging = {false, false, true, false};
+	
+	batt_charging[0] = 0;
+	batt_charging[1] = 0;
+	batt_charging[2] = 1;
+	batt_charging[3] = 0;
 		
 	battery_logic(lion_one_percentage, lion_two_percentage, lion_bank_one_percentage, lion_bank_two_percentage);
 		
-	assert(charging[0] == false);
-	assert(charging[1] == true);
-	assert(charging[2] == false);	
-	assert(charging[3] == false);
+	assert(batt_charging[0] == 0);
+	assert(batt_charging[1] == 1);
+	assert(batt_charging[2] == 0);	
+	assert(batt_charging[3] == 0);
 }
 
 // will lead to full_lion state
@@ -39,14 +45,18 @@ void run_unit_test_two()
 	int lion_two_percentage = 100;
 	int lion_bank_one_percentage = 80;
 	int lion_bank_two_percentage = 84;
-	charging = {true, true, true, false};
+	
+	batt_charging[0] = 1;
+	batt_charging[1] = 1;
+	batt_charging[2] = 1;
+	batt_charging[3] = 0;
 	
 	battery_logic(lion_one_percentage, lion_two_percentage, lion_bank_one_percentage, lion_bank_two_percentage);
 	
-	assert(charging[0] == true);
-	assert(charging[1] == false);
-	assert(charging[2] == false);
-	assert(charging[3] == false);
+	assert(batt_charging[0] == 1);
+	assert(batt_charging[1] == 0);
+	assert(batt_charging[2] == 0);
+	assert(batt_charging[3] == 0);
 }
 
 // will lead to full_lion state
@@ -57,14 +67,18 @@ void run_unit_test_three()
 	int lion_two_percentage = low - difference + 1;
 	int lion_bank_one_percentage = 80;
 	int lion_bank_two_percentage = 84;
-	charging = {false, true, true, true};
+	
+	batt_charging[0] = 0;
+	batt_charging[1] = 1;
+	batt_charging[2] = 1;
+	batt_charging[3] = 1;
 	
 	battery_logic(lion_one_percentage, lion_two_percentage, lion_bank_one_percentage, lion_bank_two_percentage);
 	
-	assert(charging[0] == false);
-	assert(charging[1] == true);
-	assert(charging[2] == false);
-	assert(charging[3] == false);
+	assert(batt_charging[0] == 0);
+	assert(batt_charging[1] == 1);
+	assert(batt_charging[2] == 0);
+	assert(batt_charging[3] == 0);
 }
 
 // will lead to full_lion state
@@ -75,14 +89,18 @@ void run_unit_test_four()
 	int lion_two_percentage = lion_one_percentage - difference;
 	int lion_bank_one_percentage = 80;
 	int lion_bank_two_percentage = 84;
-	charging = {false, true, true, true};
+	
+	batt_charging[0] = 0;
+	batt_charging[1] = 1;
+	batt_charging[2] = 1;
+	batt_charging[3] = 1;
 	
 	battery_logic(lion_one_percentage, lion_two_percentage, lion_bank_one_percentage, lion_bank_two_percentage);
 	
-	assert(charging[0] == true);
-	assert(charging[1] == false);
-	assert(charging[2] == false);
-	assert(charging[3] == false);
+	assert(batt_charging[0] == 1);
+	assert(batt_charging[1] == 0);
+	assert(batt_charging[2] == 0);
+	assert(batt_charging[3] == 0);
 }
 
 // will lead to full_life_po state
@@ -93,14 +111,18 @@ void run_unit_test_five()
 	int lion_two_percentage = lion_one_percentage - difference;
 	int lion_bank_one_percentage = 80;
 	int lion_bank_two_percentage = 84;
-	charging = {false, true, true, true};
+		
+	batt_charging[0] = 0;
+	batt_charging[1] = 1;
+	batt_charging[2] = 1;
+	batt_charging[3] = 1;
 	
 	battery_logic(lion_one_percentage, lion_two_percentage, lion_bank_one_percentage, lion_bank_two_percentage);
 	
-	assert(charging[0] == true);
-	assert(charging[1] == false);
-	assert(charging[2] == false);
-	assert(charging[3] == false);
+	assert(batt_charging[0] == 1);
+	assert(batt_charging[1] == 0);
+	assert(batt_charging[2] == 0);
+	assert(batt_charging[3] == 0);
 }
 
 void run_core_logic_unit_tests() 
