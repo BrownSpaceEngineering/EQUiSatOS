@@ -30,6 +30,8 @@
 // lowest-priority task... may be used for switching to lower power / other modes
 // FOR US, it handles state, and is implemented in init_rtos_tasks.c
 extern void vApplicationIdleHook(void); 
+void vApplicationStackOverflowHook(TaskHandle_t xTask,
+                                    signed char *pcTaskName);
 
 /************************************************************************************/
 /* All main satellite tasks															*/
@@ -132,7 +134,7 @@ uint8_t task_suspended_states; // no tasks suspended
 /* Task Control Functions                                               */
 /************************************************************************/
 void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
-void task_suspend(task_type_t task_id, int suspend_current_task);
+void task_suspend(task_type_t task_id);
 void task_resume(task_type_t taskId);
 bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
 

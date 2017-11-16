@@ -99,12 +99,12 @@ void global_init(void) {
 	setup_pin(true,P_L2_RUN_CHG);
 	set_output(false, P_L2_RUN_CHG);*/
 
-	//init_rtc();
+	init_rtc();
 	USART_init();
 	
-	//init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
+	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
 	
-	//init_errors();
+	init_errors();
 }
 
 int main(void)
@@ -113,9 +113,9 @@ int main(void)
 	uint16_t buf[2];
 	buf[0] = 0;
 	buf[1] = 0;
-	system_test();
+	//system_test();
 	//read_lion_volts_batch(buf);
 	int x = 1; 
 	//run_tests();
-	//run_rtos();	
+	run_rtos();	
 }

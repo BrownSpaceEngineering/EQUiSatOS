@@ -33,7 +33,7 @@ void attitude_data_task(void *pvParameters)
 		if (check_if_suspended_and_update(ATTITUDE_DATA_TASK) || data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			// FOR TESTING
-			idle_data_t* prev_cur_struct = current_struct;
+			attitude_data_t* prev_cur_struct = current_struct;
 			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
