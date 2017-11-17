@@ -34,6 +34,12 @@ enum status_code MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, uint
 	return MLX90614_read2ByteValue(addr, (uint8_t)chan, buf);
 }
 
+// read ambient temperature 
+enum status_code MLX90614_read_amb(MLXDeviceAddr addr, uint16_t * buf){
+	enum status_code read_amb = MLX90614_read2ByteValue(addr, (uint8_t)AMBIENT, &buf);
+	return read_amb;
+};
+
 // average obj1 and obj2 
 enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf){
 	uint16_t val[2];	
