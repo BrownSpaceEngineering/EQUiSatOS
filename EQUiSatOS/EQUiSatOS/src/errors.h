@@ -25,6 +25,7 @@
 /******************** LOCATIONS ********************/
 /* Error code that signified there is no error - "null error"; used in transmission */
 #define ECODE_NO_ERROR					0
+
 #define ELOC_IR_1						1
 #define ELOC_IR_2						2
 #define ELOC_IR_3						3
@@ -47,6 +48,7 @@
 #define ELOC_TEMP_6						18
 #define ELOC_TEMP_7						19
 #define ELOC_TEMP_8						20
+
 #define ELOC_RADIO_TEMP					21
 
 #define ELOC_IMU_ACC					22
@@ -67,9 +69,10 @@
 #define ELOC_LF4REF						36
 #define ELOC_L1_REF						37
 #define ELOC_L2_REF						38
-#define ELOC_DET_RTN					39
 
+#define ELOC_DET_RTN					39
 #define ELOC_RADIO						40
+
 #define ELOC_AD7991_0					41
 #define ELOC_AD7991_0_0					42
 #define ELOC_AD7991_0_1					43
@@ -80,6 +83,8 @@
 #define ELOC_AD7991_1_1					48
 #define ELOC_AD7991_1_2					49
 #define ELOC_AD7991_1_3					50
+
+#define ELOC_TCA						51
 
 /******************** PROBLEM CODES ********************/
 

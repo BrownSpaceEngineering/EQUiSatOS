@@ -78,7 +78,7 @@ void bat_testing_init(bat_testing_struct *data){
 		uint16_t res = tca9535_rs;
 		data->l2_st 		= (res>>8)&0x1;	//8
 		data->l1_st 		= (res>>9)&0x1;//9
-		data->spf_st 		= (res>>10)&0x1;	//10
+		data->spf_st 		= (res>>10)&0x1; //10
 		data->l1_chgn 		= (res>>12)&0x1; //12
 		data->l1_faultn 	= (res>>13)&0x1; //13
 		data->l2_chgn 		= (res>>14)&0x1; //14
@@ -91,7 +91,7 @@ void bat_testing_init(bat_testing_struct *data){
 		data->lf_b2_faultn 	= (res>>5)&0x1; //5
 		data->lf_b1_chgn 	= (res>>6)&0x1; //6
 		data->lf_b1_faultn 	= (res>>7)&0x1; //7
-		}
+	}
 	
 }
 

@@ -39,6 +39,25 @@
 #define RAD_VOLT_LOW				3500
 #define RAD_VOLT_HIGH				3700
 
+typedef enum {
+	BCDS_LF_B1_BT,
+	BCDS_LF_B1_TT,
+	BCDS_LF_B2_TT,
+	BCDS_LF_B2_BT,
+	BCDS_LF_B2_CHGN,
+	BCDS_LF_B2_FAULTN,
+	BCDS_LF_B1_CHGN,
+	BCDS_LF_B1_FAULTN,
+	BCDS_L2_ST,
+	BCDS_L1_ST,
+	BCDS_SPF_ST,
+	BCDS_DUD,
+	BCDS_L1_CHGN,
+	BCDS_L1_FAULTN,
+	BCDS_L2_CHGN,
+	BCDS_L2_FAULTN
+} bcds_conversions_t;
+
 /**
  * Helpful regex: (\w*)_DATA -> $1_batch read_$1_batch(void);
  */
@@ -60,6 +79,7 @@ void read_led_current_batch(		led_current_batch batch);
 void read_radio_volts_batch(		radio_volts_batch batch);
 void read_bat_charge_volts_batch(	bat_charge_volts_batch batch);
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
+bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
 void read_digital_out_batch(		digital_out_batch* batch);			// pointer to single value
 void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single value
 void read_rail_5v_batch(			rail_5v_batch* batch);				// pointer to single value

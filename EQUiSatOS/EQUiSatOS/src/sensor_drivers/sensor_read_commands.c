@@ -244,32 +244,12 @@ void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	// L1_RUN_CHG to LF_B2_OUTEN
-	uint16_t accum = 0;
-	setup_pin(false, P_L1_FAULTN);
-	accum = accum & get_input(P_L1_FAULTN);
-	setup_pin(false, P_L1_CHGN);
-	accum = (accum << 1) & get_input(P_L1_CHGN);
-	setup_pin(false, P_L1_ST);
-	accum = (accum << 1) & get_input(P_L1_ST);
-	setup_pin(false, P_L2_FAULTN);
-	accum = (accum << 1) & get_input(P_L2_FAULTN);
-	setup_pin(false, P_L2_CHGN);
-	accum = (accum << 1) & get_input(P_L2_CHGN);
-	setup_pin(false, P_L2_ST);
-	accum = (accum << 1) & get_input(P_L2_ST);
-	setup_pin(false, P_LF_B1_CHGN);
-	accum = (accum << 1) & get_input(P_LF_B1_CHGN);
-	setup_pin(false, P_LF_B1_FAULTN);
-	accum = (accum << 1) & get_input(P_LF_B1_FAULTN);
-	setup_pin(false, P_LF_B2_CHGN);
-	accum = (accum << 1) & get_input(P_LF_B2_CHGN);
-	setup_pin(false, P_LF_B2_FAULTN);
-	accum = (accum << 1) & get_input(P_LF_B2_FAULTN);
-	setup_pin(false, P_SPF_ST);
-	accum = (accum << 1) & get_input(P_SPF_ST);
+	sc = TCA9535_init(batch);
+	log_if_error(ELOC_TCA, sc, true);
+}
 
-	*batch = accum;
+bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
+	return (batch >> shift) & 1;
 }
 
 void read_digital_out_batch(digital_out_batch* batch) {

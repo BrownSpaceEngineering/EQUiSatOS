@@ -8,21 +8,16 @@
 #include "TCA9535_GPIO.h"
 
 enum status_code TCA9535_init(uint16_t *rs){
-	//return_struct_16 *rs_before;
-	//readTCA9535Levels(rs_before);
-	enum status_code statc1 = setIOMask(IOMask0,IOMask1);
-	if ((statc1 & 0xf0) != 0) {
-		// PLACEHOLDER
-		*rs = -1;
-		return statc1;
+	enum status_code sc = setIOMask(IOMask0,IOMask1);
+	if ((sc & 0xf0) != 0) {
+		return sc;
 	}
-	//rs->return_value = rs.return_value;
-	enum status_code statc2 = setBatOutputs(initial_outputs);
-	if ((statc2 & 0xf0) != 0) {
-		// PLACEHOLDER
-		*rs = -1;
-		return statc2;
+	
+	sc = setBatOutputs(initial_outputs);
+	if ((sc & 0xf0) != 0) {
+		return sc;
 	}
+	// TODO: should it read levels?
 	return readTCA9535Levels(rs);
 }
 
