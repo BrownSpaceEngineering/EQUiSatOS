@@ -1096,6 +1096,9 @@
     <Compile Include="src\rtos_tasks\low_power_data_task.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\rtos_tasks\battery_charging_task.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\rtos_tasks\rtos_tasks.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1166,6 +1169,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\system_test.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\battery_charging_tester.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\battery_charging_tester.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\watchdog_task_test.c">

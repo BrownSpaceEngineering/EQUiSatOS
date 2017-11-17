@@ -9,19 +9,11 @@
 
 static uint8_t IR_ADDS[6] = {
 	MLX90614_FLASHPANEL_V6_2_1,
-<<<<<<< HEAD
 	MLX90614_TOPPANEL_V5_1,
 	MLX90614_ACCESSPANEL_V4_7,
 	MLX90614_SIDEPANEL_V5_2,
 	MLX90614_SIDEPANEL_V5_5,
 	MLX90614_RBFPANEL_V1
-=======
-	MLX90614_TOPPANEL_V4_1,
-	MLX90614_ACCESSPANEL_V4_6,
-	MLX90614_SIDEPANEL_V4_2,
-	MLX90614_SIDEPANEL_V4_3,
-	MLX90614_SIDEPANEL_V4_4
->>>>>>> 8fdbad8510dab4152fd56ece33c673ca6c7f936b
 };
 
 static uint8_t IR_ELOCS[6] = {
@@ -131,7 +123,7 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, true);
 	commands_read_adc(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, true);
 	commands_read_adc(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, true);
-	
+
 	log_if_out_of_bounds(batch[0], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1SNS, true);
 	log_if_out_of_bounds(batch[1], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1OSNS, true);
 	log_if_out_of_bounds(batch[2], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB2SNS, true);
@@ -143,7 +135,7 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LF2REF, ELOC_LF2REF, true);
 	commands_read_adc(&batch[2], P_AI_LF3REF, ELOC_LF3REF, true);
 	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, true);
-	
+
 	batch[1] *= 1950;
 	batch[3] *= 1950;
 	batch[0] = (batch[0]*3870) - batch[1];
@@ -211,7 +203,7 @@ void read_led_current_batch(led_current_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, true);
 	commands_read_adc(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, true);
 	commands_read_adc(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, true);
-	
+
 	log_if_out_of_bounds(batch[0], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED1SNS, true);
 	log_if_out_of_bounds(batch[1], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED2SNS, true);
 	log_if_out_of_bounds(batch[2], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED3SNS, true);
