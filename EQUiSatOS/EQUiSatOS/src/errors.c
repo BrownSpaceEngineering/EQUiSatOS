@@ -24,8 +24,42 @@ bool is_error(enum status_code sc) {
 	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE || sc == STATUS_BUSY);
 }
 
+static void print_error(enum status_code code){
+	switch(code){
+		
+		case STATUS_OK:
+		print("Status OK\n");
+		break;
+		
+		case STATUS_ERR_BAD_ADDRESS:
+		print("Status error, bad address\n");
+		break;
+		
+		case STATUS_ERR_BAD_DATA:
+		print("Status error, bad data\n");
+		break;
+		
+		case STATUS_ERR_BAD_FORMAT:
+		print("Status error, bad format\n");
+		break;
+		
+		case STATUS_BUSY:
+		print("Status busy\n");
+		break;
+		
+		case STATUS_ERR_PACKET_COLLISION:
+		print("Status error, packet collision\n");
+		break;
+		
+		default:
+		print("Status unknown error \n");
+	}
+	
+}
+
 void log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
+		print_error(sc);
 		log_error(loc, atmel_to_equi_error(sc), priority);
 	}
 }

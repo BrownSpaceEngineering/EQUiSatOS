@@ -13,7 +13,8 @@
 #include "../processor_drivers/I2C_Commands.h"
 
 #define TEMP_MULTIPLEXER_I2C 0x48
-#define PHOTO_MULTIPLEXER_I2C 0x49
+//#define PHOTO_MULTIPLEXER_I2C 0x49
+#define PHOTO_MULTIPLEXER_I2C 0x4a
 
 void LTC1380_init(void);
 enum status_code LTC1380_channel_select(uint8_t addr, uint8_t target, uint8_t* rs);

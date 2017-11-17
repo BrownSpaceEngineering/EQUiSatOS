@@ -71,7 +71,15 @@
 
 #define ELOC_RADIO						40
 #define ELOC_AD7991_0					41
-#define ELOC_AD7991_1					42
+#define ELOC_AD7991_0_0					42
+#define ELOC_AD7991_0_1					43
+#define ELOC_AD7991_0_2					44
+#define ELOC_AD7991_0_3					45
+#define ELOC_AD7991_1					46
+#define ELOC_AD7991_1_0					47
+#define ELOC_AD7991_1_1					48
+#define ELOC_AD7991_1_2					49
+#define ELOC_AD7991_1_3					50
 
 /******************** PROBLEM CODES ********************/
 
@@ -105,15 +113,13 @@
 #define ECODE_PIN_MUX_INVALID			26
 
 /**** CUSTOM ****/
-#define ECODE_TEMP_HIGH					27
-#define ECODE_TEMP_LOW					28
+#define ECODE_READING_HIGH				27
+#define ECODE_READING_LOW				28
 #define ECODE_SIGNAL_LOST				29
 
 #define ECODE_TRANS_CONFIRM_TIMEOUT		30
 #define ECODE_NULL_IDLE_DATA			31
 #define ECODE_INCONSISTENT_CELL_VOLT	32
-#define ECODE_GYRO_HIGH					33
-
 
 /* Error storage and interfaces */
 #define PRIORITY_ERROR_STACK_MAX		40

@@ -49,6 +49,7 @@ enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf){
 		return read_obj1;
 	}
 
+	// TODO: figure out why it isn't working with OBJ2
 	enum status_code read_obj2 = MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, &val[1]);
 	if ((read_obj2 & 0x0F) != 0) {
 		return read_obj2;

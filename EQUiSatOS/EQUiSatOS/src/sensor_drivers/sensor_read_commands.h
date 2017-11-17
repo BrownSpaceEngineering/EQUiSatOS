@@ -8,21 +8,36 @@
 #ifndef SENSOR_READ_COMMANDS_H
 #define	SENSOR_READ_COMMANDS_H
 
-#define AMB_TEMP_HIGH				0
-#define AMB_TEMP_LOW				0
-#define LF_CUR_HIGH					0
-#define LF_CUR_HIGH					0
-#define L_CUR_HIGH					0
+#include "../global.h"
+
+#define IR_OBJ_LOW					0
+#define IR_OBJ_HIGH					~0
+#define IR_AMB_LOW					0
+#define IR_AMB_HIGH					~0
+#define PD_LOW						0
+#define PD_HIGH						~0
+#define LED_TEMP_LOW				0
+#define LED_TEMP_HIGH				~0
+#define LED_CUR_LOW					0
+#define LED_CUR_HIGH				~0
+#define L_TEMP_LOW					0
+#define L_TEMP_HIGH					~0
+#define LF_TEMP_LOW					0
+#define LF_TEMP_HIGH				~0
+#define LF_CUR_LOW					0
+#define LF_CUR_HIGH					~0
 #define L_CUR_LOW					0
-#define LF_VOLT_HIGH				0
+#define L_CUR_HIGH					~0
 #define LF_VOLT_LOW					0
-#define L_VOLT_HIGH					0
+#define LF_VOLT_HIGH				~0
 #define L_VOLT_LOW					0
-#define GYRO_HIGH					0
+#define L_VOLT_HIGH					~0
+#define CHARGE_LOW					0
+#define CHARGE_HIGH					~0
+#define GYRO_LOW					0
+#define GYRO_HIGH					~0
 #define RAD_VOLT_LOW				3500
 #define RAD_VOLT_HIGH				3700
-
-#include "../global.h"
 
 /**
  * Helpful regex: (\w*)_DATA -> $1_batch read_$1_batch(void);

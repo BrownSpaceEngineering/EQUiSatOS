@@ -110,6 +110,14 @@ void run_rtos()
 		TASK_ATTITUDE_DATA_DATA_RD_PRIORITY,
 		attitude_data_task_stack,
 		&attitude_data_task_buffer);
+		
+	low_power_data_task_handle = xTaskCreateStatic(low_power_data_task,
+		"low power data reader task",
+		TASK_LOW_POWER_DATA_RD_STACK_SIZE,
+		NULL,
+		TASK_LOW_POWER_DATA_RD_PRIORITY,
+		low_power_data_task_stack,
+		&low_power_data_task_buffer);
 
 // 		xTaskCreate(task_suicide_test,
 // 		"task suicide testing",
@@ -148,35 +156,35 @@ void init_task_state(task_type_t task) {
 	// when RTOS is first starting
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
-			//task_suspend(BATTERY_CHARGING_TASK, true);
+			//task_suspend(BATTERY_CHARGING_TASK);
 			task_resume(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
-			task_suspend(ANTENNA_DEPLOY_TASK, true); // REAL ONE
+			task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
 			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
 			return;
 		case IDLE_DATA_TASK:
-			task_suspend(IDLE_DATA_TASK, true); // REAL ONE
+			task_suspend(IDLE_DATA_TASK); // REAL ONE
 			//task_resume_if_suspended(IDLE_DATA_TASK);
 			return;
 		case FLASH_ACTIVATE_TASK:
-			task_suspend(FLASH_ACTIVATE_TASK, true); // REAL ONE
+			task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
 			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 			return;
 		case FLASH_DATA_TASK:
 			// ALWAYS suspend because is activated by FLASH_ACTIVATE_TASK
-			task_suspend(FLASH_DATA_TASK, true); // REAL ONE
+			task_suspend(FLASH_DATA_TASK); // REAL ONE
 			return;
 		case TRANSMIT_TASK:
-			task_suspend(TRANSMIT_TASK, true); // REAL ONE
+			task_suspend(TRANSMIT_TASK); // REAL ONE
 			//task_resume_if_suspended(TRANSMIT_TASK);
 			return;
 		case ATTITUDE_DATA_TASK:
-			task_suspend(ATTITUDE_DATA_TASK, true); // REAL ONE
+			task_suspend(ATTITUDE_DATA_TASK); // REAL ONE
 			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
 			return;
 		case LOW_POWER_DATA_TASK:
-			task_suspend(LOW_POWER_DATA_TASK, true); // REAL ONE
+			task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
 			//task_resume_if_suspended(LOW_POWER_DATA_TASK);
 			return;
 		default:
@@ -219,13 +227,13 @@ void set_state_initial()
 	CurrentState = INITIAL;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false);
-	task_suspend(IDLE_DATA_TASK, false);
-	task_suspend(FLASH_ACTIVATE_TASK, false);
-	task_suspend(FLASH_DATA_TASK, false);
-	task_suspend(TRANSMIT_TASK, false);
+	task_suspend(ANTENNA_DEPLOY_TASK);
+	task_suspend(IDLE_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
+	task_suspend(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
-	task_suspend(LOW_POWER_DATA_TASK, false);
+	task_suspend(LOW_POWER_DATA_TASK);
 
 	xTaskResumeAll();
 }
@@ -239,12 +247,12 @@ void set_state_antenna_deploy()
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume(ANTENNA_DEPLOY_TASK);
-	task_suspend(IDLE_DATA_TASK, false);
-	task_suspend(FLASH_ACTIVATE_TASK, false);
-	task_suspend(FLASH_DATA_TASK, false);
-	task_suspend(TRANSMIT_TASK, false);
+	task_suspend(IDLE_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
+	task_suspend(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
-	task_suspend(LOW_POWER_DATA_TASK, true); 
+	task_suspend(LOW_POWER_DATA_TASK); 
 
 	xTaskResumeAll();
 }
@@ -269,7 +277,7 @@ void set_state_idle_flash()
 	CurrentState = IDLE_FLASH;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_suspend(ANTENNA_DEPLOY_TASK);
 	task_resume(IDLE_DATA_TASK);
 	task_resume(FLASH_ACTIVATE_TASK);
 	// we'll try to resume the flash data task, in case we went to LOW_POWER
@@ -277,7 +285,7 @@ void set_state_idle_flash()
 	task_resume(FLASH_DATA_TASK);
 	task_resume(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
-	task_suspend(LOW_POWER_DATA_TASK, true);
+	task_suspend(LOW_POWER_DATA_TASK);
 
 	xTaskResumeAll();
 }
@@ -286,13 +294,13 @@ void set_state_idle_flash()
    but just lead to different operations due to the CurrentState global */
 void set_states_of_idle_no_flash() {
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false);
+	task_suspend(ANTENNA_DEPLOY_TASK);
 	task_resume(IDLE_DATA_TASK);
-	task_suspend(FLASH_ACTIVATE_TASK, false);
-	task_suspend(FLASH_DATA_TASK, false);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
 	task_resume(TRANSMIT_TASK);
 	task_resume(ATTITUDE_DATA_TASK);
-	task_suspend(LOW_POWER_DATA_TASK, true);
+	task_suspend(LOW_POWER_DATA_TASK);
 }
 
 void set_state_idle_no_flash()
@@ -315,12 +323,12 @@ void set_state_low_power()
 	CurrentState = LOW_POWER;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
-	task_suspend(ANTENNA_DEPLOY_TASK, false);
-	task_suspend(IDLE_DATA_TASK, false);
-	task_suspend(FLASH_ACTIVATE_TASK, false);
-	task_suspend(FLASH_DATA_TASK, false);
+	task_suspend(ANTENNA_DEPLOY_TASK);
+	task_suspend(IDLE_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_suspend(FLASH_DATA_TASK);
 	task_resume(TRANSMIT_TASK);
-	task_suspend(ATTITUDE_DATA_TASK, false);
+	task_suspend(ATTITUDE_DATA_TASK);
 	task_resume(LOW_POWER_DATA_TASK); 
 	
 	xTaskResumeAll();

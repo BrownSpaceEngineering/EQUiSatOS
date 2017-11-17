@@ -35,7 +35,7 @@ void flash_activate_task(void *pvParameters)
 		}
 		
 		// stop taking data
-		task_suspend(FLASH_DATA_TASK, false);
+		task_suspend(FLASH_DATA_TASK);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

@@ -230,10 +230,11 @@ static float TEMD6200_test(int channel){
 static enum status_code AD7991_control_test_all(float *results_f){
 	
 	uint16_t results[4]; 
-		
-	set_output(true, P_RAD_PWR_RUN);		
-	set_output(true, P_5V_EN);
+<<<<<<< HEAD
+=======
 	
+>>>>>>> 8fdbad8510dab4152fd56ece33c673ca6c7f936b
+		
 	AD7991_init(); 
 	enum status_code read = AD7991_read_all(results, AD7991_ADDR_1);
 	
@@ -261,11 +262,21 @@ void system_test(void){
 	MLX90614_init();
 	configure_i2c_master(SERCOM4); //init I2C
 	LTC1380_init(); //init multiplexer	
+<<<<<<< HEAD
 	
 	print("AD7991 test========================================\n"); 
 	//pass flag
 	int pass = 1; 
 	char test_str[20];
+=======
+	USART_init();
+//	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator
+	int pass = 1;
+	char * test_str;
+	/*print("AD7991 test========================================\n"); 
+	//pass flag
+	 	
+>>>>>>> 8fdbad8510dab4152fd56ece33c673ca6c7f936b
 
 	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5; 
 	
@@ -310,9 +321,18 @@ void system_test(void){
 	//}
 	
 	const uint16_t expected_temp = 20;//Celsius
+<<<<<<< HEAD
 	float temps[8];
 	char error_str[20];
+=======
 	
+	*/
+	float temps[8];
+	setup_pin(true, P_5V_EN); // 5V regulator
+>>>>>>> 8fdbad8510dab4152fd56ece33c673ca6c7f936b
+	
+	//	set_output(true, P_RAD_PWR_RUN);
+	set_output(true, P_5V_EN);	
 	//ADC out of comission at the moment
 	print("AD590 test========================================\n");
 	for (int i = 0; i < 8; i++){
@@ -360,13 +380,6 @@ void system_test(void){
 	print("MLX90614 test========================================\n"); 
 	print("Panel Name \t Obj Status \t Obj \t Amb Status \t Amb \n"); 
 	//#define MLX90614_FLASHPANEL_V6_2_1	0x6C
-//#define MLX90614_ACCESSPANEL_V4_7	0x6B // probably 
-//#define MLX90614_SIDEPANEL_V5_5		0x5E // probably 
-//#define MLX90614_SIDEPANEL_V5_2		0x6E
-//#define MLX90614_RBFPANEL_V1		0x5F
-//#define MLX90614_TOPPANEL_V5_1		0x6D
-//#define MLX90614_ACCESSPANEL_V4_6   0x5C
-//#define MLX90614_TOPPANEL_V4_1		0x6A
 	//uint8_t addr[] = {MLX90614_SIDEPANEL_V5_2,MLX90614_SIDEPANEL_V5_5, 
 		//MLX90614_ACCESSPANEL_V4_7,MLX90614_FLASHPANEL_V6_2_1,
 		//MLX90614_RBFPANEL_V1,MLX90614_TOPPANEL_V5_1};
@@ -375,6 +388,7 @@ void system_test(void){
 	
 	// arg 2 should be the size of addr
 	MLX90614_test(addr,2);
+
 	
 	print("MPU9250 test========================================\n");
 	print("Accelerometer readings in g, gyroscope readings in degrees per second\n");
