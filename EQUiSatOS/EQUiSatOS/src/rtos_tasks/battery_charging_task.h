@@ -23,10 +23,17 @@
 #define high       90
 #define full       95
 
-extern int batt_charging;
-extern int batt_discharging;
-extern int curr_charge_state;
-extern int batt_strikes[4];
+// the battery that's currently charging
+int batt_charging;
+
+// the battery that's currently discharging
+int batt_discharging;
+
+// charging state
+int curr_charge_state;
+
+// number of strikes for each battery
+int batt_strikes[4];
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank

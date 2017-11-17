@@ -11,15 +11,6 @@
 //  - implement strikes!
 //  - what will change once a battery has struck out?
 
-// the battery that's currently charging
-extern int batt_charging;
-	
-// the battery that's currently discharging
-extern int batt_discharging;
-
-// charging state
-extern int curr_charge_state;
-
 // number of strikes for each battery
 extern int batt_strikes[4] = {0, 0, 0, 0};
 
@@ -42,6 +33,8 @@ void battery_charging_task(void *pvParameters)
 	
 	while (true)
 	{
+		vTaskDelayUntil(&xNextWakeTime, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
+		
 		// TODO: do this with sensor read commands	
 		// before getting into it, grab the percentages of each of the batteries
 		// lions
@@ -79,9 +72,6 @@ void battery_charging_task(void *pvParameters)
 			life_po_bank_one_bat_two_percentage,
 			life_po_bank_two_bat_one_percentage,
 			life_po_bank_two_bat_two_percentage);
-
-		// TODO: is this here or at the beginning of the loop
-		vTaskDelayUntil(&xNextWakeTime, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 	
 	// delete this task if it ever breaks out
@@ -125,6 +115,8 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 	}
 	
 	// TODO: return "hello world" if the global state is "hello world"
+	
+	// TODO: return "antenna deplot" if the global state is "antenna deploy"
 	
 	// enter low power if lion's aren't great
 	if (lion_one_percentage < med || lion_two_percentage < med)
@@ -263,8 +255,11 @@ void battery_logic(
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 	
-	// TODO: to what extent are we concerned, here, with the effects of RTOS stepping in
+	// TODO: reconsider, down the road, the effects of the suspend and resume all
+	// TODO: make very sure this doesn't hang
 	#ifndef BATTERY_DEBUG
+	vTaskSuspendAll();
+	
 	// set the lion that should be discharging to discharge
 	// set the other lion to not discharge
 	// NOTE: very important to set the discharging pin to true before setting the other to false
@@ -314,6 +309,8 @@ void battery_logic(
 		// TODO: make sure this went through by looking at CHG
 		setup_pin(charge_pin);
 		set_output(i == batt_charging, charge_pin);
-	}	
+	}
+	
+	xTaskResumeAll();
 	#endif
 }
