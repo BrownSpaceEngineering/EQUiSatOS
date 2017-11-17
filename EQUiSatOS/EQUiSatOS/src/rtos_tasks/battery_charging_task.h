@@ -23,6 +23,8 @@
 #define high       90
 #define full       95
 
+#define ms_to_wait_for_crit 2
+
 // the battery that's currently charging
 int batt_charging;
 

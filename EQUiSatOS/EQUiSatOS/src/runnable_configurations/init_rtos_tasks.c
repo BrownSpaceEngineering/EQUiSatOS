@@ -7,6 +7,11 @@
 
 #include "init_rtos_tasks.h"
 
+bool set_state(global_state_t state)
+{
+	return 0;	
+}
+
 void run_rtos()
 {
 	/************************************************************************/

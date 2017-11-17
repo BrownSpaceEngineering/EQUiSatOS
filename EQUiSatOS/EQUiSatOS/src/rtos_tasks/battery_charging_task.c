@@ -39,21 +39,30 @@ void battery_charging_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
-		// TODO: do this with sensor read commands
 		// before getting into it, grab the percentages of each of the batteries
 		// lions
-		int lion_one_percentage = 0; // get_battery_percentage(LION_ONE);
-		int lion_two_percentage = 0; // get_battery_percentage(LION_TWO);
+		
+		lion_volts_batch lion_volts;
+		read_lion_volts_batch(lion_volts);
+		
+		int lion_one_percentage = lion_volts[0];
+		int lion_two_percentage = lion_volts[1];
 
-		// life po banks
-		int life_po_bank_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE);
-		int life_po_bank_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO);
-
+		lifepo_volts_batch life_po_volts;
+		read_lifepo_volts_batch(life_po_volts);
+	
 		// individual batteries within the life po banks
-		int life_po_bank_one_bat_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE_BAT_ONE);
-		int life_po_bank_one_bat_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE_BAT_TWO);
-		int life_po_bank_two_bat_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO_BAT_ONE);
-		int life_po_bank_two_bat_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO_BAT_TWO);
+		int life_po_bank_one_bat_one_percentage = life_po_volts[0];
+		int life_po_bank_one_bat_two_percentage = life_po_volts[1];
+		int life_po_bank_two_bat_one_percentage = life_po_volts[2];
+		int life_po_bank_two_bat_two_percentage = life_po_volts[3];
+
+		// TODO: how do we actually derive this? currently just taking the average
+		// life po banks
+		int life_po_bank_one_percentage = 
+			(life_po_bank_one_bat_one_percentage + life_po_bank_one_bat_two_percentage) / 2;
+		int life_po_bank_two_percentage = 
+			(life_po_bank_two_bat_one_percentage + life_po_bank_two_bat_two_percentage) / 2;
 
 		// NOTE: get_global_state and battery_logic are individual functions in order to make
 		// it easier to "unit test" them with contrived inputs
@@ -64,7 +73,8 @@ void battery_charging_task(void *pvParameters)
 			lion_two_percentage,
 			life_po_bank_one_percentage,
 			life_po_bank_two_percentage);
-		// TODO: set the global state to the return value of charge state
+			
+		set_state(curr_global_state);
 
 		// what batteries should we be charging?
 		battery_logic(
@@ -84,8 +94,10 @@ void battery_charging_task(void *pvParameters)
 
 int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage)
 {
-	// TODO:
-	// return "rip" if the global state is rip
+	if (CurrentState == RIP)
+	{
+		return RIP;
+	}
 
 	// enter the rip state if both are critical
 	if (lion_one_percentage <= critical && lion_two_percentage <= critical)
@@ -95,9 +107,11 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 		// we want to be very sure that both are actually critical
 		for (int i = 0; i < 5; i++)
 		{
-			// TODO: get these for real
-			int recalc_lion_one_percentage = 0; // get_battery_percentage(LION_ONE);
-			int recalc_lion_two_percentage = 0; // get_battery_percentage(LION_TWO);
+			lion_volts_batch lion_volts;
+			read_lion_volts_batch(lion_volts);
+			
+			int recalc_lion_one_percentage = lion_volts[0];
+			int recalc_lion_two_percentage = lion_volts[1];
 
 			if (!(recalc_lion_one_percentage <= critical && recalc_lion_two_percentage <= critical))
 			{
@@ -105,12 +119,15 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 				break;
 			}
 
-			// TODO: add a delay here
+			// TODO: maybe reconsider this down the road
+			vTaskSuspendAll();
+			vTaskDelay(ms_to_wait_for_crit);
+			xTaskResumeAll();
 		}
 
 		if (end_of_life)
 		{
-			// TODO: return "rip"
+			return RIP;
 		}
 		else
 		{
@@ -118,22 +135,33 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 		}
 	}
 
-	// TODO: return "hello world" if the global state is "hello world"
+	if (CurrentState == HELLO_WORLD)
+	{
+		return HELLO_WORLD;
+	}
 
-	// TODO: return "antenna deplot" if the global state is "antenna deploy"
-
+	if (CurrentState == ANTENNA_DEPLOY)
+	{
+		return ANTENNA_DEPLOY;
+	}
+	
+	if (CurrentState == INITIAL)
+	{
+		return INITIAL;
+	}
+	
 	// enter low power if lion's aren't great
 	if (lion_one_percentage < med || lion_two_percentage < med)
 	{
-		// TODO: return "low power"
+		return LOW_POWER;
 	}
-
+	
 	if (!(life_po_bank_one_percentage > high && life_po_bank_two_percentage > high))
 	{
-		// TODO: return "idle no flash"
+		return IDLE_NO_FLASH;
 	}
 
-	// TODO: return "idle flash"
+	return IDLE_FLASH;
 }
 
 void battery_logic(
@@ -180,31 +208,34 @@ void battery_logic(
 	//    or FILL_LIFE_PO
 	//  - otherwise, FILL_LION is the only option
 
-	// TODO: set the charge state to FILL_LION if the global state is not idle_charge or
-	// idle_no_charge
-	// TODO: else...
-
-	switch (curr_charge_state)
+	if (CurrentState != IDLE_FLASH && CurrentState != IDLE_NO_FLASH)
 	{
-		// NOTE: these conditions are a subset of the low power conditions -- if it's low
-		// power, it'll be full lion
-		case FILL_LION:
-			if (!life_po_full && (lion_one_percentage > full && lion_two_percentage > full))
-			{
-				curr_charge_state = FILL_LIFE_PO;
-			}
+		curr_charge_state = FILL_LIFE_PO;
+	}
+	else
+	{		
+		switch (curr_charge_state)
+		{
+			// NOTE: these conditions are a subset of the low power conditions -- if it's low
+			// power, it'll be full lion
+			case FILL_LION:
+				if (!life_po_full && (lion_one_percentage > full && lion_two_percentage > full))
+				{
+					curr_charge_state = FILL_LIFE_PO;
+				}
 
-			break;
+				break;
 
-		case FILL_LIFE_PO:
-			if ((lion_one_percentage < high && lion_two_percentage < high) ||
-				(lion_one_percentage < med || lion_two_percentage < med) ||
-				life_po_full)
-			{
-				curr_charge_state = FILL_LION;
-			}
+			case FILL_LIFE_PO:
+				if ((lion_one_percentage < high && lion_two_percentage < high) ||
+					(lion_one_percentage < med || lion_two_percentage < med) ||
+					life_po_full)
+				{
+					curr_charge_state = FILL_LION;
+				}
 
-			break;
+				break;
+		}
 	}
 
 	/////

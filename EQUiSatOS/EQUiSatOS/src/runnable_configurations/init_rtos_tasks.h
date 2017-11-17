@@ -19,6 +19,7 @@ void run_rtos(void);
 
 void init_task_state(task_type_t task);
 /* State setting functions */
+bool set_state(global_state_t state);
 void set_state_initial(void);
 void set_state_antenna_deploy(void);
 void set_state_hello_world(void);
