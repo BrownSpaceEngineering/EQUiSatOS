@@ -8,11 +8,11 @@
 #include "battery_charging_task.h"
 
 // High-level TODO's:
-//  - interface the battery task with the hello world state -- how will it differ
+//  - implement strikes!
 //  - what will change once a battery has struck out?
 
 // the battery that's currently charging
-extern bool batt_charging;
+extern int batt_charging;
 	
 // the battery that's currently discharging
 extern int batt_discharging;
@@ -22,42 +22,6 @@ extern int curr_charge_state;
 
 // number of strikes for each battery
 extern int batt_strikes[4] = {0, 0, 0, 0};
-
-int get_battery_percentage(battery batt)
-{
-	struct adc_module adc_instance1;
-	struct adc_module adc_instance2;
-	uint16_t volts;
-	
-	// TODO: add logic to get the voltage for life_po_bank_one_bat_one, etc.
-	
-	// for explanation of conversions (multiplication) see Battery Board V2 Datasheet
-	switch (batt) {
-		case LION_ONE:
-			configure_adc(&adc_instance1, P_AI_L1_REF);
-			volts = read_adc(adc_instance1) * 2.5;
-			break;
-		case LION_TWO:
-			configure_adc(&adc_instance1, P_AI_L2_REF);
-			volts = read_adc(adc_instance1) * 2.5;
-			break;
-		case LIFE_PO_BANK_ONE:
-			configure_adc(&adc_instance1, P_AI_LF1REF);
-			volts = read_adc(adc_instance1) * 3.87;
-			configure_adc(&adc_instance2, P_AI_LF2REF);
-			volts -= read_adc(adc_instance2);
-			break;
-		case LIFE_PO_BANK_TWO:
-			configure_adc(&adc_instance1, P_AI_LF3REF);
-			volts = read_adc(adc_instance1) * 3.87;
-			configure_adc(&adc_instance2, P_AI_LF4REF);
-			volts -= read_adc(adc_instance2);
-			break;
-	}
-	
-	// TODO: convert to percentages
-	return volts;
-}
 
 void battery_charging_task(void *pvParameters)
 {
@@ -78,20 +42,21 @@ void battery_charging_task(void *pvParameters)
 	
 	while (true)
 	{
+		// TODO: do this with sensor read commands	
 		// before getting into it, grab the percentages of each of the batteries
 		// lions
-		int lion_one_percentage = get_battery_percentage(LION_ONE);
-		int lion_two_percentage = get_battery_percentage(LION_TWO);
+		int lion_one_percentage = 0; // get_battery_percentage(LION_ONE);
+		int lion_two_percentage = 0; // get_battery_percentage(LION_TWO);
 		
 		// life po banks
-		int life_po_bank_one_percentage = get_battery_percentage(LIFE_PO_BANK_ONE);
-		int life_po_bank_two_percentage = get_battery_percentage(LIFE_PO_BANK_TWO);
+		int life_po_bank_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE);
+		int life_po_bank_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO);
 		
 		// individual batteries within the life po banks
-		int life_po_bank_one_bat_one_percentage = get_battery_percentage(LIFE_PO_BANK_ONE_BAT_ONE);
-		int life_po_bank_one_bat_two_percentage = get_battery_percentage(LIFE_PO_BANK_ONE_BAT_TWO);
-		int life_po_bank_two_bat_one_percentage = get_battery_percentage(LIFE_PO_BANK_TWO_BAT_ONE);
-		int life_po_bank_two_bat_two_percentage = get_battery_percentage(LIFE_PO_BANK_TWO_BAT_TWO);
+		int life_po_bank_one_bat_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE_BAT_ONE);
+		int life_po_bank_one_bat_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_ONE_BAT_TWO);
+		int life_po_bank_two_bat_one_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO_BAT_ONE);
+		int life_po_bank_two_bat_two_percentage = 0; // get_battery_percentage(LIFE_PO_BANK_TWO_BAT_TWO);
 
 		// NOTE: get_global_state and battery_logic are individual functions in order to make
 		// it easier to "unit test" them with contrived inputs
@@ -102,7 +67,7 @@ void battery_charging_task(void *pvParameters)
 			lion_two_percentage, 
 			life_po_bank_one_percentage, 
 			life_po_bank_two_percentage);	
-		// TODO: set the global state to the return value of change state
+		// TODO: set the global state to the return value of charge state
 		
 		// what batteries should we be charging?
 		battery_logic(
@@ -125,16 +90,20 @@ void battery_charging_task(void *pvParameters)
 
 int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage) 
 {
+	// TODO:
+	// return "rip" if the global state is rip
+	
 	// enter the rip state if both are critical
 	if (lion_one_percentage <= critical && lion_two_percentage <= critical)
 	{
 		int end_of_life = 1;
 			
 		// we want to be very sure that both are actually critical
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 5; i++)
 		{
-			int recalc_lion_one_percentage = get_battery_percentage(LION_ONE);
-			int recalc_lion_two_percentage = get_battery_percentage(LION_TWO);
+			// TODO: get these for real
+			int recalc_lion_one_percentage = 0; // get_battery_percentage(LION_ONE);
+			int recalc_lion_two_percentage = 0; // get_battery_percentage(LION_TWO);
 				
 			if (!(recalc_lion_one_percentage <= critical && recalc_lion_two_percentage <= critical))
 			{
@@ -154,6 +123,8 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 			// TODO: send a hi-pri error
 		}
 	}
+	
+	// TODO: return "hello world" if the global state is "hello world"
 	
 	// enter low power if lion's aren't great
 	if (lion_one_percentage < med || lion_two_percentage < med)
@@ -193,6 +164,7 @@ void battery_logic(
 	// TODO: Implement this. Some of the remaining q's:
 	//   - How does striking out work for life po? It might be hard to avoid false positives
 	//     (wrongly adding a strike) with a diff. in the charge of the cells.
+	//   - What do we do if we strike out?
 	
 	/////
 	// phase 1: determine whether we want to make a state change
@@ -201,13 +173,25 @@ void battery_logic(
 	// the flow is as follows: we should charge the lion's up to full, and in the time between
 	// their filling up and their dropping down below an optimal state, we should charge the
 	// lifepo
-	// more concretely,
-	//  - if we're in full_lion, we switch if the lifepo's aren't full and both lion's are
-	//  - if we're in full_life_po, we switch if the either lion is below med, or both are
+	
+	// more concretely:
+	//  - if we're in fill_lion, we switch if the lifepo's aren't full and both lion's are
+	//  - if we're in fill_life_po, we switch if the either lion is below med, or both are
 	//    below high
+	
+	// this isn't synonymous with the global state, but they're related in the following ways:
+	//  - if the global state is idle flash or idle not flash, we can be in either FILL_LION,
+	//    or FILL_LIFE_PO
+	//  - otherwise, FILL_LION is the only option
+	
+	// TODO: set the charge state to FILL_LION if the global state is not idle_charge or
+	// idle_no_charge
+	// TODO: else...
 	
 	switch (curr_charge_state) 
 	{
+		// NOTE: these conditions are a subset of the low power conditions -- if it's low
+		// power, it'll be full lion
 		case FILL_LION:
 			if (!life_po_full && (lion_one_percentage > full && lion_two_percentage > full))
 			{
@@ -297,7 +281,7 @@ void battery_logic(
 		not_discharge_pin = P_L1_DISG;
 	}
 	
-	// TODO: is there a way to make sure that this went through
+	// TODO: make sure this went through by looking at the CHG PIN
 	setup_pin(discharge_pin);
 	set_output(true, discharge_pin);
 	setup_pin(not_discharge_pin);
@@ -327,7 +311,7 @@ void battery_logic(
 				break;
 		}
 		
-		// TODO: is there a way to make sure this went through?
+		// TODO: make sure this went through by looking at CHG
 		setup_pin(charge_pin);
 		set_output(i == batt_charging, charge_pin);
 	}	

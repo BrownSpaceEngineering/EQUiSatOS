@@ -23,12 +23,12 @@
 #define high       90
 #define full       95
 
-// difference between battery percentages that's considered significant enough to change the charhing plan
-#define difference 10
-
-extern bool batt_charging[4];
+extern int batt_charging;
+extern int batt_discharging;
+extern int curr_charge_state;
 extern int batt_strikes[4];
 
+// NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
 typedef enum
 {	
@@ -48,7 +48,17 @@ typedef enum
 	FILL_LIFE_PO
 } charge_state;
 
-void battery_logic(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage);
+void battery_logic(
+	int lion_one_percentage, 
+	int lion_two_percentage, 
+	int life_po_bank_one_percentage, 
+	int life_po_bank_two_percentage,
+	int life_po_bank_one_bat_one_percentage,
+	int life_po_bank_one_bat_two_percentage,
+	int life_po_bank_two_bat_one_percentage,
+	int life_po_bank_two_bat_two_percentage);
+
+int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage);
 void check_for_end_of_life(int lion_one_percentage, int lion_two_percentage);
 void battery_charging_task(void *pvParameters);
 
