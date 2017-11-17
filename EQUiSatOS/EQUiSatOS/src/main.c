@@ -90,32 +90,83 @@ void global_init(void) {
 	system_init();
 
 	// Get this false as fast as possible.
-	/*setup_pin(true,P_LF_B2_OUTEN);
+	setup_pin(true,P_LF_B2_OUTEN);
 	set_output(false, P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_OUTEN);
 	set_output(false, P_LF_B1_OUTEN);
 	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
 	set_output(false, P_L1_RUN_CHG);
 	setup_pin(true,P_L2_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);*/
+	set_output(false, P_L2_RUN_CHG);
 
-	//init_rtc();
+	init_rtc();
 	USART_init();
+	configure_i2c_master(SERCOM4);
+	MLX90614_init();
+	MPU9250_init();
+	delay_init();
 	
-	//init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
+	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
 	
-	//init_errors();
+	init_errors();
 }
 
 int main(void)
 {
-	global_init();
-	uint16_t buf[2];
-	buf[0] = 0;
-	buf[1] = 0;
+	//global_init();
+	uint16_t six_buf[6];
+	uint16_t three_buf[3];
+	uint16_t four_buf[4];
+	uint16_t two_buf[2];
 	system_test();
-	//read_lion_volts_batch(buf);
-	int x = 1; 
+	/*delay_ms(100);
+	print("\n\n\n\n##### NEW RUN #####\n");
+	
+	print("\n# IMU #\n");
+	read_accel_batch(three_buf);
+	print("accel: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	read_gyro_batch(three_buf);
+	print("gyro: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	read_magnetometer_batch(three_buf);
+	print("magnetometer: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	
+	print("\n# IR #\n");
+	read_ir_ambient_temps_batch(six_buf);
+	print("ir ambs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+	read_ir_object_temps_batch(six_buf);
+	print("ir objs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+	
+	print("\n# PDIODE #\n");
+	read_pdiode_batch(six_buf);
+		
+	for (int i = 0; i < 6; i++){
+		//print("pdiode %d: %d\n",i, six_buf[i]);	
+	}	*/
+	
+	
+	
+	/*print("\n\n# LiON VOLTS #\n");
+	read_lion_volts_batch(two_buf);
+	print("lion volts: %d %d\n", two_buf[0], two_buf[1]);
+	
+	print("# LiON CURRENT #\n");
+	read_lion_current_batch(two_buf);
+	print("lion current: %d %d\n", two_buf[0], two_buf[1]);
+	
+	print("# LiON TEMPS #\n");
+	read_lion_temps_batch(two_buf);
+	print("lion temps: %d %d\n", two_buf[0], two_buf[1]);
+	
+	
+	print("\n# LiFePO VOLTS #\n");
+	read_lifepo_volts_batch(four_buf);
+	print("lifepo volts: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	
+	print("# LiFePO CURRENT #\n");
+	read_lifepo_current_batch(four_buf);
+	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	
+	int x = 1; */
 	//run_tests();
 	//run_rtos();	
 }

@@ -218,12 +218,7 @@ static void AD7991_control_test_all(float *results_f){
 	
 	uint16_t results[4]; 
 	
-	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator 
-	setup_pin(true, P_5V_EN); // 5V regulator 
 		
-	set_output(true, P_RAD_PWR_RUN);		
-	set_output(true, P_5V_EN);
-	
 	AD7991_init(); 
 	AD7991_read_all(results, AD7991_ADDR_1);
 	
@@ -241,18 +236,13 @@ void system_test(void){
 	MLX90614_init();
 	configure_i2c_master(SERCOM4); //init I2C
 	LTC1380_init(); //init multiplexer	
-	
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	print("AD7991 test========================================\n"); 
-	//pass flag
-	int pass = 1; 
+	USART_init();
+//	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator
+	int pass = 1;
 	char * test_str;
+	/*print("AD7991 test========================================\n"); 
+	//pass flag
+	 	
 
 	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5; 
 	
@@ -278,9 +268,13 @@ void system_test(void){
 	}
 	
 	const uint16_t expected_temp = 20;//Celsius
+	
+	*/
 	float temps[8];
+	setup_pin(true, P_5V_EN); // 5V regulator
 	
-	
+	//	set_output(true, P_RAD_PWR_RUN);
+	set_output(true, P_5V_EN);	
 	//ADC out of comission at the moment
 	print("AD590 test========================================\n");
 	for (int i = 0; i < 8; i++){
@@ -330,7 +324,7 @@ void system_test(void){
 	get_panel(MLX90614_ACCESSPANEL_V4_6,test_str);
 	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test1);
 	float test2 = MLX90614_test(MLX90614_TOPPANEL_V4_1);
-	get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
+	get_panel(MLX90614_TOPPANEL_V4_1,test_str);
 	print("IR test on %s yielded approx %d degrees Celsius\n",test_str,(int) test2);
 	//float test3 = MLX90614_test(MLX90614_SIDEPANEL_V4_2);
 	//get_panel(MLX90614_FLASHPANEL_V6_2_1,test_str);
