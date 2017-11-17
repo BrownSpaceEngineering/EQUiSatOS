@@ -224,7 +224,7 @@ unsigned char prvTraceGetObjectType(void* handle);
 
 traceHandle prvTraceGetTaskNumber(void* handle);
 
-//void* prvTraceGetCurrentTaskHandle(void);
+void* prvTraceGetCurrentTaskHandle(void);
 
 uint8_t uiTraceIsObjectExcluded(traceObjectClass objectclass, traceHandle handle);
 

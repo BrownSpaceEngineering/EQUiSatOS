@@ -87,8 +87,10 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 
 void read_lion_volts_batch(lion_volts_batch batch) {
 	commands_read_adc(&batch[0], P_AI_L1_REF, ELOC_L1_REF, true);
+	batch[0] *= 2500;
 	log_if_out_of_bounds(batch[0], L_VOLT_LOW, L_VOLT_HIGH, P_AI_L1_REF, true);
 	commands_read_adc(&batch[1], P_AI_L2_REF, ELOC_L2_REF, true);
+	batch[1] *= 2500;
 	log_if_out_of_bounds(batch[1], L_VOLT_LOW, L_VOLT_HIGH, P_AI_L2_REF, true);
 }
 
@@ -118,23 +120,29 @@ void read_led_temps_batch(led_temps_batch batch) {
 
 void read_lifepo_current_batch(lifepo_current_batch batch) {
 	commands_read_adc(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, true);
-	log_if_out_of_bounds(batch[0], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1SNS, true);
 	commands_read_adc(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, true);
-	log_if_out_of_bounds(batch[1], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1OSNS, true);
 	commands_read_adc(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, true);
-	log_if_out_of_bounds(batch[2], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB2SNS, true);
 	commands_read_adc(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, true);
+	
+	log_if_out_of_bounds(batch[0], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1SNS, true);
+	log_if_out_of_bounds(batch[1], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1OSNS, true);
+	log_if_out_of_bounds(batch[2], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB2SNS, true);
 	log_if_out_of_bounds(batch[3], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB2OSNS, true);
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	commands_read_adc(&batch[0], P_AI_LF1REF, ELOC_LF1REF, true);
-	log_if_out_of_bounds(batch[0], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF1REF, true);
 	commands_read_adc(&batch[1], P_AI_LF2REF, ELOC_LF2REF, true);
-	log_if_out_of_bounds(batch[1], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF2REF, true);
 	commands_read_adc(&batch[2], P_AI_LF3REF, ELOC_LF3REF, true);
-	log_if_out_of_bounds(batch[2], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF3REF, true);
 	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, true);
+	
+	batch[1] *= 1950;
+	batch[3] *= 1950;
+	batch[0] = (batch[0]*3870) - batch[1];
+	batch[2] = (batch[2]*3870) - batch[3];
+	log_if_out_of_bounds(batch[0], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF1REF, true);
+	log_if_out_of_bounds(batch[1], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF2REF, true);
+	log_if_out_of_bounds(batch[2], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF3REF, true);
 	log_if_out_of_bounds(batch[3], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF4REF, true);
 }
 
@@ -192,12 +200,13 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 
 void read_led_current_batch(led_current_batch batch) {
 	commands_read_adc(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, true);
-	log_if_out_of_bounds(batch[0], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED1SNS, true);
 	commands_read_adc(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, true);
-	log_if_out_of_bounds(batch[1], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED2SNS, true);
 	commands_read_adc(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, true);
-	log_if_out_of_bounds(batch[2], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED3SNS, true);
 	commands_read_adc(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, true);
+	
+	log_if_out_of_bounds(batch[0], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED1SNS, true);
+	log_if_out_of_bounds(batch[1], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED2SNS, true);
+	log_if_out_of_bounds(batch[2], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED3SNS, true);
 	log_if_out_of_bounds(batch[3], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED4SNS, true);
 }
 

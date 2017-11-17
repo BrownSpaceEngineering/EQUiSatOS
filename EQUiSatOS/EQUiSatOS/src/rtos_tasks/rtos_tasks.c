@@ -21,6 +21,7 @@ static void init_task_handles(void) {
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 	task_handles[FLASH_DATA_TASK] =				&flash_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
+	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 }
 
 void pre_init_rtos_tasks(void) {
@@ -29,22 +30,13 @@ void pre_init_rtos_tasks(void) {
 }
 
 // NOTE: task_id must be the id of the current task if suspend_current_task is true
-void task_suspend(task_type_t task_id, int suspend_current_task) {
+void task_suspend(task_type_t task_id) {
 	check_out_task(task_id); // check out of watchdog
-	if (suspend_current_task) {
-		// this signifies suspend the currently-running task;
-		// we allow this because RTOS can (evidently) only
-		// suspend the current task when starting up, because
-		// it hasn't run all tasks yet so doesn't know all their 
-		// handles
-		vTaskSuspend(NULL); 
+	TaskHandle_t* task_handle = task_handles[task_id];
+	if (task_handle != NULL && *task_handle != NULL) { // the latter would suspend THIS task
+		vTaskSuspend(*task_handle); // actually suspend using handle
 	} else {
-		TaskHandle_t* task_handle = task_handles[task_id];
-		if (task_handle != NULL) {
-			vTaskSuspend(*task_handle); // actually suspend using handle
-		} else {
-			// TODO: ERROR!!!!
-		}
+		// TODO: ERROR!!!!
 	}
 }
 
@@ -93,6 +85,10 @@ void set_all(uint8_t* int_arr, uint8_t length, int value)
 	{
 		int_arr[i] = value;
 	}
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
+	while (1) {}; // will hang here on stack overflow
 }
 
 /************************************************************************/
