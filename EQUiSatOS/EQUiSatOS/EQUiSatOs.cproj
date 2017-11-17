@@ -1144,6 +1144,9 @@
     <Compile Include="src\sensor_drivers\M24M01_EEPROM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\stacks\persistent_storage.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\telemetry\Radio_Commands.c">
       <SubType>compile</SubType>
     </Compile>
