@@ -126,6 +126,17 @@ int binsize(void *begin) {
 }
 
 
+void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* slave) {
+	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0xfc, 0xff, 0x42};
+	uint8_t example_output_array[8];
+	
+	write_bytes(spi_master_instance, slave, &example_array, 8, 0x00);
+	read_bytes(spi_master_instance, slave, &example_output_array, 8, 0x00);
+	
+	return;
+}
+
+
 #ifdef DEBUG_ENABLE
 #	define DEBUG_PIN_HIGH 	port_pin_set_output_level(BOOT_LED, 1)
 #	define DEBUG_PIN_LOW 	port_pin_set_output_level(BOOT_LED, 0)
@@ -151,6 +162,8 @@ int main(void)
 	
 	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
 	initialize_slave(&slave);
+
+	mram_test(&spi_master_instance, &slave);
 
 	// write the binary into MRAM
 	write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, BINSIZE, 0x00);

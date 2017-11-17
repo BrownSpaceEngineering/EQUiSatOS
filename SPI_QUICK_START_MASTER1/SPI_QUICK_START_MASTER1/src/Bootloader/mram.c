@@ -48,7 +48,7 @@ void enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst 
 
 // returns true (1) if stat is a STATUS_CATEGORY_OK
 uint8_t status_ok(status_code_genare_t stat) {
-	return (stat && stat < STATUS_CATEGORY_COMMON);
+	return (stat < STATUS_CATEGORY_COMMON);
 }
 
 // returns a status code, and will fail partway through if the write fails
@@ -59,10 +59,10 @@ status_code_genare_t write_bytes(struct spi_module *spi_master_instance, struct 
 	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
 	if (!status_ok(s)) return s;
 	
-	s = spi_transceive_buffer_wait(spi_master_instance, write_control, &temp_control, num_bytes);
+	s = spi_transceive_buffer_wait(spi_master_instance, write_control, temp_control, num_bytes);
 	if (!status_ok(s)) return s;
 	
-	s = spi_transceive_buffer_wait(spi_master_instance, data, &temp_data, num_bytes);
+	s = spi_transceive_buffer_wait(spi_master_instance, data, temp_data, num_bytes);
 	if (!status_ok(s)) return s;
 	
 	s = spi_select_slave(spi_master_instance, slave, false);
@@ -75,10 +75,10 @@ status_code_genare_t read_bytes(struct spi_module *spi_master_instance, struct s
 	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
 	if (!status_ok(s)) return s;
 	
-	s = spi_transceive_buffer_wait(spi_master_instance, read_control, &temp_control, NUM_CONTROL_BYTES);
+	s = spi_transceive_buffer_wait(spi_master_instance, read_control, temp_control, NUM_CONTROL_BYTES);
 	if (!status_ok(s)) return s;
 	
-	s = spi_transceive_buffer_wait(spi_master_instance, temp_data, &data, num_bytes);
+	s = spi_transceive_buffer_wait(spi_master_instance, temp_data, data, num_bytes);
 	if (!status_ok(s)) return s;
 	
 	s = spi_select_slave(spi_master_instance, slave, false);

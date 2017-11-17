@@ -56,12 +56,12 @@ int test_mram(void)
 	uint8_t temp2[5] = {0x01, 0x01, 0x01, 0x01, 0x01};
 	static uint8_t write_8[5] = {0x02, 0x00, 0x00, 0x00, 0x15};
 	spi_select_slave(&spi_master_instance, &slave, true);
-	enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, write_8, &temp, 5); // why &temp?
+	enum status_code code_2 = spi_transceive_buffer_wait(&spi_master_instance, write_8, temp, 5);
 	spi_select_slave(&spi_master_instance, &slave, false);	
 	
 	while (true) {
 		spi_select_slave(&spi_master_instance, &slave, true);
-		code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, &temp2, 5); // why &temp2 also?
+		code_2 = spi_transceive_buffer_wait(&spi_master_instance, status, temp2, 5); 
 		spi_select_slave(&spi_master_instance, &slave, false);
 	}
 	return 0;
