@@ -150,7 +150,7 @@ static void readAnalog(float* temperatures, float* photodiodes, float* analogs){
 //Reads all sensors from Control Board remote ADC and returns in human readable voltage
 void readRemoteADC_1(float* cntrlReadings){
 	uint16_t remoteADC[4];
-	AD7991_read_all(remoteADC, AD7991_ADDR_1);
+	AD7991_read_all(remoteADC, AD7991_CTRLBRD);
 	cntrlReadings[0] = ((float) remoteADC[0])/4096*3.3*2.01;//3V6Rf
 	cntrlReadings[1] = ((float) remoteADC[1])/4096*3.3;//3V6SNS
 	cntrlReadings[2]= ((float)  remoteADC[2])/4096*3.3*3.381;//5VREF

@@ -1,13 +1,10 @@
 #ifndef SERCOM_PINOUT_H_INCLUDED
 #define SERCOM_PINOUT_H_INCLUDED
 #include <compiler.h>
-
-// BOARD TYPE - see main.h too!!
-#define CNTRL_BRD_V3 
-//#define XPLAINED_PRO
+#include <config.h>
 
 // for satellite processor
-#ifdef CNTRL_BRD_V3
+#ifdef CTRL_BRD_V3
 
 	// SERCOM0
 	#define SERCOM0_PAD0_DEFAULT      PINMUX_PA08C_SERCOM0_PAD0
@@ -41,9 +38,7 @@
 	#define SERCOM5_PAD2_DEFAULT      PINMUX_PA20C_SERCOM5_PAD2
 	#define SERCOM5_PAD3_DEFAULT      PINMUX_PA21C_SERCOM5_PAD3
 
-#endif
-
-#ifdef XPLAINED_PRO
+#elif XPLAINED_PRO
 
 	// SERCOM0
 	#define SERCOM0_PAD0_DEFAULT      PINMUX_PA04D_SERCOM0_PAD0

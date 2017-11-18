@@ -5,21 +5,6 @@
 #include "../processor_drivers/Direct_Pin_Commands.h"
 #include "../config/proc_pins.h"
 
-//Test Sensors
-#define MLX90614_DEFAULT_I2CADDR	0x5A
-#define MLX90614_TBOARD_IR2			0x5B // address IR2 on Processor Test Board
-#define MLX90614_ACCESSPANEL_V4_6   0x5C
-#define MLX90614_TOPPANEL_V4_1		0x6A
-
-//Flight Sensors
-#define MLX90614_FLASHPANEL_V6_2_1	0x6C
-#define MLX90614_ACCESSPANEL_V4_7	0x6B // probably 
-#define MLX90614_SIDEPANEL_V5_5		0x5E // probably 
-#define MLX90614_SIDEPANEL_V5_2		0x6E
-#define MLX90614_RBFPANEL_V1		0x5F
-#define MLX90614_TOPPANEL_V5_1		0x6D
-
-
 #define MLX90614_SHOULD_STOP false
 
 #define MLX90614_WHOAMI	0x2e

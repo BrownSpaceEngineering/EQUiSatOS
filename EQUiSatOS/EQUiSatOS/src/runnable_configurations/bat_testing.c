@@ -111,7 +111,7 @@ void resetState(void) {
 //Reads all sensors from Battery Board remote ADC
 void readRemoteADC_0(float* readings){
 	uint16_t remoteADC[4];
-	AD7991_read_all(remoteADC, AD7991_ADDR_0);
+	AD7991_read_all(remoteADC, AD7991_BATBRD);
 	readings[0] = ((float) remoteADC[0]);
 	readings[1] = ((float) remoteADC[1]);
 	readings[2]= ((float)  remoteADC[2]);

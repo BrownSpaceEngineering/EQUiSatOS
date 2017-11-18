@@ -1018,6 +1018,9 @@
     <Compile Include="src\ASF\thirdparty\TraceRecorder\trcStreamingRecorder.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\FreeRTOSConfig.h">
       <SubType>compile</SubType>
     </Compile>
