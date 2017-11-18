@@ -151,7 +151,7 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, uint16_t* 
 	data->l1_sns 		= (((float) remoteBatReadings[1])/4096*3.3-0.985)*2000;	// mA
 	data->l2_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.022)*2000;	// mA
 	data->lion_ref 		= ((float)  (remoteBatReadings[2])/4096*3.3-0.05)*2717;	// mV
-	data->sp_out_ref	= ((float) (remoteBatReadings[3])/4096*3.3-0.13)*5580;		// mV
+	data->sp_out_ref	= ((float) (remoteBatReadings[3])/4096*3.3-0.13)*5580;	// mV
 
 	
 	readBatBoard(batReadings);
