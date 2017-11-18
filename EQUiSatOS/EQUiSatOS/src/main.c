@@ -164,7 +164,7 @@ void global_init(void) {
 
 int main(void)
 {
-	//global_init();
+	global_init();
 	//sensor_read_tests();
 	system_test();
 	
