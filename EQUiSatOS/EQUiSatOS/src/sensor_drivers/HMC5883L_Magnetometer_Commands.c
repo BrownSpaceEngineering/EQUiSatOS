@@ -1,10 +1,3 @@
-/*
- * HMC5883L_Magnetometer_Commands.c
- *
- * Created: 4/26/2015 3:07:00 PM
- *  Author: Daniel
- */ 
-
 #include "HMC5883L_Magnetometer_Commands.h"
 
 /*
@@ -16,13 +9,9 @@
 */
 void HMC5883L_init(){
 	
-	static uint8_t write_buffer_1[2] = {
-		0x00, 0x70
-	};
+	static uint8_t write_buffer_1[2] = {0x00, 0x70};
 
-	static uint8_t write_buffer_2[2] = {
-		0x01, 0xA0
-	};
+	static uint8_t write_buffer_2[2] = {0x01, 0xA0};
 	
 	struct i2c_master_packet write_packet_1 = {
 		.address     = HMC5883L_ADDRESS,
@@ -40,14 +29,15 @@ void HMC5883L_init(){
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
+	i2c_write_command(&write_packet_1);
+	i2c_write_command(&write_packet_2);
 }
 
 /*
 	Given an input buffer to read into (6 BYTES IN LENGTH MINIMUM) read from the x,y,z LSB and MSB registers
 	on the HMC5883L magnetometer in single measurement mode
 */
-void HMC5883L_read(uint8_t* read_buffer){
-	// TODO: does this actually do anything??
+void HMC5883L_read(uint8_t* read_buffer){	
 	struct i2c_master_packet read_packet = {
 		.address     = HMC5883L_ADDRESS,
 		.data_length = 6,
@@ -57,9 +47,7 @@ void HMC5883L_read(uint8_t* read_buffer){
 		.hs_master_code  = 0x0,
 	};
 	
-	static uint8_t write_buffer[2] = {
-		0x02, 0x01
-	};
+	static uint8_t write_buffer[2] = {0x02, 0x01};
 	
 	struct i2c_master_packet write_packet = {
 		.address     = HMC5883L_ADDRESS,
@@ -69,6 +57,9 @@ void HMC5883L_read(uint8_t* read_buffer){
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
+	
+	i2c_write_command(&write_packet);
+	i2c_read_command(&read_buffer);
 }
 
 //Converts the raw data from sensor into xyz coordinates in milligauss.
