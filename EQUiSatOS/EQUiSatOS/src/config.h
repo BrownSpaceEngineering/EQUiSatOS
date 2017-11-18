@@ -81,7 +81,7 @@
 #define MLX90614_SIDEPANEL_V5_5		0x5E // probably
 #define MLX90614_SIDEPANEL_V5_2		0x6E
 #define MLX90614_RBFPANEL_V1		0x5F
-#define MLX90614_TOPPANEL_V5_1		0x6D
+#define MLX90614_TOPPANEL_V5_1		0x6D //maybe 0x7A?
 
 
 
