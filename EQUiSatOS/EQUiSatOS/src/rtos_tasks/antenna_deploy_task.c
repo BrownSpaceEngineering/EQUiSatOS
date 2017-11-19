@@ -14,8 +14,6 @@ void antenna_deploy_task(void *pvParameters) {
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
 	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot
-	// set DET_RTN (antenna deployment pin) as input
-	setup_pin(false, P_DET_RTN);
 
 	for( ;; )
 	{		

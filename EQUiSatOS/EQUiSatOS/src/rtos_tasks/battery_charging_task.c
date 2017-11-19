@@ -312,9 +312,7 @@ void battery_logic(
 	}
 
 	// TODO: make sure this went through by looking at the CHG PIN
-	setup_pin(discharge_pin);
 	set_output(true, discharge_pin);
-	setup_pin(not_discharge_pin);
 	set_output(false, not_discharge_pin);
 
 	// set the battery that should be charging to charge
@@ -342,7 +340,6 @@ void battery_logic(
 		}
 
 		// TODO: make sure this went through by looking at CHG
-		setup_pin(charge_pin);
 		set_output(i == batt_charging, charge_pin);
 	}
 

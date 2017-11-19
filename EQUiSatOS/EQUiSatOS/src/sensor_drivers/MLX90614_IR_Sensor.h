@@ -1,9 +1,9 @@
 #ifndef _MLX90614_IR_SENSOR_H_
 #define _MLX90614_IR_SENSOR_H_
 
+#include "../config/proc_pins.h"
 #include "../processor_drivers/I2C_Commands.h"
 #include "../processor_drivers/Direct_Pin_Commands.h"
-#include "../config/proc_pins.h"
 
 #define MLX90614_SHOULD_STOP false
 

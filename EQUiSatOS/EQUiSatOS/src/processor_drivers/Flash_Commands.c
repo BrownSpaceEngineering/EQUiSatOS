@@ -7,11 +7,6 @@
 
 #include "Flash_Commands.h"
 
-void init_flash(void) {
-	// set to write on led pin
-	setup_pin(true, P_LED_CMD);
-}
-
 void flash_leds(void) {
 	// send _falling_ edge on LED_CMD to tell subprocessor to activate LEDs for 100ms
 	set_output(false, P_LED_CMD);

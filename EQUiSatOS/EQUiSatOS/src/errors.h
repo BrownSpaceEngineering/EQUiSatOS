@@ -19,7 +19,7 @@
 #ifndef ERRORS_H_
 #define ERRORS_H_
 
-#include <global.h>
+#include "global.h"
 #include "stacks/equistack.h"
 
 /******************** LOCATIONS ********************/

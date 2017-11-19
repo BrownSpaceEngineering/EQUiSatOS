@@ -14,7 +14,6 @@
 
 #define FLASH_LED_CMD_LOW_TIME 1000 // us;
 
-void init_flash(void);
 void flash_leds(void);
 
 #endif /* FLASH_COMMANDS_H_ */

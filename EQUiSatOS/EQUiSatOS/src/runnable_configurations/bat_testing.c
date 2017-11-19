@@ -69,7 +69,8 @@ void bat_testing_init(bat_testing_struct *data){
 	set_output(data->L2_DISG,P_L2_DISG);
 	
 	LTC1380_init();
-	AD7991_init();
+	AD7991_init(AD7991_BATBRD);
+	AD7991_init(AD7991_CTRLBRD);
 	uint16_t tca9535_rs;
 	TCA9535_init(&tca9535_rs);
 	if (!(tca9535_rs && 0xf4f0)){

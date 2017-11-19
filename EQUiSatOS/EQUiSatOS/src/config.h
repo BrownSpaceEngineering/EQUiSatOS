@@ -9,10 +9,11 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#include "FreeRTOSConfig.h"
 
 /*************************************************************************/
-/*							CONFIG OPTIONS                              */
-/***********************************************************************/
+/*							CONFIG OPTIONS                               */
+/*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
 #define FLIGHT
@@ -21,12 +22,9 @@
 #define PRINT_DEBUG 1
 
 
-
-
-
 /****************************************************************************************/
-/*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION   */
-/**************************************************************************************/
+/*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */
+/****************************************************************************************/
 
 #ifdef FLIGHT
 	//Sets processor pinouts
@@ -64,10 +62,14 @@
 	
 #endif
 
+#if configUSE_TRACE_FACILITY == 1
+	traceString global_trace_channel;
+#endif
+
 
 /****************************************************************************************/
-/*					 SENSOR ADDRESSES BELOW THIS LINE - DO NOT EDIT					   */
-/**************************************************************************************/
+/*					 SENSOR ADDRESSES BELOW THIS LINE - DO NOT EDIT					    */
+/****************************************************************************************/
 
 /*IR CONFIGURATION*/
 //Test Sensors
@@ -82,7 +84,5 @@
 #define MLX90614_SIDEPANEL_V5_2		0x6E
 #define MLX90614_RBFPANEL_V1		0x5F
 #define MLX90614_TOPPANEL_V5_1		0x6D //maybe 0x7A?
-
-
 
 #endif /* CONFIG_H_ */

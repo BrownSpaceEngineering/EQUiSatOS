@@ -134,35 +134,6 @@ static void sensor_read_tests(void) {
 	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 }
 
-/************************************************************************/
-/* DO NOT MODIFY BELOW HERE FOR SCRATCH TESTING - sid will come for you */
-/************************************************************************/
-void global_init(void) {
-	// Initialize the SAM system
-	system_init();
-
-	// Get this false as fast as possible.
-	setup_pin(true,P_LF_B2_OUTEN);
-	set_output(false, P_LF_B2_OUTEN);
-	setup_pin(true,P_LF_B1_OUTEN);
-	set_output(false, P_LF_B1_OUTEN);
-	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
-	set_output(false, P_L1_RUN_CHG);
-	setup_pin(true,P_L2_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);
-
-	init_rtc();
-	USART_init();
-	configure_i2c_master(SERCOM4);
-	MLX90614_init();
-	MPU9250_init();
-	delay_init();
-	
-	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
-	
-	init_errors();
-}
-
 int main(void)
 {
 	global_init();

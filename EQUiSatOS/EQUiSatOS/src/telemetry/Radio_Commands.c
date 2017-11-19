@@ -8,13 +8,6 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
-void XDL_init() {
-	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
-	setup_pin(true,P_RAD_SHDN); //init shutdown pin
-	setup_pin(true,P_TX_EN); //init send enable pin
-	setup_pin(true,P_RX_EN); //init receive enable pin
-}
-
 void set_command_mode(void) {
 	delay_ms(150);
 	usart_send_string((uint8_t*) "+++");
