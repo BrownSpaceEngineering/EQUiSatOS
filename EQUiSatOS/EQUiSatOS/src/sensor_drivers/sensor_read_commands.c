@@ -8,12 +8,12 @@
 #include "sensor_read_commands.h"
 
 static uint8_t IR_ADDS[6] = {
-	MLX90614_FLASHPANEL_V6_2_1,
-	MLX90614_TOPPANEL_V5_1,
-	MLX90614_ACCESSPANEL_V4_7,
-	MLX90614_SIDEPANEL_V5_2,
-	MLX90614_SIDEPANEL_V5_5,
-	MLX90614_RBFPANEL_V1
+	IR_FLASH,
+	IR_SIDE1,
+	IR_SIDE2,
+	IR_RBF,
+	IR_ACCESS,
+	IR_TOP1
 };
 
 static uint8_t IR_ELOCS[6] = {
@@ -107,13 +107,14 @@ void read_lion_current_batch(lion_current_batch batch) {
 }
 
 void read_led_temps_batch(led_temps_batch batch) {
-	// LTC addresses may need to be disabled
-	for (int i = 0; i < 4; i++) {
-		uint8_t rs;
-		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
+	for (int i = 4; i < 8; i++) {
+		uint8_t rs8;
+		uint16_t rs;
+		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
+		commands_read_adc(&rs, P_AI_TEMP_OUT, TEMP_ELOCS[i], true);
 		log_if_out_of_bounds(rs, LED_TEMP_LOW, LED_TEMP_HIGH, TEMP_ELOCS[i], true);
-		batch[i] = rs;
+		batch[i - 4] = rs;
 	}
 }
 
@@ -145,37 +146,39 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	log_if_out_of_bounds(batch[3], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF4REF, true);
 }
 
-void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-
-
-
-
-
-	// TODO
-
-
-
-
-
-}
-
 void read_pdiode_batch(pdiode_batch batch) {
 	for (int i = 0; i < 6; i++) {
-		uint8_t rs;
-		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
+		uint8_t rs8;
+		uint16_t rs;
+		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(PD_ELOCS[i], sc, false);
+		commands_read_adc(&rs, P_AI_PD_OUT, PD_ELOCS[i], false);
 		log_if_out_of_bounds(rs, PD_LOW, PD_HIGH, PD_ELOCS[i], false);
 		batch[i] = rs;
 	}
 }
 
-void read_lion_temps_batch(lion_temps_batch batch) {
-	for (int i = 4; i < 8; i++) {
-		uint8_t rs;
-		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
+void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
+	for (int i = 0; i < 2; i++) {
+		uint8_t rs8;
+		uint16_t rs;
+		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
+		commands_read_adc(&rs, P_AI_TEMP_OUT, TEMP_ELOCS[i], true);
 		log_if_out_of_bounds(rs, L_TEMP_LOW, L_TEMP_HIGH, TEMP_ELOCS[i], true);
-		batch[i - 4] = rs;
+		batch[i] = rs;
+	}
+}
+
+void read_lion_temps_batch(lion_temps_batch batch) {
+	for (int i = 2; i < 4; i++) {
+		uint8_t rs8;
+		uint16_t rs;
+		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
+		log_if_error(TEMP_ELOCS[i], sc, true);
+		commands_read_adc(&rs, P_AI_TEMP_OUT, TEMP_ELOCS[i], true);
+		log_if_out_of_bounds(rs, L_TEMP_LOW, L_TEMP_HIGH, TEMP_ELOCS[i], true);
+		batch[i - 2] = rs;
 	}
 }
 
@@ -209,11 +212,6 @@ void read_led_current_batch(led_current_batch batch) {
 	log_if_out_of_bounds(batch[3], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED4SNS, true);
 }
 
-void read_radio_temp_batch(radio_temp_batch* batch) {
-	// TODO: Tyler will implement later
-	// eventually: XDL_get_temperature(batch);
-}
-
 void read_radio_volts_batch(radio_volts_batch batch) {
 	// 3v6_ref and 3v6_sns
 	uint16_t results[4];	
@@ -243,6 +241,11 @@ void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	sc = TCA9535_init(batch);
 	log_if_error(ELOC_TCA, sc, true);
+}
+
+void read_radio_temp_batch(radio_temp_batch* batch) {
+	// TODO: Tyler will implement later
+	// eventually: XDL_get_temperature(batch);
 }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {

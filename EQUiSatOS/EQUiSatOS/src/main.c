@@ -83,8 +83,9 @@ static void run_tests(void) {
 	*/
 }
 
-static void sensor_read_tests() {
+static void sensor_read_tests(void) {
 	uint16_t six_buf[6];
+	uint8_t six_buf_8t[6];
 	uint16_t three_buf[3];
 	uint16_t four_buf[4];
 	uint16_t two_buf[2];
@@ -106,9 +107,9 @@ static void sensor_read_tests() {
 	print("ir objs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
 	
 	print("\n# PDIODE #\n");
-	read_pdiode_batch(six_buf);
+	read_pdiode_batch(six_buf_8t);
 	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, six_buf[i]);	
+		print("pdiode %d: %d\n",i, six_buf_8t[i]);	
 	}
 	
 	print("\n\n# LiON VOLTS #\n");
@@ -165,10 +166,14 @@ void global_init(void) {
 int main(void)
 {
 	global_init();
-	//sensor_read_tests();
-	system_test();
 	
-	int x = 1; 
+	setup_pin(true, P_5V_EN);
+	set_output(true, P_5V_EN);
+ 	int x =1;
+	//sensor_read_tests();
+	//system_test();
+	
+	//int x = 1; 
 	//run_tests();
-	run_rtos();	
+	//run_rtos();	
 }
