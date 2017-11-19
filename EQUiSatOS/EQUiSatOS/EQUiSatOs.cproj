@@ -906,10 +906,10 @@
     <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\" />
     <Folder Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\include\" />
     <Folder Include="src\config\" />
+    <Folder Include="src\data_handling" />
     <Folder Include="src\telemetry" />
     <Folder Include="src\telemetry\rscode-1.3" />
     <Folder Include="src\rtos_tasks\" />
-    <Folder Include="src\stacks" />
     <Folder Include="src\testing_functions" />
     <Folder Include="src\sensor_drivers" />
     <Folder Include="src\runnable_configurations" />
@@ -1141,7 +1141,31 @@
     <Compile Include="src\sensor_drivers\M24M01_EEPROM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\stacks\persistent_storage.h">
+    <Compile Include="src\data_handling\data_utils.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\data_utils.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\equistack.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\equistack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\package_transmission.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\package_transmission.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\persistent_storage.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\Sensor_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\data_handling\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\telemetry\Radio_Commands.c">
@@ -1292,24 +1316,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\TCA9535_GPIO.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\equistack.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\equistack.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\package_transmission.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\package_transmission.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\Sensor_Structs.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\stacks\State_Structs.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\test_data.c">

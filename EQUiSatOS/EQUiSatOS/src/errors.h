@@ -20,7 +20,7 @@
 #define ERRORS_H_
 
 #include "global.h"
-#include "stacks/equistack.h"
+#include "data_handling/equistack.h"
 
 /******************** LOCATIONS ********************/
 /* Error code that signified there is no error - "null error"; used in transmission */

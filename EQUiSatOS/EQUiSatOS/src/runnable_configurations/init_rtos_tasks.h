@@ -10,7 +10,7 @@
 
 #include "rtos_tasks/rtos_tasks.h"
 #include "processor_drivers/USART_Commands.h"
-#include "stacks/equistack.h"
+#include "data_handling/equistack.h"
 
 #include "struct_tests.h"
 #include "task_testing.h"

@@ -86,22 +86,6 @@ void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t 
 	loops_since_last_log[data_type] = 0;
 }
 
-void increment_all(uint8_t* int_arr, uint8_t length)
-{
-	for(uint8_t i = 0; i < length; i++)
-	{
-		int_arr[i] = int_arr[i] + 1;
-	}
-}
-
-void set_all(uint8_t* int_arr, uint8_t length, int value)
-{
-	for(uint8_t i = 0; i < length; i++)
-	{
-		int_arr[i] = value;
-	}
-}
-
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
 	while (1) {}; // will hang here on stack overflow
 }

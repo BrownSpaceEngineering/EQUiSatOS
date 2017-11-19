@@ -10,7 +10,7 @@
 
 #include <global.h>
 #include <assert.h>
-#include "stacks/equistack.h"
+#include "data_handling/equistack.h"
 #include "test_data.h"
 #include "processor_drivers/USART_Commands.h"
 

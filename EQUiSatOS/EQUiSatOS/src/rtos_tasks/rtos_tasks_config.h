@@ -182,7 +182,6 @@ typedef enum
 #define FLASH_DATA_READ_FREQ						10 // ms
 #define FLASH_DATA_ARR_LEN							10 // implies that the total data read duration is:
 													   // FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms
-#define FLASH_CMP_DATA_ARR_LEN						1
 
 /*
  * A function to make sure that the constants defined here are internally consistent.

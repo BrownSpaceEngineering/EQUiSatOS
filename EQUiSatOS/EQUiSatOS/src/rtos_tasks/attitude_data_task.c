@@ -40,7 +40,7 @@ void attitude_data_task(void *pvParameters)
 			current_struct->timestamp = get_rtc_count();
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
-			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+			set_all_uint8(data_array_tails, NUM_DATA_TYPES, 0);
 			
 // 			// TESTING
 // 			assert(prev_cur_struct != current_struct);
