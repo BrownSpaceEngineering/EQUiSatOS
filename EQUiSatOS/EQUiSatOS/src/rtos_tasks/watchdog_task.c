@@ -23,11 +23,11 @@ void watchdog_init(void) {
 }
 
 void watchdog_task(void *pvParameters) {
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	for( ;; )
 	{
-		vTaskDelayUntil( &xNextWakeTime, WATCHDOG_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, WATCHDOG_TASK_FREQ / portTICK_PERIOD_MS);
 		watchdog_as_function();
 	}
 	

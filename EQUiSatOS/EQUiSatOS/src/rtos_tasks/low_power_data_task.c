@@ -10,7 +10,7 @@
 void low_power_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();										
+	TickType_t prev_wake_time = xTaskGetTickCount();										
 	
 	// initialize first struct
 	low_power_data_t *current_struct = (low_power_data_t*) equistack_Initial_Stage(&low_power_readings_equistack);
@@ -21,7 +21,7 @@ void low_power_data_task(void *pvParameters)
 	
 	for( ;; )
 	{	
-		vTaskDelayUntil( &xNextWakeTime, LOW_POWER_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, LOW_POWER_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// report to watchdog
 		report_task_running(LOW_POWER_DATA_TASK);

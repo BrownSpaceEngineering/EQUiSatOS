@@ -20,7 +20,7 @@ static void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size
 void transmit_task(void *pvParameters)
 {
 	// initialize xNextWakeTime once
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	// count of how many times the current packet has been transmitted
 	uint8_t current_sequence_transmissions = 0;
@@ -36,7 +36,7 @@ void transmit_task(void *pvParameters)
 	{
 		// block for a time based on this task's globally-set frequency
 		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
-		vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);
@@ -70,7 +70,7 @@ void transmit_task(void *pvParameters)
 		TickType_t start_tick = xTaskGetTickCount();
 		while (transmission_in_progress) {
 			// give control back to RTOS to let transmit data task read info
-			vTaskDelayUntil( &xNextWakeTime, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
+			vTaskDelayUntil( &prev_wake_time, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
 
 			transmission_in_progress = false; // TODO: query radio state
 

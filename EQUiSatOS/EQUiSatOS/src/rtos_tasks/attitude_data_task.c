@@ -10,7 +10,7 @@
 void attitude_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 	
 	// current_data_task for extensive comments / testing
 	
@@ -24,7 +24,7 @@ void attitude_data_task(void *pvParameters)
 	
 	for ( ;; )
 	{
-		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// report to watchdog
 		report_task_running(ATTITUDE_DATA_TASK);

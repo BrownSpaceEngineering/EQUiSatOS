@@ -19,7 +19,6 @@ static void init_task_handles(void) {
 	task_handles[TRANSMIT_TASK] =				&transmit_task_handle;
 	task_handles[IDLE_DATA_TASK] =				&idle_data_task_handle;
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
-	task_handles[FLASH_DATA_TASK] =				&flash_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 }
@@ -73,6 +72,13 @@ bool check_if_suspended_and_update(task_type_t task_id) {
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
+void rtos_safe_delay(uint32_t ms) 
+{
+	vTaskSuspendAll();
+	delay_ms(ms);
+	xTaskResumeAll();
+}
+
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)
 {
 	// increment array tail marker and reset reads-per-log counter

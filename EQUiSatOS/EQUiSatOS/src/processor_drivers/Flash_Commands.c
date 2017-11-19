@@ -13,6 +13,9 @@ void flash_leds(void) {
 	
 	// keep it low for a bit (it activates on transition, but give it a buffer)
 	// should be more than one clock cycle, but don't want to wait too long
+	// NOTE: we would want to make sure and suspend RTOS here to make sure the 
+	// delay is determinate, but that was already done at a higher level and we 
+	// want fast timing here.
 	delay_cycles_us(FLASH_LED_CMD_LOW_TIME); 
 	set_output(true, P_LED_CMD);
 }

@@ -10,7 +10,7 @@
 void idle_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	// initialize first struct
 	idle_data_t *current_struct = (idle_data_t*) equistack_Initial_Stage(&idle_readings_equistack);
@@ -21,7 +21,7 @@ void idle_data_task(void *pvParameters)
 
 	for( ;; )
 	{
-		vTaskDelayUntil( &xNextWakeTime, IDLE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, IDLE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 
 		// report to watchdog
 		report_task_running(IDLE_DATA_TASK);

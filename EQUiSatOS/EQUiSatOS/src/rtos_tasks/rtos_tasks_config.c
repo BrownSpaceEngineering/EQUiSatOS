@@ -56,39 +56,5 @@ void assert_rtos_constants() {
 	assert(attitude_DIODE_LOOPS_PER_LOG >= 1);
 	assert(attitude_ACCELEROMETER_LOOPS_PER_LOG >= 1);
 	assert(attitude_GYRO_LOOPS_PER_LOG >= 1);
-	assert(attitude_MAGNETOMETER_LOOPS_PER_LOG >= 1);	
-		
-	int flash_all_loops_per_log[] = {
-		flash_LED_CURRENT_LOOPS_PER_LOG,
-		flash_LED_TEMPS_LOOPS_PER_LOG,
-		flash_LIFEPO_CURRENT_LOOPS_PER_LOG,
-		flash_LIFEPO_VOLTS_LOOPS_PER_LOG};
-	uint16_t flash_max_loops_per_log = arrMax(flash_all_loops_per_log, 4); // max of the above (MAKE SURE TO UPDATE IF YOU ADD)
-	
-	assert(flash_LED_TEMPS_DATA_ARR_LEN == flash_max_loops_per_log / flash_LED_TEMPS_LOOPS_PER_LOG);
-	assert(flash_LIFEPO_CURRENT_DATA_ARR_LEN == flash_max_loops_per_log / flash_LIFEPO_CURRENT_LOOPS_PER_LOG);
-	assert(flash_LIFEPO_VOLTS_DATA_ARR_LEN == flash_max_loops_per_log / flash_LIFEPO_VOLTS_LOOPS_PER_LOG);
-	assert(flash_LED_CURRENT_DATA_ARR_LEN == flash_max_loops_per_log / flash_LED_CURRENT_LOOPS_PER_LOG);
-
-	assert(flash_LED_TEMPS_LOOPS_PER_LOG >= 1);
-	assert(flash_LIFEPO_CURRENT_LOOPS_PER_LOG >= 1);
-	assert(flash_LIFEPO_VOLTS_LOOPS_PER_LOG >= 1);
-	assert(flash_LED_CURRENT_LOOPS_PER_LOG >= 1);
-	
-	int flash_cmp_all_loops_per_log[] = {
-		flash_LED_CURRENT_AVG_LOOPS_PER_LOG,
-		flash_LED_TEMPS_AVG_LOOPS_PER_LOG,
-		flash_LIFEPO_CURRENT_AVG_LOOPS_PER_LOG,
-		flash_LIFEPO_VOLTS_AVG_LOOPS_PER_LOG};
-	uint16_t flash_cmp_max_loops_per_log = arrMax(flash_cmp_all_loops_per_log, 4); // max of the above (MAKE SURE TO UPDATE IF YOU ADD)
-		
-	assert(flash_LED_TEMPS_AVG_DATA_ARR_LEN == flash_cmp_max_loops_per_log / flash_LED_TEMPS_AVG_LOOPS_PER_LOG);
-	assert(flash_LIFEPO_CURRENT_AVG_DATA_ARR_LEN == flash_cmp_max_loops_per_log / flash_LIFEPO_CURRENT_AVG_LOOPS_PER_LOG);
-	assert(flash_LIFEPO_VOLTS_AVG_DATA_ARR_LEN == flash_cmp_max_loops_per_log / flash_LIFEPO_VOLTS_AVG_LOOPS_PER_LOG);
-	assert(flash_LED_CURRENT_AVG_DATA_ARR_LEN == flash_cmp_max_loops_per_log / flash_LED_CURRENT_AVG_LOOPS_PER_LOG);
-
-	assert(flash_LED_TEMPS_AVG_LOOPS_PER_LOG >= 1);
-	assert(flash_LIFEPO_CURRENT_AVG_LOOPS_PER_LOG >= 1);
-	assert(flash_LIFEPO_VOLTS_AVG_LOOPS_PER_LOG >= 1);
-	assert(flash_LED_CURRENT_AVG_LOOPS_PER_LOG >= 1);
+	assert(attitude_MAGNETOMETER_LOOPS_PER_LOG >= 1);
 }
