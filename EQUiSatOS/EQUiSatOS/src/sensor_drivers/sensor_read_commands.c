@@ -9,11 +9,11 @@
 
 static uint8_t IR_ADDS[6] = {
 	MLX90614_FLASHPANEL_V6_2_1,
-	MLX90614_TOPPANEL_V4_1,
-	MLX90614_ACCESSPANEL_V4_6,
-	MLX90614_SIDEPANEL_V4_2,
-	MLX90614_SIDEPANEL_V4_3,
-	MLX90614_SIDEPANEL_V4_4
+	MLX90614_TOPPANEL_V5_1,
+	MLX90614_ACCESSPANEL_V4_7,
+	MLX90614_SIDEPANEL_V5_2,
+	MLX90614_SIDEPANEL_V5_5,
+	MLX90614_RBFPANEL_V1
 };
 
 static uint8_t IR_ELOCS[6] = {
@@ -95,9 +95,8 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
-	uint16_t results[4];
-	// 0 is the battery board
-	sc = AD7991_read_all(results, AD7991_ADDR_0);
+	uint16_t results[4];	
+	sc = AD7991_read_all(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
 	// battery 1 voltage is Vin1
 	batch[0] = results[1];
@@ -123,7 +122,7 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, true);
 	commands_read_adc(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, true);
 	commands_read_adc(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, true);
-	
+
 	log_if_out_of_bounds(batch[0], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1SNS, true);
 	log_if_out_of_bounds(batch[1], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB1OSNS, true);
 	log_if_out_of_bounds(batch[2], LF_CUR_LOW, LF_CUR_HIGH, ELOC_LFB2SNS, true);
@@ -135,7 +134,7 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LF2REF, ELOC_LF2REF, true);
 	commands_read_adc(&batch[2], P_AI_LF3REF, ELOC_LF3REF, true);
 	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, true);
-	
+
 	batch[1] *= 1950;
 	batch[3] *= 1950;
 	batch[0] = (batch[0]*3870) - batch[1];
@@ -203,7 +202,7 @@ void read_led_current_batch(led_current_batch batch) {
 	commands_read_adc(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, true);
 	commands_read_adc(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, true);
 	commands_read_adc(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, true);
-	
+
 	log_if_out_of_bounds(batch[0], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED1SNS, true);
 	log_if_out_of_bounds(batch[1], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED2SNS, true);
 	log_if_out_of_bounds(batch[2], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED3SNS, true);
@@ -217,9 +216,8 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 
 void read_radio_volts_batch(radio_volts_batch batch) {
 	// 3v6_ref and 3v6_sns
-	uint16_t results[4];
-	// 1 is the control board
-	sc = AD7991_read_all(results, AD7991_ADDR_1);
+	uint16_t results[4];	
+	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 	// 3V6 voltage is Vin0
 	batch[0] = results[0];
@@ -231,9 +229,8 @@ void read_radio_volts_batch(radio_volts_batch batch) {
 
 void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 	// analog voltages on spreadsheet
-	uint16_t results[4];
-	// 1 is the control board
-	sc = AD7991_read_all(results, AD7991_ADDR_1);
+	uint16_t results[4];	
+	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 	// 5V voltage is Vin2
 	batch[0] = results[2];

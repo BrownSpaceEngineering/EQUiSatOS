@@ -208,7 +208,7 @@ void vApplicationIdleHook(void) {
 	static int idle_started = false;
 	// TODO: Doesn't appear to go well when we set_state_idle
 	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
-		set_state_idle_no_flash();
+		set_state(IDLE_NO_FLASH);
 		idle_started = true;
 	}
 }
@@ -216,8 +216,67 @@ void vApplicationIdleHook(void) {
 /************************************************************************/
 /* STATE SETTING METHODS                                                */
 /************************************************************************/
+void set_state_initial(void);
+void set_state_antenna_deploy(void);
+void set_state_hello_world(void);
+void set_state_idle_no_flash(void);
+void set_states_of_idle_no_flash(void);
+void set_state_idle_flash(void);
+void set_state_low_power(void);
+void set_state_rip(void);
 
-void set_states_of_idle_no_flash();
+/* Sets the current satellite state to the given state, if a transition from
+   the current state is valid; returns whether the state change was made (i.e. was valid) 
+   CAN be called consistenly (i.e. if state == CurrentState), which will ensure all correct tasks
+   for a state are running, etc. */
+bool set_state(global_state_t state) 
+{
+	switch(state) 
+	{
+		case INITIAL:
+			return false;
+			
+		case ANTENNA_DEPLOY:
+			if (CurrentState == INITIAL) {
+				set_state_antenna_deploy();
+				return true;
+			}
+			return false;
+			
+		case HELLO_WORLD:
+			if (CurrentState == ANTENNA_DEPLOY) {
+				set_state_hello_world();
+				return true;
+			}
+			return false;
+			
+		case IDLE_NO_FLASH:
+			if (CurrentState == IDLE_FLASH || CurrentState == IDLE_FLASH || CurrentState == LOW_POWER) {
+				set_state_idle_no_flash();
+				return true;
+			}
+			return false;
+			
+		case IDLE_FLASH:
+			if (CurrentState == IDLE_NO_FLASH) {
+				set_state_idle_flash();
+				return true;
+			}
+			return false;
+			
+		case LOW_POWER:
+			if (CurrentState == IDLE_NO_FLASH || CurrentState == IDLE_FLASH) {
+				set_state_low_power();
+				return true;
+			}
+			return false;
+		
+		case RIP:
+			// we can always go to RIP
+			set_state_rip();
+			return true;
+	}
+}
 
 void set_state_initial()
 {

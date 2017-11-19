@@ -5,19 +5,6 @@
 #include "../processor_drivers/Direct_Pin_Commands.h"
 #include "../config/proc_pins.h"
 
-//Test Sensors
-#define MLX90614_DEFAULT_I2CADDR	0x5A
-#define MLX90614_TBOARD_IR2			0x5B // address IR2 on Processor Test Board
-//Flight Sensors
-#define MLX90614_FLASHPANEL_V6_2_1	0x6C
-#define MLX90614_TOPPANEL_V4_2		0x6B
-#define MLX90614_TOPPANEL_V4_1		0x6A
-#define MLX90614_ACCESSPANEL_V3_1	0x5C //Kept this in just so I could build, delete this -Jarod
-#define MLX90614_ACCESSPANEL_V4_6	0x5C
-#define MLX90614_SIDEPANEL_V4_2		0x5D
-#define MLX90614_SIDEPANEL_V4_3		0x5F
-#define MLX90614_SIDEPANEL_V4_4		0x6D
-
 #define MLX90614_SHOULD_STOP false
 
 #define MLX90614_WHOAMI	0x2e
@@ -47,6 +34,7 @@ typedef enum {AMBIENT = MLX90614_TA,
 
 void MLX90614_init(void);
 enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf);
+enum status_code MLX90614_read_amb(MLXDeviceAddr addr, uint16_t* buf);
 enum status_code MLX90614_read2ByteValue(MLXDeviceAddr addr, uint8_t mem_addr, uint16_t* buf);
 enum status_code MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, uint16_t* buf);
 float dataToTemp(uint16_t data);

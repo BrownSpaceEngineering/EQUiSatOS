@@ -111,7 +111,7 @@ void resetState(void) {
 //Reads all sensors from Battery Board remote ADC
 void readRemoteADC_0(float* readings){
 	uint16_t remoteADC[4];
-	AD7991_read_all(remoteADC, AD7991_ADDR_0);
+	AD7991_read_all(remoteADC, AD7991_BATBRD);
 	readings[0] = ((float) remoteADC[0]);
 	readings[1] = ((float) remoteADC[1]);
 	readings[2]= ((float)  remoteADC[2]);
@@ -151,7 +151,7 @@ void readCommandAndSend(float* remoteBatReadings, float* batReadings, uint16_t* 
 	data->l1_sns 		= (((float) remoteBatReadings[1])/4096*3.3-0.985)*2000;	// mA
 	data->l2_sns 		= (((float) remoteBatReadings[0])/4096*3.3-1.022)*2000;	// mA
 	data->lion_ref 		= ((float)  (remoteBatReadings[2])/4096*3.3-0.05)*2717;	// mV
-	data->sp_out_ref	= ((float) (remoteBatReadings[3])/4096*3.3-0.13)*5580;		// mV
+	data->sp_out_ref	= ((float) (remoteBatReadings[3])/4096*3.3-0.13)*5580;	// mV
 
 	
 	readBatBoard(batReadings);

@@ -14,16 +14,7 @@
 /* DEBUG CONFIGURATION                                                  */
 /************************************************************************/
 
-// BOARD TYPE - ALSO LOOK AT SERCOM_PINOUT.H, it has to have it's own version changed too!!!
-#define CNTRL_BRD_V3 // to use print, etc. on real control board
-//#define XPLAINED_PRO  // to use print, etc. on devboard
 
-#ifdef XPLAINED_PRO
-	#define PRINT_DEBUG 1  // change to 1 if print debug on DEV BOARD is desired
-#endif
-#ifdef CNTRL_BRD_V3
-	#define PRINT_DEBUG 1  // change to 1 if print debug on REAL CONTROL BOARD is desired
-#endif
 
 
 /************************************************************************/

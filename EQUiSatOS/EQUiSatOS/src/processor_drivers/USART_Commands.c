@@ -147,7 +147,7 @@ uint16_t calculate_baud_value(const uint32_t baudrate, const uint32_t peripheral
 
 // If using control board V3
 // essentially, we have to use SERCOM3 pins and masks instead of SERCOM2
-#ifdef CNTRL_BRD_V3
+#ifdef CTRL_BRD_V3
 
 	#define EXT_USART_SERCOM			SERCOM3
 	#define EXT_USART_RX_PIN			PINMUX_PA25C_SERCOM3_PAD3
