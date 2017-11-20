@@ -81,7 +81,7 @@ static void MLX90614_test(){
 
 	//read the value from the sensor specified by (addr) and put value in rs
 	uint16_t buf;
-	char buffer[20];
+	char buffer[40];
 	enum status_code sc;
 	uint8_t addr[] = {IR_FLASH, IR_SIDE1, IR_SIDE2, IR_RBF, IR_ACCESS, IR_TOP1};
 
@@ -104,15 +104,15 @@ static void AD590_test(){
 	char test_str[20];
 	const uint16_t expected_temp = 20;//Celsius
 	float temps[8];
-	char error_str[20];
-	uint8_t rs;
-	struct adc_module temp_instance; //generate object
-	configure_adc(&temp_instance,P_AI_TEMP_OUT);
+	char error_str[20];	
+	struct adc_module temp_instance; //generate object	
 	
 	set_output(true, P_5V_EN);
 	
 	print("==============AD590 Test==============\n");
 	for (int i = 0; i < 8; i++){
+		configure_adc(&temp_instance,P_AI_TEMP_OUT);
+		uint8_t rs;
 		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
 
 		uint16_t temp;
@@ -149,7 +149,7 @@ static void AD590_test(){
 				strcpy(test_str,"LED1TEMP");
 				break;						
 		}
-		print(" %s \t %s \t %d\xf8C\n",test_str,error_str,temps[i]);
+		print(" %s \t %s \t %d C\n",test_str,error_str,(uint8_t)temps[i]);
 	}
 
 	// compare_results((void *) temps,(void *) expected,4, 5, "AD590");		
@@ -262,7 +262,7 @@ static void HMC5883L_test(void){
 	int16_t xyz[3];
 
 	HMC5883L_init();
-	HMC5883L_read(buffer); // pretty sure this doesn't do anything ~l m a o~
+	HMC5883L_read(buffer);
 	HMC5883L_getXYZ(buffer, xyz);
 	print("HMC test: %d\n", HMC5883L_computeCompassDir(xyz[0],xyz[1],xyz[2]));
 
@@ -293,7 +293,7 @@ static float TEMD6200_test(){
 		read_adc(pd_instance, &pd_tests[i]);
 		switch (i) {
 			case 0:
-			strcpy(test_str,"PD_FLASH");
+			strcpy(test_str,"PD_ACCESS");
 			break;
 			case 1:
 			strcpy(test_str,"PD_SIDE1");
@@ -302,13 +302,13 @@ static float TEMD6200_test(){
 			strcpy(test_str,"PD_SIDE2");
 			break;
 			case 3:
-			strcpy(test_str,"PD_ACCESS");
+			strcpy(test_str,"PD_FLASH");
 			break;
 			case 4:
 			strcpy(test_str,"PD_TOP1");
 			break;
 			case 5:
-			strcpy(test_str,"PD_TOP2");
+			strcpy(test_str,"PD_RBF");
 			break;
 		}
 		print("%s \t %d \n",test_str, (uint16_t)(convertToVoltage(pd_tests[i])*1000));

@@ -66,7 +66,7 @@ void set_channel(void) {
 	sendbuffer[3] = 0xFB;
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
-}
+}*/
 
 void warm_reset(void){
 	sendbuffer[0] = 0x01;
@@ -77,7 +77,7 @@ void warm_reset(void){
 	usart_send_string(sendbuffer);
 }
 
-void set_modulation_format(void){
+/*void set_modulation_format(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x2B;
 	sendbuffer[2] = 0x01;
