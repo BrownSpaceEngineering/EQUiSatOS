@@ -89,5 +89,5 @@ int main(void)
 	
 	//int x = 1; 
 	//run_tests();
-	//run_rtos();	
+	run_rtos();	
 }

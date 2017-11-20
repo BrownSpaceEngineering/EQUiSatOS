@@ -21,7 +21,7 @@
 #include "data_handling/State_Structs.h"
 #include "data_handling/equistack.h"
 #include "data_handling/data_utils.h"
-#include "./runnable_configurations/init_rtos_tasks.h"
+#include "./runnable_configurations/satellite_state_control.h"
 #include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
 

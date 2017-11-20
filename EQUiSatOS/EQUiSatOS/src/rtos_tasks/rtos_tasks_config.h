@@ -14,31 +14,43 @@
 #include <assert.h>
 
 /************************************************************************/
-/* Task Properties - see below for frequencies		*/
+/* Classes of Task Priorities                                           */
+/************************************************************************/
+// lowest priority is at the top
+enum {
+	DATA_READ_PRIORITY = 1,
+	TRANSMIT_PRIORITY,
+	BATTERY_CHARGING_PRIORITY,
+	ACTION_PRIORITY,
+	WATCHDOG_PRIORITY
+};
+
+/************************************************************************/
+/* Task Properties - see below for frequencies							*/
 /************************************************************************/
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
-#define TASK_BATTERY_CHARGING_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_ANTENNA_DEPLOY_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
 #define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_WATCHDOG_STACK_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_WATCHDOG_STACK_PRIORITY				(WATCHDOG_PRIORITY)
 
 #define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_FLASH_ACTIVATE_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_FLASH_ACTIVATE_PRIORITY				(ACTION_PRIORITY)
 
 #define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_PRIORITY						(tskIDLE_PRIORITY)
+#define TASK_TRANSMIT_PRIORITY						(TRANSMIT_PRIORITY)
 
 #define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_IDLE_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
+#define TASK_IDLE_DATA_RD_PRIORITY					(DATA_READ_PRIORITY)
 
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_LOW_POWER_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
+#define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
+#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
 
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
@@ -60,7 +72,8 @@ typedef enum
 	IDLE_NO_FLASH,
 	IDLE_FLASH,
 	LOW_POWER,
-	RIP
+	RIP,
+	NUM_SAT_STATES, // = RIP + 1
 } global_state_t;
 
 /************************************************************************/
@@ -179,9 +192,9 @@ typedef enum
 #define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
 #define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define FLASH_DATA_READ_FREQ						10 // ms
-#define FLASH_DATA_ARR_LEN							10 // implies that the total data read duration is:
-													   // FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms
+#define FLASH_DATA_READ_FREQ	10 // ms - this should be longer than 2ms because its used as a buffer for pin transistions
+#define FLASH_DATA_ARR_LEN		10 // implies that the total data read duration is:
+// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms
 
 /*
  * A function to make sure that the constants defined here are internally consistent.

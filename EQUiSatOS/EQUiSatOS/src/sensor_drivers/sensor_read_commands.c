@@ -196,8 +196,8 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 }
 
 void read_magnetometer_batch(magnetometer_batch batch) {
-	sc = MPU9250_read_mag((uint16_t*) batch);
-	log_if_error(ELOC_IMU_MAG, sc, false);
+	//sc = MPU9250_read_mag((uint16_t*) batch);
+	//log_if_error(ELOC_IMU_MAG, sc, false);
 }
 
 void read_led_current_batch(led_current_batch batch) {

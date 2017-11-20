@@ -11,7 +11,7 @@
 #define NUM_FLASHES				3
 #define TIME_BTWN_FLASHES		1000 // ms
 #define BATCH_READS_BEFORE		1
-#define BATCH_READS_DURING		4
+#define BATCH_READS_DURING		4 // = 100ms / FLASH_DATA_READ_FREQ
 #define BATCH_READS_AFTER		1
 
 /* because we need to average the burst values, we keep a struct of the sums (which needs to be larger data types),
@@ -120,19 +120,30 @@ void flash_activate_task(void *pvParameters)
 			uint32_t cur_timestamp = get_rtc_count();
 			current_burst_struct->timestamp = cur_timestamp;
 			current_cmp_struct->timestamp = cur_timestamp;
-					
+				
+			// enable lifepo output (before first data read to give a time buffer before flashing)
+			set_lifepo_output_enable(true);
+			
+			// delays for time of FLASH_DATA_READ_FREQ
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 									BATCH_READS_BEFORE, &prev_data_read_time);
-					
-			vTaskSuspendAll(); // make sure RTOS is suspended for critical signals
-			flash_leds(); // note contains a delay of approx. 1 ms
-			xTaskResumeAll();
 			
-			// read data during the flash and after
+			// send actual falling edge to flash to activate it
+			flash_leds();
+			
+			// read data during the flash of 100ms
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
-									BATCH_READS_DURING + BATCH_READS_AFTER, &prev_data_read_time);
+									BATCH_READS_DURING, &prev_data_read_time);
+									
+			// reset the flash activate pin after the 100ms of data reading
+			// NOTE this does NOT actually stop the flashing - that is hardware controlled
+			reset_flash_pin();
 			
-			assert (data_arrays_tail < FLASH_DATA_ARR_LEN);
+			// read data after the flash
+			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
+									BATCH_READS_AFTER, &prev_data_read_time);
+			
+			configASSERT (data_arrays_tail < FLASH_DATA_ARR_LEN);
 			
 			// using the sums, compute and populate the flash compare struct corresponding to this burst
 			average_piecewise(current_cmp_struct->led_temps_avg_data, current_sums_struct.led_current_data_sums, 
@@ -146,11 +157,13 @@ void flash_activate_task(void *pvParameters)
 			average_piecewise(current_cmp_struct->led_current_avg_data, current_sums_struct.led_current_data_sums,
 								FLASH_DATA_ARR_LEN, 4);			
 			
-			// stop taking data and store in struct
+			// store both sets of data in their equistacks
 			current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
+			current_cmp_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
 			// reset data array tails so we're writing at the start
 			data_arrays_tail = 0;
 			
+			// delay between successive flashes
 			vTaskDelay(TIME_BTWN_FLASHES / portTICK_PERIOD_MS); // delay on last iteration as well is OK
 		}
 	}

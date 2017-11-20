@@ -32,7 +32,7 @@ void pre_init_rtos_tasks(void) {
 void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 		
-	if (task_handle == NULL || *task_handle != NULL) { // the latter would suspend THIS task
+	if (task_handle == NULL || *task_handle == NULL) { // the latter would suspend THIS task
 		// TODO: ERROR! - maybe even watchdog reset!
 		return;
 	}
@@ -57,6 +57,9 @@ void task_resume(task_type_t task_id)
 	{
 		check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
 		// actually resume task (will be graceful if task_handle task is not actually suspended)
+		
+		// TODO: report error if *task_handle is NULL
+		
 		vTaskResume(*task_handle); 
 		task_suspended_states |= (1 << task_id); // note we WERE suspended
 	}	

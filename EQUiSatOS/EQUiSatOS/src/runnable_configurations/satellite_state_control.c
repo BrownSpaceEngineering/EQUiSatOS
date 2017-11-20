@@ -5,13 +5,20 @@
  *  Author: mckenna
  */
 
-#include "init_rtos_tasks.h"
+#include "satellite_state_control.h"
+#include "../testing_functions/os_system_tests.h"
+
+/* Satellite state - ONLY accessible in this file */
+int8_t CurrentState;
 
 void run_rtos()
 {
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
 	/************************************************************************/
+	
+	CurrentState = INITIAL;
+	
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
 
@@ -88,7 +95,7 @@ void run_rtos()
 	/* Data tasks */
 
 	idle_data_task_handle = xTaskCreateStatic(idle_data_task,
-		"current data reader task",
+		"idle data reader task",
 		TASK_IDLE_DATA_RD_STACK_SIZE,
 		NULL,
 		TASK_IDLE_DATA_RD_PRIORITY,
@@ -143,6 +150,9 @@ void run_rtos()
 
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
 void init_task_state(task_type_t task) {
+	// TODO: will depend on persistent memory
+	
+	
 	// NOTE: The last "true" argument signifies that the suspend functions should
 	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles)
 	// when RTOS is first starting
@@ -168,8 +178,8 @@ void init_task_state(task_type_t task) {
 			//task_resume_if_suspended(TRANSMIT_TASK);
 			return;
 		case ATTITUDE_DATA_TASK:
-			task_suspend(ATTITUDE_DATA_TASK); // REAL ONE
-			//task_resume_if_suspended(ATTITUDE_DATA_TASK);
+			task_resume(ATTITUDE_DATA_TASK); // REAL ONE
+			//task_suspend(ATTITUDE_DATA_TASK);
 			return;
 		case LOW_POWER_DATA_TASK:
 			task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
@@ -190,15 +200,17 @@ void init_task_state(task_type_t task) {
  * See http://www.freertos.org/RTOS-idle-task.html for more details.
  */
 void vApplicationIdleHook(void) {
-
-	// TODO: TESTING
-
-	static int idle_started = false;
-	// TODO: Doesn't appear to go well when we set_state_idle
-	if (xTaskGetTickCount() > 3000 && !idle_started) { // ms
-		set_state(IDLE_NO_FLASH);
-		idle_started = true;
-	}
+	// FOR TESTING
+	test_normal_satellite_state_sequence();
+//	test_all_state_transitions();
+// 	test_watchdog_reset_bat_charging();
+// 	test_watchdog_reset_bat_charging();
+// 	test_watchdog_reset_attitude_data();
+// 	test_watchdog_reset_antenna_deploy();
+// 	test_watchdog_reset_transmit_task();
+// 	test_watchdog_reset_idle_data_task();
+// 	test_watchdog_reset_flash_activate_task();
+// 	test_watchdog_reset_low_power_data_task();
 }
 
 /************************************************************************/
@@ -213,12 +225,24 @@ void set_state_idle_flash(void);
 void set_state_low_power(void);
 void set_state_rip(void);
 
+/* Getter for global state */
+global_state_t get_sat_state(void) {
+	return CurrentState;
+}
+
 /* Sets the current satellite state to the given state, if a transition from
    the current state is valid; returns whether the state change was made (i.e. was valid) 
    CAN be called consistenly (i.e. if state == CurrentState), which will ensure all correct tasks
    for a state are running, etc. */
-bool set_state(global_state_t state) 
+bool set_sat_state_helper(global_state_t state) 
 {
+	// setting the state to the current state is not wrong,
+	// but we don't want to actually change task states every time this is called
+	// when the state is the current state
+	if (state == CurrentState) {
+		return true;
+	}
+	
 	switch(state) 
 	{
 		case INITIAL:
@@ -226,6 +250,7 @@ bool set_state(global_state_t state)
 			
 		case ANTENNA_DEPLOY:
 			if (CurrentState == INITIAL) {
+				trace_print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_state_antenna_deploy();
 				return true;
 			}
@@ -233,13 +258,15 @@ bool set_state(global_state_t state)
 			
 		case HELLO_WORLD:
 			if (CurrentState == ANTENNA_DEPLOY) {
+				trace_print("CHANGED STATE to HELLO_WORLD");
 				set_state_hello_world();
 				return true;
 			}
 			return false;
 			
 		case IDLE_NO_FLASH:
-			if (CurrentState == IDLE_FLASH || CurrentState == IDLE_FLASH || CurrentState == LOW_POWER) {
+			if (CurrentState == IDLE_FLASH || CurrentState == HELLO_WORLD || CurrentState == LOW_POWER) {
+				trace_print("CHANGED STATE to IDLE_NO_FLASH");
 				set_state_idle_no_flash();
 				return true;
 			}
@@ -247,6 +274,7 @@ bool set_state(global_state_t state)
 			
 		case IDLE_FLASH:
 			if (CurrentState == IDLE_NO_FLASH) {
+				trace_print("CHANGED STATE to IDLE_FLASH");
 				set_state_idle_flash();
 				return true;
 			}
@@ -254,6 +282,7 @@ bool set_state(global_state_t state)
 			
 		case LOW_POWER:
 			if (CurrentState == IDLE_NO_FLASH || CurrentState == IDLE_FLASH) {
+				trace_print("CHANGED STATE to LOW_POWER");
 				set_state_low_power();
 				return true;
 			}
@@ -261,9 +290,18 @@ bool set_state(global_state_t state)
 		
 		case RIP:
 			// we can always go to RIP
+			trace_print("CHANGED STATE to RIP");
 			set_state_rip();
 			return true;
 	}
+	configASSERT(false); // bad state ID
+}
+
+bool set_sat_state(global_state_t state) {
+	if (!set_sat_state_helper(state)) {
+		configASSERT(false); // busy loop because this is bad
+	}
+	return true;
 }
 
 void set_state_initial()
@@ -309,9 +347,19 @@ void set_state_hello_world()
 
 	CurrentState = HELLO_WORLD;
 
-	set_states_of_idle_no_flash();
+	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
+	task_resume(IDLE_DATA_TASK);
+	task_suspend(FLASH_ACTIVATE_TASK);
+	task_resume(TRANSMIT_TASK);
+	task_resume(ATTITUDE_DATA_TASK);
+	task_suspend(LOW_POWER_DATA_TASK);
 
 	xTaskResumeAll();
+	
+	// this must be at the end because this state change will be 
+	// triggered by the ANTENNA_DEPLOY_TASK, and suspending the
+	// task will suspend this function
+	task_suspend(ANTENNA_DEPLOY_TASK); 
 }
 
 void set_state_idle_flash()
