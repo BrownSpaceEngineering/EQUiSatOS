@@ -46,13 +46,14 @@ void transmit_task(void *pvParameters)
 			current_sequence_transmissions = 0;
 
 			// shift all message types over one, wrapping around
+			// TODO: Only do this if there equistack is NOT empty for the corresponding new type
 			buffer_1_msg_type = (buffer_1_msg_type + 1) % NUM_MSG_TYPE;
 			buffer_2_msg_type = (buffer_2_msg_type + 1) % NUM_MSG_TYPE;
 			buffer_3_msg_type = (buffer_3_msg_type + 1) % NUM_MSG_TYPE;
 
-			write_packet(msg_buffer_1, buffer_1_msg_type);
-			write_packet(msg_buffer_2, buffer_2_msg_type);
-			write_packet(msg_buffer_3, buffer_3_msg_type);
+			//write_packet(msg_buffer_1, buffer_1_msg_type);
+			//write_packet(msg_buffer_2, buffer_2_msg_type);
+			//write_packet(msg_buffer_3, buffer_3_msg_type);
 		}
 
 		// actually send buffer over USART to radio for transmission
@@ -72,7 +73,7 @@ void transmit_task(void *pvParameters)
 			// give control back to RTOS to let transmit data task read info
 			vTaskDelayUntil( &prev_wake_time, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
 
-			transmission_in_progress = false; // TODO: query radio state
+			transmission_in_progress = false; // TODO: query radio state / current
 
 			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
 			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
@@ -99,17 +100,19 @@ void write_packet(uint8_t* msg_buffer, int state) {
 			write_attitude_data(msg_buffer, &attitude_readings_equistack);
 			break;
 
-		//if (attitude_data_trans != NULL) { validDataTransmitted = true; } // TODO: If we got any invalid data (all null?)... stop?
-
 		case FLASH_DATA:
 			write_message_top(msg_buffer, FLASH_DATA_PACKETS, FLASH_DATA_PACKET_SIZE, FLASH_DATA);
 			write_flash_data(msg_buffer, &flash_readings_equistack);
 			break;
 
 		case FLASH_CMP_DATA:
-			write_message_top(msg_buffer, FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE, FLASH_CMP_DATA);
+			write_message_top(msg_buffer, FLASH_CMP_DATA_PACKETS, FLASH_CMP_DATA_PACKET_SIZE, FLASH_CMP_DATA);
 			write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
 			break;
+			
+		case LOW_POWER_DATA:
+			write_message_top(msg_buffer, LOW_POWER_DATA_PACKETS, LOW_POWER_DATA_PACKET_SIZE, LOW_POWER_DATA);
+			write_low_power_data(msg_buffer, &low_power_readings_equistack);
 
 		default:
 			break;
@@ -122,7 +125,7 @@ void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size_data, 
 	// configure state string
 	uint8_t state_string = 0;
 	state_string |=  msg_type & 0b11; // two LSB of msg_type (4 types)
-	state_string |= (CurrentState & 0b111) << 2; // three LSB of satellite state
+	state_string |= (get_sat_state() & 0b111) << 2; // three LSB of satellite state
 
 	uint32_t current_timestamp = get_rtc_count();
 
@@ -131,7 +134,7 @@ void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size_data, 
 		num_data * size_data);
 
 	// read sensors and write current data to buffer; it's not dependent on state
-	write_current_data(msg_buffer);
+	write_current_data(msg_buffer, current_timestamp);
 
 	// write relevant errors from both error stacks
 	write_errors(msg_buffer, &priority_error_equistack, &normal_error_equistack, current_timestamp);

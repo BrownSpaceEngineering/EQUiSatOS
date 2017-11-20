@@ -53,7 +53,7 @@ void attitude_data_task(void *pvParameters)
 		
 		// see if each sensor is ready to add a batch, and do so if we need to
 		if (loops_since_last_log[IR_DATA] >= attitude_IR_LOOPS_PER_LOG) {
-			read_ir_object_temps_batch(current_struct->ir_data[data_array_tails[IR_DATA]]);
+			read_ir_object_temps_batch(current_struct->ir_obj_temps_data[data_array_tails[IR_DATA]]);
 			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[DIODE_DATA] >= attitude_DIODE_LOOPS_PER_LOG) {
@@ -64,8 +64,8 @@ void attitude_data_task(void *pvParameters)
 		// i.e. assert(attitude_ACCELEROMETER_LOOPS_PER_LOG == attitude_GYRO_LOOPS_PER_LOG)
 		if (loops_since_last_log[ACCELEROMETER_DATA] >= attitude_ACCELEROMETER_LOOPS_PER_LOG && 
 			loops_since_last_log[GYRO_DATA] >= attitude_GYRO_LOOPS_PER_LOG) {
-			read_accel_batch(&(current_struct->accelerometer_data[data_array_tails[ACCELEROMETER_DATA]]));
-			read_gyro_batch(&(current_struct->gyro_data[data_array_tails[GYRO_DATA]]));
+			read_accel_batch(current_struct->accelerometer_data[data_array_tails[ACCELEROMETER_DATA]]);
+			read_gyro_batch(current_struct->gyro_data[data_array_tails[GYRO_DATA]]);
 			increment_data_type(ACCELEROMETER_DATA, data_array_tails, loops_since_last_log);
 			increment_data_type(GYRO_DATA, data_array_tails, loops_since_last_log);
 		}

@@ -10,7 +10,7 @@
 #define MAIN_H
 
 #include <global.h>
-#include "runnable_configurations/init_rtos_tasks.h"
+#include "runnable_configurations/satellite_state_control.h"
 #include "runnable_configurations/scratch_testing.h"
 #include "testing_functions/test_stacks.h"
 

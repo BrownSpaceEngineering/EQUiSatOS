@@ -35,12 +35,23 @@ void idle_data_task(void *pvParameters)
 		// add all sensors to batch
 		// read radio temp first because it takes a while to write & reset the radio
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
+		
+		// TODO: read satellite history from somewhere
+		
+		// TODO: read reboot count from memory
 	
+		//read_lion_volts_batch(			current_struct->lion_volts_data);
+		//read_lion_current_batch(		current_struct->lion_current_data);
 		read_lion_temps_batch(			current_struct->lion_temps_data);
-		read_radio_volts_batch(			current_struct->radio_volts_data);
-		read_imu_temp_batch(			&(current_struct->imu_temp_data));
-		read_ir_ambient_temps_batch(			current_struct->ir_temps_data);
+		read_bat_charge_volts_batch(	current_struct->bat_charge_volts_data);
+		read_bat_charge_dig_sigs_batch(	&(current_struct->bat_charge_dig_sigs_data));
 		read_rail_5v_batch(				&(current_struct->rail_5v_data));
+		read_radio_temp_batch(			&(current_struct->radio_temp_data));
+		read_radio_volts_batch(			&(current_struct->radio_volts_data));
+		read_radio_current_batch(		&(current_struct->radio_current_data));
+		read_proc_temp_batch(			&(current_struct->proc_temp_data));
+		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
+		
 
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 

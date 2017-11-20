@@ -307,7 +307,7 @@
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -1189,6 +1189,12 @@
     <Compile Include="src\telemetry\rscode-1.3\rs.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\testing_functions\os_system_tests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\os_system_tests.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\system_test.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1987,10 +1993,10 @@
     <Compile Include="src\processor_drivers\USART_Commands.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\init_rtos_tasks.c">
+    <Compile Include="src\runnable_configurations\satellite_state_control.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\init_rtos_tasks.h">
+    <Compile Include="src\runnable_configurations\satellite_state_control.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\scratch_testing.c">

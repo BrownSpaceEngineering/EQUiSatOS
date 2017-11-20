@@ -26,12 +26,19 @@ typedef struct current_data_t
 // for idle data package
 typedef struct idle_data_t
 {
+	satellite_history_batch satellite_history;
+	uint8_t reboot_count;
+	lion_volts_batch lion_volts_data;
+	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;
-	radio_volts_batch radio_volts_data;
-	radio_temp_batch radio_temp_data;
-	imu_temp_batch imu_temp_data;
-	ir_ambient_temps_batch ir_temps_data;
+	bat_charge_volts_batch bat_charge_volts_data;
+	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
 	rail_5v_batch rail_5v_data;
+	radio_temp_batch radio_temp_data;
+	radio_volts_batch radio_volts_data;
+	radio_current_batch radio_current_data;
+	proc_temp_batch proc_temp_data;
+	ir_ambient_temps_batch ir_amb_temps_data;
 
 	uint32_t timestamp;
 	
@@ -46,7 +53,7 @@ typedef struct attitude_data_t
 	They are also inversely proportional to the LOOPS_PER_LOG of each
 	corresponding sensor because if MORE reads are required for each log,
 	the data is of LOWER frequency and thus needs a SMALLER array. */
-	ir_object_temps_batch ir_data					[attitude_IR_DATA_ARR_LEN];
+	ir_object_temps_batch ir_obj_temps_data					[attitude_IR_DATA_ARR_LEN];
 	pdiode_batch diode_data							[attitude_DIODE_DATA_ARR_LEN];
 	accelerometer_batch accelerometer_data			[attitude_ACCELEROMETER_DATA_ARR_LEN];
 	gyro_batch gyro_data							[attitude_GYRO_DATA_ARR_LEN];
@@ -64,6 +71,7 @@ typedef struct flash_data_t
 	lifepo_current_batch lifepo_current_data			[FLASH_DATA_ARR_LEN];
 	lifepo_volts_batch lifepo_volts_data				[FLASH_DATA_ARR_LEN];
 	led_current_batch led_current_data					[FLASH_DATA_ARR_LEN];
+	gyro_batch gyro_data								[FLASH_DATA_ARR_LEN];
 
 	uint32_t timestamp;
 
@@ -78,24 +86,26 @@ typedef struct flash_cmp_data_t
 	led_current_batch led_current_avg_data;
 	lifepo_current_batch lifepo_current_avg_data;
 	lifepo_volts_batch lifepo_volts_avg_data;
+	gyro_batch gyro_avg_data;
 
 	uint32_t timestamp;
 
 } flash_cmp_data_t;
 
-// TODO: ARRAYS!!!!!!
+// for low power data package
 typedef struct low_power_data_t
 {
+	satellite_history_batch satellite_history;
 	lion_volts_batch lion_volts_data;
 	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;
 	bat_charge_volts_batch bat_charge_volts_data;
 	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
-	ir_object_temps_batch ir_object_temps_data;
+	ir_object_temps_batch ir_obj_temps_data;
 	gyro_batch gyro_data;
 
 	uint32_t timestamp;
-
+	
 } low_power_data_t;
 
 #endif

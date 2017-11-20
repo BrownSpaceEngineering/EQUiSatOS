@@ -12,8 +12,8 @@
 #ifndef FLASH_COMMANDS_H_
 #define FLASH_COMMANDS_H_
 
-#define FLASH_LED_CMD_LOW_TIME 1000 // us;
-
+void set_lifepo_output_enable(bool enabled);
 void flash_leds(void);
+void reset_flash_pin(void);
 
 #endif /* FLASH_COMMANDS_H_ */

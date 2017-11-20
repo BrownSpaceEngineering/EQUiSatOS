@@ -7,15 +7,22 @@
 
 #include "Flash_Commands.h"
 
-void flash_leds(void) {
+void set_lifepo_output_enable(bool enabled) 
+{
+	set_output(enabled, P_LF_B1_OUTEN);
+	set_output(enabled, P_LF_B2_OUTEN);
+	
+	// should be followed by a delay of at least 2ms before calling flash_leds
+}
+
+void flash_leds(void) {	
 	// send _falling_ edge on LED_CMD to tell subprocessor to activate LEDs for 100ms
 	set_output(false, P_LED_CMD);
 	
-	// keep it low for a bit (it activates on transition, but give it a buffer)
-	// should be more than one clock cycle, but don't want to wait too long
-	// NOTE: we would want to make sure and suspend RTOS here to make sure the 
-	// delay is determinate, but that was already done at a higher level and we 
-	// want fast timing here.
-	delay_cycles_us(FLASH_LED_CMD_LOW_TIME); 
+	// should be followed by a delay of at least 2ms before calling reset_flash_pin
+}
+
+void reset_flash_pin(void) 
+{
 	set_output(true, P_LED_CMD);
 }

@@ -25,8 +25,8 @@ void antenna_deploy_task(void *pvParameters) {
 		// if it's open kill the task because the antenna has been deployed
 		// or kill it if it's run more than 5 times because it's a lost cause
 		if ((get_input(P_DET_RTN) && num_tries > 0) || num_tries >= 5) {
-			// TODO: also change state
-			vTaskSuspend(NULL);
+			// switch states, suspending this task in the process
+			set_sat_state(HELLO_WORLD);
 		} else {
 			int mod_tries = num_tries % 3;
 			if (mod_tries == 0 && true /* LiON is sufficiently charged and enough time has passed*/) {

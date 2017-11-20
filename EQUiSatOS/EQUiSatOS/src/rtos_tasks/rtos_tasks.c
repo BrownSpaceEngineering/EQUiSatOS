@@ -32,13 +32,11 @@ void pre_init_rtos_tasks(void) {
 void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 		
-	if (task_handle == NULL || *task_handle != NULL) { // the latter would suspend THIS task
-		// TODO: ERROR! - maybe even watchdog reset!
-		return;
-	}
-		
+	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend this task
+	
+	// always check out of watchdog when called (to be double-sure)
+	check_out_task(task_id);
 	if (eTaskGetState(*task_handle) != eSuspended) { 
-		check_out_task(task_id); // check out of watchdog
 		vTaskSuspend(*task_handle); // actually suspend using handle
 	}
 }
@@ -46,17 +44,18 @@ void task_suspend(task_type_t task_id) {
 void task_resume(task_type_t task_id)
 {
 	TaskHandle_t* task_handle = task_handles[task_id];
-	if (task_handle == NULL) {
-		// TODO: ERROR! - maybe even watchdog reset!
-		return;
-		// this is also good in the case the task_handle is NULL and the task isn't started
-		// here, because it will trigger a watchdog reset
-	}
-		
+	configASSERT(task_handle != NULL);
+	
+	// always check in for watchdog when called
+	// (in case it wasn't, for example on BOOT)
+	check_in_task(task_id); 
+							
 	if (eTaskGetState(*task_handle) == eSuspended)
 	{
-		check_in_task(task_id); // check in for watchdog whenever called (in case it wasn't)
 		// actually resume task (will be graceful if task_handle task is not actually suspended)
+		
+		configASSERT(*task_handle != NULL);
+		
 		vTaskResume(*task_handle); 
 		task_suspended_states |= (1 << task_id); // note we WERE suspended
 	}	

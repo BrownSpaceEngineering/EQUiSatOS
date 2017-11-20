@@ -15,9 +15,6 @@
 #include <config.h>
 #include <errors.h>
 
-/* Global satellite state */
-int8_t CurrentState;
-
 #include "config/proc_pins.h"
 #include "processor_drivers/I2C_Commands.h"
 #include "processor_drivers/SPI_Commands.h"

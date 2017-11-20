@@ -196,8 +196,8 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 }
 
 void read_magnetometer_batch(magnetometer_batch batch) {
-	sc = MPU9250_read_mag((uint16_t*) batch);
-	log_if_error(ELOC_IMU_MAG, sc, false);
+	//sc = MPU9250_read_mag((uint16_t*) batch);
+	//log_if_error(ELOC_IMU_MAG, sc, false);
 }
 
 void read_led_current_batch(led_current_batch batch) {
@@ -212,11 +212,19 @@ void read_led_current_batch(led_current_batch batch) {
 	log_if_out_of_bounds(batch[3], LED_CUR_LOW, LED_CUR_HIGH, ELOC_LED4SNS, true);
 }
 
-void read_radio_volts_batch(radio_volts_batch batch) {
+void read_radio_volts_batch(radio_volts_batch* batch) {
 	// 3v6_ref and 3v6_sns
 	uint16_t results[4];	
 	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
+	
+	
+	
+	// TODO: I thought we had only one radio temperature... what are the two here? - mckenna
+	
+	
+	
+	
 	// 3V6 voltage is Vin0
 	batch[0] = results[0];
 	log_if_out_of_bounds(batch[0], RAD_VOLT_LOW, RAD_VOLT_HIGH, ELOC_AD7991_1_0, true);
@@ -243,9 +251,17 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	log_if_error(ELOC_TCA, sc, true);
 }
 
+void read_proc_temp_batch(proc_temp_batch* batch) {
+	// TODO: processor temperature (likely not a signal but an atmel call)
+}
+
 void read_radio_temp_batch(radio_temp_batch* batch) {
 	// TODO: Tyler will implement later
 	// eventually: XDL_get_temperature(batch);
+}
+
+void read_radio_current_batch(radio_current_batch* batch) {
+	// TODO
 }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {

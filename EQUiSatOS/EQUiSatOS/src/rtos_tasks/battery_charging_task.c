@@ -35,57 +35,57 @@ void battery_charging_task(void *pvParameters)
 	while (true)
 	{
 		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
-
-		// report to watchdog
-		report_task_running(BATTERY_CHARGING_TASK);
-
-		// before getting into it, grab the percentages of each of the batteries
-		// lions
-		
-		lion_volts_batch lion_volts;
-		read_lion_volts_batch(lion_volts);
-		
-		int lion_one_percentage = lion_volts[0];
-		int lion_two_percentage = lion_volts[1];
-
-		lifepo_volts_batch life_po_volts;
-		read_lifepo_volts_batch(life_po_volts);
-	
-		// individual batteries within the life po banks
-		int life_po_bank_one_bat_one_percentage = life_po_volts[0];
-		int life_po_bank_one_bat_two_percentage = life_po_volts[1];
-		int life_po_bank_two_bat_one_percentage = life_po_volts[2];
-		int life_po_bank_two_bat_two_percentage = life_po_volts[3];
-
-		// TODO: how do we actually derive this? currently just taking the average
-		// life po banks
-		int life_po_bank_one_percentage = 
-			(life_po_bank_one_bat_one_percentage + life_po_bank_one_bat_two_percentage) / 2;
-		int life_po_bank_two_percentage = 
-			(life_po_bank_two_bat_one_percentage + life_po_bank_two_bat_two_percentage) / 2;
-
-		// NOTE: get_global_state and battery_logic are individual functions in order to make
-		// it easier to "unit test" them with contrived inputs
-
-		// what's the global state of the satellite?
-		int curr_global_state = get_global_state(
-			lion_one_percentage,
-			lion_two_percentage,
-			life_po_bank_one_percentage,
-			life_po_bank_two_percentage);
-			
-		set_state(curr_global_state);
-
-		// what batteries should we be charging?
-		battery_logic(
-			lion_one_percentage,
-			lion_two_percentage,
-			life_po_bank_one_percentage,
-			life_po_bank_two_percentage,
-			life_po_bank_one_bat_one_percentage,
-			life_po_bank_one_bat_two_percentage,
-			life_po_bank_two_bat_one_percentage,
-			life_po_bank_two_bat_two_percentage);
+// 
+// 		// report to watchdog
+// 		report_task_running(BATTERY_CHARGING_TASK);
+// 
+// 		// before getting into it, grab the percentages of each of the batteries
+// 		// lions
+// 		
+// 		lion_volts_batch lion_volts;
+// 		read_lion_volts_batch(lion_volts);
+// 		
+// 		int lion_one_percentage = lion_volts[0];
+// 		int lion_two_percentage = lion_volts[1];
+// 
+// 		lifepo_volts_batch life_po_volts;
+// 		read_lifepo_volts_batch(life_po_volts);
+// 	
+// 		// individual batteries within the life po banks
+// 		int life_po_bank_one_bat_one_percentage = life_po_volts[0];
+// 		int life_po_bank_one_bat_two_percentage = life_po_volts[1];
+// 		int life_po_bank_two_bat_one_percentage = life_po_volts[2];
+// 		int life_po_bank_two_bat_two_percentage = life_po_volts[3];
+// 
+// 		// TODO: how do we actually derive this? currently just taking the average
+// 		// life po banks
+// 		int life_po_bank_one_percentage = 
+// 			(life_po_bank_one_bat_one_percentage + life_po_bank_one_bat_two_percentage) / 2;
+// 		int life_po_bank_two_percentage = 
+// 			(life_po_bank_two_bat_one_percentage + life_po_bank_two_bat_two_percentage) / 2;
+// 
+// 		// NOTE: get_global_state and battery_logic are individual functions in order to make
+// 		// it easier to "unit test" them with contrived inputs
+// 
+// 		// what's the global state of the satellite?
+// 		int curr_global_state = get_global_state(
+// 			lion_one_percentage,
+// 			lion_two_percentage,
+// 			life_po_bank_one_percentage,
+// 			life_po_bank_two_percentage);
+// 			
+// 		set_state(curr_global_state);
+// 
+// 		// what batteries should we be charging?
+// 		battery_logic(
+// 			lion_one_percentage,
+// 			lion_two_percentage,
+// 			life_po_bank_one_percentage,
+// 			life_po_bank_two_percentage,
+// 			life_po_bank_one_bat_one_percentage,
+// 			life_po_bank_one_bat_two_percentage,
+// 			life_po_bank_two_bat_one_percentage,
+// 			life_po_bank_two_bat_two_percentage);
 	}
 
 	// delete this task if it ever breaks out
@@ -94,7 +94,7 @@ void battery_charging_task(void *pvParameters)
 
 int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage)
 {
-	if (CurrentState == RIP)
+	if (get_sat_state() == RIP)
 	{
 		return RIP;
 	}
@@ -135,17 +135,17 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 		}
 	}
 
-	if (CurrentState == HELLO_WORLD)
+	if (get_sat_state() == HELLO_WORLD)
 	{
 		return HELLO_WORLD;
 	}
 
-	if (CurrentState == ANTENNA_DEPLOY)
+	if (get_sat_state() == ANTENNA_DEPLOY)
 	{
 		return ANTENNA_DEPLOY;
 	}
 	
-	if (CurrentState == INITIAL)
+	if (get_sat_state() == INITIAL)
 	{
 		return INITIAL;
 	}
@@ -208,7 +208,7 @@ void battery_logic(
 	//    or FILL_LIFE_PO
 	//  - otherwise, FILL_LION is the only option
 
-	if (CurrentState != IDLE_FLASH && CurrentState != IDLE_NO_FLASH)
+	if (get_sat_state() != IDLE_FLASH && get_sat_state() != IDLE_NO_FLASH)
 	{
 		curr_charge_state = FILL_LIFE_PO;
 	}
