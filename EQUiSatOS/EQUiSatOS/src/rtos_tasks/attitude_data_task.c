@@ -10,7 +10,7 @@
 void attitude_data_task(void *pvParameters)
 {
 	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 	
 	// current_data_task for extensive comments / testing
 	
@@ -24,7 +24,7 @@ void attitude_data_task(void *pvParameters)
 	
 	for ( ;; )
 	{
-		vTaskDelayUntil( &xNextWakeTime, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil( &prev_wake_time, ATTITUDE_DATA_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// report to watchdog
 		report_task_running(ATTITUDE_DATA_TASK);
@@ -40,7 +40,7 @@ void attitude_data_task(void *pvParameters)
 			current_struct->timestamp = get_rtc_count();
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
-			set_all(data_array_tails, NUM_DATA_TYPES, 0);
+			set_all_uint8(data_array_tails, NUM_DATA_TYPES, 0);
 			
 // 			// TESTING
 // 			assert(prev_cur_struct != current_struct);

@@ -1,7 +1,6 @@
 #include "MLX90614_IR_Sensor.h"
 
 void MLX90614_init() {
-	setup_pin(true,P_IR_PWR_CMD); //init low power ir pin
 	irPower(true);
 }
 
@@ -10,7 +9,7 @@ void MLX90614_init() {
 */
 void irPower(bool trueIsOn){
 	set_output(trueIsOn, P_IR_PWR_CMD);
-};
+}
 
 /*
 	returns if the ir is powered on
@@ -35,8 +34,8 @@ enum status_code MLX90614_readRawIRData(MLXDeviceAddr addr, IRChannel chan, uint
 }
 
 // read ambient temperature 
-enum status_code MLX90614_read_amb(MLXDeviceAddr addr, uint16_t * buf){
-	enum status_code read_amb = MLX90614_read2ByteValue(addr, (uint8_t)AMBIENT, &buf);
+enum status_code MLX90614_read_amb(MLXDeviceAddr addr, uint16_t* buf){
+	enum status_code read_amb = MLX90614_read2ByteValue(addr, (uint8_t)AMBIENT, buf);
 	return read_amb;
 };
 

@@ -17,9 +17,10 @@
 #include "semphr.h"
 
 #include "rtos_tasks_config.h"
-#include "stacks/Sensor_Structs.h"
-#include "stacks/State_Structs.h"
-#include "stacks/equistack.h"
+#include "data_handling/Sensor_Structs.h"
+#include "data_handling/State_Structs.h"
+#include "data_handling/equistack.h"
+#include "data_handling/data_utils.h"
 #include "./runnable_configurations/init_rtos_tasks.h"
 #include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
@@ -46,7 +47,6 @@ void flash_activate_task(void *pvParameters);
 // Data read tasks
 void idle_data_task(void *pvParameters);
 void transmit_data_task(void *pvParameters);
-void flash_data_task(void *pvParameters);
 void attitude_data_task(void *pvParameters);
 void low_power_data_task(void *pvParameters);
 
@@ -65,8 +65,6 @@ StaticTask_t flash_activate_task_buffer;
 StackType_t flash_activate_task_stack			[TASK_FLASH_ACTIVATE_STACK_SIZE];
 StaticTask_t idle_data_task_buffer;
 StackType_t idle_data_task_stack				[TASK_IDLE_DATA_RD_STACK_SIZE];
-StaticTask_t flash_data_task_buffer;
-StackType_t flash_data_task_stack				[TASK_FLASH_DATA_RD_STACK_SIZE];
 StaticTask_t attitude_data_task_buffer;
 StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
 StaticTask_t low_power_data_task_buffer;
@@ -114,7 +112,6 @@ TaskHandle_t battery_charging_task_handle; // Should we have this?
 TaskHandle_t flash_activate_task_handle;
 TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
-TaskHandle_t flash_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 TaskHandle_t low_power_data_task_handle;
 
@@ -141,9 +138,9 @@ bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns w
 /************************************************************************/
 /* Helper Functions                                                     */
 /************************************************************************/
+void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, so the delay is determinate
+
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
-void increment_all(uint8_t* int_arr, uint8_t length);
-void set_all(uint8_t* int_arr, uint8_t length, int value);
 
 /************************************************************************/
 /*  Required functions for FreeRTOS 9 static allocation                 */

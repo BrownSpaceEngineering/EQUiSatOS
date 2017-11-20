@@ -83,8 +83,9 @@ static void run_tests(void) {
 	*/
 }
 
-static void sensor_read_tests() {
+static void sensor_read_tests(void) {
 	uint16_t six_buf[6];
+	uint8_t six_buf_8t[6];
 	uint16_t three_buf[3];
 	uint16_t four_buf[4];
 	uint16_t two_buf[2];
@@ -106,9 +107,9 @@ static void sensor_read_tests() {
 	print("ir objs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
 	
 	print("\n# PDIODE #\n");
-	read_pdiode_batch(six_buf);
+	read_pdiode_batch(six_buf_8t);
 	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, six_buf[i]);	
+		print("pdiode %d: %d\n",i, six_buf_8t[i]);	
 	}
 	
 	print("\n\n# LiON VOLTS #\n");
@@ -133,42 +134,17 @@ static void sensor_read_tests() {
 	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 }
 
-/************************************************************************/
-/* DO NOT MODIFY BELOW HERE FOR SCRATCH TESTING - sid will come for you */
-/************************************************************************/
-void global_init(void) {
-	// Initialize the SAM system
-	system_init();
-
-	// Get this false as fast as possible.
-	setup_pin(true,P_LF_B2_OUTEN);
-	set_output(false, P_LF_B2_OUTEN);
-	setup_pin(true,P_LF_B1_OUTEN);
-	set_output(false, P_LF_B1_OUTEN);
-	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
-	set_output(false, P_L1_RUN_CHG);
-	setup_pin(true,P_L2_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);
-
-	init_rtc();
-	USART_init();
-	configure_i2c_master(SERCOM4);
-	MLX90614_init();
-	MPU9250_init();
-	delay_init();
-	
-	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
-	
-	init_errors();
-}
-
 int main(void)
 {
 	global_init();
-	//sensor_read_tests();
-	system_test();
 	
-	int x = 1; 
+	setup_pin(true, P_5V_EN);
+	set_output(true, P_5V_EN);
+ 	int x =1;
+	//sensor_read_tests();
+	//system_test();
+	
+	//int x = 1; 
 	//run_tests();
-	run_rtos();	
+	//run_rtos();	
 }

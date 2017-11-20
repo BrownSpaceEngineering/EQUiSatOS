@@ -9,10 +9,11 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
-#include <config.h>
 #include <asf.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <config.h>
+#include <errors.h>
 
 /* Global satellite state */
 int8_t CurrentState;
@@ -35,12 +36,19 @@ int8_t CurrentState;
 #include "sensor_drivers/TCA9535_GPIO.h"
 #include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "sensor_drivers/M24M01_EEPROM_Commands.h"
-#include "stacks/Sensor_Structs.h"
+#include "data_handling/Sensor_Structs.h"
 #include "telemetry/Radio_Commands.h"
 #include "testing_functions/system_test.h"
-#include "errors.h"
 #include "sensor_drivers/sensor_read_commands.h"
+#include "FreeRTOS.h"
 
-#include "debug_utils.h"
+
+/************************************************************************/
+/* HELPER METHODS                                                       */
+/************************************************************************/
+
+void init_tracelyzer(void);
+void trace_print(const char *format);
+void global_init(void);
 
 #endif /* GLOBAL_H_ */

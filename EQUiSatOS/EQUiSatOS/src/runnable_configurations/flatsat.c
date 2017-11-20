@@ -72,7 +72,8 @@ void flatsat_init(void) {
 	
 	//configure_watchdog();
 	LTC1380_init();
-	AD7991_init();
+	AD7991_init(AD7991_BATBRD);
+	AD7991_init(AD7991_CTRLBRD);
 	///setup_switching();
 	//TCA9535_init();
 }

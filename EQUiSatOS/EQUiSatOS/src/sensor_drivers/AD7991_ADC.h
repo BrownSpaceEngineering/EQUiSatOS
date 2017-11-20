@@ -14,7 +14,7 @@
 
 #define AD7991_SHOULD_STOP false
 
-enum status_code AD7991_init(void);
+enum status_code AD7991_init(uint8_t board);
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr);
 
 #endif /* AD7991_ADC_H_ */

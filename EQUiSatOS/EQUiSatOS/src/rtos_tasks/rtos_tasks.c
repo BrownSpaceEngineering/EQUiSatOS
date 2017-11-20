@@ -19,7 +19,6 @@ static void init_task_handles(void) {
 	task_handles[TRANSMIT_TASK] =				&transmit_task_handle;
 	task_handles[IDLE_DATA_TASK] =				&idle_data_task_handle;
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
-	task_handles[FLASH_DATA_TASK] =				&flash_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 }
@@ -73,27 +72,18 @@ bool check_if_suspended_and_update(task_type_t task_id) {
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
+void rtos_safe_delay(uint32_t ms) 
+{
+	vTaskSuspendAll();
+	delay_ms(ms);
+	xTaskResumeAll();
+}
+
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)
 {
 	// increment array tail marker and reset reads-per-log counter
 	data_array_tails[data_type] = data_array_tails[data_type] + 1;
 	loops_since_last_log[data_type] = 0;
-}
-
-void increment_all(uint8_t* int_arr, uint8_t length)
-{
-	for(uint8_t i = 0; i < length; i++)
-	{
-		int_arr[i] = int_arr[i] + 1;
-	}
-}
-
-void set_all(uint8_t* int_arr, uint8_t length, int value)
-{
-	for(uint8_t i = 0; i < length; i++)
-	{
-		int_arr[i] = value;
-	}
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {

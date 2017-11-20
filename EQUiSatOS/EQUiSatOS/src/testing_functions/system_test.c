@@ -272,7 +272,7 @@ static void HMC5883L_test(void){
 static enum status_code TCA9535_test(){
 	print("==============TCA9535 Test==============\n");
 	uint16_t rs;
-	enum status_code sc = TCA9535_init(rs);
+	enum status_code sc = TCA9535_init(&rs);
 	print("TCA return status: ");
 	//print_error(sc);
 	print("TCA test: %d\n",rs);
@@ -439,18 +439,7 @@ static void AD7991_CTRL_test(){
 	//}
 }
 
-
-void system_test_init(void){
-	setup_pin(true, P_RAD_PWR_RUN); //3.6V regulator
-	setup_pin(true, P_5V_EN); // 5V regulator
-	
-	AD7991_init();
-}
-
 void system_test(void){
-
-	system_test_init();		
-
 	AD7991_CTRL_test();
 	
 	AD7991_BAT_test();

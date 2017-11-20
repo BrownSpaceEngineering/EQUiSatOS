@@ -59,10 +59,11 @@ typedef struct attitude_data_t
 typedef struct flash_data_t
 {
 	/* ibid */
-	led_temps_batch led_temps_data						[flash_LED_TEMPS_DATA_ARR_LEN];
-	lifepo_current_batch lifepo_current_data			[flash_LIFEPO_CURRENT_DATA_ARR_LEN];
-	lifepo_volts_batch lifepo_volts_data				[flash_LIFEPO_VOLTS_DATA_ARR_LEN];
-	led_current_batch led_current_data					[flash_LED_CURRENT_DATA_ARR_LEN];
+	led_temps_batch led_temps_data						[FLASH_DATA_ARR_LEN];
+	lifepo_bank_temps_batch lifepo_bank_temps_data		[FLASH_DATA_ARR_LEN];
+	lifepo_current_batch lifepo_current_data			[FLASH_DATA_ARR_LEN];
+	lifepo_volts_batch lifepo_volts_data				[FLASH_DATA_ARR_LEN];
+	led_current_batch led_current_data					[FLASH_DATA_ARR_LEN];
 
 	uint32_t timestamp;
 
@@ -72,15 +73,17 @@ typedef struct flash_cmp_data_t
 {
 	/* ibid */
 	/* NOTE: Though these are the same types as in flash_data_t, they are those values AVERAGED */
-	led_temps_batch led_temps_avg_data						[flash_LED_TEMPS_AVG_DATA_ARR_LEN];
-	led_current_batch led_current_avg_data					[flash_LED_CURRENT_AVG_DATA_ARR_LEN];
-	lifepo_current_batch lifepo_current_avg_data			[flash_LIFEPO_CURRENT_AVG_DATA_ARR_LEN];
-	lifepo_volts_batch lifepo_volts_avg_data				[flash_LIFEPO_VOLTS_AVG_DATA_ARR_LEN];
+	led_temps_batch led_temps_avg_data;
+	lifepo_bank_temps_batch lifepo_bank_temps_avg_data;
+	led_current_batch led_current_avg_data;
+	lifepo_current_batch lifepo_current_avg_data;
+	lifepo_volts_batch lifepo_volts_avg_data;
 
 	uint32_t timestamp;
 
 } flash_cmp_data_t;
 
+// TODO: ARRAYS!!!!!!
 typedef struct low_power_data_t
 {
 	lion_volts_batch lion_volts_data;

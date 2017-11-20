@@ -11,15 +11,13 @@
 
 static int num_tries = 0;
 void antenna_deploy_task(void *pvParameters) {
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 	
 	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot
-	// set DET_RTN (antenna deployment pin) as input
-	setup_pin(false, P_DET_RTN);
 
 	for( ;; )
 	{		
-		vTaskDelayUntil(&xNextWakeTime, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
 		
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);

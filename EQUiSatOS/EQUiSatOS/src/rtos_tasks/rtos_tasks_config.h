@@ -37,9 +37,6 @@
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(tskIDLE_PRIORITY)
 
-#define TASK_FLASH_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_FLASH_DATA_RD_PRIORITY					(tskIDLE_PRIORITY)
-
 #define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(tskIDLE_PRIORITY)
 
@@ -130,7 +127,6 @@ typedef enum
 	IDLE_DATA_TASK,
 	LOW_POWER_DATA_TASK,
 	ATTITUDE_DATA_TASK,
-	FLASH_DATA_TASK,
 	NUM_TASKS, //= FLASH_DATA_TASK + 1
 } task_type_t;
 
@@ -183,33 +179,9 @@ typedef enum
 #define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
 #define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-
-#define FLASH_DATA_TASK_FREQ					10
-/* Data array lengths for flash BURST segment of data reader task */
-#define flash_LED_TEMPS_DATA_ARR_LEN			10
-#define flash_LIFEPO_CURRENT_DATA_ARR_LEN		10
-#define flash_LIFEPO_VOLTS_DATA_ARR_LEN			10
-#define flash_LED_CURRENT_DATA_ARR_LEN			10
-
-/* Flash BURST segment of data reader task reads per log */
-/* ibid */
-#define flash_LED_TEMPS_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
-#define flash_LIFEPO_CURRENT_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
-#define flash_LIFEPO_VOLTS_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
-#define flash_LED_CURRENT_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
-
-/* Data array lengths for flash COMPARISON segment of data reader task */
-#define flash_LED_TEMPS_AVG_DATA_ARR_LEN		1
-#define flash_LIFEPO_CURRENT_AVG_DATA_ARR_LEN	1
-#define flash_LIFEPO_VOLTS_AVG_DATA_ARR_LEN		1
-#define flash_LED_CURRENT_AVG_DATA_ARR_LEN		1
-
-/* Flash COMPARISON segment of data reader task reads per log */
-/* ibid */
-#define flash_LED_TEMPS_AVG_LOOPS_PER_LOG		1 // defined to be 1
-#define flash_LIFEPO_CURRENT_AVG_LOOPS_PER_LOG	1
-#define flash_LIFEPO_VOLTS_AVG_LOOPS_PER_LOG	1
-#define flash_LED_CURRENT_AVG_LOOPS_PER_LOG		1 
+#define FLASH_DATA_READ_FREQ						10 // ms
+#define FLASH_DATA_ARR_LEN							10 // implies that the total data read duration is:
+													   // FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms
 
 /*
  * A function to make sure that the constants defined here are internally consistent.

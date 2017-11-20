@@ -16,6 +16,5 @@
 
 static void The_Fall_Of_Ryan(void);
 static void run_tests(void);
-static void global_init(void);
 
 #endif /* MAIN_H */

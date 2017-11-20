@@ -29,12 +29,12 @@ void battery_charging_task(void *pvParameters)
 	batt_discharging = -1;
 
 	// initialize xNextWakeTime onces
-	TickType_t xNextWakeTime = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 	init_task_state(BATTERY_CHARGING_TASK); // suspend or run on boot (ALWAYS RUN!)
 
 	while (true)
 	{
-		vTaskDelayUntil(&xNextWakeTime, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
@@ -312,9 +312,7 @@ void battery_logic(
 	}
 
 	// TODO: make sure this went through by looking at the CHG PIN
-	setup_pin(discharge_pin);
 	set_output(true, discharge_pin);
-	setup_pin(not_discharge_pin);
 	set_output(false, not_discharge_pin);
 
 	// set the battery that should be charging to charge
@@ -342,7 +340,6 @@ void battery_logic(
 		}
 
 		// TODO: make sure this went through by looking at CHG
-		setup_pin(charge_pin);
 		set_output(i == batt_charging, charge_pin);
 	}
 

@@ -10,8 +10,8 @@
 #define STRUCT_TESTS_H_
 
 #include <global.h>
-#include "../stacks/State_Structs.h"
-#include "../stacks/Sensor_Structs.h"
+#include "../data_handling/State_Structs.h"
+#include "../data_handling/Sensor_Structs.h"
 
 void init_test_struct(void);
 
