@@ -80,10 +80,8 @@ static void sensor_read_tests(void) {
 int main(void)
 {
 	global_init();
+	flashBurstTest();		
 	
-	setup_pin(true, P_5V_EN);
-	set_output(true, P_5V_EN);
- 	int x =1;
 	//sensor_read_tests();
 	//system_test();
 	
