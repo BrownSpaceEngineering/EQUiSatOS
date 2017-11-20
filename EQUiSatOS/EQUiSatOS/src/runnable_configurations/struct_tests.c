@@ -29,13 +29,13 @@ void init_test_struct(void){
 
 	IDT->lion_temps_data[3] = 5;
 	
-	IDT->radio_volts_data[1] = 5;
+	IDT->radio_volts_data = 5;
 	
 	IDT->radio_temp_data = 5;
 	
-	IDT->imu_temp_data = 5;
+	IDT->proc_temp_data = 5;
 	
-	IDT->ir_temps_data[5] = 5;
+	IDT->ir_amb_temps_data[5] = 5;
 
 	IDT->rail_5v_data = 5;
 }

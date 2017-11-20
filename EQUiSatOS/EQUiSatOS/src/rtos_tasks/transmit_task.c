@@ -106,9 +106,13 @@ void write_packet(uint8_t* msg_buffer, int state) {
 			break;
 
 		case FLASH_CMP_DATA:
-			write_message_top(msg_buffer, FLASH_CMP_PACKETS, FLASH_CMP_PACKET_SIZE, FLASH_CMP_DATA);
+			write_message_top(msg_buffer, FLASH_CMP_DATA_PACKETS, FLASH_CMP_DATA_PACKET_SIZE, FLASH_CMP_DATA);
 			write_flash_data(msg_buffer, &flash_cmp_readings_equistack);
 			break;
+			
+		case LOW_POWER_DATA:
+			write_message_top(msg_buffer, LOW_POWER_DATA_PACKETS, LOW_POWER_DATA_PACKET_SIZE, LOW_POWER_DATA);
+			write_low_power_data(msg_buffer, &low_power_readings_equistack);
 
 		default:
 			break;
@@ -130,7 +134,7 @@ void write_message_top(uint8_t* msg_buffer, uint8_t num_data, size_t size_data, 
 		num_data * size_data);
 
 	// read sensors and write current data to buffer; it's not dependent on state
-	write_current_data(msg_buffer);
+	write_current_data(msg_buffer, current_timestamp);
 
 	// write relevant errors from both error stacks
 	write_errors(msg_buffer, &priority_error_equistack, &normal_error_equistack, current_timestamp);

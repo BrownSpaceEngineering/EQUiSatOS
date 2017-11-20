@@ -139,7 +139,7 @@ bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns w
 /* Helper Functions                                                     */
 /************************************************************************/
 void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, so the delay is determinate
-
+uint32_t get_time_of_next_flash(void); // implemented in flash_activate_task
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 
 /************************************************************************/
