@@ -51,9 +51,9 @@ void transmit_task(void *pvParameters)
 			buffer_2_msg_type = (buffer_2_msg_type + 1) % NUM_MSG_TYPE;
 			buffer_3_msg_type = (buffer_3_msg_type + 1) % NUM_MSG_TYPE;
 
-			write_packet(msg_buffer_1, buffer_1_msg_type);
-			write_packet(msg_buffer_2, buffer_2_msg_type);
-			write_packet(msg_buffer_3, buffer_3_msg_type);
+			//write_packet(msg_buffer_1, buffer_1_msg_type);
+			//write_packet(msg_buffer_2, buffer_2_msg_type);
+			//write_packet(msg_buffer_3, buffer_3_msg_type);
 		}
 
 		// actually send buffer over USART to radio for transmission

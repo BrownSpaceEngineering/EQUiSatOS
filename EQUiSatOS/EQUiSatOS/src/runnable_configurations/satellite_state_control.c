@@ -158,32 +158,25 @@ void init_task_state(task_type_t task) {
 	// when RTOS is first starting
 	switch (task) {
 		case BATTERY_CHARGING_TASK:
-			//task_suspend(BATTERY_CHARGING_TASK);
 			task_resume(BATTERY_CHARGING_TASK); // REAL ONE
 			return;
 		case ANTENNA_DEPLOY_TASK:
 			task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
-			//task_resume_if_suspended(ANTENNA_DEPLOY_TASK);
 			return;
 		case IDLE_DATA_TASK:
 			task_suspend(IDLE_DATA_TASK); // REAL ONE
-			//task_resume_if_suspended(IDLE_DATA_TASK);
 			return;
 		case FLASH_ACTIVATE_TASK:
 			task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
-			// task_resume_if_suspended(FLASH_ACTIVATE_TASK);
 			return;
 		case TRANSMIT_TASK:
 			task_suspend(TRANSMIT_TASK); // REAL ONE
-			//task_resume_if_suspended(TRANSMIT_TASK);
 			return;
 		case ATTITUDE_DATA_TASK:
 			task_resume(ATTITUDE_DATA_TASK); // REAL ONE
-			//task_suspend(ATTITUDE_DATA_TASK);
 			return;
 		case LOW_POWER_DATA_TASK:
 			task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
-			//task_resume_if_suspended(LOW_POWER_DATA_TASK);
 			return;
 		default:
 			return;
@@ -201,6 +194,7 @@ void init_task_state(task_type_t task) {
  */
 void vApplicationIdleHook(void) {
 	// FOR TESTING
+	
 	test_normal_satellite_state_sequence();
 //	test_all_state_transitions();
 // 	test_watchdog_reset_bat_charging();
@@ -298,10 +292,11 @@ bool set_sat_state_helper(global_state_t state)
 }
 
 bool set_sat_state(global_state_t state) {
-	if (!set_sat_state_helper(state)) {
-		configASSERT(false); // busy loop because this is bad
-	}
-	return true;
+	bool valid = set_sat_state_helper(state);
+// 	if (!valid) {
+// 		configASSERT(false); // busy loop because this is bad
+// 	}
+	return valid;
 }
 
 void set_state_initial()

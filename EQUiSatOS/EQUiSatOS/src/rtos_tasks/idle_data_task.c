@@ -40,8 +40,8 @@ void idle_data_task(void *pvParameters)
 		
 		// TODO: read reboot count from memory
 	
-		read_lion_volts_batch(			current_struct->lion_volts_data);
-		read_lion_current_batch(		current_struct->lion_current_data);
+		//read_lion_volts_batch(			current_struct->lion_volts_data);
+		//read_lion_current_batch(		current_struct->lion_current_data);
 		read_lion_temps_batch(			current_struct->lion_temps_data);
 		read_bat_charge_volts_batch(	current_struct->bat_charge_volts_data);
 		read_bat_charge_dig_sigs_batch(	&(current_struct->bat_charge_dig_sigs_data));

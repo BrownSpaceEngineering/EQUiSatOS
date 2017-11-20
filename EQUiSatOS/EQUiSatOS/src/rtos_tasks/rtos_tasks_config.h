@@ -150,7 +150,8 @@ typedef enum
 /************************************************************************/ 
 
 /* action frequency periods in MS (some that actually have data collection are below) */
-#define WATCHDOG_TASK_FREQ						1000
+#define WATCHDOG_TASK_FREQ						20000	// must be larger than any task frequency but 
+														// smaller than the watchdog timeout
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #define BATTERY_CHARGING_TASK_FREQ				300000   // 5 minutes; how often run battery charging logic
 #define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash

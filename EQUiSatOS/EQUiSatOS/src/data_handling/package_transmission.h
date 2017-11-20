@@ -21,16 +21,16 @@
 
 // various sizes in bytes
 #define MSG_BUFFER_SIZE				256 // = sum of all sections (largest) + 1 for null terminator
-#define MSG_PREAMBLE_LENGTH			11
+#define MSG_PREAMBLE_LENGTH			10
 #define MSG_CUR_DATA_LEN			16
 #define MSG_DATA_LEN				170
 #define MSG_CORRECTION_LENGTH		32
 
 // start points for sections
 #define START_PREAMBLE				0
-#define START_CUR_DATA				11
-#define START_ERRORS				27
-#define START_DATA					53
+#define START_CUR_DATA				10
+#define START_ERRORS				26
+#define START_DATA					52
 #define START_PARITY				223
 
 // Set number of packets for each packet type

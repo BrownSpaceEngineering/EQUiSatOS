@@ -47,6 +47,7 @@ bool watchdog_as_function(void) {
 		// "kick" watchdog - RESTART SATELLITE
 		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
+		// it doesn't make sense to reset values here because the satellite will reboot
 		return false;
 	} else {
 		trace_print("Pet watchdog");
@@ -57,10 +58,13 @@ bool watchdog_as_function(void) {
 	}
 }
 
-// tasks must check in when launching
+// tasks must check in when resuming from suspension or launching
 void check_in_task(task_type_t task_ind) {
 	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS); // TODO: What about the outside?
 	check_ins = check_ins | (1 << task_ind); // set this task bit to 1
+	// set the running bit to 1 until next reset (we have to give the task the 
+	// benefit of the doubt because it may take a while to initially start)
+	is_running = is_running | (1 << task_ind); 
 	//xSemaphoreGive(mutex);
 }
 
@@ -72,9 +76,12 @@ void report_task_running(task_type_t task_ind) {
 	//xSemaphoreGive(mutex);
 }
 
-// tasks must check in when suspending so they don't trip the watchdog
+// tasks must check out when suspending so they don't trip the watchdog
 void check_out_task(task_type_t task_ind) {
 	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
 	check_ins = check_ins & ~(1 << task_ind); // set this task bit to 0
+	// set the running bit to 0 as well, to avoid a watchdog reset on the next
+	// iteration (before the watchdog can clear is_running)
+	is_running = is_running & ~(1 << task_ind); 
 	//xSemaphoreGive(mutex);
 }

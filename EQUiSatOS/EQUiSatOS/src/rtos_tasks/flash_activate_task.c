@@ -69,6 +69,8 @@ void flash_activate_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
+		continue;
+		
 		// actually flash leds
 		for (int i = 0; i < NUM_FLASHES; i++) {
 			// start taking data and set start timestamp

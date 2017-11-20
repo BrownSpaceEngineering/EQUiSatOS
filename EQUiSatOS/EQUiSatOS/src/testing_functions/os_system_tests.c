@@ -30,7 +30,7 @@ void test_all_state_transitions(void)
 			if (valid_state)
 			{
 				// run for a bit after a valid state transition
-				vTaskDelay(TICKS_IN_EACH_VALID_STATE);
+				delay_ms(TICKS_IN_EACH_VALID_STATE);
 			}
 		}
 	}
@@ -38,34 +38,53 @@ void test_all_state_transitions(void)
 
 void test_normal_satellite_state_sequence(void)
 {
-	check_set_sat_state(INITIAL, INITIAL);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-				
-	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	// the above may actually transition sooner to hello world depending on what the antenna deploy state is
+	static state_num = 0; // set to some number to skip to a state
 	
-	check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-				
-	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
- 
-	check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-		
-	check_set_sat_state(IDLE_FLASH, LOW_POWER);
-	vTaskDelay(2 * LOW_POWER_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+	TickType_t ms = xTaskGetTickCount();
 	
-	check_set_sat_state(LOW_POWER, RIP); // throw it in at the very end
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+	if (state_num < 1) {
+		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+			TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);	
+		state_num++;		
+	}
+	
+	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
+	else if (state_num < 2) {
+		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
+		state_num++;
+	}
+	
+	else if (state_num < 3) {
+		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		state_num++;
+	}
+				
+	else if (state_num < 4) {
+		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);	
+		state_num++;			
+	}
+	
+	else if (state_num < 5) {
+		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		check_set_sat_state(IDLE_FLASH, LOW_POWER);		
+		state_num++;		
+	}
+	
+	else if (state_num < 6) {
+		delay_ms(2 * LOW_POWER_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
+				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+		// throw RIP in at the very end
+		check_set_sat_state(LOW_POWER, RIP);		
+		state_num++;		
+	}
 }
 
 /************************************************************************/
@@ -79,81 +98,96 @@ void test_normal_satellite_state_sequence(void)
 // it to get a watchdog reset (hopefully)
 
 void test_watchdog_reset_bat_charging(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-		
-	task_suspend(BATTERY_CHARGING_TASK);
+	if (ms > 2 * ATTITUDE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(BATTERY_CHARGING_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_attitude_data(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
-	vTaskDelay(2 * ATTITUDE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	
-	task_suspend(ATTITUDE_DATA_TASK);
+	if (ms > 2 * ATTITUDE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(ATTITUDE_DATA_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_antenna_deploy(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
 	// only once because otherwise it may check itself out
-	vTaskDelay(ANTENNA_DEPLOY_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	
-	task_suspend(ANTENNA_DEPLOY_TASK);
+	if (ms > ANTENNA_DEPLOY_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(ANTENNA_DEPLOY_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_transmit_task(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
 	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
-	vTaskDelay(2 * TRANSMIT_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
+	if (ms > 2 * TRANSMIT_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(TRANSMIT_TASK);
+	}
 	
-	task_suspend(TRANSMIT_TASK);
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_idle_data_task(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
 	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
-	vTaskDelay(2 * IDLE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	
-	task_suspend(IDLE_DATA_TASK);
+	if (ms > 2 * IDLE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME){
+		task_suspend(IDLE_DATA_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_flash_activate_task(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
 	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 	check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
-	vTaskDelay(2 * FLASH_ACTIVATE_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	
-	task_suspend(FLASH_ACTIVATE_TASK);
+	if (ms > 2 * FLASH_ACTIVATE_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(FLASH_ACTIVATE_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
 
 void test_watchdog_reset_low_power_data_task(void) {
+	TickType_t ms = xTaskGetTickCount();
+	
 	check_set_sat_state(INITIAL, INITIAL);
 	check_set_sat_state(INITIAL, ATTITUDE_DATA);
 	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 	check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
 	check_set_sat_state(IDLE_FLASH, LOW_POWER);
-	vTaskDelay(2 * LOW_POWER_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME);
-	
-	task_suspend(LOW_POWER_DATA_TASK);
+	if (ms > 2 * LOW_POWER_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
+		task_suspend(LOW_POWER_DATA_TASK);
+	}
 	
 	// watchdog should reset eventually
 }
