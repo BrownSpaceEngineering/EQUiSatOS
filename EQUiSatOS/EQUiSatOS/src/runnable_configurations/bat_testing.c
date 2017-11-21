@@ -119,7 +119,7 @@ void readRemoteADC_0(float* readings){
 	readings[3] = ((float) remoteADC[3]);
 }
 
-void readBatBoard(float* batBoardReadings){
+static void readBatBoard(float* batBoardReadings){
 	uint16_t raw[LEN_BAT_ADC];
 	for (int i=0; i<LEN_BAT_ADC; i++){
 		uint16_t buf;

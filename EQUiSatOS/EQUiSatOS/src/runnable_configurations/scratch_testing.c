@@ -204,31 +204,29 @@ void flashBurstTest(void) {
 	uint16_t two_buf[2];
 	uint16_t three_buf[3];
 	uint16_t four_buf[4];
-	print("BEGIN COUNT: %d\n", get_rtc_count());
 	
-	print("\n# LED Temps #\n");
+	
+	//print("\n# LED Temps #\n");
 	read_led_temps_batch(four_buf);
-	print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
-	print("\n# LiFePO4 Temps #\n");
+	//print("\n# LiFePO4 Temps #\n");
 	read_lifepo_temps_batch(two_buf);
-	print("%d %d\n", two_buf[0], two_buf[1]);
+	//print("%d %d\n", two_buf[0], two_buf[1]);
 	
 	//print("# LiFePO4 CURRENT #\n");
-	//read_lifepo_current_batch(four_buf);
-	//print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	read_lifepo_current_batch(four_buf);
+	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
-	print("\n# LiFePO4 VOLTS #\n");
+	//print("\n# LiFePO4 VOLTS #\n");
 	read_lifepo_volts_batch(four_buf);
-	print("lifepo volts: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
-	print("# LED CURRENT #\n");
+	//print("# LED CURRENT #\n");
 	read_led_current_batch(four_buf);
-	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
-	print("\n# GYRO #\n");
+	//print("\n# GYRO #\n");
 	read_gyro_batch(three_buf);
-	print("%d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
-	
-	print("END COUNT: %d\n", get_rtc_count());
+	//print("x: %d y: %d z: %d\n", three_buf[0], three_buf[1], three_buf[2]);		
 }

@@ -103,7 +103,6 @@ static void MLX90614_test(){
 static void AD590_test(){
 	char test_str[20];
 	const uint16_t expected_temp = 20;//Celsius
-	float temps[8];
 	char error_str[20];	
 	struct adc_module temp_instance; //generate object	
 	
@@ -118,8 +117,9 @@ static void AD590_test(){
 		uint16_t temp;
 		enum status_code sc = read_adc(temp_instance,&temp);
 		// I do not know if this was done yet :/
-		// temperature conversion from voltage -> current -> degrees celcius
-		float current = ((float) convertToVoltage(temp))/2197 -0.0001001; //converts from V to A
+		// temperature conversion from voltage -> current -> degrees celsius
+		
+		float current = ((float) convertToVoltage(temp))/2197 -0.0003551; //converts from V to A
 		float tempInC = (current)*1000000-273;// T = 454*V in C
 		
 		get_error(sc,error_str);	
@@ -149,7 +149,7 @@ static void AD590_test(){
 				strcpy(test_str,"LED1TEMP");
 				break;						
 		}
-		print(" %s \t %s \t %d C\n",test_str,error_str,(uint8_t)temps[i]);
+		print(" %s \t %s \t %d \t %d C\n",test_str,error_str,temp, (int)tempInC);		
 	}
 
 	// compare_results((void *) temps,(void *) expected,4, 5, "AD590");		
@@ -264,7 +264,7 @@ static void HMC5883L_test(void){
 	HMC5883L_init();
 	HMC5883L_read(buffer);
 	HMC5883L_getXYZ(buffer, xyz);
-	print("HMC test: %d\n", HMC5883L_computeCompassDir(xyz[0],xyz[1],xyz[2]));
+	print("x: %d \t y: %d \t z: %d \n", xyz[0],xyz[1],xyz[2]);
 
 }
 
@@ -338,9 +338,13 @@ static void AD7991_BAT_test(){
 	get_error(AD7991_code,test_str);
 	print("STATUS: \t %s\n",test_str);
 
-	//check with expected values
 	for (int i = 0; i < 4; i++){
-
+		char suffix;
+		if (i > 1) {
+			suffix = 'V';
+		} else {
+			suffix = 'A';
+		}
 		switch (i) {
 			case 0 :
 			strcpy(test_str,"L2_SNS");
@@ -349,14 +353,14 @@ static void AD7991_BAT_test(){
 			strcpy(test_str,"L1_SNS");
 			break;
 			case 2 :
-			strcpy(test_str,"L_REF");
+			strcpy(test_str,"L_REF ");
 			break;
 			case 3:
 			strcpy(test_str, "PANELREF");
 			break;
 		}
 
-		print("%s: \t %d mV\n",test_str,(1000 * (uint16_t)AD7991_results[i]));
+		print("%s: \t %d m%c\n",test_str,(uint16_t)AD7991_results[i], suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
@@ -376,27 +380,37 @@ static void AD7991_BAT_test(){
 }
 
 
-static void AD7991_CTRL_test(){
+static void AD7991_CTRL_test(bool regulatorsOn){
 
-	print("==============AD7991_CTRLBRD Test==============\n");
 	//pass flag
 	int pass = 1;
-	char test_str[20];
+	char test_str[20];	
 
 	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5;	
 	uint16_t results[4];
 	
-	set_output(true, P_RAD_PWR_RUN);
-	set_output(true, P_5V_EN);
+	if (regulatorsOn) {
+		print("==============AD7991_CTRLBRD Test | regulators ON==============\n");
+		set3V6Power(true);
+		setRadioPower(true);
+		set_output(true, P_5V_EN);
+		delay_ms(3000);
+	} else {
+		print("==============AD7991_CTRLBRD Test | regulators OFF==============\n");
+		setRadioPower(false);
+		set3V6Power(false);		
+		set_output(false, P_5V_EN);
+	}
 
 	enum status_code AD7991_code = AD7991_read_all(results, AD7991_CTRLBRD);
-
+	
 	AD7991_results[0] = ((float) results[0])/4096*3.3*2.01;		//3V6Rf
 	AD7991_results[1] = ((float) results[1])/4096*3.3;			//3V6SNS
 	AD7991_results[2]= ((float)  results[2])/4096*3.3*3.381;	//5VREF
 	AD7991_results[3] = ((float) results[3])/4096*3.3*2.01;		//3V3REF
 
-	set_output(false, P_RAD_PWR_RUN);
+	set3V6Power(false);
+	setRadioPower(false);
 	set_output(false, P_5V_EN);
 	
 	get_error(AD7991_code,test_str);
@@ -404,23 +418,24 @@ static void AD7991_CTRL_test(){
 
 	//check with expected values
 	for (int i = 0; i < 4; i++){
-
+		char suffix = 'V';
 		switch (i) {
 			case 0 :
 			strcpy(test_str,"3V6_REF");
 			break;
 			case 1 :
 			strcpy(test_str,"3V6_SNS");
+			suffix = 'A';
 			break;
 			case 2 :
-			strcpy(test_str,"5VREF");
+			strcpy(test_str,"5VREF ");
 			break;
 			case 3:
 			strcpy(test_str, "3V3REF");
 			break;
 		}
 
-		print("%s: \t %d mV\n",test_str,(1000 * (uint16_t)AD7991_results[i]));
+		print("%s: \t %d m%c\n",test_str,(uint16_t)(AD7991_results[i]*1000), suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
@@ -439,12 +454,86 @@ static void AD7991_CTRL_test(){
 	//}
 }
 
-void system_test(void){
-	AD7991_CTRL_test();
+void readBatBoard(){
+	print("==============BATBRD Test==============\n");
+	struct adc_module bat_instance;	
+	uint16_t bat_readings[10];
+	float bat_voltage_readings[10];
+	char test_str[20];
+	char error_str[20];	
+	enum adc_positive_input bat_adc_pins[10] = {
+		P_AI_LFB1OSNS,
+		P_AI_LFB1SNS,
+		P_AI_LFB2OSNS,
+		P_AI_LFB2SNS,
+		P_AI_LF1REF,
+		P_AI_LF2REF,
+		P_AI_LF3REF,
+		P_AI_LF4REF,
+		P_AI_L1_REF,
+		P_AI_L2_REF,
+	};
 	
-	AD7991_BAT_test();
+	for (int i=0; i<10; i++){
+		uint16_t buf;
+		configure_adc(&bat_instance,bat_adc_pins[i]);
+		uint8_t rs;
+		LTC1380_channel_select(0x4a, i, &rs);
+		adc_enable(&bat_instance);
+		enum status_code sc = read_adc(bat_instance, &bat_readings[i]);
+		get_error(sc,error_str);		
+		bat_voltage_readings[i] = convertToVoltage(bat_readings[i]);
+		
+		switch (i) {
+			case 0:
+			strcpy(test_str,"P_AI_LFB1OSNS");
+			break;
+			case 1:
+			strcpy(test_str,"P_AI_LFB1SNS");
+			break;
+			case 2:
+			strcpy(test_str,"P_AI_LFB2OSNS");
+			break;
+			case 3:
+			strcpy(test_str,"P_AI_LFB2SNS");
+			break;
+			case 4:
+			strcpy(test_str,"P_AI_LF1REF");
+			break;
+			case 5:
+			strcpy(test_str,"P_AI_LF2REF");
+			break;
+			case 6:
+			strcpy(test_str,"P_AI_LF3REF");
+			break;
+			case 7:
+			strcpy(test_str,"P_AI_LF4REF");
+			break;
+			case 8:
+			strcpy(test_str,"P_AI_L1_REF");
+			break;
+			case 9:
+			strcpy(test_str,"P_AI_L2_REF");
+			break;
+		}
+		print(" %s \t %s \t %d mV\n",test_str,error_str,(uint16_t)(bat_voltage_readings[i]*1000));
+	}
 	
+}
+
+void system_test(void){	
+	//delay_init();
 	AD590_test();
+	/*print("=======================================\n");
+	print("=               SYSTEM Test           =\n");
+	print("=======================================\n");
+	
+	readBatBoard();
+	
+	AD7991_CTRL_test(false);
+	AD7991_CTRL_test(true);
+	
+	AD7991_BAT_test();		
 			
 	MLX90614_test();
 	
@@ -454,5 +543,5 @@ void system_test(void){
 	
 	TEMD6200_test();
 	
-	TCA9535_test();		
+	TCA9535_test();*/
 }

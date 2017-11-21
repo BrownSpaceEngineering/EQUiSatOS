@@ -20,7 +20,7 @@ typedef struct{
 
 void bat_testing_init(bat_testing_struct *data);
 void readRemoteADC_0(float* batReadings);
-void readBatBoard(float* batBoardReadings);
+static void readBatBoard(float* batBoardReadings);
 //uint16_t readFromADC(enum adc_positive_input pin, int num_avg);
 void readCommandAndSend(float* remoteBatReadings, float* batReadings, uint16_t* gpio_rs, bat_testing_struct *data);
 void bat_testing_run(void);
