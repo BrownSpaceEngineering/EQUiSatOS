@@ -1000,15 +1000,15 @@
     <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\include\trcStreamingPort.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\trcStreamingPort.c">
+    <None Include="src\ASF\thirdparty\TraceRecorder\streamports\TCPIP\trcStreamingPort.c">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\include\trcStreamingPort.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\trcStreamingPort.c">
+    <None Include="src\ASF\thirdparty\TraceRecorder\streamports\USB_CDC\trcStreamingPort.c">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\ASF\thirdparty\TraceRecorder\trcKernelPort.c">
       <SubType>compile</SubType>
     </Compile>
