@@ -16,13 +16,13 @@
 #include <port.h>
 #include <delay.h>
 
-#define TEST_DELAY 200 // CHANGE THIS
+#define TEST_DELAY 1000 // CHANGE THIS
 
 int main (void)
 {
 	//system_init();
 
-	const uint8_t test_pin = PIN_PA24;
+	const uint8_t test_pin = PIN_PA28; //PIN_PA24; - main board
 	struct port_config conf;
 	port_get_config_defaults(&conf);
 	conf.direction = PORT_PIN_DIR_OUTPUT;
