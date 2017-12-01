@@ -16,7 +16,7 @@
 #include <port.h>
 #include <delay.h>
 
-#define TEST_DELAY 1000 // CHANGE THIS
+#define TEST_DELAY 5000 // CHANGE THIS
 
 int main (void)
 {

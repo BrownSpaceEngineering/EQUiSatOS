@@ -130,8 +130,8 @@ void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* sl
 	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0xfc, 0xff, 0x42};
 	uint8_t example_output_array[8];
 	
-	write_bytes(spi_master_instance, slave, &example_array, 8, 0x00);
-	read_bytes(spi_master_instance, slave, &example_output_array, 8, 0x00);
+	write_bytes(spi_master_instance, slave, &example_array, 8, 0x2000);
+	read_bytes(spi_master_instance, slave, &example_output_array, 8, 0x2000);
 	
 	return;
 }

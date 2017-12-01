@@ -34,7 +34,7 @@ uint8_t initialize_master(struct spi_module *spi_master_instance, uint32_t baudr
 uint8_t initialize_slave(struct spi_slave_inst *slave){
 	struct spi_slave_inst_config slave_dev_config;
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
-	slave_dev_config.ss_pin = PIN_PA17C_SERCOM1_PAD1;
+	slave_dev_config.ss_pin = PIN_PB16C_SERCOM5_PAD0;
 	spi_attach_slave(slave, &slave_dev_config);
 }
 
