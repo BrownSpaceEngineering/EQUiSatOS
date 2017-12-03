@@ -12,6 +12,6 @@
 #include <global.h>
 
 void pwm_test(void);
-void try_pwm_deploy(uint8_t pin, uint8_t pin_mux);
+void try_pwm_deploy(int pin, int pin_mux);
 
 #endif /* ANTENNA_PWM_H_ */

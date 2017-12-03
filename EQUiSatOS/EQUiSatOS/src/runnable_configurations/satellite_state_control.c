@@ -354,7 +354,12 @@ void set_state_hello_world()
 	// this must be at the end because this state change will be 
 	// triggered by the ANTENNA_DEPLOY_TASK, and suspending the
 	// task will suspend this function
-	task_suspend(ANTENNA_DEPLOY_TASK); 
+	if (!get_input(P_DET_RTN)) {
+		// only suspend if the antenna has actually deployed
+		task_suspend(ANTENNA_DEPLOY_TASK); 
+	} else {
+		vTaskDelayUntil(xTaskGetTickCount(), ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+	}
 }
 
 void set_state_idle_flash()

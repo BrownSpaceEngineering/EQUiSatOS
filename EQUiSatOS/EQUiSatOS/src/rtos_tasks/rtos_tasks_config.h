@@ -153,7 +153,8 @@ typedef enum
 #define WATCHDOG_TASK_FREQ						20000	// must be larger than any task frequency but 
 														// smaller than the watchdog timeout
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
-#define BATTERY_CHARGING_TASK_FREQ				300000   // 5 minutes; how often run battery charging logic
+#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+#define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
 #define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
 
 #define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit

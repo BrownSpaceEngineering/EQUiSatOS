@@ -29,9 +29,8 @@ void antenna_deploy_task(void *pvParameters) {
 		if ((get_input(P_DET_RTN) && num_tries > 0) || num_tries >= 5) {
 			// switch states, suspending this task in the process
 			set_sat_state(HELLO_WORLD);
-			// TODO: decrease frequency of task to never if it's deployed or rarely if it's not
 		} else {
-			if (true /* TODO: LiON is sufficiently charged and enough time has passed*/) {
+			if (true /* TODO: LiON is sufficiently charged*/) {
 				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX);
 				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX);
 				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX);

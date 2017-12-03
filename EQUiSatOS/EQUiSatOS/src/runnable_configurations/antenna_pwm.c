@@ -13,10 +13,11 @@ void pwm_test(void) {
 	try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX);
 }
 
-void try_pwm_deploy(uint8_t pin, uint8_t pin_mux) {
+void try_pwm_deploy(int pin, int pin_mux) {
 	configure_pwm(pin, pin_mux);
 	int start = get_rtc_count();
 	while (get_rtc_count() < start + 3) {
 		set_pulse_width_fraction(3, 4);
 	}
+	disable_pwm();
 }
