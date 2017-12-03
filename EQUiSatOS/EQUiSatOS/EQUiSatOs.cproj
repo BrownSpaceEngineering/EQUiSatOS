@@ -401,6 +401,8 @@
       <ApplicationOutput30 xmlns="">String</ApplicationOutput30>
       <ApplicationOutput31 xmlns="">String</ApplicationOutput31>
     </PercepioTrace>
+    <ResetRule>0</ResetRule>
+    <EraseKey />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -1115,6 +1117,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\watchdog_task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\antenna_pwm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\runnable_configurations\antenna_pwm.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\runnable_configurations\bat_testing.c">

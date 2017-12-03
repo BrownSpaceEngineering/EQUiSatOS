@@ -87,7 +87,11 @@ int main(void)
 	}
 	print("END COUNT: %d\n", get_rtc_count());*/
 	//sensor_read_tests();
-	system_test();
+	//system_test();
+	setup_pin(true, P_RAD_PWR_RUN);
+	setup_pin(true, P_RAD_SHDN);
+	set_output(false, P_RAD_PWR_RUN);
+	set_output(false, P_RAD_SHDN);
 	
 	//int x = 1; 
 	//run_tests();
