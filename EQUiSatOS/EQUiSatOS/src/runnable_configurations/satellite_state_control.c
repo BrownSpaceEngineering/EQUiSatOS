@@ -202,11 +202,11 @@ void vApplicationIdleHook(void) {
 // 	int div_tickCount = tickCount / 1000;
 // 	if (div_tickCount != oldTickCount) {
 // 		oldTickCount = div_tickCount;
-// 		//print("%d\n\r", tickCount);
+// 		print("%d\n\r", tickCount);
 // 		//print("test\n\r");
 // 	}
 	
-	//test_normal_satellite_state_sequence();
+	test_normal_satellite_state_sequence();
 //	test_all_state_transitions();
 // 	test_watchdog_reset_bat_charging();
 // 	test_watchdog_reset_bat_charging();

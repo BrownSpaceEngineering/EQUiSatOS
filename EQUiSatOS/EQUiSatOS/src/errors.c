@@ -59,7 +59,7 @@ static void print_error(enum status_code code){
 
 void log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
-		print_error(sc);
+		//print_error(sc);
 		log_error(loc, atmel_to_equi_error(sc), priority);
 	}
 }

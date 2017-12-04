@@ -216,12 +216,14 @@ void ext_usart_pin_init(void)
 
 void usart_send_string(const uint8_t *str_buf)
 {
+	vTaskSuspendAll();
 	while (*str_buf != '\0')
 	{
-		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just do to uncertainty of above ifdefs
+		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just due to uncertainty of above ifdefs
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
+	xTaskResumeAll();
 }
 
 // use in debug mode (set in header file)
