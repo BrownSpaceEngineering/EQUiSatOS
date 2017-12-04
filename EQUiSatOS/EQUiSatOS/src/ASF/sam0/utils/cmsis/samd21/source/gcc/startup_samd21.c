@@ -281,8 +281,34 @@ void Reset_Handler(void)
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+uint32_t isr_number = 9999;
+
 void Dummy_Handler(void)
 {
-        while (1) {
-        }
+	while(1) {
+		isr_number = __get_IPSR();
+		
+		/* NEW: Read the above value to get an error code for the exception:
+			**(Google them, referencing SAMD21, to learn more)**
+			** To find the code line it happened on: https://electronics.stackexchange.com/a/293913 **
+			
+			ISR_NUMBER
+			This is the number of the current exception:
+			0 = Thread mode
+			1 = Reserved
+			2 = NMI
+			3 = Hard fault - probably a memory access error
+			4 = Memory management fault
+			5 = Bus fault
+			6 = Usage fault
+			7-10 = Reserved
+			11 = SVCall
+			12 = Reserved for Debug
+			13 = Reserved
+			14 = PendSV
+			15 = SysTick
+			16 = IRQ0
+			45 = IRQ29
+		*/
+	}
 }

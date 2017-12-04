@@ -80,20 +80,16 @@ static void sensor_read_tests(void) {
 int main(void)
 {
 	global_init();
-	/*print("BEGIN COUNT: %d\n", get_rtc_count());
+	/*print("BEGIN COUNT: %d\n", get_current_timestamp());
 	for (int i = 0; i < 200; i++) {
 		flashBurstTest();	
 		//print("%d\n", i);
 	}
-	print("END COUNT: %d\n", get_rtc_count());*/
+	print("END COUNT: %d\n", get_current_timestamp());*/
 	//sensor_read_tests();
 	//system_test();
-	setup_pin(true, P_RAD_PWR_RUN);
-	setup_pin(true, P_RAD_SHDN);
-	set_output(false, P_RAD_PWR_RUN);
-	set_output(false, P_RAD_SHDN);
 	
 	//int x = 1; 
 	//run_tests();
-	//run_rtos();	
+	run_rtos();	
 }

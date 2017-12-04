@@ -8,6 +8,7 @@
 #ifndef SATELLITE_STATE_CONTROL_H
 #define SATELLITE_STATE_CONTROL_H
 
+#include <global.h>
 #include "rtos_tasks/rtos_tasks.h"
 #include "processor_drivers/USART_Commands.h"
 #include "data_handling/equistack.h"

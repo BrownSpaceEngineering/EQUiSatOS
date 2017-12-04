@@ -124,8 +124,8 @@ typedef enum
 	ATTITUDE_DATA,
 	FLASH_DATA,
 	FLASH_CMP_DATA,
-	LOW_POWER_DATA,
-	NUM_MSG_TYPE, // = LOW_POWER_DATA + 1
+	LOW_POWER_DATA, // must be the largest value, because we wrap around this list and ignore it
+	NUM_MSG_TYPE // = LOW_POWER_DATA + 1
 } msg_data_type_t;
 
 /************************************************************************/
@@ -140,7 +140,7 @@ typedef enum
 	IDLE_DATA_TASK,
 	LOW_POWER_DATA_TASK,
 	ATTITUDE_DATA_TASK,
-	NUM_TASKS, //= FLASH_DATA_TASK + 1
+	NUM_TASKS //= FLASH_DATA_TASK + 1
 } task_type_t;
 
 /************************************************************************/

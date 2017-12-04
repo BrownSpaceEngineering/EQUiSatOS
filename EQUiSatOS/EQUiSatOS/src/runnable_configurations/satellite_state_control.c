@@ -9,7 +9,7 @@
 #include "../testing_functions/os_system_tests.h"
 
 /* Satellite state - ONLY accessible in this file */
-int8_t CurrentState;
+int8_t current_sat_state;
 
 void run_rtos()
 {
@@ -17,7 +17,7 @@ void run_rtos()
 	/* ESSENTIAL INITIALIZATION                                             */
 	/************************************************************************/
 	
-	CurrentState = INITIAL;
+	current_sat_state = INITIAL;
 	
 	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
@@ -183,6 +183,8 @@ void init_task_state(task_type_t task) {
 	}
 }
 
+
+
 /************************************************************************/
 /* FOR DEBUGGING - DON'T SET STATES THIS WAY                            */
 /************************************************************************/
@@ -195,7 +197,16 @@ void init_task_state(task_type_t task) {
 void vApplicationIdleHook(void) {
 	// FOR TESTING
 	
-	test_normal_satellite_state_sequence();
+// 	static int oldTickCount = 0;
+// 	int tickCount = xTaskGetTickCount();
+// 	int div_tickCount = tickCount / 1000;
+// 	if (div_tickCount != oldTickCount) {
+// 		oldTickCount = div_tickCount;
+// 		//print("%d\n\r", tickCount);
+// 		//print("test\n\r");
+// 	}
+	
+	//test_normal_satellite_state_sequence();
 //	test_all_state_transitions();
 // 	test_watchdog_reset_bat_charging();
 // 	test_watchdog_reset_bat_charging();
@@ -206,6 +217,8 @@ void vApplicationIdleHook(void) {
 // 	test_watchdog_reset_flash_activate_task();
 // 	test_watchdog_reset_low_power_data_task();
 }
+
+
 
 /************************************************************************/
 /* STATE SETTING METHODS                                                */
@@ -221,7 +234,7 @@ void set_state_rip(void);
 
 /* Getter for global state */
 global_state_t get_sat_state(void) {
-	return CurrentState;
+	return current_sat_state;
 }
 
 /* Sets the current satellite state to the given state, if a transition from
@@ -233,7 +246,7 @@ bool set_sat_state_helper(global_state_t state)
 	// setting the state to the current state is not wrong,
 	// but we don't want to actually change task states every time this is called
 	// when the state is the current state
-	if (state == CurrentState) {
+	if (state == current_sat_state) {
 		return true;
 	}
 	
@@ -243,7 +256,7 @@ bool set_sat_state_helper(global_state_t state)
 			return false;
 			
 		case ANTENNA_DEPLOY:
-			if (CurrentState == INITIAL) {
+			if (current_sat_state == INITIAL) {
 				trace_print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_state_antenna_deploy();
 				return true;
@@ -251,7 +264,7 @@ bool set_sat_state_helper(global_state_t state)
 			return false;
 			
 		case HELLO_WORLD:
-			if (CurrentState == ANTENNA_DEPLOY) {
+			if (current_sat_state == ANTENNA_DEPLOY) {
 				trace_print("CHANGED STATE to HELLO_WORLD");
 				set_state_hello_world();
 				return true;
@@ -259,7 +272,7 @@ bool set_sat_state_helper(global_state_t state)
 			return false;
 			
 		case IDLE_NO_FLASH:
-			if (CurrentState == IDLE_FLASH || CurrentState == HELLO_WORLD || CurrentState == LOW_POWER) {
+			if (current_sat_state == IDLE_FLASH || current_sat_state == HELLO_WORLD || current_sat_state == LOW_POWER) {
 				trace_print("CHANGED STATE to IDLE_NO_FLASH");
 				set_state_idle_no_flash();
 				return true;
@@ -267,7 +280,7 @@ bool set_sat_state_helper(global_state_t state)
 			return false;
 			
 		case IDLE_FLASH:
-			if (CurrentState == IDLE_NO_FLASH) {
+			if (current_sat_state == IDLE_NO_FLASH) {
 				trace_print("CHANGED STATE to IDLE_FLASH");
 				set_state_idle_flash();
 				return true;
@@ -275,7 +288,7 @@ bool set_sat_state_helper(global_state_t state)
 			return false;
 			
 		case LOW_POWER:
-			if (CurrentState == IDLE_NO_FLASH || CurrentState == IDLE_FLASH) {
+			if (current_sat_state == IDLE_NO_FLASH || current_sat_state == IDLE_FLASH) {
 				trace_print("CHANGED STATE to LOW_POWER");
 				set_state_low_power();
 				return true;
@@ -293,9 +306,9 @@ bool set_sat_state_helper(global_state_t state)
 
 bool set_sat_state(global_state_t state) {
 	bool valid = set_sat_state_helper(state);
-// 	if (!valid) {
-// 		configASSERT(false); // busy loop because this is bad
-// 	}
+	if (!valid) {
+		configASSERT(false); // busy loop because this is bad
+	}
 	return valid;
 }
 
@@ -304,7 +317,7 @@ void set_state_initial()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = INITIAL;
+	current_sat_state = INITIAL;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_suspend(ANTENNA_DEPLOY_TASK);
@@ -322,7 +335,7 @@ void set_state_antenna_deploy()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = ANTENNA_DEPLOY;
+	current_sat_state = ANTENNA_DEPLOY;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume(ANTENNA_DEPLOY_TASK);
@@ -340,7 +353,7 @@ void set_state_hello_world()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = HELLO_WORLD;
+	current_sat_state = HELLO_WORLD;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_resume(IDLE_DATA_TASK);
@@ -367,7 +380,7 @@ void set_state_idle_flash()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = IDLE_FLASH;
+	current_sat_state = IDLE_FLASH;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_suspend(ANTENNA_DEPLOY_TASK);
@@ -397,7 +410,7 @@ void set_state_idle_no_flash()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = IDLE_NO_FLASH;
+	current_sat_state = IDLE_NO_FLASH;
 
 	set_states_of_idle_no_flash();
 
@@ -409,7 +422,7 @@ void set_state_low_power()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = LOW_POWER;
+	current_sat_state = LOW_POWER;
 
 	task_resume(BATTERY_CHARGING_TASK); // should never be stopped
 	task_suspend(ANTENNA_DEPLOY_TASK);
@@ -427,7 +440,7 @@ void set_state_rip()
 	// Don't allow other tasks to run while we're changing state
 	vTaskSuspendAll();
 
-	CurrentState = RIP;
+	current_sat_state = RIP;
 
 	set_states_of_idle_no_flash();
 	

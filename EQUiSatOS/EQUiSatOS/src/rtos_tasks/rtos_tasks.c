@@ -28,7 +28,7 @@ void pre_init_rtos_tasks(void) {
 	init_task_handles();
 }
 
-// NOTE: task_id must be the id of the current task if suspend_current_task is true
+// suspends the given task if it was not already suspended, and (always) checks it out of the watchdog
 void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 		
@@ -41,6 +41,7 @@ void task_suspend(task_type_t task_id) {
 	}
 }
 
+// resumes the given task if it was suspended, and (always) checks it in to the watchdog
 void task_resume(task_type_t task_id)
 {
 	TaskHandle_t* task_handle = task_handles[task_id];
@@ -71,11 +72,30 @@ bool check_if_suspended_and_update(task_type_t task_id) {
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
+
 void rtos_safe_delay(uint32_t ms) 
 {
 	vTaskSuspendAll();
 	delay_ms(ms);
 	xTaskResumeAll();
+}
+
+/* returns the equistack associated with the given message type */
+equistack* get_msg_type_equistack(msg_data_type_t msg_type) {
+	switch (msg_type) {
+		case IDLE_DATA:
+			return &idle_readings_equistack;
+		case ATTITUDE_DATA:
+			return &attitude_readings_equistack;
+		case FLASH_DATA:
+			return &flash_readings_equistack;
+		case FLASH_CMP_DATA:
+			return &flash_cmp_readings_equistack;
+		case LOW_POWER_DATA:
+			return &low_power_readings_equistack;
+		default:
+			return NULL;
+	}
 }
 
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)

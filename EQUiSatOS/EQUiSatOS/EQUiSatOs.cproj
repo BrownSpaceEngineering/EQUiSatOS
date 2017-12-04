@@ -1029,6 +1029,9 @@
     <Compile Include="src\config\proc_pins.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\data_handling\persistent_storage.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\errors.c">
       <SubType>compile</SubType>
     </Compile>

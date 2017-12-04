@@ -37,7 +37,7 @@ void attitude_data_task(void *pvParameters)
 			
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
-			current_struct->timestamp = get_rtc_count();
+			current_struct->timestamp = get_current_timestamp();
 			
 			// reset data array tails so we're writing at the start // TODO: loops_since_last_log = ...; ???
 			set_all_uint8(data_array_tails, NUM_DATA_TYPES, 0);
@@ -57,7 +57,7 @@ void attitude_data_task(void *pvParameters)
 			increment_data_type(IR_DATA, data_array_tails, loops_since_last_log);
 		}
 		if (loops_since_last_log[DIODE_DATA] >= attitude_DIODE_LOOPS_PER_LOG) {
-			read_pdiode_batch(current_struct->diode_data[data_array_tails[DIODE_DATA]]);
+			read_pdiode_batch(current_struct->pdiode_data[data_array_tails[DIODE_DATA]]);
 			increment_data_type(DIODE_DATA, data_array_tails, loops_since_last_log);
 		}
 		// These should only ever happen at the same time

@@ -15,7 +15,7 @@ void low_power_data_task(void *pvParameters)
 	// initialize first struct
 	low_power_data_t *current_struct = (low_power_data_t*) equistack_Initial_Stage(&low_power_readings_equistack);
 	assert(current_struct != NULL); // TESTING
-	current_struct->timestamp = get_rtc_count();
+	current_struct->timestamp = get_current_timestamp();
 	
 	init_task_state(LOW_POWER_DATA_TASK); // suspend or run on boot
 	
@@ -30,7 +30,7 @@ void low_power_data_task(void *pvParameters)
 		check_if_suspended_and_update(LOW_POWER_DATA_TASK);
 		
 		// set start timestamp
-		current_struct->timestamp = get_rtc_count();
+		current_struct->timestamp = get_current_timestamp();
 		
 		// add all sensors to batch
 		

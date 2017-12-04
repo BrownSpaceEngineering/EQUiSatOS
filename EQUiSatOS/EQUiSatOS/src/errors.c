@@ -132,7 +132,7 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
-	full_error.timestamp = get_rtc_count(); // time is now
+	full_error.timestamp = get_current_timestamp(); // time is now
 	full_error.eloc = loc;
 	full_error.ecode = priority << 7 || (0b01111111 & err); // priority bit at MSB
 	
