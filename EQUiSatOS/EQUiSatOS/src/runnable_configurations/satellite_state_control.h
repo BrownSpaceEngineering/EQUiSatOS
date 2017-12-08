@@ -23,6 +23,7 @@ void init_task_state(task_type_t task);
 /* State functions */
 global_state_t get_sat_state(void);
 bool set_sat_state(global_state_t state);
+void suspend_antenna_deploy(void); // interface for ONLY antenna deploy task
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS - DONT YOU DARE USE THESE */
 void set_state_initial(void);
@@ -33,5 +34,7 @@ void set_states_of_idle_no_flash(void);
 void set_state_idle_flash(void);
 void set_state_low_power(void);
 void set_state_rip(void);
+void task_suspend(task_type_t task_id);
+void task_resume(task_type_t task_id);
 
 #endif

@@ -19,7 +19,12 @@ void antenna_deploy_task(void *pvParameters) {
 
 	for( ;; )
 	{		
-		vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		// only try quickly in ANTENNA_DEPLOY state, otherwise try more periodically
+		if (get_sat_state() == ANTENNA_DEPLOY) {
+			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		} else {
+			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+		}
 		
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);
@@ -27,8 +32,15 @@ void antenna_deploy_task(void *pvParameters) {
 		// if it's open kill the task because the antenna has been deployed
 		// or kill it if it's run more than 5 times because it's a lost cause
 		if ((get_input(P_DET_RTN) && num_tries > 0) || num_tries >= 5) {
-			// switch states, suspending this task in the process
+			// switch state to hello world, then determine whether we should keep trying
+			// (we WON'T be suspended on state change)
 			set_sat_state(HELLO_WORLD);
+			
+			// only suspend if the antenna has actually deployed
+			if (!get_input(P_DET_RTN)) {
+				suspend_antenna_deploy(); // we're the only task that can suspend a task explicitly
+			}
+			
 		} else {
 			if (true /* TODO: LiON is sufficiently charged*/) {
 				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX);

@@ -112,7 +112,7 @@ void test_watchdog_reset_attitude_data(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
 	if (ms > 2 * ATTITUDE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
 		task_suspend(ATTITUDE_DATA_TASK);
 	}
@@ -124,7 +124,7 @@ void test_watchdog_reset_antenna_deploy(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
 	// only once because otherwise it may check itself out
 	if (ms > ANTENNA_DEPLOY_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
 		task_suspend(ANTENNA_DEPLOY_TASK);
@@ -137,8 +137,8 @@ void test_watchdog_reset_transmit_task(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
-	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+	check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
 	if (ms > 2 * TRANSMIT_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
 		task_suspend(TRANSMIT_TASK);
 	}
@@ -151,8 +151,8 @@ void test_watchdog_reset_idle_data_task(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
-	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+	check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 	if (ms > 2 * IDLE_DATA_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME){
 		task_suspend(IDLE_DATA_TASK);
@@ -165,8 +165,8 @@ void test_watchdog_reset_flash_activate_task(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
-	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+	check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 	check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
 	if (ms > 2 * FLASH_ACTIVATE_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME) {
@@ -180,8 +180,8 @@ void test_watchdog_reset_low_power_data_task(void) {
 	TickType_t ms = xTaskGetTickCount();
 	
 	check_set_sat_state(INITIAL, INITIAL);
-	check_set_sat_state(INITIAL, ATTITUDE_DATA);
-	check_set_sat_state(ATTITUDE_DATA, HELLO_WORLD);
+	check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+	check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
 	check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 	check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
 	check_set_sat_state(IDLE_FLASH, LOW_POWER);

@@ -28,7 +28,6 @@
 typedef struct idle_data_t
 {
 	satellite_history_batch satellite_history;
-	uint8_t reboot_count;
 	lion_volts_batch lion_volts_data;
 	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;

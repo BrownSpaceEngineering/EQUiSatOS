@@ -15,6 +15,11 @@ uint32_t get_time_since_launch(void) {
 	return 0;
 }
 
+/* returns truncated number or orbits since first boot */
+uint16_t get_orbits_since_launch(void) {
+	return get_time_since_launch() / ORBITAL_PERIOD_S;
+}
+
 uint8_t get_reboot_count(void) {
 	return 0;
 }

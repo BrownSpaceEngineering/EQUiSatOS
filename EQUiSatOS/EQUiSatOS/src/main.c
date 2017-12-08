@@ -77,6 +77,20 @@ static void sensor_read_tests(void) {
 	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 }
 
+void set_charging_states(void) {
+	setup_pin(true, P_L1_RUN_CHG);
+	set_output(false, P_L1_RUN_CHG);
+		
+	setup_pin(true, P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);
+		
+	setup_pin(true, P_LF_B1_RUNCHG);
+	set_output(false, P_LF_B1_RUNCHG);
+		
+	setup_pin(true, P_LF_B2_RUNCHG);
+	set_output(false, P_LF_B2_RUNCHG);
+}
+
 int main(void)
 {
 	global_init();
@@ -91,5 +105,6 @@ int main(void)
 	
 	//int x = 1; 
 	//run_tests();
+
 	run_rtos();	
 }

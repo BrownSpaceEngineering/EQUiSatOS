@@ -131,9 +131,6 @@ uint8_t task_suspended_states; // no tasks suspended
 /* Task Control Functions                                               */
 /************************************************************************/
 void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
-void task_suspend(task_type_t task_id);
-void task_resume(task_type_t taskId);
-bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
 
 /************************************************************************/
 /* Helper Functions                                                     */

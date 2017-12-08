@@ -162,15 +162,18 @@ typedef enum
 #define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
 #define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
 
-#define IDLE_DATA_TASK_FREQ						1000
+#define IDLE_DATA_TASK_FREQ						1000 // ms
+#define IDLE_DATA_MAX_READ_TIME					1000 
 #define LOW_POWER_DATA_TASK_FREQ				10000
+#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
-/* 
+/** 
  * NOTE: The idle data collection task doesn't really need these constants;
  * all sensors are being read at the same frequency, unlike below.
  */
 
 #define ATTITUDE_DATA_TASK_FREQ					10000
+#define ATTITUDE_DATA_MAX_READ_TIME				1000
 /* Data array lengths for attitude data reader task */
 #define attitude_IR_DATA_ARR_LEN					1
 #define attitude_DIODE_DATA_ARR_LEN					1
@@ -194,9 +197,9 @@ typedef enum
 #define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
 #define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define FLASH_DATA_READ_FREQ	14 // ms - this should be longer than 2ms because its used as a buffer for pin transistions
+#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transistions
 #define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
-// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms
+// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 
 /*
  * A function to make sure that the constants defined here are internally consistent.

@@ -10,6 +10,8 @@
 
 #include <global.h>
 
+#define ORBITAL_PERIOD_S	5580 // s; 93mins
+
 typedef struct satellite_history_batch
 {
 	bool lion_1_charged : 1;
@@ -21,6 +23,7 @@ typedef struct satellite_history_batch
 
 uint32_t get_current_timestamp(void);
 uint32_t get_time_since_launch(void);
+uint16_t get_orbits_since_launch(void);
 uint8_t get_reboot_count(void);
 satellite_history_batch* get_satellite_history(void);
 
