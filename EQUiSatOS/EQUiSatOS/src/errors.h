@@ -126,8 +126,8 @@
 #define ECODE_INCONSISTENT_CELL_VOLT	31
 
 /* Error storage and interfaces */
-#define PRIORITY_ERROR_STACK_MAX		40
-#define NORMAL_ERROR_STACK_MAX			40
+#define PRIORITY_ERROR_STACK_MAX		20
+#define NORMAL_ERROR_STACK_MAX			10
 
 typedef struct {
 	uint32_t timestamp;

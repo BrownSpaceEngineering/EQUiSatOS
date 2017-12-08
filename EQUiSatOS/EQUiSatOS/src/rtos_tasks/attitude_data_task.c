@@ -24,6 +24,9 @@ void attitude_data_task(void *pvParameters)
 	// variable for timing data reads (which may include task suspensions)
 	TickType_t time_before_data_read;
 	
+	// variable for keeping track of our current progress through an orbit
+	uint8_t prev_orbit_fraction; // numerator of (x / ATTITUDE_DATA_LOGS_PER_ORBIT) of an orbit
+	
 	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
 	
 	for ( ;; )
@@ -62,21 +65,25 @@ void attitude_data_task(void *pvParameters)
 			increment_data_type(MAGNETOMETER_DATA, data_array_tails, loops_since_last_log);
 		}
 		
-		// once we've collected all the data we need to into the current struct, add the whole thing
-		// if we were suspended in some period between start of this packet and here, DON'T add it
-		// and go on to rewrite the current one
-		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
-		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN 
-			&& data_read_time <= ATTITUDE_DATA_MAX_READ_TIME)
+		// once we've collected all the data we need to into the current struct, try to add the whole thing
+		if (data_array_tails[IR_DATA] >= attitude_IR_DATA_ARR_LEN)
 		{
 			#ifdef TEST_FLAG
 				attitude_data_t* prev_cur_struct = current_struct;
 			#endif
 			
-			// validate previous stored value in stack, getting back the next staged address we can start adding to
-			current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
+			// if we were suspended in some period between start of this packet and here, DON'T add it
+			// and go on to rewrite the current one
+			TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
+			if (data_read_time <= ATTITUDE_DATA_MAX_READ_TIME 
+				&& at_orbit_fraction(&prev_orbit_fraction, ATTITUDE_DATA_LOGS_PER_ORBIT)) {
 			
-			// reset data array tails so we're writing at the start
+				// validate previous stored value in stack, getting back the next staged address we can start adding to
+				current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
+			}
+			
+			// REGARDLESS of whether we wrote the data, 
+			// reset data array tails so we're re-writing at the start
 			set_all_uint8(data_array_tails, NUM_DATA_TYPES, 0);
 			set_all_uint8(loops_since_last_log, NUM_DATA_TYPES, 0);
 			

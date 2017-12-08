@@ -199,7 +199,7 @@ void test_watchdog_reset_low_power_data_task(void) {
 /* transitions to the new_state, and given the old_state, checks whether
    the return value of set_sat_state was in accordance with what was required.
    Returns whether the change was valid if it was in accordance with expected, else hangs. */
-bool check_set_sat_state(global_state_t old_state, global_state_t new_state)
+bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state)
 {
 	bool valid = set_sat_state(new_state);
 	
@@ -237,7 +237,7 @@ bool check_set_sat_state(global_state_t old_state, global_state_t new_state)
 	}
 }
 
-void force_set_state(global_state_t new_state) 
+void force_set_state(sat_state_t new_state) 
 {
 	switch (new_state) {
 		case INITIAL:

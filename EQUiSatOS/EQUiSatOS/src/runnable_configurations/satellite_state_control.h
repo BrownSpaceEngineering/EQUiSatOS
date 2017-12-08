@@ -8,9 +8,7 @@
 #ifndef SATELLITE_STATE_CONTROL_H
 #define SATELLITE_STATE_CONTROL_H
 
-#include <global.h>
 #include "rtos_tasks/rtos_tasks.h"
-#include "processor_drivers/USART_Commands.h"
 #include "data_handling/equistack.h"
 
 #include "struct_tests.h"
@@ -21,8 +19,8 @@ void run_rtos(void);
 void init_task_state(task_type_t task);
 
 /* State functions */
-global_state_t get_sat_state(void);
-bool set_sat_state(global_state_t state);
+sat_state_t get_sat_state(void);
+bool set_sat_state(sat_state_t state);
 void suspend_antenna_deploy(void); // interface for ONLY antenna deploy task
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS - DONT YOU DARE USE THESE */

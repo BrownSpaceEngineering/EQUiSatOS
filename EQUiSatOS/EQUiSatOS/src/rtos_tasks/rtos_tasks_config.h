@@ -7,21 +7,22 @@
  *  Author: mckenna
  */ 
 
+#include <asf.h>
+#include <inttypes.h>
+
 #ifndef RTOS_TASKS_CONFIG_H
 #define RTOS_TASKS_CONFIG_H
-
-#include <global.h>
-#include <assert.h>
 
 /************************************************************************/
 /* Classes of Task Priorities                                           */
 /************************************************************************/
 // lowest priority is at the top
 enum {
-	DATA_READ_PRIORITY = 1,
+	DATA_READ_PRIORITY = 1, // above tskIDLE_PRIORITY
 	TRANSMIT_PRIORITY,
 	BATTERY_CHARGING_PRIORITY,
-	ACTION_PRIORITY,
+	SECONDARY_ACTION_PRIORITY,
+	PRIMARY_ACTION_PRIORITY,
 	WATCHDOG_PRIORITY
 };
 
@@ -32,13 +33,13 @@ enum {
 #define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
+#define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
 
 #define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(WATCHDOG_PRIORITY)
 
 #define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
-#define TASK_FLASH_ACTIVATE_PRIORITY				(ACTION_PRIORITY)
+#define TASK_FLASH_ACTIVATE_PRIORITY				(PRIMARY_ACTION_PRIORITY)
 
 #define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(TRANSMIT_PRIORITY)
@@ -46,11 +47,14 @@ enum {
 #define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_IDLE_DATA_RD_PRIORITY					(DATA_READ_PRIORITY)
 
+#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
+
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
@@ -74,7 +78,7 @@ typedef enum
 	LOW_POWER,
 	RIP,
 	NUM_SAT_STATES, // = RIP + 1
-} global_state_t;
+} sat_state_t;
 
 /************************************************************************/
 /*  Enum for all types of collected sensor readings						*
@@ -164,8 +168,11 @@ typedef enum
 
 #define IDLE_DATA_TASK_FREQ						1000 // ms
 #define IDLE_DATA_MAX_READ_TIME					1000 
+#define IDLE_DATA_LOGS_PER_ORBIT				7 // == IDLE_DATA_PACKETS
 #define LOW_POWER_DATA_TASK_FREQ				10000
 #define LOW_POWER_DATA_MAX_READ_TIME			1000
+
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		1000
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;
@@ -174,6 +181,7 @@ typedef enum
 
 #define ATTITUDE_DATA_TASK_FREQ					10000
 #define ATTITUDE_DATA_MAX_READ_TIME				1000
+#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
 /* Data array lengths for attitude data reader task */
 #define attitude_IR_DATA_ARR_LEN					1
 #define attitude_DIODE_DATA_ARR_LEN					1

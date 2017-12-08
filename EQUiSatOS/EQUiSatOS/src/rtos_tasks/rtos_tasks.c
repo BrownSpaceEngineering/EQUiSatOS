@@ -7,6 +7,9 @@
 
 #include "rtos_tasks.h"
 #include "processor_drivers\USART_Commands.h"
+#include "data_handling/Sensor_Structs.h"
+#include "data_handling/equistack.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 /************************************************************************/
 /* TASK CONTROL FUNCTIONS                                               */
@@ -24,7 +27,6 @@ static void init_task_handles(void) {
 }
 
 void pre_init_rtos_tasks(void) {
-	task_suspended_states = 0; // no suspended tasks
 	init_task_handles();
 }
 

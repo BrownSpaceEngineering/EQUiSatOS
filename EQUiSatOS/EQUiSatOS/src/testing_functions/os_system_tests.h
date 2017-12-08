@@ -24,5 +24,5 @@ void test_watchdog_reset_flash_activate_task(void);
 void test_watchdog_reset_low_power_data_task(void);
 
 // helpers
-bool check_set_sat_state(global_state_t old_state, global_state_t new_state);
-void force_set_state(global_state_t new_state);
+bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state);
+void force_set_state(sat_state_t new_state);

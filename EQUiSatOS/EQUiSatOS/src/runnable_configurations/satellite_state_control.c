@@ -11,15 +11,17 @@
 /* Satellite state - ONLY accessible in this file */
 int8_t current_sat_state;
 
+void configure_state_from_reboot(void);
+
 void run_rtos()
 {
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
 	/************************************************************************/
 	
-	current_sat_state = INITIAL;
+	init_persistent_storage();
+	configure_state_from_reboot();
 	
-	//configure_i2c_master(SERCOM4);
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
 
 	// watchdog has some extra initialization
@@ -117,7 +119,15 @@ void run_rtos()
 		TASK_LOW_POWER_DATA_RD_PRIORITY,
 		low_power_data_task_stack,
 		&low_power_data_task_buffer);
-
+		
+	persistent_data_backup_task_handle = xTaskCreateStatic(persistent_data_backup_task,
+		"persistent data backup task",
+		TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE,
+		NULL,
+		TASK_PERSISTENT_DATA_BACKUP_PRIORITY,
+		persistent_data_backup_task_stack,
+		&persistent_data_backup_task_buffer);
+	
 // 		xTaskCreate(task_suicide_test,
 // 		"task suicide testing",
 // 		TASK_SENS_RD_IDLE_STACK_SIZE,
@@ -148,38 +158,89 @@ void run_rtos()
 	vTaskStartScheduler();
 }
 
+/* loads stored state from persistent storage and sets up correct boot parameters */
+void configure_state_from_reboot(void) {
+	// send first read command
+	read_state_from_storage();
+	
+	// based on satellite state, set initial state
+	// (it will actually be set as tasks come online)
+	sat_state_t state_at_reboot = cache_get_sat_state();
+	if (state_at_reboot == INITIAL 
+		|| state_at_reboot == ANTENNA_DEPLOY 
+		|| state_at_reboot == HELLO_WORLD) {
+		current_sat_state = INITIAL; 
+	} else {
+		set_sat_state(IDLE_NO_FLASH); // TODO: won't WORK
+	}
+	
+	// TODO: get state of antenna deploy task and apply
+	cache_get_sat_event_history()->antenna_deployed;
+	
+	// note we've rebooted
+	increment_reboot_count();
+}
+
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts */
 void init_task_state(task_type_t task) {
-	// TODO: will depend on persistent memory
 	
-	
-	// NOTE: The last "true" argument signifies that the suspend functions should
-	// call vTaskSuspend(NULL);, which we MUST use to suspend (vs. task handles)
-	// when RTOS is first starting
-	switch (task) {
-		case BATTERY_CHARGING_TASK:
-			task_resume(BATTERY_CHARGING_TASK); // REAL ONE
-			return;
-		case ANTENNA_DEPLOY_TASK:
-			task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
-			return;
-		case IDLE_DATA_TASK:
-			task_suspend(IDLE_DATA_TASK); // REAL ONE
-			return;
-		case FLASH_ACTIVATE_TASK:
-			task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
-			return;
-		case TRANSMIT_TASK:
-			task_suspend(TRANSMIT_TASK); // REAL ONE
-			return;
-		case ATTITUDE_DATA_TASK:
-			task_resume(ATTITUDE_DATA_TASK); // REAL ONE
-			return;
-		case LOW_POWER_DATA_TASK:
-			task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
-			return;
-		default:
-			return;
+	// one of two coming out of boot
+	assert (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
+	if (current_sat_state == IDLE_NO_FLASH) {
+		
+		// TODO: set it right
+		
+		switch (task) {
+			case BATTERY_CHARGING_TASK:
+				task_resume(BATTERY_CHARGING_TASK); // REAL ONE
+				return;
+			case ANTENNA_DEPLOY_TASK:
+				task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
+				return;
+			case IDLE_DATA_TASK:
+				task_suspend(IDLE_DATA_TASK); // REAL ONE
+				return;
+			case FLASH_ACTIVATE_TASK:
+				task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
+				return;
+			case TRANSMIT_TASK:
+				task_suspend(TRANSMIT_TASK); // REAL ONE
+				return;
+			case ATTITUDE_DATA_TASK:
+				task_resume(ATTITUDE_DATA_TASK); // REAL ONE
+				return;
+			case LOW_POWER_DATA_TASK:
+				task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
+				return;
+			default:
+				return;
+		}
+	} else if (current_sat_state == INITIAL) {
+		switch (task) {
+			case BATTERY_CHARGING_TASK:
+				task_resume(BATTERY_CHARGING_TASK); // REAL ONE
+				return;
+			case ANTENNA_DEPLOY_TASK:
+				task_suspend(ANTENNA_DEPLOY_TASK); // REAL ONE
+				return;
+			case IDLE_DATA_TASK:
+				task_suspend(IDLE_DATA_TASK); // REAL ONE
+				return;
+			case FLASH_ACTIVATE_TASK:
+				task_suspend(FLASH_ACTIVATE_TASK); // REAL ONE
+				return;
+			case TRANSMIT_TASK:
+				task_suspend(TRANSMIT_TASK); // REAL ONE
+				return;
+			case ATTITUDE_DATA_TASK:
+				task_resume(ATTITUDE_DATA_TASK); // REAL ONE
+				return;
+			case LOW_POWER_DATA_TASK:
+				task_suspend(LOW_POWER_DATA_TASK); // REAL ONE
+				return;
+			default:
+				return;
+		}
 	}
 }
 
@@ -235,7 +296,7 @@ void task_suspend(task_type_t task_id);
 void task_resume(task_type_t task_id);
 
 /* Getter for global state */
-global_state_t get_sat_state(void) {
+sat_state_t get_sat_state(void) {
 	return current_sat_state;
 }
 
@@ -243,7 +304,7 @@ global_state_t get_sat_state(void) {
    the current state is valid; returns whether the state change was made (i.e. was valid) 
    CAN be called consistenly (i.e. if state == CurrentState), which will ensure all correct tasks
    for a state are running, etc. */
-bool set_sat_state_helper(global_state_t state) 
+bool set_sat_state_helper(sat_state_t state) 
 {
 	// setting the state to the current state is not wrong,
 	// but we don't want to actually change task states every time this is called
@@ -307,7 +368,7 @@ bool set_sat_state_helper(global_state_t state)
 	}
 }
 
-bool set_sat_state(global_state_t state) {
+bool set_sat_state(sat_state_t state) {
 	bool valid = set_sat_state_helper(state);
 	if (!valid) {
 		configASSERT(false); // busy loop because this is bad
@@ -488,7 +549,6 @@ void task_resume(task_type_t task_id)
 		configASSERT(*task_handle != NULL);
 		
 		vTaskResume(*task_handle); 
-		task_suspended_states |= (1 << task_id); // note we WERE suspended
 	}	
 }
 

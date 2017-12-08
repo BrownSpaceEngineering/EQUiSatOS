@@ -17,12 +17,8 @@
 #include "semphr.h"
 
 #include "rtos_tasks_config.h"
-#include "data_handling/Sensor_Structs.h"
 #include "data_handling/State_Structs.h"
-#include "data_handling/equistack.h"
 #include "data_handling/data_utils.h"
-#include "./runnable_configurations/satellite_state_control.h"
-#include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
 
 /************************************************************************/
@@ -43,6 +39,7 @@ void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
+void persistent_data_backup_task(void *pvParameters);
 
 // Data read tasks
 void idle_data_task(void *pvParameters);
@@ -69,6 +66,8 @@ StaticTask_t attitude_data_task_buffer;
 StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
 StaticTask_t low_power_data_task_buffer;
 StackType_t low_power_data_task_stack			[TASK_LOW_POWER_DATA_RD_STACK_SIZE];
+StaticTask_t persistent_data_backup_task_buffer;
+StackType_t persistent_data_backup_task_stack	[TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE];
 
 /************************************************************************/
 /* Equistack definitions                                                */
@@ -114,18 +113,7 @@ TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 TaskHandle_t low_power_data_task_handle;
-
-/* List (series of bits) of whether a given task is RESUMING from suspension.
- * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
- *
- *				|---suspended----|       | task reports unsuspended
- * task bit:  0   0   0   0   0    1   1   0   0   0   ...
- *
- * This was put here to allow tasks to immediately write old data to their
- * equistacks when resuming from suspend.
- * NOTE: We WILL merge this with the watchdog check in / check out indicators.
- */
-uint8_t task_suspended_states; // no tasks suspended
+TaskHandle_t persistent_data_backup_task_handle;
 
 /************************************************************************/
 /* Task Control Functions                                               */

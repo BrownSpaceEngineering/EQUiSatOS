@@ -9,7 +9,6 @@
 #define SENSOR_STRUCTS_H
 
 #include <global.h>
-#include "data_handling/persistent_storage.h"
 
 typedef uint8_t lion_volts_batch			[2];
 typedef uint8_t lion_current_batch			[2];
@@ -23,7 +22,6 @@ typedef uint8_t radio_temp_batch;			// single value
 typedef uint8_t radio_volts_batch;			// single value
 typedef uint8_t proc_temp_batch;			// single value
 typedef uint8_t bat_charge_volts_batch		[2];
-// satellite_history_batch defined in persistent_storage.h
 typedef uint16_t bat_charge_dig_sigs_batch;	// single value
 typedef uint16_t ir_object_temps_batch		[6];
 typedef uint16_t pdiode_batch				[6];
@@ -32,5 +30,15 @@ typedef uint8_t accelerometer_batch			[3];
 typedef uint8_t gyro_batch					[3];
 typedef uint8_t magnetometer_batch			[3];
 typedef uint8_t imu_temp_batch;				// single value
+typedef struct satellite_history_batch
+{
+	bool antenna_deployed : 1;
+	bool lion_1_charged : 1;
+	bool lion_2_charged : 1;
+	bool lifepo_b1_charged : 1;
+	bool lifepo_b2_charged : 1;
+	bool first_flash : 1;
+	
+} satellite_history_batch;
 
 #endif
