@@ -271,11 +271,22 @@ static void HMC5883L_test(void){
 //GPIO test
 static enum status_code TCA9535_test(){
 	print("==============TCA9535 Test==============\n");
-	uint16_t rs;
-	enum status_code sc = TCA9535_init(&rs);
+	uint16_t res;
+	enum status_code sc = TCA9535_init(&res);
 	print("TCA return status: ");
-	//print_error(sc);
-	print("TCA test: %d\n",rs);
+	print_error(sc);
+	print("L2_ST: \t\t %d\n", (res>>8)&0x1);
+	print("L1_ST: \t\t %d\n", (res>>9)&0x1);
+	print("SPF_ST: \t %d\n", (res>>10)&0x1);
+	print("L1_CHGN: \t %d\n", (res>>12)&0x1);
+	print("L1_FAULTN: \t %d\n", (res>>13)&0x1);
+	print("L2_CHGN: \t %d\n", (res>>14)&0x1);
+	print("L2_FAULTN: \t %d\n", (res>>15)&0x1);
+	print("LF_B1_CHGN: \t %d\n", (res>>6)&0x1);
+	print("LF_B1_FAULTN: \t %d\n", (res>>7)&0x1);
+	print("LF_B2_CHGN: \t %d\n", (res>>4)&0x1);
+	print("LF_B2_FAULTN: \t %d\n", (res>>5)&0x1);	
+	//print("TCA test: %d\n",rs);
 }
 
 // Photodiode test
@@ -326,9 +337,9 @@ static void AD7991_BAT_test(){
 
 	float AD7991_results[4];
 	//AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5;
-	uint16_t results[4];
+	int16_t results[4];
 	
-	enum status_code AD7991_code = AD7991_read_all(results, AD7991_CTRLBRD);
+	enum status_code AD7991_code = AD7991_read_all(results, AD7991_BATBRD);
 
 	AD7991_results[0] = (((float) results[0])/4096*3.3-1.022)*2000;	//L2_SNS mA
 	AD7991_results[1] = (((float) results[1])/4096*3.3-0.985)*2000;	//L1_SNS mA
@@ -360,7 +371,7 @@ static void AD7991_BAT_test(){
 			break;
 		}
 
-		print("%s: \t %d m%c\n",test_str,(uint16_t)AD7991_results[i], suffix);
+		print("%s: \t %d \t %d m%c\n",test_str, results[i], (int16_t)AD7991_results[i], suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
@@ -474,7 +485,7 @@ void readBatBoard(){
 		P_AI_L2_REF,
 	};
 	
-	for (int i=0; i<10; i++){
+	for (int i=0; i<10; i++){		
 		uint16_t buf;
 		configure_adc(&bat_instance,bat_adc_pins[i]);
 		uint8_t rs;
@@ -516,15 +527,14 @@ void readBatBoard(){
 			strcpy(test_str,"P_AI_L2_REF");
 			break;
 		}
-		print(" %s \t %s \t %d mV\n",test_str,error_str,(uint16_t)(bat_voltage_readings[i]*1000));
+		print(" %s \t %s \t %d \t %d mV\n",test_str,error_str, bat_readings[i], (uint16_t)(bat_voltage_readings[i]*1000));
 	}
 	
 }
 
 void system_test(void){	
-	//delay_init();
-	AD590_test();
-	/*print("=======================================\n");
+	delay_init();	
+	print("=======================================\n");
 	print("=               SYSTEM Test           =\n");
 	print("=======================================\n");
 	
@@ -533,7 +543,9 @@ void system_test(void){
 	AD7991_CTRL_test(false);
 	AD7991_CTRL_test(true);
 	
-	AD7991_BAT_test();		
+	AD7991_BAT_test();
+	
+	AD590_test();
 			
 	MLX90614_test();
 	
@@ -543,5 +555,5 @@ void system_test(void){
 	
 	TEMD6200_test();
 	
-	TCA9535_test();*/
+	TCA9535_test();
 }

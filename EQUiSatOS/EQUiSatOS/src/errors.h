@@ -151,5 +151,6 @@ uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
 void log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
+void print_error(enum status_code code);
 
 #endif /* ERRORS_H_ */

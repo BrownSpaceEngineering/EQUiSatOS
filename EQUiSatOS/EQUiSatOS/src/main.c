@@ -80,16 +80,8 @@ static void sensor_read_tests(void) {
 int main(void)
 {
 	global_init();
-	/*print("BEGIN COUNT: %d\n", get_rtc_count());
-	for (int i = 0; i < 200; i++) {
-		flashBurstTest();	
-		//print("%d\n", i);
-	}
-	print("END COUNT: %d\n", get_rtc_count());*/
-	//sensor_read_tests();
-	system_test();
 	
-	//int x = 1; 
+	system_test();
 	//run_tests();
 	//run_rtos();	
 }
