@@ -7,6 +7,9 @@
 
 #include "rtos_tasks.h"
 #include "processor_drivers\USART_Commands.h"
+#include "data_handling/Sensor_Structs.h"
+#include "data_handling/equistack.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 /************************************************************************/
 /* TASK CONTROL FUNCTIONS                                               */
@@ -24,58 +27,37 @@ static void init_task_handles(void) {
 }
 
 void pre_init_rtos_tasks(void) {
-	task_suspended_states = 0; // no suspended tasks
 	init_task_handles();
 }
 
-// NOTE: task_id must be the id of the current task if suspend_current_task is true
-void task_suspend(task_type_t task_id) {
-	TaskHandle_t* task_handle = task_handles[task_id];
-		
-	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend this task
-	
-	// always check out of watchdog when called (to be double-sure)
-	check_out_task(task_id);
-	if (eTaskGetState(*task_handle) != eSuspended) { 
-		vTaskSuspend(*task_handle); // actually suspend using handle
-	}
-}
-
-void task_resume(task_type_t task_id)
-{
-	TaskHandle_t* task_handle = task_handles[task_id];
-	configASSERT(task_handle != NULL);
-	
-	// always check in for watchdog when called
-	// (in case it wasn't, for example on BOOT)
-	check_in_task(task_id); 
-							
-	if (eTaskGetState(*task_handle) == eSuspended)
-	{
-		// actually resume task (will be graceful if task_handle task is not actually suspended)
-		
-		configASSERT(*task_handle != NULL);
-		
-		vTaskResume(*task_handle); 
-		task_suspended_states |= (1 << task_id); // note we WERE suspended
-	}	
-}
-
-/* Checks and returns whether this task was suspended, AND report that it is not suspended */
-bool check_if_suspended_and_update(task_type_t task_id) {
-	bool val = task_suspended_states & (1 << task_id); // check the state (>0 if was suspended)
-	task_suspended_states &= ~(1 << task_id); // set our suspended bit to 0
-	return val;
-}
 
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
+
 void rtos_safe_delay(uint32_t ms) 
 {
 	vTaskSuspendAll();
 	delay_ms(ms);
 	xTaskResumeAll();
+}
+
+/* returns the equistack associated with the given message type */
+equistack* get_msg_type_equistack(msg_data_type_t msg_type) {
+	switch (msg_type) {
+		case IDLE_DATA:
+			return &idle_readings_equistack;
+		case ATTITUDE_DATA:
+			return &attitude_readings_equistack;
+		case FLASH_DATA:
+			return &flash_readings_equistack;
+		case FLASH_CMP_DATA:
+			return &flash_cmp_readings_equistack;
+		case LOW_POWER_DATA:
+			return &low_power_readings_equistack;
+		default:
+			return NULL;
+	}
 }
 
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)

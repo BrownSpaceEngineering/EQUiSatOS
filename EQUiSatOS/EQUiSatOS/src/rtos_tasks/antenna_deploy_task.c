@@ -8,8 +8,10 @@
 #include "rtos_tasks.h"
 #include "../config/proc_pins.h"
 #include "../processor_drivers/PWM_Commands.h"
+#include "../runnable_configurations/antenna_pwm.h"
 
 static int num_tries = 0;
+
 void antenna_deploy_task(void *pvParameters) {
 	TickType_t prev_wake_time = xTaskGetTickCount();
 	
@@ -17,7 +19,12 @@ void antenna_deploy_task(void *pvParameters) {
 
 	for( ;; )
 	{		
-		vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		// only try quickly in ANTENNA_DEPLOY state, otherwise try more periodically
+		if (get_sat_state() == ANTENNA_DEPLOY) {
+			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
+		} else {
+			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+		}
 		
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);
@@ -25,32 +32,22 @@ void antenna_deploy_task(void *pvParameters) {
 		// if it's open kill the task because the antenna has been deployed
 		// or kill it if it's run more than 5 times because it's a lost cause
 		if ((get_input(P_DET_RTN) && num_tries > 0) || num_tries >= 5) {
-			// switch states, suspending this task in the process
+			// switch state to hello world, then determine whether we should keep trying
+			// (we WON'T be suspended on state change)
 			set_sat_state(HELLO_WORLD);
-		} else {
-			int mod_tries = num_tries % 3;
-			if (mod_tries == 0 && true /* LiON is sufficiently charged and enough time has passed*/) {
-				configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
-				int start = get_rtc_count();
-				while (get_rtc_count() < start + 3) {
-					set_pulse_width_fraction(3, 4);
-				}
-			} else if (mod_tries != 0 && true /*LiFePO is sufficiently charged and enough time has passed*/){
-				if (mod_tries == 1) {
-					configure_pwm(P_ANT_DRV2, P_ANT_DRV2_MUX);
-					int start = get_rtc_count();
-					while (get_rtc_count() < start + 3) {
-						set_pulse_width_fraction(3, 4);
-					}
-				} else {
-					configure_pwm(P_ANT_DRV3, P_ANT_DRV3_MUX);
-					int start = get_rtc_count();
-					while (get_rtc_count() < start + 3) {
-						set_pulse_width_fraction(3, 4);
-					}
-				}
+			
+			// only suspend if the antenna has actually deployed
+			if (!get_input(P_DET_RTN)) {
+				suspend_antenna_deploy(); // we're the only task that can suspend a task explicitly
 			}
-			num_tries++;
+			
+		} else {
+			if (true /* TODO: LiON is sufficiently charged*/) {
+				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX);
+				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX);
+				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX);
+				num_tries++;
+			}
 		}
 	}
 	

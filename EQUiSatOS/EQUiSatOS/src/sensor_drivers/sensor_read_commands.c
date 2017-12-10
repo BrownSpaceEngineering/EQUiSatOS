@@ -259,23 +259,19 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 	// TODO: Tyler will implement later
 	// eventually: XDL_get_temperature(batch);
 }
-
-void read_radio_current_batch(radio_current_batch* batch) {
-	// TODO
-}
+// 
+// void read_radio_current_batch(radio_current_batch* batch) {
+// 	// TODO
+// }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
 	return (batch >> shift) & 1;
 }
 
-void read_digital_out_batch(digital_out_batch* batch) {
-	// yet to be defined, mapped to certain events
-}
+// void read_digital_out_batch(digital_out_batch* batch) {
+// 	// yet to be defined, mapped to certain events
+// }
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
-
-}
-
-void read_rail_5v_batch(rail_5v_batch* batch) {
 
 }

@@ -8,16 +8,30 @@
 #include "USART_Commands.h"
 
 #if PRINT_DEBUG  // if debug mode
-	uint8_t debug_buf[256];
+	char debug_buf[256];
+	
+	StaticSemaphore_t _print_mutex_d;
+	SemaphoreHandle_t print_mutex;
 #endif
 
 uint8_t edbg_rx_data,ext_rx_data;
 
+StaticSemaphore_t _usart_send_string_mutex_d;
+SemaphoreHandle_t usart_send_string_mutex;
+
 void USART_init() {	
 	ext_usart_clock_init();
 	ext_usart_pin_init();
-	ext_usart_init();	
+	ext_usart_init();
+	usart_mutex_init();
 }
+
+void usart_mutex_init(void) {
+	usart_send_string_mutex = xSemaphoreCreateMutexStatic(&_usart_send_string_mutex_d);
+	#if PRINT_DEBUG
+		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
+	#endif
+}	
 
 //Receive handler
 void SERCOM3_Handler()
@@ -216,12 +230,14 @@ void ext_usart_pin_init(void)
 
 void usart_send_string(const uint8_t *str_buf)
 {
+	xSemaphoreTake(usart_send_string_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
 	while (*str_buf != '\0')
 	{
-		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just do to uncertainty of above ifdefs
+		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just due to uncertainty of above ifdefs
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
+	xSemaphoreGive(usart_send_string_mutex);
 }
 
 // use in debug mode (set in header file)
@@ -230,11 +246,13 @@ void usart_send_string(const uint8_t *str_buf)
 void print(const char *format, ...)
 {
 	#if PRINT_DEBUG  // if debug mode
+		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 		va_list arg;
 		va_start (arg, format);
 		vsprintf(debug_buf, format, arg);
 		va_end (arg);
-		usart_send_string(debug_buf);
+		usart_send_string((uint8_t*) debug_buf);
+		xSemaphoreGive(print_mutex);
 	#endif
 	
 }

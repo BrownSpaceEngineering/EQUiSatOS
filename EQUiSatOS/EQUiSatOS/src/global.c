@@ -9,8 +9,13 @@
 
 void init_tracelyzer(void) {
 	#if configUSE_TRACE_FACILITY == 1
-	vTraceEnable(TRC_START);
-	global_trace_channel = xTraceRegisterString("Global Events");
+		#if TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING
+			vTraceEnable(TRC_INIT); // start streaming data when requested instead of waiting here
+		#elif TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT
+			vTraceEnable(TRC_START);
+		#endif
+	
+		global_trace_channel = xTraceRegisterString("Global Events");
 	#endif
 }
 
@@ -18,7 +23,7 @@ void trace_print(const char *format)
 {
 	// NOTE: va_args won't work; no function that takes that :(
 	#if configUSE_TRACE_FACILITY == 1
-	vTracePrintF(global_trace_channel, format);
+		vTracePrintF(global_trace_channel, format);
 	#endif
 }
 
@@ -55,6 +60,13 @@ void global_init(void) {
 	// Initialize the SAM system
 	system_init();
 
+	/**
+	 * MUST be before anything RTOS-related:
+	 *   - USART_init(); NOW USES MUTEXES
+	 *   - init_errors(); error equistack
+	 */ 
+	init_tracelyzer();	
+
 	pin_init();
 	init_rtc();
 	USART_init();
@@ -62,8 +74,6 @@ void global_init(void) {
 	MLX90614_init();
 	MPU9250_init();
 	delay_init();
-	
-	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
 	
 	init_errors();
 	

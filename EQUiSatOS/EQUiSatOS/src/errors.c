@@ -59,7 +59,7 @@ void print_error(enum status_code code){
 
 void log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
-		print_error(sc);
+		//print_error(sc);
 		log_error(loc, atmel_to_equi_error(sc), priority);
 	}
 }
@@ -132,7 +132,7 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
-	full_error.timestamp = get_rtc_count(); // time is now
+	full_error.timestamp = get_current_timestamp(); // time is now
 	full_error.eloc = loc;
 	full_error.ecode = priority << 7 || (0b01111111 & err); // priority bit at MSB
 	

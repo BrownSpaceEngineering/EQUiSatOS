@@ -38,7 +38,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_QUEUE_SETS                    0
 #define configUSE_TICKLESS_IDLE					0
 #define configGENERATE_RUN_TIME_STATS           0
-#define configENABLE_BACKWARD_COMPATIBILITY     0
+#define configENABLE_BACKWARD_COMPATIBILITY     1 // for Tracelyzer streaming mode
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                   0

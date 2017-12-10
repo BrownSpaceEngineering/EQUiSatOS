@@ -77,11 +77,37 @@ static void sensor_read_tests(void) {
 	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 }
 
+void set_charging_states(void) {
+	setup_pin(true, P_L1_RUN_CHG);
+	set_output(false, P_L1_RUN_CHG);
+		
+	setup_pin(true, P_L2_RUN_CHG);
+	set_output(false, P_L2_RUN_CHG);
+		
+	setup_pin(true, P_LF_B1_RUNCHG);
+	set_output(false, P_LF_B1_RUNCHG);
+		
+	setup_pin(true, P_LF_B2_RUNCHG);
+	set_output(false, P_LF_B2_RUNCHG);
+}
+
 int main(void)
 {
 	global_init();
+<<<<<<< HEAD
+=======
+	/*print("BEGIN COUNT: %d\n", get_current_timestamp());
+	for (int i = 0; i < 200; i++) {
+		flashBurstTest();	
+		//print("%d\n", i);
+	}
+	print("END COUNT: %d\n", get_current_timestamp());*/
+	//sensor_read_tests();
+	//system_test();
+>>>>>>> 40d56b600c1a22e0585a77791f4169097d5a548b
 	
 	system_test();
 	//run_tests();
-	//run_rtos();	
+
+	run_rtos();	
 }

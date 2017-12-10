@@ -17,12 +17,8 @@
 #include "semphr.h"
 
 #include "rtos_tasks_config.h"
-#include "data_handling/Sensor_Structs.h"
 #include "data_handling/State_Structs.h"
-#include "data_handling/equistack.h"
 #include "data_handling/data_utils.h"
-#include "./runnable_configurations/satellite_state_control.h"
-#include "sensor_drivers/sensor_read_commands.h"
 #include "watchdog_task.h"
 
 /************************************************************************/
@@ -43,6 +39,7 @@ void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
 void flash_activate_task(void *pvParameters);
+void persistent_data_backup_task(void *pvParameters);
 
 // Data read tasks
 void idle_data_task(void *pvParameters);
@@ -69,6 +66,8 @@ StaticTask_t attitude_data_task_buffer;
 StackType_t attitude_data_task_stack			[TASK_ATTITUDE_DATA_RD_STACK_SIZE];
 StaticTask_t low_power_data_task_buffer;
 StackType_t low_power_data_task_stack			[TASK_LOW_POWER_DATA_RD_STACK_SIZE];
+StaticTask_t persistent_data_backup_task_buffer;
+StackType_t persistent_data_backup_task_stack	[TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE];
 
 /************************************************************************/
 /* Equistack definitions                                                */
@@ -114,32 +113,19 @@ TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
 TaskHandle_t attitude_data_task_handle;
 TaskHandle_t low_power_data_task_handle;
-
-/* List (series of bits) of whether a given task is RESUMING from suspension.
- * NOTE: a bit does NOT indicate the task is suspended. The time sequence is this:
- *
- *				|---suspended----|       | task reports unsuspended
- * task bit:  0   0   0   0   0    1   1   0   0   0   ...
- *
- * This was put here to allow tasks to immediately write old data to their
- * equistacks when resuming from suspend.
- * NOTE: We WILL merge this with the watchdog check in / check out indicators.
- */
-uint8_t task_suspended_states; // no tasks suspended
+TaskHandle_t persistent_data_backup_task_handle;
 
 /************************************************************************/
 /* Task Control Functions                                               */
 /************************************************************************/
 void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign various constants
-void task_suspend(task_type_t task_id);
-void task_resume(task_type_t taskId);
-bool check_if_suspended_and_update(task_type_t task_id); /* Checks and returns whether this task was suspended, AND report that it is resuming from suspend */
 
 /************************************************************************/
 /* Helper Functions                                                     */
 /************************************************************************/
 void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, so the delay is determinate
 uint32_t get_time_of_next_flash(void); // implemented in flash_activate_task
+equistack* get_msg_type_equistack(msg_data_type_t msg_type);
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 
 /************************************************************************/
