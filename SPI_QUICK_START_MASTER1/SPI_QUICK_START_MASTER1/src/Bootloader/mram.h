@@ -12,7 +12,10 @@
 #include <stdbool.h>
 #include <spi.h>
 
-//#define SLAVE_SELECT_PIN EXT1_PIN_SPI_SS_0
+#define SLAVE_SELECT_PIN	PIN_PA17C_SERCOM1_PAD1 // PIN_PB16C_SERCOM5_PAD0 (probably not it by eagle)
+#define MRAM_SPI_MOSI		PINMUX_PA16C_SERCOM1_PAD0 // corresponds to signal SO for Serial Out (from master)
+#define MRAM_SPI_MISO		PINMUX_PA18C_SERCOM1_PAD2 // corresponds to signal SI for Serial In (into master)
+#define MRAM_SPI_SCK		PINMUX_PA19C_SERCOM1_PAD3
 
 extern const uint8_t NUM_CONTROL_BYTES, READ_COMMAND, WRITE_COMMAND, ENABLE_COMMAND;
 
@@ -37,6 +40,12 @@ status_code_genare_t read_bytes(struct spi_module *spi_master_instance, struct s
 /* of data will be written                                              */
 /************************************************************************/
 status_code_genare_t write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
+
+/************************************************************************/
+/* Given master and slave, the content of the MRAM's status register	*/
+/* will be written				                                        */
+/************************************************************************/
+status_code_genare_t read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out);
 
 int test_mram(void);
 

@@ -9,6 +9,7 @@
 
 const uint8_t NUM_CONTROL_BYTES = 0x04;
 const uint8_t READ_COMMAND = 0x03;
+const uint8_t READ_STATUS_REG_COMMAND = 0x05;
 const uint8_t WRITE_COMMAND = 0x02;
 const uint8_t ENABLE_COMMAND = 0x06;
 
@@ -21,11 +22,12 @@ void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
 uint8_t initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate){
 	struct spi_config config_spi_master;
 	spi_get_config_defaults(&config_spi_master);
-	config_spi_master.mux_setting = SPI_SIGNAL_MUX_SETTING_E;
-	config_spi_master.pinmux_pad0 = PINMUX_PA16C_SERCOM1_PAD0;
-	config_spi_master.pinmux_pad1 = PINMUX_UNUSED;
-	config_spi_master.pinmux_pad2 = PINMUX_PA18C_SERCOM1_PAD2;
-	config_spi_master.pinmux_pad3 = PINMUX_PA19C_SERCOM1_PAD3;
+	config_spi_master.mux_setting = SPI_SIGNAL_MUX_SETTING_C;
+	// see here for correspondence: http://asf.atmel.com/docs/latest/samd21/html/asfdoc_sam0_sercom_spi_mux_settings.html
+	config_spi_master.pinmux_pad0 = MRAM_SPI_MOSI;
+	config_spi_master.pinmux_pad1 = MRAM_SPI_SCK;
+	config_spi_master.pinmux_pad2 = MRAM_SPI_MISO;
+	config_spi_master.pinmux_pad3 = PINMUX_UNUSED;
 	spi_init(spi_master_instance, SERCOM1, &config_spi_master);
 	enum status_code code = spi_set_baudrate(spi_master_instance, baudrate);
 	spi_enable(spi_master_instance);
@@ -34,7 +36,7 @@ uint8_t initialize_master(struct spi_module *spi_master_instance, uint32_t baudr
 uint8_t initialize_slave(struct spi_slave_inst *slave){
 	struct spi_slave_inst_config slave_dev_config;
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
-	slave_dev_config.ss_pin = PIN_PB16C_SERCOM5_PAD0;
+	slave_dev_config.ss_pin = SLAVE_SELECT_PIN;
 	spi_attach_slave(slave, &slave_dev_config);
 }
 
@@ -84,3 +86,17 @@ status_code_genare_t read_bytes(struct spi_module *spi_master_instance, struct s
 	s = spi_select_slave(spi_master_instance, slave, false);
 	return s;
 }
+
+status_code_genare_t read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out) {
+	uint8_t read_control = READ_STATUS_REG_COMMAND;
+	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
+	if (!status_ok(s)) return s;
+
+	// send the read command and immediately read back the returned byte (the status register) into reg_out
+	s = spi_transceive_buffer_wait(spi_master_instance, &read_control, reg_out, 1);
+	if (!status_ok(s)) return s;
+	
+	s = spi_select_slave(spi_master_instance, slave, false);
+	return s;
+}
+

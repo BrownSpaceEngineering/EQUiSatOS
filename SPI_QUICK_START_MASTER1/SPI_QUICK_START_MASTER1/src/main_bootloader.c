@@ -21,9 +21,9 @@
 #endif
 
 #if SAM_BA_INTERFACE == SAM_BA_USBCDC_ONLY  ||  SAM_BA_INTERFACE == SAM_BA_UART_ONLY
-#define APP_START_ADDRESS                 0x00003000
+#define APP_START_ADDRESS                 ((uint8_t *) 0x00003000)
 #elif SAM_BA_INTERFACE == SAM_BA_BOTH_INTERFACES
-#define APP_START_ADDRESS                 0x00003000
+#define APP_START_ADDRESS                 ((uint8_t *) 0x00003000)
 #endif
 
 #define APP_START_RESET_VEC_ADDRESS (APP_START_ADDRESS+(uint32_t)0x04)
@@ -130,8 +130,10 @@ void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* sl
 	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0xfc, 0xff, 0x42};
 	uint8_t example_output_array[8];
 	
-	write_bytes(spi_master_instance, slave, &example_array, 8, 0x2000);
-	read_bytes(spi_master_instance, slave, &example_output_array, 8, 0x2000);
+	uint8_t status_reg = 0x0;
+	read_status_register(spi_master_instance, slave, &status_reg);
+	write_bytes(spi_master_instance, slave, example_array, 8, 0x2000);
+	read_bytes(spi_master_instance, slave, example_output_array, 8, 0x2000);
 	
 	return;
 }
@@ -152,6 +154,8 @@ after that it is necessary to call the function to write the flash and then star
  */
 int main(void)
 {
+	//test_mram();
+	
 	//uint8_t example_array[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
 	//save_binary_into_flash(example_array, 5, 512);
 	
