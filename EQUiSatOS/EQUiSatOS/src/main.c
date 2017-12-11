@@ -94,20 +94,8 @@ void set_charging_states(void) {
 int main(void)
 {
 	global_init();
-<<<<<<< HEAD
-=======
-	/*print("BEGIN COUNT: %d\n", get_current_timestamp());
-	for (int i = 0; i < 200; i++) {
-		flashBurstTest();	
-		//print("%d\n", i);
-	}
-	print("END COUNT: %d\n", get_current_timestamp());*/
-	//sensor_read_tests();
-	//system_test();
->>>>>>> 40d56b600c1a22e0585a77791f4169097d5a548b
-	
 	system_test();
 	//run_tests();
 
-	run_rtos();	
+	//run_rtos();	
 }
