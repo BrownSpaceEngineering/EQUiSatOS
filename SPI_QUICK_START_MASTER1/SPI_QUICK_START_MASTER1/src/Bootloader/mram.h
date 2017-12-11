@@ -12,10 +12,14 @@
 #include <stdbool.h>
 #include <spi.h>
 
-#define SLAVE_SELECT_PIN	PIN_PA17C_SERCOM1_PAD1 // PIN_PB16C_SERCOM5_PAD0 (probably not it by eagle)
-#define MRAM_SPI_MOSI		PINMUX_PA16C_SERCOM1_PAD0 // corresponds to signal SO for Serial Out (from master)
-#define MRAM_SPI_MISO		PINMUX_PA18C_SERCOM1_PAD2 // corresponds to signal SI for Serial In (into master)
+#define SLAVE_SELECT_PIN	PIN_PA17
+// NOTE: looking at initialize_master in mram.c, the PADX must correspond to the PADX on these
+// signals, but the mux setting (a letter) DOES NOT have to correspond with the function of
+// these pin's muxes
+#define MRAM_SPI_MOSI		PINMUX_PA18C_SERCOM1_PAD2 // corresponds to signal SI
+#define MRAM_SPI_MISO		PINMUX_PA16C_SERCOM1_PAD0 // corresponds to signal SO
 #define MRAM_SPI_SCK		PINMUX_PA19C_SERCOM1_PAD3
+#define MRAM_SPI_SERCOM		SERCOM1
 
 extern const uint8_t NUM_CONTROL_BYTES, READ_COMMAND, WRITE_COMMAND, ENABLE_COMMAND;
 

@@ -132,8 +132,8 @@ void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* sl
 	
 	uint8_t status_reg = 0x0;
 	read_status_register(spi_master_instance, slave, &status_reg);
-	write_bytes(spi_master_instance, slave, example_array, 8, 0x2000);
-	read_bytes(spi_master_instance, slave, example_output_array, 8, 0x2000);
+	write_bytes(spi_master_instance, slave, example_array, 8, 0x200);
+	read_bytes(spi_master_instance, slave, example_output_array, 8, 0x200);
 	
 	return;
 }
@@ -167,7 +167,9 @@ int main(void)
 	initialize_master(&spi_master_instance, 10000000); // seems to be the more "modern" implementation in mram.c
 	initialize_slave(&slave);
 
-	mram_test(&spi_master_instance, &slave);
+	while (1) {
+		mram_test(&spi_master_instance, &slave);
+	}
 
 	// write the binary into MRAM
 	write_bytes(&spi_master_instance, &slave, APP_START_ADDRESS, BINSIZE, 0x00);
