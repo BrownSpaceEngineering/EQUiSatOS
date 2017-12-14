@@ -206,7 +206,8 @@ void vApplicationIdleHook(void) {
 // 		//print("test\n\r");
 // 	}
 	
-	test_normal_satellite_state_sequence();
+	//test_normal_satellite_state_sequence();
+	task_resume(ANTENNA_DEPLOY_TASK);
 //	test_all_state_transitions();
 // 	test_watchdog_reset_bat_charging();
 // 	test_watchdog_reset_bat_charging();

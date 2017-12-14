@@ -2,8 +2,10 @@
 #include "main.h"
 #include "runnable_configurations/flatsat.h"
 #include "runnable_configurations/bat_testing.h"
+#include "runnable_configurations/antenna_pwm.h"
 
 static void run_tests(void) {
+	pwm_test();
 	//sensor_read_tests();
 	//flatsat_run(); //calls flatsat init
 	//bat_testing_run();
@@ -90,6 +92,6 @@ int main(void)
 	//system_test();
 	
 	//int x = 1; 
-	//run_tests();
-	run_rtos();	
+	run_tests();
+	//run_rtos();	
 }

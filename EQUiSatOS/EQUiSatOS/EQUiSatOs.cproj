@@ -307,7 +307,7 @@
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -324,10 +324,9 @@
     <custom>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>2000000</SwdClock>
+          <SwdClock>0</SwdClock>
         </InterfaceProperties>
-        <InterfaceName>
-        </InterfaceName>
+        <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>custom</ToolType>
       <ToolNumber>

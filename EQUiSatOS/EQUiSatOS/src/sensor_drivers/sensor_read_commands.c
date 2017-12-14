@@ -50,11 +50,17 @@ static enum status_code sc;
 
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
-static void commands_read_adc(uint16_t* dest, uint8_t pin, uint8_t eloc, bool priority) {
+static uint8_t truncate_16t(uint16_t src) {
+	return src >>> uint8_t;
+}
+
+static void commands_read_adc(uint8_t* dest, uint8_t pin, uint8_t eloc, bool priority) {
+	uint16_t read;
 	sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
-	sc = read_adc(adc_instance, dest);
+	sc = read_adc(adc_instance, &read);
 	log_if_error(eloc, sc, priority);
+	*dest = truncate_16t(read);
 }
 
 static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc, bool priority) {
