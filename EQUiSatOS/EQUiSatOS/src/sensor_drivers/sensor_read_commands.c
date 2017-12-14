@@ -51,7 +51,7 @@ static enum status_code sc;
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
 static uint8_t truncate_16t(uint16_t src) {
-	return src >>> uint8_t;
+	return src >> 8;
 }
 
 static void commands_read_adc(uint8_t* dest, uint8_t pin, uint8_t eloc, bool priority) {
