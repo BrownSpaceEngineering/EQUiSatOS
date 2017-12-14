@@ -10,7 +10,6 @@
 
 #include <global.h>
 #include "Sensor_Structs.h"
-#include "data_handling/persistent_storage.h"
 
 
 // for packet header - TODO: Needed?
@@ -28,7 +27,6 @@
 typedef struct idle_data_t
 {
 	satellite_history_batch satellite_history;
-	uint8_t reboot_count;
 	lion_volts_batch lion_volts_data;
 	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;

@@ -9,6 +9,7 @@
 #include "scratch_testing.h"
 
 #include "../telemetry/rscode-1.3/ecc.h"
+#include "../processor_drivers/Flash_Commands.h"
 
 void runit(void){	
 	configure_i2c_standard(SERCOM4);
@@ -136,8 +137,8 @@ void radioTest(void) {
 	
 	set_output(true, P_RAD_PWR_RUN);
 	set_output(true, P_RAD_SHDN);
-	set_output(true, P_TX_EN);
-	set_output(true, P_RX_EN);
+	set_output(false, P_TX_EN);
+	set_output(false, P_RX_EN);
 		
 	//char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
 	while (true) {		
@@ -229,4 +230,70 @@ void flashBurstTest(void) {
 	//print("\n# GYRO #\n");
 	read_gyro_batch(three_buf);
 	//print("x: %d y: %d z: %d\n", three_buf[0], three_buf[1], three_buf[2]);		
+}
+
+
+void abbreviatedFlashBurstTest(lifepo_volts_batch volts, lifepo_current_batch current, led_current_batch led_current) {
+	read_lifepo_volts_batch(volts);
+	read_lifepo_current_batch(current);
+	//read_led_current_batch(led_current);
+}
+
+void actuallyFlashingFlashBurstTest(void) {
+	//#define HUMAN
+	
+	int num = 30;
+	lifepo_volts_batch volts[num];
+	lifepo_current_batch current[num];
+	led_current_batch led_current[num];
+	
+	int i = 0;
+	for (; i < 5; i++) {
+		abbreviatedFlashBurstTest(volts[i], current[i], led_current[i]);
+	}
+	
+	set_lifepo_output_enable(true);
+ 	reset_flash_pin();
+ 	flash_leds();
+	
+	for (; i < num; i++) {
+		abbreviatedFlashBurstTest(volts[i], current[i], led_current[i]);
+	}
+	set_lifepo_output_enable(false);
+	
+	delay_ms(500);
+	
+	#ifdef HUMAN
+	
+	// REGEX to parse this: (\w+)\s+(\d+)\s+(\d+)\s+\w+$ -> $1, $2, $3 , \=+.*\=+ -> ""
+	print("==============FLASH Test==============\n");	
+	for (i = 0; i < num; i++) {
+		print("============== %s READING %d \t ==============\n", (i < 5) ? "PRE-FLASH" : "", i);	
+		print(" %s \t %d \t %d mV\n", "P_AI_LF1REF", volts[i][0], (uint16_t)(convertToVoltage(volts[i][0])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF2REF", volts[i][1], (uint16_t)(convertToVoltage(volts[i][1])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF3REF", volts[i][2], (uint16_t)(convertToVoltage(volts[i][2])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF4REF", volts[i][3], (uint16_t)(convertToVoltage(volts[i][3])*1000));
+			
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB1SNS",  current[i][0], (uint16_t)(convertToVoltage(current[i][0])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB1OSNS", current[i][1], (uint16_t)(convertToVoltage(current[i][1])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB2SNS",  current[i][2], (uint16_t)(convertToVoltage(current[i][2])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB2OSNS", current[i][3], (uint16_t)(convertToVoltage(current[i][3])*1000));
+	}
+	
+	#else 
+	
+	// REGEX to parse this: (\w+)\s+(\d+)\s+(\d+)\s+\w+$ -> $1, $2, $3 , \=+.*\=+ -> ""
+	print("==============FLASH Test==============\n");
+	print("%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s, \t%s\n", 
+		"P_AI_LF1REF", "P_AI_LF2REF", "P_AI_LF3REF", "P_AI_LF4REF", "P_AI_LFB1SNS", "P_AI_LFB1OSNS", "P_AI_LFB2SNS", "P_AI_LFB2OSNS",
+		"P_AI_LF1REF(mv)", "P_AI_LF2REF(mv)", "P_AI_LF3REF(mv)", "P_AI_LF4REF(mv)", "P_AI_LFB1SNS(mv)", "P_AI_LFB1OSNS(mv)", "P_AI_LFB2SNS(mv)", "P_AI_LFB2OSNS(mv)");
+	for (i = 0; i < num; i++) {
+		print("%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d\n", 
+			volts[i][0], volts[i][1], volts[i][2], volts[i][3], current[i][0], current[i][1],  current[i][2], current[i][3],
+			(uint16_t)(convertToVoltage(volts[i][0])*1000), (uint16_t)(convertToVoltage(volts[i][1])*1000), (uint16_t)(convertToVoltage(volts[i][2])*1000), (uint16_t)(convertToVoltage(volts[i][3])*1000),
+			(uint16_t)(convertToVoltage(current[i][0])*1000), (uint16_t)(convertToVoltage(current[i][1])*1000), (uint16_t)(convertToVoltage(current[i][2])*1000), (uint16_t)(convertToVoltage(current[i][3])*1000));
+	}
+	
+	#endif
+	delay_ms(500);
 }

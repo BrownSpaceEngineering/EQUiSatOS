@@ -36,7 +36,7 @@ void watchdog_task(void *pvParameters) {
 }
 
 bool watchdog_as_function(void) {
-	xSemaphoreTake(mutex, (TickType_t) WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 	
 	// make sure the battery task is definitely set to run
 	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
@@ -58,30 +58,48 @@ bool watchdog_as_function(void) {
 	}
 }
 
+/************************************************************************/
+// NOTE: the watchdog is to tighly coupled with the satellite state that
+// those state handling functions need to lock it before changing state 
+// (this is also because we suspend the scheduler during state changes,	
+// and mutexes cannot be used without the scheduler running.)           
+// Also, the check_in_task_unsafe and check_out_task_unsafe should only 
+// be called when the watchdog mutex has been locked (even if the		
+// scheduler is suspended, a blocked task may still come in after that and
+// overwrite what was done)
+/************************************************************************/
+
+// These MUST be called when using check_in_task_unsafe and check_out_take_unsafe
+void watchdog_mutex_take(void) {
+	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+}
+
+void watchdog_mutex_give(void) {
+	xSemaphoreGive(mutex);
+}
+
 // tasks must check in when resuming from suspension or launching
-void check_in_task(task_type_t task_ind) {
-	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS); // TODO: What about the outside?
+// NOTE: not safe to call without having gotten mutex
+void check_in_task_unsafe(task_type_t task_ind) {
 	check_ins = check_ins | (1 << task_ind); // set this task bit to 1
-	// set the running bit to 1 until next reset (we have to give the task the 
+	// set the running bit to 1 until next reset (we have to give the task the
 	// benefit of the doubt because it may take a while to initially start)
-	is_running = is_running | (1 << task_ind); 
-	//xSemaphoreGive(mutex);
+	is_running = is_running | (1 << task_ind);
 }
 
 // tasks must check in while running to avoid the watchdog
 // (we'll set 'im loose on that task if it doesn't!)
 void report_task_running(task_type_t task_ind) {
-	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 	is_running = is_running | (1 << task_ind);
-	//xSemaphoreGive(mutex);
+	xSemaphoreGive(mutex);
 }
 
 // tasks must check out when suspending so they don't trip the watchdog
-void check_out_task(task_type_t task_ind) {
-	//xSemaphoreTake(mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+// NOTE: not safe to call without having gotten mutex
+void check_out_task_unsafe(task_type_t task_ind) {
 	check_ins = check_ins & ~(1 << task_ind); // set this task bit to 0
 	// set the running bit to 0 as well, to avoid a watchdog reset on the next
 	// iteration (before the watchdog can clear is_running)
-	is_running = is_running & ~(1 << task_ind); 
-	//xSemaphoreGive(mutex);
+	is_running = is_running & ~(1 << task_ind);
 }

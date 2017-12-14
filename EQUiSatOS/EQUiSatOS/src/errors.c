@@ -24,7 +24,7 @@ bool is_error(enum status_code sc) {
 	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE || sc == STATUS_BUSY);
 }
 
-static void print_error(enum status_code code){
+void print_error(enum status_code code){
 	switch(code){
 		
 		case STATUS_OK:

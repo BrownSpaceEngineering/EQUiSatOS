@@ -142,10 +142,10 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	commands_read_adc(&batch[2], P_AI_LF3REF, ELOC_LF3REF, true);
 	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, true);
 
-	batch[1] *= 1950;
-	batch[3] *= 1950;
-	batch[0] = (batch[0]*3870) - batch[1];
-	batch[2] = (batch[2]*3870) - batch[3];
+// 	batch[1] *= 1950;
+// 	batch[3] *= 1950;
+// 	batch[0] = (batch[0]*3870) - batch[1];
+// 	batch[2] = (batch[2]*3870) - batch[3];
 	log_if_out_of_bounds(batch[0], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF1REF, true);
 	log_if_out_of_bounds(batch[1], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF2REF, true);
 	log_if_out_of_bounds(batch[2], LF_VOLT_LOW, LF_VOLT_HIGH, ELOC_LF3REF, true);

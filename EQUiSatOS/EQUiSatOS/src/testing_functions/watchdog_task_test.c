@@ -10,72 +10,72 @@
 void watch_test(void) {
 	watchdog_init();
 	
-	check_in_task(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	
-	check_in_task(TRANSMIT_TASK);
+	check_in_task_unsafe(TRANSMIT_TASK);
 	report_task_running(TRANSMIT_TASK);
-	check_out_task(TRANSMIT_TASK);
+	check_out_task_unsafe(TRANSMIT_TASK);
 	assert(watchdog_as_function());
 	
 	
-	check_in_task(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	
-	check_in_task(BATTERY_CHARGING_TASK);
+	check_in_task_unsafe(BATTERY_CHARGING_TASK);
 	report_task_running(BATTERY_CHARGING_TASK);
-	check_out_task(BATTERY_CHARGING_TASK);
+	check_out_task_unsafe(BATTERY_CHARGING_TASK);
 	
-	check_in_task(TRANSMIT_TASK);
+	check_in_task_unsafe(TRANSMIT_TASK);
 	report_task_running(TRANSMIT_TASK);
-	check_out_task(TRANSMIT_TASK);
+	check_out_task_unsafe(TRANSMIT_TASK);
 	
-	check_in_task(FLASH_ACTIVATE_TASK);
+	check_in_task_unsafe(FLASH_ACTIVATE_TASK);
 	report_task_running(FLASH_ACTIVATE_TASK);
-	check_out_task(FLASH_ACTIVATE_TASK);
+	check_out_task_unsafe(FLASH_ACTIVATE_TASK);
 	
-	check_in_task(IDLE_DATA_TASK);
+	check_in_task_unsafe(IDLE_DATA_TASK);
 	report_task_running(IDLE_DATA_TASK);
-	check_out_task(IDLE_DATA_TASK);
+	check_out_task_unsafe(IDLE_DATA_TASK);
 	
-	check_in_task(ATTITUDE_DATA_TASK);
+	check_in_task_unsafe(ATTITUDE_DATA_TASK);
 	report_task_running(ATTITUDE_DATA_TASK);
-	check_out_task(ATTITUDE_DATA_TASK);
+	check_out_task_unsafe(ATTITUDE_DATA_TASK);
 	assert(watchdog_as_function());
 	
 	
-	check_in_task(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	
-	check_in_task(BATTERY_CHARGING_TASK);
+	check_in_task_unsafe(BATTERY_CHARGING_TASK);
 	report_task_running(BATTERY_CHARGING_TASK);
-	check_out_task(BATTERY_CHARGING_TASK);
+	check_out_task_unsafe(BATTERY_CHARGING_TASK);
 	
-	check_in_task(TRANSMIT_TASK);
+	check_in_task_unsafe(TRANSMIT_TASK);
 	report_task_running(TRANSMIT_TASK);
-	check_out_task(TRANSMIT_TASK);
+	check_out_task_unsafe(TRANSMIT_TASK);
 	
-	check_in_task(FLASH_ACTIVATE_TASK);
+	check_in_task_unsafe(FLASH_ACTIVATE_TASK);
 	report_task_running(FLASH_ACTIVATE_TASK);
-	check_out_task(FLASH_ACTIVATE_TASK);
+	check_out_task_unsafe(FLASH_ACTIVATE_TASK);
 	
-	check_in_task(IDLE_DATA_TASK);
+	check_in_task_unsafe(IDLE_DATA_TASK);
 	report_task_running(IDLE_DATA_TASK);
-	check_out_task(IDLE_DATA_TASK);
+	check_out_task_unsafe(IDLE_DATA_TASK);
 	
-	check_in_task(ATTITUDE_DATA_TASK);
+	check_in_task_unsafe(ATTITUDE_DATA_TASK);
 	assert(!watchdog_as_function());
 	
 	
 	assert(watchdog_as_function());
 	
 	
-	check_in_task(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	assert(watchdog_as_function());
 	
 	
@@ -83,21 +83,21 @@ void watch_test(void) {
 	assert(!watchdog_as_function());
 
 
-	check_in_task(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
 	assert(!watchdog_as_function());
 
 
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);
 	assert(!watchdog_as_function());
 	
 	
-	check_out_task(ANTENNA_DEPLOY_TASK);
+	check_out_task_unsafe(ANTENNA_DEPLOY_TASK);
 	assert(!watchdog_as_function());
 	
 	
-	check_in_task(ANTENNA_DEPLOY_TASK);
-	check_in_task(BATTERY_CHARGING_TASK);
+	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
+	check_in_task_unsafe(BATTERY_CHARGING_TASK);
 	assert(!watchdog_as_function());
 }

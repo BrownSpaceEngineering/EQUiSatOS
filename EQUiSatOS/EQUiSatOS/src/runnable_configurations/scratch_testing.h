@@ -13,5 +13,6 @@ void runit(void);
 void radioTest(void);
 void rsTest(void);
 void flashBurstTest(void);
+void actuallyFlashingFlashBurstTest(void);
 
 #endif /* SCRATCH_TESTING_H_ */

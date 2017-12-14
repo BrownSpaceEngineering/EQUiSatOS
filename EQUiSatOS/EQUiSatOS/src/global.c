@@ -60,6 +60,13 @@ void global_init(void) {
 	// Initialize the SAM system
 	system_init();
 
+	/**
+	 * MUST be before anything RTOS-related:
+	 *   - USART_init(); NOW USES MUTEXES
+	 *   - init_errors(); error equistack
+	 */ 
+	init_tracelyzer();	
+
 	pin_init();
 	init_rtc();
 	USART_init();
@@ -67,8 +74,6 @@ void global_init(void) {
 	MLX90614_init();
 	MPU9250_init();
 	delay_init();
-	
-	init_tracelyzer();	// MUST be before anything RTOS-related! (Equistacks in init_errors!)
 	
 	init_errors();
 	

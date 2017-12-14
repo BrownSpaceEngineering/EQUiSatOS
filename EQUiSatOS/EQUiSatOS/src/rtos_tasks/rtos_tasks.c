@@ -7,6 +7,9 @@
 
 #include "rtos_tasks.h"
 #include "processor_drivers\USART_Commands.h"
+#include "data_handling/Sensor_Structs.h"
+#include "data_handling/equistack.h"
+#include "sensor_drivers/sensor_read_commands.h"
 
 /************************************************************************/
 /* TASK CONTROL FUNCTIONS                                               */
@@ -24,50 +27,9 @@ static void init_task_handles(void) {
 }
 
 void pre_init_rtos_tasks(void) {
-	task_suspended_states = 0; // no suspended tasks
 	init_task_handles();
 }
 
-// suspends the given task if it was not already suspended, and (always) checks it out of the watchdog
-void task_suspend(task_type_t task_id) {
-	TaskHandle_t* task_handle = task_handles[task_id];
-		
-	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend this task
-	
-	// always check out of watchdog when called (to be double-sure)
-	check_out_task(task_id);
-	if (eTaskGetState(*task_handle) != eSuspended) { 
-		vTaskSuspend(*task_handle); // actually suspend using handle
-	}
-}
-
-// resumes the given task if it was suspended, and (always) checks it in to the watchdog
-void task_resume(task_type_t task_id)
-{
-	TaskHandle_t* task_handle = task_handles[task_id];
-	configASSERT(task_handle != NULL);
-	
-	// always check in for watchdog when called
-	// (in case it wasn't, for example on BOOT)
-	check_in_task(task_id); 
-							
-	if (eTaskGetState(*task_handle) == eSuspended)
-	{
-		// actually resume task (will be graceful if task_handle task is not actually suspended)
-		
-		configASSERT(*task_handle != NULL);
-		
-		vTaskResume(*task_handle); 
-		task_suspended_states |= (1 << task_id); // note we WERE suspended
-	}	
-}
-
-/* Checks and returns whether this task was suspended, AND report that it is not suspended */
-bool check_if_suspended_and_update(task_type_t task_id) {
-	bool val = task_suspended_states & (1 << task_id); // check the state (>0 if was suspended)
-	task_suspended_states &= ~(1 << task_id); // set our suspended bit to 0
-	return val;
-}
 
 /************************************************************************/
 /* Helper Functions														*/

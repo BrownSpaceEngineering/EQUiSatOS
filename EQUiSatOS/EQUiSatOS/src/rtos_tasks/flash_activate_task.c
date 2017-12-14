@@ -48,7 +48,7 @@ uint32_t get_time_of_next_flash(void) {
 
 void flash_activate_task(void *pvParameters)
 {
-	// initialize xNextWakeTime onces
+	// initialize xNextWakeTime once
 	TickType_t prev_wake_time = xTaskGetTickCount();
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 
@@ -68,8 +68,6 @@ void flash_activate_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
-		continue;
-		
 		// actually flash leds
 		for (int i = 0; i < NUM_FLASHES; i++) {
 			// start taking data and set start timestamp
@@ -80,14 +78,16 @@ void flash_activate_task(void *pvParameters)
 			// read a single magnetometer batch before flash
 			read_magnetometer_batch(current_cmp_struct->mag_before_data);
 				
-			// enable lifepo output (before first data read to give a time buffer before flashing)
+			// enable lifepo output (before first data read to give a time buffer before flashing),
+			// and make sure the flash enable pin is high
 			set_lifepo_output_enable(true);
+			reset_flash_pin();
 			
 			// delays for time of FLASH_DATA_READ_FREQ
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 									BATCH_READS_BEFORE, &prev_data_read_time);
 			
-			// send actual falling edge to flash to activate it
+			// send actual falling edge to flash circuitry to activate it
 			flash_leds();
 			
 			// read data during the flash of 100ms
@@ -148,10 +148,10 @@ void average_piecewise_uint8(uint8_t* results, uint16_t* sums, uint16_t size, in
 	}
 }
 
+/* reads a single batch of flash data and adds those to the sums struct for later averaging */
 void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail,
-struct flash_burst_data_sums* sums_struct)
+		struct flash_burst_data_sums* sums_struct)
 {
-	
 	// for data type in the flash batch, read the data, add it to the burst array, and
 	// also add it to the average
 	// (note below that we can't assign to arrays, so we have to use pointers to the arrays)
@@ -178,6 +178,7 @@ struct flash_burst_data_sums* sums_struct)
 	(*data_arrays_tail)++;
 }
 
+/* reads a set of flash data batches, making sure they're space on their frequency */
 void read_flash_data_batches(flash_data_t* current_struct, uint8_t* data_arrays_tail,
 								struct flash_burst_data_sums* sums_struct,
 								uint8_t num, TickType_t* prev_data_read_time)
@@ -189,12 +190,5 @@ void read_flash_data_batches(flash_data_t* current_struct, uint8_t* data_arrays_
 		// if the read took a long time, this will return immediately (not on time), but
 		// otherwise it will ensure the frequency of data reading is constant
 		vTaskDelayUntil(prev_data_read_time, FLASH_DATA_READ_FREQ / portTICK_PERIOD_MS);
-		
-		// check if suspended since last data collection (or during collection)
-		// if so, we need to dump the current data struct
-		// 		if (check_if_suspended_and_update(FLASH_DATA_TASK))
-		// 		{
-		// 					// TODO: LOG ERROR
-		// 		}
 	}
 }

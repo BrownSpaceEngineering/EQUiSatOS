@@ -126,8 +126,8 @@
 #define ECODE_INCONSISTENT_CELL_VOLT	31
 
 /* Error storage and interfaces */
-#define PRIORITY_ERROR_STACK_MAX		40
-#define NORMAL_ERROR_STACK_MAX			40
+#define PRIORITY_ERROR_STACK_MAX		20
+#define NORMAL_ERROR_STACK_MAX			10
 
 typedef struct {
 	uint32_t timestamp;
@@ -151,5 +151,6 @@ uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
 void log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
+void print_error(enum status_code code);
 
 #endif /* ERRORS_H_ */

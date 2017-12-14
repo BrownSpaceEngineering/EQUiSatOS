@@ -1,4 +1,3 @@
-//#include "runnable_configurations/flatsat.h"
 #include "main.h"
 #include "runnable_configurations/flatsat.h"
 #include "runnable_configurations/bat_testing.h"
@@ -7,6 +6,7 @@
 static void run_tests(void) {
 	pwm_test();
 	//sensor_read_tests();
+	//actuallyFlashingFlashBurstTest(); // as the name implies, this does ACTUALLY FLASH THE SATELLITES BIG LEDS
 	//flatsat_run(); //calls flatsat init
 	//bat_testing_run();
 	//test_equistack();
@@ -17,8 +17,6 @@ static void run_tests(void) {
 	/************************************************************************/
 	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
 	/************************************************************************/
-	//The_Fall_Of_Ryan();
-
 	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
 	init_tc();
 	while(get_count() < 3) {
@@ -79,19 +77,26 @@ static void sensor_read_tests(void) {
 	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 }
 
+void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
+	setup_pin(true, P_L1_RUN_CHG);
+	set_output(lion1, P_L1_RUN_CHG);
+		
+	setup_pin(true, P_L2_RUN_CHG);
+	set_output(lion2, P_L2_RUN_CHG);
+		
+	setup_pin(true, P_LF_B1_RUNCHG);
+	set_output(lifepo_b1, P_LF_B1_RUNCHG);
+		
+	setup_pin(true, P_LF_B2_RUNCHG);
+	set_output(lifepo_b2, P_LF_B2_RUNCHG);
+}
+
 int main(void)
 {
 	global_init();
-	/*print("BEGIN COUNT: %d\n", get_current_timestamp());
-	for (int i = 0; i < 200; i++) {
-		flashBurstTest();	
-		//print("%d\n", i);
-	}
-	print("END COUNT: %d\n", get_current_timestamp());*/
-	//sensor_read_tests();
-	//system_test();
+	system_test();
+	//set_charging_states(false, false, true, true);
+	//run_tests();
 	
-	//int x = 1; 
-	run_tests();
 	//run_rtos();	
 }

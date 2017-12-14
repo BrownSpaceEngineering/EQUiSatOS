@@ -9,7 +9,7 @@
 #ifndef EQUISTACK_H_
 #define EQUISTACK_H_
 
-#define MUTEX_WAIT_TIME_TICKS 10
+#define EQUISTACK_MUTEX_WAIT_TIME_TICKS 1000
 
 #include <asf.h> // don't #include global, there are circular dependencies!
 #include "task.h"

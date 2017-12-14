@@ -8,6 +8,7 @@
  */ 
 
 #include "rtos_tasks_config.h"
+#include <assert.h>
 
 /* Max of array values, of which there must be at least one */
 static int arrMax(int* arr, uint8_t len) {

@@ -47,7 +47,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 // Returns a pointer to the nth most recent element
 void* equistack_Get(equistack* S, int16_t n)
 {
-	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
 
 	// We want to ignore the bottom index which is currently staged and maybe
 	// being overwritten
@@ -81,7 +81,7 @@ void* equistack_Initial_Stage(equistack* S)
 // Overwrites the bottom value if need be
 void* equistack_Stage(equistack* S)
 {
-	xSemaphoreTake(S->mutex, (TickType_t) MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
 	
 	S->top_index = (S->top_index + 1) % S->max_size;
 	

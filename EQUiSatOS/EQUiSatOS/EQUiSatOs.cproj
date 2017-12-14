@@ -312,12 +312,12 @@
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>0</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML2130021800009153</ToolNumber>
+      <ToolNumber>ATML2130021800007809</ToolNumber>
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
@@ -1098,6 +1098,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\battery_charging_task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\rtos_tasks\persistent_data_backup_task.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\rtos_tasks\rtos_tasks.c">

@@ -153,7 +153,7 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	}
 	write_bytes_and_shift(buffer, buf_index,	&secs_to_next_flash,	1);
 
-	uint8_t reboot_count = get_reboot_count();
+	uint8_t reboot_count = cache_get_reboot_count();
 	write_bytes_and_shift(buffer, buf_index,	&reboot_count,			1);
 
 	read_lion_volts_batch((uint8_t*) (buffer + *buf_index));
@@ -343,7 +343,6 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* idle_data) {
 	if (idle_data != NULL) {
 		write_bytes_and_shift(buffer, buf_index,	&(idle_data->satellite_history),		sizeof(satellite_history_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->reboot_count),				sizeof(uint8_t));
 		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_volts_data,				sizeof(lion_volts_batch));
 		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_current_data,			sizeof(lion_current_batch));
 		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_temps_data,				sizeof(lion_temps_batch));
