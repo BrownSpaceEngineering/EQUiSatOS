@@ -58,6 +58,12 @@ typedef enum {
 	BCDS_L2_FAULTN
 } bcds_conversions_t;
 
+typedef enum {
+	ADC_10B,
+	ADC_12B,
+	ADC_16B
+} precise_t;
+
 /**
  * Helpful regex: (\w*)_DATA -> $1_batch read_$1_batch(void);
  */
