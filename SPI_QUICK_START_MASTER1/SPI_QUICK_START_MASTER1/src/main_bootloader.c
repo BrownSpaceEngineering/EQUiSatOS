@@ -127,13 +127,16 @@ int binsize(void *begin) {
 
 
 void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* slave) {
+	#define TEST_ADDRESS 0x000
 	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0xfc, 0xff, 0x42};
-	uint8_t example_output_array[8];
+	uint8_t example_output_array_before[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t example_output_array_after[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	
 	uint8_t status_reg = 0x0;
 	read_status_register(spi_master_instance, slave, &status_reg);
-	write_bytes(spi_master_instance, slave, example_array, 8, 0x200);
-	read_bytes(spi_master_instance, slave, example_output_array, 8, 0x200);
+	read_bytes(spi_master_instance, slave, example_output_array_before, 8, TEST_ADDRESS);
+	write_bytes(spi_master_instance, slave, example_array, 8, TEST_ADDRESS);
+	read_bytes(spi_master_instance, slave, example_output_array_after, 8, TEST_ADDRESS);
 	
 	return;
 }
