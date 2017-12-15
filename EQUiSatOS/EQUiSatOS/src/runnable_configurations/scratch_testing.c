@@ -201,6 +201,15 @@ void rsTest(void) {
 	 }	   
 }
 
+void simpleADCTest(void) {
+	struct adc_module adc_instance;
+	configure_adc(&adc_instance, PIN_PB00); // must be an analog pin
+
+	uint16_t value;
+	enum status_code sc = read_adc(adc_instance, &value);
+	float voltage = convertToVoltage(value);
+}
+
 void flashBurstTest(void) {
 	uint16_t two_buf[2];
 	uint16_t three_buf[3];

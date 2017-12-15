@@ -12,6 +12,7 @@
 void runit(void);
 void radioTest(void);
 void rsTest(void);
+void simpleADCTest(void);
 void flashBurstTest(void);
 void actuallyFlashingFlashBurstTest(void);
 
