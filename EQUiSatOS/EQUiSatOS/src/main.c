@@ -95,7 +95,8 @@ int main(void)
 {
 	global_init();
 	system_test();
-	//set_charging_states(false, false, true, true);
+	set_charging_states(false, false, true, true);
+	system_test();
 	//run_tests();
 	
 	//run_rtos();	
