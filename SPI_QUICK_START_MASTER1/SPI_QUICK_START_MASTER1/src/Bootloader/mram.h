@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <spi.h>
 
-#define SLAVE_SELECT_PIN	PIN_PA17 // PIN_PB16
+#define SLAVE_SELECT_PIN	PIN_PB16 //PIN_PA17
 // NOTE: looking at initialize_master in mram.c, the PADX must correspond to the PADX on these
 // signals, but the mux setting (a letter) DOES NOT have to correspond with the function of
 // these pin's muxes
