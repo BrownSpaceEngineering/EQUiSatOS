@@ -12,6 +12,7 @@ StaticSemaphore_t _cache_mutex_d;
 SemaphoreHandle_t cache_mutex;
 
 void write_state_to_storage_unsafe(void);
+uint32_t get_current_timestamp_safety(bool safe);
 
 /************************************************************************/
 /* memory interface / init functions									*/
@@ -46,7 +47,7 @@ void increment_reboot_count(void) {
 
 /* without mutexes (allows us not to need recursive mutexes when called in this file) */
 void write_state_to_storage_unsafe(void) {
-	cached_state.secs_since_launch = get_current_timestamp();
+	cached_state.secs_since_launch = get_current_timestamp_safety(false); // unsafe
 	cached_state.sat_state = get_sat_state();
 	// reboot count is only incremented on startup and is written through cache
 	// sat_event_history is written through when changed
@@ -107,14 +108,17 @@ void update_sat_event_history(uint8_t antenna_deployed,
  * due to a watchdog reset). Segment since reboot is accurate to ms.
  */
 uint32_t get_current_timestamp(void) {
+	return get_current_timestamp_safety(true);
+}
+uint32_t get_current_timestamp_safety(bool wait_on_write) {
 	return ((xTaskGetTickCount() / portTICK_PERIOD_MS - last_data_write_ms) / 1000) 
-		 + cache_get_secs_since_launch();
+		 + cache_get_secs_since_launch(wait_on_write);
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
 	return (xTaskGetTickCount() / portTICK_PERIOD_MS) - last_data_write_ms 
-			+ (1000 * cache_get_secs_since_launch());
+			+ (1000 * cache_get_secs_since_launch(true));
 }
 
 /* returns truncated number or orbits since first boot */
@@ -162,35 +166,38 @@ bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_deno
 // functions to get components of cached state   
 // NOTE: use of mutexes here is not to prevent race conditions, etc., but
 // to ensure the final read value is the most recent value and matches
-// what is in MRAM, etc.	                       
+// what is in MRAM, etc.	                   
+// The wait_on_write parameter can be used to configure these mutexes, 
+// which will essentially halt any reads if we're in the process
+// of writing to the MRAM
 /************************************************************************/
 
-uint32_t cache_get_secs_since_launch(void) {
+uint32_t cache_get_secs_since_launch(bool wait_on_write) {
 	uint32_t secs_since_launch;
-	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	secs_since_launch = cached_state.secs_since_launch;
-	xSemaphoreGive(cache_mutex);
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
 	return secs_since_launch;
 }
 
-uint8_t cache_get_reboot_count(void) {
+uint8_t cache_get_reboot_count(bool wait_on_write) {
 	uint8_t reboot_count;
-	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	reboot_count = cached_state.reboot_count;
-	xSemaphoreGive(cache_mutex);
-	
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
+	return reboot_count;
 }
 
 /* returns satellite state at last reboot */
-sat_state_t cache_get_sat_state(void) {
+sat_state_t cache_get_sat_state(bool wait_on_write) {
 	sat_state_t sat_state;
-	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	sat_state = cached_state.sat_state;
-	xSemaphoreGive(cache_mutex);
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
 	return sat_state;
 }
 
-satellite_history_batch* cache_get_sat_event_history() {
+satellite_history_batch* cache_get_sat_event_history(bool wait_on_write) {
 	satellite_history_batch* sat_event_history;
 	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	sat_event_history = &(cached_state.sat_event_history);

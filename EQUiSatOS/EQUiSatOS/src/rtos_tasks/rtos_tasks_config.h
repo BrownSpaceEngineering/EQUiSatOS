@@ -144,7 +144,8 @@ typedef enum
 	IDLE_DATA_TASK,
 	LOW_POWER_DATA_TASK,
 	ATTITUDE_DATA_TASK,
-	NUM_TASKS //= FLASH_DATA_TASK + 1
+	PERSISTENT_DATA_BACKUP_TASK,
+	NUM_TASKS //= PERSISTENT_DATA_BACKUP_TASK + 1
 } task_type_t;
 
 /************************************************************************/

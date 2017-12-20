@@ -261,14 +261,14 @@ void actuallyFlashingFlashBurstTest(void) {
 		abbreviatedFlashBurstTest(volts[i], current[i], led_current[i]);
 	}
 	
-	set_lifepo_output_enable(true);
- 	reset_flash_pin();
- 	flash_leds();
+	flash_arm();
+	delay_us(500);
+ 	flash_activate();
 	
 	for (; i < num; i++) {
 		abbreviatedFlashBurstTest(volts[i], current[i], led_current[i]);
 	}
-	set_lifepo_output_enable(false);
+	flash_disarm();
 	
 	delay_ms(500);
 	

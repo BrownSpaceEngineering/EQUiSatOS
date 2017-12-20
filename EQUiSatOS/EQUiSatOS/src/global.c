@@ -75,6 +75,7 @@ void global_init(void) {
 	MPU9250_init();
 	delay_init();
 	
+	init_persistent_storage();
 	init_errors();
 	
 	// now that errors are initialized, try to init AD7991 and log potential errors

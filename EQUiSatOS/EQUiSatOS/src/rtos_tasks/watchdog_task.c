@@ -9,10 +9,10 @@
  */ 
 
 #include "Watchdog_Task.h"
-static uint8_t check_ins;
-static uint8_t is_running;
+static uint16_t check_ins;
+static uint16_t is_running;
 
-static uint8_t watch_block;
+static bool watch_block;
 SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
@@ -41,6 +41,8 @@ bool watchdog_as_function(void) {
 	// make sure the battery task is definitely set to run
 	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
 	if (battery_task_state == eDeleted || battery_task_state == eSuspended) {
+		watch_block = 1;
+	} else if (!check_task_state_consistency()) {
 		watch_block = 1;
 	}
 	if ((check_ins ^ is_running) > 0 || watch_block == 1) {

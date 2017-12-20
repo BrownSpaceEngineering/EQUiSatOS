@@ -80,24 +80,23 @@ void flash_activate_task(void *pvParameters)
 				
 			// enable lifepo output (before first data read to give a time buffer before flashing),
 			// and make sure the flash enable pin is high
-			set_lifepo_output_enable(true);
-			reset_flash_pin();
+			flash_arm();
 			
 			// delays for time of FLASH_DATA_READ_FREQ
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 									BATCH_READS_BEFORE, &prev_data_read_time);
 			
 			// send actual falling edge to flash circuitry to activate it
-			flash_leds();
+			flash_activate();
 			
 			// read data during the flash of 100ms
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 									BATCH_READS_DURING, &prev_data_read_time);
 									
-			// reset the flash activate pin after the 100ms of data reading
+			// turn off the lifepos after the 100ms of data reading
 			// NOTE this does NOT actually stop the flashing - that is hardware controlled
-			reset_flash_pin();
-			set_lifepo_output_enable(false);
+			flash_disarm(); 
+			// TODO: this will put disabling the Lifepos RIGHT ON the end of the 100ms... and it may cut off the flash
 			
 			// read data after the flash
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
