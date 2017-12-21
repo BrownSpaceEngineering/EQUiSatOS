@@ -1051,6 +1051,12 @@
     <Compile Include="src\processor_drivers\Flash_Commands.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\processor_drivers\MRAM_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\MRAM_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\processor_drivers\RTC_Commands_Old.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1994,12 +2000,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\RTC_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\SPI_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\SPI_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\USART_Commands.c">

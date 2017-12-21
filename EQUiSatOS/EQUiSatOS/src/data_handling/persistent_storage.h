@@ -11,13 +11,28 @@
 #include <global.h>
 #include "Sensor_Structs.h"
 #include "equistack.h"
+#include "../processor_drivers/MRAM_Commands.h"
 
-#define ORBITAL_PERIOD_S	5580 // s; 93 mins
-#define CACHE_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000) // ms
+/* addressing constants */
+#define STORAGE_SECS_SINCE_LAUNCH_ADDR		0x0010
+#define STORAGE_REBOOT_CNT_ADDR				0x0014
+#define STORAGE_SAT_STATE_ADDR				0x0015
+#define STORAGE_SAT_EVENT_HIST_ADDR			0x0016
+#define STORAGE_BOOTLOADER_HASH_ADDR		0x0017
+#define STORAGE_PROG_MEMORY_HASH_ADDR		0x0080
+#define STORAGE_PRIORITY_ERR_NUM_ADDR		0x0117
+#define STORAGE_PRIORITY_LIST_ADDR			0x0118
+#define STORAGE_NORMAL_ERR_NUM_ADDR			0x0136
+#define STORAGE_NORMAL_LIST_ADDR			0x0137
+
+// note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
+#define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
+#define ORBITAL_PERIOD_S					5580 // s; 93 mins
+#define CACHE_MUTEX_WAIT_TIME_TICKS			((TickType_t) 1000) // ms
 
 /* helper structs */
 struct persistent_data {
-	uint32_t secs_since_launch;
+	uint32_t secs_since_launch; // note: most recent one stored in MRAM, not current timestamp
 	uint8_t reboot_count;
 	sat_state_t sat_state; // most recent known state
 	satellite_history_batch sat_event_history;
@@ -25,7 +40,7 @@ struct persistent_data {
 } cached_state;
 
 // variable to be updated on each data read so we know how current the MRAM
-// data is (in particular for computing timestamps) 
+// data is (only for computing timestamps) 
 // (measured relative to start of current RTOS tick count)
 uint32_t last_data_write_ms;
 

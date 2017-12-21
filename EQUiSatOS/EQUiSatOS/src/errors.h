@@ -85,6 +85,9 @@
 #define ELOC_AD7991_1_3					50
 
 #define ELOC_TCA						51
+#define ELOC_CACHED_PERSISTENT_STATE	52
+#define ELOC_MRAM_READ					53
+#define ELOC_MRAM_WRITE					54
 
 /******************** PROBLEM CODES ********************/
 
@@ -122,12 +125,12 @@
 #define ECODE_READING_LOW				28
 #define ECODE_SIGNAL_LOST				29
 
-#define ECODE_TRANS_CONFIRM_TIMEOUT		30
-#define ECODE_INCONSISTENT_CELL_VOLT	31
+#define ECODE_CONFIRM_TIMEOUT			30
+#define ECODE_INCONSISTENT_DATA			31
 
 /* Error storage and interfaces */
-#define PRIORITY_ERROR_STACK_MAX		20
-#define NORMAL_ERROR_STACK_MAX			10
+#define PRIORITY_ERROR_STACK_MAX		30
+#define NORMAL_ERROR_STACK_MAX			20
 
 typedef struct {
 	uint32_t timestamp;
@@ -149,8 +152,9 @@ SemaphoreHandle_t _normal_error_equistack_mutex;
 void init_errors(void);
 uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
-void log_if_error(uint8_t loc, enum status_code sc, bool priority);
+bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
+inline bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
 
 #endif /* ERRORS_H_ */

@@ -199,6 +199,10 @@ void configure_state_from_reboot(void) {
 		boot_task_states.antenna_deploy_task_state = T_STATE_RUNNING;
 	}
 	
+	// add any errors we can from MRAM cache 
+	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
+	populate_error_stacks(&priority_error_equistack, &normal_error_equistack);
+	
 	// note we've rebooted
 	increment_reboot_count();
 }

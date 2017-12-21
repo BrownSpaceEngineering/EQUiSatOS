@@ -24,6 +24,11 @@ bool is_error(enum status_code sc) {
 	return !(sc == STATUS_OK || sc == STATUS_VALID_DATA || sc == STATUS_NO_CHANGE || sc == STATUS_BUSY);
 }
 
+// returns whether the given error's priority bit is set
+inline bool is_priority_error(sat_error_t err) {
+	return err.ecode >> 7 & 0x1;
+}
+
 void print_error(enum status_code code){
 	switch(code){
 		
@@ -57,11 +62,14 @@ void print_error(enum status_code code){
 	
 }
 
-void log_if_error(uint8_t loc, enum status_code sc, bool priority) {
+// logs an error if the given atmel status code is one, and returns whether it was an error
+bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
 		//print_error(sc);
 		log_error(loc, atmel_to_equi_error(sc), priority);
+		return true;
 	}
+	return false;
 }
 
 uint8_t atmel_to_equi_error(enum status_code sc) {
