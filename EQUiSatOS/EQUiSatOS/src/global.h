@@ -18,7 +18,7 @@
 #include "FreeRTOS.h"
 #include "config/proc_pins.h"
 #include "processor_drivers/I2C_Commands.h"
-#include "processor_drivers/SPI_Commands.h"
+#include "processor_drivers/MRAM_Commands.h"
 #include "processor_drivers/ADC_Commands.h"
 #include "processor_drivers/Direct_Pin_Commands.h"
 #include "processor_drivers/USART_Commands.h"

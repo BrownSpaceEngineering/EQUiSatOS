@@ -26,13 +26,13 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		1
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                1			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
+#define configUSE_TRACE_FACILITY                0			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1
 #define configQUEUE_REGISTRY_SIZE               0
 #define configCHECK_FOR_STACK_OVERFLOW          1
-#define configUSE_RECURSIVE_MUTEXES             1
+#define configUSE_RECURSIVE_MUTEXES             1 
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_COUNTING_SEMAPHORES           1
 #define configUSE_QUEUE_SETS                    0

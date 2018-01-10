@@ -124,9 +124,9 @@
  ******************************************************************************/
 #define TRC_CFG_NTASK			14 // there are 8 tasks... but we need more
 #define TRC_CFG_NISR			5
-#define TRC_CFG_NQUEUE			14 // needed for equistacks
-#define TRC_CFG_NSEMAPHORE		20 // apparently need double
-#define TRC_CFG_NMUTEX			20 
+#define TRC_CFG_NQUEUE			30 // needed for equistacks AND mutexes
+#define TRC_CFG_NSEMAPHORE		30 // apparently need double
+#define TRC_CFG_NMUTEX			30 
 #define TRC_CFG_NTIMER			0 // 5
 #define TRC_CFG_NEVENTGROUP		0 // 5
 

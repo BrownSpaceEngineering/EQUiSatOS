@@ -305,9 +305,11 @@
         <board id="board.samd21_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -324,10 +326,9 @@
     <custom>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>2000000</SwdClock>
+          <SwdClock>0</SwdClock>
         </InterfaceProperties>
-        <InterfaceName>
-        </InterfaceName>
+        <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>custom</ToolType>
       <ToolNumber>
@@ -1048,6 +1049,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\Flash_Commands.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\MRAM_Commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\processor_drivers\MRAM_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\RTC_Commands_Old.h">
@@ -1993,12 +2000,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\RTC_Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\SPI_Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\processor_drivers\SPI_Commands.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\processor_drivers\USART_Commands.c">

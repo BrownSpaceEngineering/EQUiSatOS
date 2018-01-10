@@ -11,9 +11,14 @@
 void persistent_data_backup_task(void *pvParameters) {
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
+	init_task_state(PERSISTENT_DATA_BACKUP_TASK);
+
 	for( ;; )
 	{
 		vTaskDelayUntil( &prev_wake_time, PERSISTENT_DATA_BACKUP_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		report_task_running(PERSISTENT_DATA_BACKUP_TASK);
+		
 		write_state_to_storage();
 	}
 	

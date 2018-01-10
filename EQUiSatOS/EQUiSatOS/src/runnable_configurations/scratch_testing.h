@@ -12,6 +12,8 @@
 void runit(void);
 void radioTest(void);
 void rsTest(void);
+void simpleADCTest(void);
 void flashBurstTest(void);
+void actuallyFlashingFlashBurstTest(void);
 
 #endif /* SCRATCH_TESTING_H_ */

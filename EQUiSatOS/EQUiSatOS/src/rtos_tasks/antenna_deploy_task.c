@@ -43,9 +43,9 @@ void antenna_deploy_task(void *pvParameters) {
 			
 		} else {
 			if (true /* TODO: LiON is sufficiently charged*/) {
-				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX);
-				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX);
-				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX);
+				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, DEFAULT_PWM_MS_RUN);
+				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX, DEFAULT_PWM_MS_RUN);
+				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX, DEFAULT_PWM_MS_RUN);
 				num_tries++;
 			}
 		}

@@ -24,6 +24,7 @@ static void init_task_handles(void) {
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
 	task_handles[ATTITUDE_DATA_TASK] =			&attitude_data_task_handle;
 	task_handles[LOW_POWER_DATA_TASK] =			&low_power_data_task_handle;
+	task_handles[PERSISTENT_DATA_BACKUP_TASK] = &persistent_data_backup_task_handle;
 }
 
 void pre_init_rtos_tasks(void) {

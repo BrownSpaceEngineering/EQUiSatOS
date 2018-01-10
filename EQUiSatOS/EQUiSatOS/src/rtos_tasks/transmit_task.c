@@ -152,7 +152,7 @@ void transmit_task(void *pvParameters)
 
 			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
 			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
-				log_error(ELOC_RADIO, ECODE_TRANS_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
+				log_error(ELOC_RADIO, ECODE_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
 				break;
 			}
 		}

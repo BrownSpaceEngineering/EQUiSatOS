@@ -286,8 +286,8 @@ static enum status_code TCA9535_test(){
 	print("L1_FAULTN: \t %d\n", (res>>13)&0x1);
 	print("L2_CHGN: \t %d\n", (res>>14)&0x1);
 	print("L2_FAULTN: \t %d\n", (res>>15)&0x1);
-	print("LF_B1_CHGN: \t %d\n", (res>>6)&0x1);
-	print("LF_B1_FAULTN: \t %d\n", (res>>7)&0x1);
+	print("LF_B1_CHGN: \t %d\n", (res>>7)&0x1);
+	print("LF_B1_FAULTN: \t %d\n", (res>>6)&0x1);
 	print("LF_B2_CHGN: \t %d\n", (res>>4)&0x1);
 	print("LF_B2_FAULTN: \t %d\n", (res>>5)&0x1);	
 	//print("TCA test: %d\n",rs);

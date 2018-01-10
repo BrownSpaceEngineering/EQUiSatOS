@@ -13,6 +13,7 @@
 #include "runnable_configurations/satellite_state_control.h"
 #include "runnable_configurations/scratch_testing.h"
 #include "testing_functions/test_stacks.h"
+#include "testing_functions/system_test.h"
 
 static void run_tests(void);
 

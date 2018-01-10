@@ -41,7 +41,7 @@ void idle_data_task(void *pvParameters)
 		// read radio temp first because it takes a while to write & reset the radio
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		
-		current_struct->satellite_history = *(cache_get_sat_event_history()); // copy
+		current_struct->satellite_history = *(cache_get_sat_event_history(true)); // copy, wait on write
 		//read_lion_volts_batch(		current_struct->lion_volts_data);
 		//read_lion_current_batch(		current_struct->lion_current_data);
 		read_lion_temps_batch(			current_struct->lion_temps_data);

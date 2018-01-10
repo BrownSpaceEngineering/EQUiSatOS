@@ -35,7 +35,7 @@ void low_power_data_task(void *pvParameters)
 		time_before_data_read = xTaskGetTickCount() / portTICK_PERIOD_MS;
 		
 		// add all sensors to batch
-		current_struct->satellite_history = *(cache_get_sat_event_history()); // copy
+		current_struct->satellite_history = *(cache_get_sat_event_history(true)); // copy, wait on write
 		//read_lion_volts_batch(current_struct->lion_volts_data);
 		//read_lion_current_batch(current_struct->lion_current_data);
 		read_lion_temps_batch(current_struct->lion_temps_data);

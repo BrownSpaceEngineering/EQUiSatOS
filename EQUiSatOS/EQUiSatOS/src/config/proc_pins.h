@@ -77,10 +77,6 @@
 //#define P_RX_DATA		PIN_PA25
 
 //SPI
-//#define P_SO			PIN_PA16
-//#define P_CS			PIN_PA17 //active low
-//#define P_SI			PIN_PA18
-//#define P_SCK			PIN_PA19
-//#define P_CS2			PIN_PA16 //active low
+// (see MRAM_Commands.h)
 
 #endif /* PROC_PINS_H_ */

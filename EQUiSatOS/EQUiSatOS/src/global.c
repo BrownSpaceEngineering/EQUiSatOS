@@ -75,9 +75,12 @@ void global_init(void) {
 	MPU9250_init();
 	delay_init();
 	
+	init_persistent_storage();
 	init_errors();
 	
 	// now that errors are initialized, try to init AD7991 and log potential errors
+	// TODO: we can't do this here because we haven't yet populated the error equistacks
+	// from MRAM and these errors here may be overwritten once we do
 	log_if_error(ELOC_AD7991_0, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_1, AD7991_init(AD7991_CTRLBRD), true);
 }
