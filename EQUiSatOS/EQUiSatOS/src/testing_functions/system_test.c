@@ -76,6 +76,8 @@ static void get_ir_panel(int panel_addr, char* buffer){
 
 // test all addresses in the array (addr) and fill results in (results) specify number of address input with (num)
 static void MLX90614_test(){
+	setup_pin(true, P_IR_PWR_CMD);
+	set_output(true, P_IR_PWR_CMD);
 	print("==============MLX90614 Test==============\n");
 	print("Panel Name \t Obj Status \t Obj \t Amb Status \t Amb \n");
 
@@ -113,12 +115,14 @@ static void AD590_test(){
 		configure_adc(&temp_instance,P_AI_TEMP_OUT);
 		uint8_t rs;
 		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
+		
+		delay_ms(1);
 
 		uint16_t temp;
 		enum status_code sc = read_adc(temp_instance,&temp);
 		// I do not know if this was done yet :/
 		// temperature conversion from voltage -> current -> degrees celsius
-		
+		uint16_t curTemp = (uint16_t)(convertToVoltage(temp) * 1000);
 		float current = ((float) convertToVoltage(temp))/2197 -0.0003551; //converts from V to A
 		float tempInC = (current)*1000000-273;// T = 454*V in C
 		
@@ -149,7 +153,7 @@ static void AD590_test(){
 				strcpy(test_str,"LED1TEMP");
 				break;						
 		}
-		print(" %s \t %s \t %d \t %d C\n",test_str,error_str,temp, (int)tempInC);		
+		print(" %s \t %s \t %d \t %d C\n",test_str,error_str,curTemp, (int)tempInC);		
 	}
 
 	// compare_results((void *) temps,(void *) expected,4, 5, "AD590");		
@@ -293,15 +297,14 @@ static enum status_code TCA9535_test(){
 static float TEMD6200_test(){
 	print("==============TEMD6200 Test==============\n");
 	char test_str[20];
-	float pd_tests[6];
 	struct adc_module pd_instance;
 	for (int i = 0; i < 6; i++){		
-
+		uint16_t pd_test;
 		configure_adc(&pd_instance,P_AI_PD_OUT);
 		uint8_t rs;		
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&pd_instance);
-		read_adc(pd_instance, &pd_tests[i]);
+		read_adc(pd_instance, &pd_test);
 		switch (i) {
 			case 0:
 			strcpy(test_str,"PD_ACCESS");
@@ -319,10 +322,10 @@ static float TEMD6200_test(){
 			strcpy(test_str,"PD_TOP1");
 			break;
 			case 5:
-			strcpy(test_str,"PD_RBF");
+			strcpy(test_str,"PD_RBF\t");
 			break;
 		}
-		print("%s \t %d \n",test_str, (uint16_t)(convertToVoltage(pd_tests[i])*1000));
+		print("%s \t %d \n",test_str, (uint16_t)(convertToVoltage(pd_test)*1000));
 	}
 	
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	
@@ -469,6 +472,7 @@ void readBatBoard(){
 	print("==============BATBRD Test==============\n");
 	struct adc_module bat_instance;	
 	uint16_t bat_readings[10];
+	float bat_ref_voltage_readings[10];
 	float bat_voltage_readings[10];
 	char test_str[20];
 	char error_str[20];	
@@ -477,10 +481,10 @@ void readBatBoard(){
 		P_AI_LFB1SNS,
 		P_AI_LFB2OSNS,
 		P_AI_LFB2SNS,
-		P_AI_LF1REF,
 		P_AI_LF2REF,
-		P_AI_LF3REF,
+		P_AI_LF1REF,		
 		P_AI_LF4REF,
+		P_AI_LF3REF,
 		P_AI_L1_REF,
 		P_AI_L2_REF,
 	};
@@ -493,51 +497,59 @@ void readBatBoard(){
 		adc_enable(&bat_instance);
 		enum status_code sc = read_adc(bat_instance, &bat_readings[i]);
 		get_error(sc,error_str);		
-		bat_voltage_readings[i] = convertToVoltage(bat_readings[i]);
+		bat_ref_voltage_readings[i] = convertToVoltage(bat_readings[i]);
 		
 		switch (i) {
 			case 0:
 			strcpy(test_str,"P_AI_LFB1OSNS");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
 			break;
 			case 1:
 			strcpy(test_str,"P_AI_LFB1SNS");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.980 * 50;
 			break;
 			case 2:
 			strcpy(test_str,"P_AI_LFB2OSNS");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
 			break;
 			case 3:
 			strcpy(test_str,"P_AI_LFB2SNS");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.979 * 50;
 			break;
 			case 4:
-			strcpy(test_str,"P_AI_LF1REF");
-			break;
-			case 5:
 			strcpy(test_str,"P_AI_LF2REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
+			break;			
+			case 5:
+			strcpy(test_str,"P_AI_LF1REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
 			break;
 			case 6:
-			strcpy(test_str,"P_AI_LF3REF");
-			break;
-			case 7:
 			strcpy(test_str,"P_AI_LF4REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
+			break;			
+			case 7:
+			strcpy(test_str,"P_AI_LF3REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
 			break;
 			case 8:
 			strcpy(test_str,"P_AI_L1_REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 			case 9:
 			strcpy(test_str,"P_AI_L2_REF");
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 		}
-		print(" %s \t %s \t %d \t %d mV\n",test_str,error_str, bat_readings[i], (uint16_t)(bat_voltage_readings[i]*1000));
+		print(" %s \t %s \t %d mV\t %d mV\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]*1000), (uint16_t)(bat_voltage_readings[i]*1000));
 	}
 	
 }
 
-void system_test(void){	
-	delay_init();	
+void system_test(void){		
 	print("=======================================\n");
 	print("=               SYSTEM Test           =\n");
-	print("=======================================\n");
-	
+	print("=======================================\n");		
 	readBatBoard();
 	
 	AD7991_CTRL_test(false);
@@ -550,7 +562,6 @@ void system_test(void){
 	MLX90614_test();
 	
 	MPU9250_test(false);	
-
 	HMC5883L_test();	
 	
 	TEMD6200_test();

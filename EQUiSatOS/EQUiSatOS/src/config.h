@@ -16,7 +16,7 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLATSAT
+#define FLIGHT
 
 //0 to suppress prints, 1 to print over USART
 #define PRINT_DEBUG 1
@@ -31,7 +31,7 @@
 	#define	CTRL_BRD_V3
 	
 	//Flight IR sensors
-	#define	IR_FLASH	MLX90614_FLASHPANEL_V6_2_1
+	#define	IR_FLASH	MLX90614_FLASHPANEL_V6_2_2
 	#define	IR_SIDE1	MLX90614_SIDEPANEL_V5_2
 	#define	IR_SIDE2	MLX90614_SIDEPANEL_V5_5
 	#define	IR_RBF		MLX90614_RBFPANEL_V1
@@ -78,12 +78,13 @@
 #define MLX90614_SIDEPANEL_V4_2		0x5D // probably
 #define MLX90614_ACCESSPANEL_V4_6   0x5C
 #define MLX90614_TOPPANEL_V4_1		0x6A
-//Flight Sensors
 #define MLX90614_FLASHPANEL_V6_2_1	0x6C
-#define MLX90614_ACCESSPANEL_V4_7	0x6B // probably
-#define MLX90614_SIDEPANEL_V5_5		0x5E // probably
+//Flight Sensors
+#define MLX90614_FLASHPANEL_V6_2_2	0x6A
+#define MLX90614_ACCESSPANEL_V4_7	0x6B
+#define MLX90614_SIDEPANEL_V5_5		0x5E
 #define MLX90614_SIDEPANEL_V5_2		0x6E
 #define MLX90614_RBFPANEL_V1		0x5F
-#define MLX90614_TOPPANEL_V5_1		0x6D //maybe 0x7A?
+#define MLX90614_TOPPANEL_V5_1		0x7A
 
 #endif /* CONFIG_H_ */
