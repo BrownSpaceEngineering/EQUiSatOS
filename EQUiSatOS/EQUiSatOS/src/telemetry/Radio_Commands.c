@@ -106,20 +106,28 @@ void get_temperature(void){
 	usart_send_string(sendbuffer);
 }
 
+unsigned char calculate_checksum(char* data, int dataLen) {
+	unsigned char checksum = 0;
+	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
+	return ~checksum;
+}
+
+/*Returns 16 bit temp reading in 1/10 degree Celsius)*/
 uint16_t XDL_get_temperature() {
 	set_command_mode();
 	get_temperature();
 	delay_ms(200);
 	//TODO: Check packet validity and extract data
-	warm_reset();
-	delay_ms(500);
-	return 0;
-}
-
-unsigned char calculate_checksum(char* data, int dataLen) {
-	unsigned char checksum = 0;
-	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
-	return ~checksum;
+	if (calculate_checksum(receivebuffer+1, 2) == receivebuffer[3]) {
+		uint16_t radioTemp = (receivebuffer[1] << 8) | receivebuffer[2];
+		clear_USART_rx_buffer();
+		warm_reset();
+		delay_ms(500);
+		return radioTemp;
+	} else {
+		//maybe wait a little longer? or reset radio?
+		//TODO: Log error: couldn't get temp from radio
+	}	
 }
 
 void setTXEnable(bool enable) {

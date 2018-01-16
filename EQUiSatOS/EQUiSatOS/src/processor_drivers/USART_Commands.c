@@ -47,6 +47,11 @@ void SERCOM3_Handler()
 	}
 }
 
+void clear_USART_rx_buffer() {
+	memset(receivebuffer, 0, LEN_RECEIVEBUFFER);
+	receiveIndex = 0;
+}
+
 /*Assigning pin to the alternate peripheral function*/
 static inline void pin_set_peripheral_function(uint32_t pinmux)
 {
