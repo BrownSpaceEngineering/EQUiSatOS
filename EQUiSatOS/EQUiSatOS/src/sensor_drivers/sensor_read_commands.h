@@ -91,4 +91,7 @@ bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t
 void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single value
 //void read_rail_5v_batch(			rail_5v_batch* batch);				// pointer to single value
 
+void get_current_lion_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp);
+void get_current_lifepo_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp);
+
 #endif

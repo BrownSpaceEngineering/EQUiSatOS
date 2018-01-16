@@ -2,7 +2,7 @@
  * sensor_read_commands.c
  *
  * Created: 11/1/2016 8:18:16 PM
- *  Author: mckenna
+ *  Author: jleiken
  */
 
 #include "sensor_read_commands.h"
@@ -48,6 +48,13 @@ static uint8_t PD_ELOCS[6] = {
 static struct adc_module adc_instance;
 static enum status_code sc;
 
+static uint16_t l_volt_1;
+static uint16_t l_volt_2;
+static uint16_t lf_volt_1;
+static uint16_t lf_volt_2;
+static uint32_t l_time;
+static uint32_t lf_time;
+
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
 static uint8_t truncate_16t(uint16_t src, precise_t pt) {
@@ -65,12 +72,20 @@ static uint8_t truncate_16t(uint16_t src, precise_t pt) {
 static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc, bool priority) {
 	if (reading < low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
-		} else if (reading > high) {
+	} else if (reading > high) {
 		log_error(eloc, ECODE_READING_HIGH, priority);
 	}
 }
 
-static void commands_read_adc(uint8_t* dest, int pin, uint8_t eloc, precise_t pt, uint low_bound, uint high_bound, bool priority) {
+static void commands_read_adc(uint16_t* dest, int pin, uint8_t eloc, precise_t pt, uint low_bound, uint high_bound, bool priority) {
+	sc = configure_adc(&adc_instance, pin);
+	log_if_error(eloc, sc, priority);
+	sc = read_adc(adc_instance, dest);
+	log_if_error(eloc, sc, priority);
+	log_if_out_of_bounds(*dest, low_bound, high_bound, eloc, priority);
+}
+
+static void commands_read_adc_truncate(uint8_t* dest, int pin, uint8_t eloc, precise_t pt, uint low_bound, uint high_bound, bool priority) {
 	uint16_t read;
 	sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
@@ -101,10 +116,17 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 }
 
 void read_lion_volts_batch(lion_volts_batch batch) {
-	commands_read_adc(&batch[0], P_AI_L1_REF, ELOC_L1_REF, ADC_10B, L_VOLT_LOW, L_VOLT_HIGH, true);
-	batch[0] *= 2500;
-	commands_read_adc(&batch[1], P_AI_L2_REF, ELOC_L2_REF, ADC_10B, L_VOLT_LOW, L_VOLT_HIGH, true);
-	batch[1] *= 2500;
+	uint16_t buf;
+	commands_read_adc(&buf, P_AI_L1_REF, ELOC_L1_REF, ADC_10B, L_VOLT_LOW, L_VOLT_HIGH, true);
+	buf *= 2500;
+	l_volt_1 = buf;
+	batch[0] = truncate_16t(buf, ADC_16B);
+	commands_read_adc(&buf, P_AI_L2_REF, ELOC_L2_REF, ADC_10B, L_VOLT_LOW, L_VOLT_HIGH, true);
+	buf *= 2500;
+	l_volt_2 = buf;
+	batch[1] = truncate_16t(buf, ADC_16B);
+	
+	l_time = get_current_timestamp();
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
@@ -124,28 +146,38 @@ void read_led_temps_batch(led_temps_batch batch) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, LED_TEMP_LOW, LED_TEMP_HIGH, true);
+		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, LED_TEMP_LOW, LED_TEMP_HIGH, true);
 		batch[i - 4] = rs8;
 	}
 }
 
 void read_lifepo_current_batch(lifepo_current_batch batch) {
-	commands_read_adc(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
-	commands_read_adc(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
-	commands_read_adc(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
-	commands_read_adc(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, ADC_10B, LF_CUR_LOW, LF_CUR_HIGH, true);
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	commands_read_adc(&batch[0], P_AI_LF1REF, ELOC_LF1REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&batch[1], P_AI_LF2REF, ELOC_LF2REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&batch[2], P_AI_LF3REF, ELOC_LF3REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&batch[3], P_AI_LF4REF, ELOC_LF4REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	uint16_t b0, b1, b2, b3;
+	commands_read_adc(&b0, P_AI_LF1REF, ELOC_LF1REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(&b1, P_AI_LF2REF, ELOC_LF2REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(&b2, P_AI_LF3REF, ELOC_LF3REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(&b3, P_AI_LF4REF, ELOC_LF4REF, ADC_10B, LF_VOLT_LOW, LF_VOLT_HIGH, true);
 
-// 	batch[1] *= 1950;
-// 	batch[3] *= 1950;
-// 	batch[0] = (batch[0]*3870) - batch[1];
-// 	batch[2] = (batch[2]*3870) - batch[3];
+// 	b1 *= 1950;
+// 	b3 *= 1950;
+// 	b0 = (batch[0]*3870) - batch[1];
+// 	b2 = (batch[2]*3870) - batch[3];
+
+	lf_volt_1 = b0;
+	lf_volt_2 = b2;
+	lf_time = get_current_timestamp();
+	
+	batch[0] = truncate_16t(b0, ADC_16B);
+	batch[1] = truncate_16t(b1, ADC_16B);
+	batch[2] = truncate_16t(b2, ADC_16B);
+	batch[3] = truncate_16t(b3, ADC_16B);
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
@@ -153,7 +185,7 @@ void read_pdiode_batch(pdiode_batch batch) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(PD_ELOCS[i], sc, false);
-		commands_read_adc(&rs8, P_AI_PD_OUT, PD_ELOCS[i], ADC_12B, PD_LOW, PD_HIGH, false);
+		commands_read_adc_truncate(&rs8, P_AI_PD_OUT, PD_ELOCS[i], ADC_12B, PD_LOW, PD_HIGH, false);
 		batch[i] = rs8;
 	}
 }
@@ -163,7 +195,7 @@ void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, L_TEMP_LOW, L_TEMP_HIGH, true);
+		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, L_TEMP_LOW, L_TEMP_HIGH, true);
 		batch[i] = rs8;
 	}
 }
@@ -173,7 +205,7 @@ void read_lion_temps_batch(lion_temps_batch batch) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, L_TEMP_LOW, L_TEMP_HIGH, true);
+		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], ADC_12B, L_TEMP_LOW, L_TEMP_HIGH, true);
 		batch[i - 2] = rs8;
 	}
 }
@@ -207,10 +239,10 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 void read_led_current_batch(led_current_batch batch) {
-	commands_read_adc(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
-	commands_read_adc(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
-	commands_read_adc(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
-	commands_read_adc(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
+	commands_read_adc_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, ADC_10B, LED_CUR_LOW, LED_CUR_HIGH, true);
 }
 
 void read_radio_volts_batch(radio_volts_batch* batch) {
@@ -269,4 +301,16 @@ bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t sh
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
 
+}
+
+void get_current_lion_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp) {
+	*val_1 = l_volt_1;
+	*val_2 = l_volt_2;
+	*timestamp = l_time;
+}
+
+void get_current_lifepo_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp) {
+	*val_1 = lf_volt_1;
+	*val_2 = lf_volt_2;
+	*timestamp = lf_time;
 }
