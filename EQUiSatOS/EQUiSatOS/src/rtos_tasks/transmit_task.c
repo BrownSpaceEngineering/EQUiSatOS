@@ -71,7 +71,7 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t prev_msg_type) 
  * Determines what message types (three slots) to transmit, based on what data we have.
  * Returns whether anything can be transmitted.
  */
-bool determine_data_to_transmit() {
+bool determine_data_to_transmit(void) {
 	// only grab new transmission and fill message buffer after we've transmitted this one enough
 	if (current_sequence_transmissions >= TRANSMIT_TASK_MSG_REPEATS) {
 		current_sequence_transmissions = 0;

@@ -39,6 +39,6 @@ void print_old(const char *str_buf);  // deprecated
 void print(const char *format, ...);
 uint16_t calculate_baud_value(const uint32_t baudrate, const uint32_t peripheral_clock, uint8_t sample_num);
 
-void clear_USART_rx_buffer();
+void clear_USART_rx_buffer(void);
 
 #endif /* USART_COMMANDS_H_ */

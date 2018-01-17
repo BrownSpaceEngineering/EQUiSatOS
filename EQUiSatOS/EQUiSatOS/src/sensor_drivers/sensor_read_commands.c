@@ -74,7 +74,7 @@ static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc
 static void commands_read_adc(uint16_t* dest, int pin, uint8_t eloc, uint low_bound, uint high_bound, bool priority) {
 	sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
-	sc = read_adc(adc_instance, dest);
+	sc = read_adc_mV(adc_instance, dest);
 	log_if_error(eloc, sc, priority);
 	log_if_out_of_bounds(*dest, low_bound, high_bound, eloc, priority);
 }
@@ -127,15 +127,25 @@ void read_lion_current_batch(lion_current_batch batch) {
 	uint16_t results[4];
 	sc = AD7991_read_all(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
-	// battery 1 voltage is Vin1
+	// L1_SNS is Vin1
 	batch[0] = truncate_16t(results[1]);
 	log_if_out_of_bounds(results[1], L_CUR_LOW, L_CUR_HIGH, ELOC_AD7991_0_1, true);
-	// battery 2 voltage is Vin0
+	// L2_SNS is Vin0
 	batch[1] = truncate_16t(results[0]);
 	log_if_out_of_bounds(results[0], L_CUR_LOW, L_CUR_HIGH, ELOC_AD7991_0_0, true);
 }
 
+static void verify_5v_en(void) {
+	delay_ms(100); // ?
+	uint8_t res_5v[2];
+	// gets 5VREF in position 0
+	read_bat_charge_volts_batch(res_5v);
+	log_if_out_of_bounds(res_5v[0], FV_EN_LOW, FV_EN_HIGH, ELOC_5V_EN, true);
+}
+
 void read_led_temps_batch(led_temps_batch batch) {
+	set_output(true, P_5V_EN);
+	verify_5v_en();
 	for (int i = 4; i < 8; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -143,6 +153,7 @@ void read_led_temps_batch(led_temps_batch batch) {
 		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], LED_TEMP_LOW, LED_TEMP_HIGH, true);
 		batch[i - 4] = rs8;
 	}
+	set_output(false, P_5V_EN);
 }
 
 void read_lifepo_current_batch(lifepo_current_batch batch) {
@@ -188,6 +199,8 @@ void read_pdiode_batch(pdiode_batch batch) {
 }
 
 void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
+	set_output(true, P_5V_EN);
+	verify_5v_en();
 	for (int i = 0; i < 2; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -195,9 +208,12 @@ void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], L_TEMP_LOW, L_TEMP_HIGH, true);
 		batch[i] = rs8;
 	}
+	set_output(false, P_5V_EN);
 }
 
 void read_lion_temps_batch(lion_temps_batch batch) {
+	set_output(true, P_5V_EN);
+	verify_5v_en();
 	for (int i = 2; i < 4; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -205,6 +221,7 @@ void read_lion_temps_batch(lion_temps_batch batch) {
 		commands_read_adc_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], L_TEMP_LOW, L_TEMP_HIGH, true);
 		batch[i - 2] = rs8;
 	}
+	set_output(false, P_5V_EN);
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
@@ -243,15 +260,14 @@ void read_led_current_batch(led_current_batch batch) {
 }
 
 void read_radio_volts_batch(radio_volts_batch* batch) {
-	// 3v6_ref and 3v6_sns
 	uint16_t results[4];
 	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 
-	// 3V6 voltage is Vin0
+	// 3V6_REF is Vin0
 	batch[0] = truncate_16t(results[0]);
 	log_if_out_of_bounds(results[0], RAD_VOLT_LOW, RAD_VOLT_HIGH, ELOC_AD7991_1_0, true);
-	// 3V6 current is Vin1
+	// 3V6_SNS is Vin1
 	batch[1] = truncate_16t(results[1]);
 	log_if_out_of_bounds(results[1], RAD_VOLT_LOW, RAD_VOLT_HIGH, ELOC_AD7991_1_1, true);
 }
@@ -262,10 +278,10 @@ void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 
-	// 5V voltage is Vin2
+	// 5VREF is Vin2
 	batch[0] = truncate_16t(results[2]);
 	log_if_out_of_bounds(results[2], CHARGE_LOW, CHARGE_HIGH, ELOC_AD7991_1_2, true);
-	// 3V3 current is Vin3
+	// 3V3REF current is Vin3
 	batch[1] = truncate_16t(results[3]);
 	log_if_out_of_bounds(results[3], CHARGE_LOW, CHARGE_HIGH, ELOC_AD7991_1_3, true);
 }

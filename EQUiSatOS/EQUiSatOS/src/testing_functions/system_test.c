@@ -6,6 +6,57 @@
  */
 #include "system_test.h"
 
+static void sensor_read_tests(void) {
+	uint8_t six_buf[6];
+	uint8_t six_buf_8t[6];
+	uint8_t three_buf[3];
+	uint8_t four_buf[4];
+	uint8_t two_buf[2];
+	delay_ms(100);
+	print("\n\n\n\n##### NEW RUN #####\n");
+
+	print("\n# IMU #\n");
+	read_accel_batch(three_buf);
+	print("accel: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	read_gyro_batch(three_buf);
+	print("gyro: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	read_magnetometer_batch(three_buf);
+	print("magnetometer: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+
+	print("\n# IR #\n");
+	read_ir_ambient_temps_batch(six_buf);
+	print("ir ambs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+	read_ir_object_temps_batch(six_buf);
+	print("ir objs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+
+	print("\n# PDIODE #\n");
+	read_pdiode_batch(six_buf_8t);
+	for (int i = 0; i < 6; i++){
+		print("pdiode %d: %d\n",i, six_buf_8t[i]);
+	}
+
+	print("\n\n# LiON VOLTS #\n");
+	read_lion_volts_batch(two_buf);
+	print("lion volts: %d %d\n", two_buf[0], two_buf[1]);
+
+	print("# LiON CURRENT #\n");
+	read_lion_current_batch(two_buf);
+	print("lion current: %d %d\n", two_buf[0], two_buf[1]);
+
+	print("# LiON TEMPS #\n");
+	read_lion_temps_batch(two_buf);
+	print("lion temps: %d %d\n", two_buf[0], two_buf[1]);
+
+
+	print("\n# LiFePO VOLTS #\n");
+	read_lifepo_volts_batch(four_buf);
+	print("lifepo volts: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+
+	print("# LiFePO CURRENT #\n");
+	read_lifepo_current_batch(four_buf);
+	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+}
+
 // Function that takes in a status code and prints out the matching status
 static void get_error(enum status_code code, char * buffer){
 	switch(code){
@@ -75,7 +126,7 @@ static void get_ir_panel(int panel_addr, char* buffer){
 }
 
 // test all addresses in the array (addr) and fill results in (results) specify number of address input with (num)
-static void MLX90614_test(){
+static void MLX90614_test(void){
 	setup_pin(true, P_IR_PWR_CMD);
 	set_output(true, P_IR_PWR_CMD);
 	print("==============MLX90614 Test==============\n");
@@ -102,7 +153,7 @@ static void MLX90614_test(){
 }
 
 
-static void AD590_test(){
+static void AD590_test(void){
 	char test_str[20];
 	const uint16_t expected_temp = 20;//Celsius
 	char error_str[20];	
@@ -272,7 +323,7 @@ static void HMC5883L_test(void){
 }
 
 //GPIO test
-static enum status_code TCA9535_test(){
+static enum status_code TCA9535_test(void){
 	print("==============TCA9535 Test==============\n");
 	uint16_t res;
 	enum status_code sc = TCA9535_init(&res);
@@ -293,7 +344,7 @@ static enum status_code TCA9535_test(){
 }
 
 // Photodiode test
-static float TEMD6200_test(){
+static float TEMD6200_test(void){
 	print("==============TEMD6200 Test==============\n");
 	char test_str[20];
 	struct adc_module pd_instance;
@@ -330,7 +381,7 @@ static float TEMD6200_test(){
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	
 }
 
-static void AD7991_BAT_test(){
+static void AD7991_BAT_test(void){
 
 	print("==============AD7991_BATBRD Test==============\n");
 	//pass flag
@@ -467,7 +518,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	//}
 }
 
-void readBatBoard(){
+void readBatBoard(void){
 	print("==============BATBRD Test==============\n");
 	struct adc_module bat_instance;		
 	uint16_t bat_ref_voltage_readings[10];

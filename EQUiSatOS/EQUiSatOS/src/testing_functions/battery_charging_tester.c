@@ -15,17 +15,17 @@
 //    logic will converge to a good state (it will be a challenge to run this simulation 
 //    really well)
 
-void run_core_logic_unit_tests() 
+void run_core_logic_unit_tests(void) 
 {
 	// TODO: fill this out
 }
 
-void run_convergence_tests()
+void run_convergence_tests(void)
 {
 	// TODO: fill this out
 }
 
-void run_battery_charging_tests()
+void run_battery_charging_tests(void)
 {
 	run_core_logic_unit_tests();
 	run_convergence_tests();
