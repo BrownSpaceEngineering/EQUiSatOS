@@ -207,7 +207,7 @@ void simpleADCTest(void) {
 
 	uint16_t value;
 	enum status_code sc = read_adc(adc_instance, &value);
-	float voltage = convertToVoltage(value);
+	uint16_t mV = convert_adc_to_mV(value);
 }
 
 void flashBurstTest(void) {
@@ -278,15 +278,15 @@ void actuallyFlashingFlashBurstTest(void) {
 	print("==============FLASH Test==============\n");	
 	for (i = 0; i < num; i++) {
 		print("============== %s READING %d \t ==============\n", (i < 5) ? "PRE-FLASH" : "", i);	
-		print(" %s \t %d \t %d mV\n", "P_AI_LF1REF", volts[i][0], (uint16_t)(convertToVoltage(volts[i][0])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LF2REF", volts[i][1], (uint16_t)(convertToVoltage(volts[i][1])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LF3REF", volts[i][2], (uint16_t)(convertToVoltage(volts[i][2])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LF4REF", volts[i][3], (uint16_t)(convertToVoltage(volts[i][3])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF1REF", volts[i][0], (uint16_t)(convert_adc_to_mV(volts[i][0])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF2REF", volts[i][1], (uint16_t)(convert_adc_to_mV(volts[i][1])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF3REF", volts[i][2], (uint16_t)(convert_adc_to_mV(volts[i][2])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LF4REF", volts[i][3], (uint16_t)(convert_adc_to_mV(volts[i][3])));
 			
-		print(" %s \t %d \t %d mV\n", "P_AI_LFB1SNS",  current[i][0], (uint16_t)(convertToVoltage(current[i][0])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LFB1OSNS", current[i][1], (uint16_t)(convertToVoltage(current[i][1])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LFB2SNS",  current[i][2], (uint16_t)(convertToVoltage(current[i][2])*1000));
-		print(" %s \t %d \t %d mV\n", "P_AI_LFB2OSNS", current[i][3], (uint16_t)(convertToVoltage(current[i][3])*1000));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB1SNS",  current[i][0], (uint16_t)(convert_adc_to_mV(current[i][0])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB1OSNS", current[i][1], (uint16_t)(convert_adc_to_mV(current[i][1])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB2SNS",  current[i][2], (uint16_t)(convert_adc_to_mV(current[i][2])));
+		print(" %s \t %d \t %d mV\n", "P_AI_LFB2OSNS", current[i][3], (uint16_t)(convert_adc_to_mV(current[i][3])));
 	}
 	
 	#else 
@@ -299,8 +299,8 @@ void actuallyFlashingFlashBurstTest(void) {
 	for (i = 0; i < num; i++) {
 		print("%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d, \t%d\n", 
 			volts[i][0], volts[i][1], volts[i][2], volts[i][3], current[i][0], current[i][1],  current[i][2], current[i][3],
-			(uint16_t)(convertToVoltage(volts[i][0])*1000), (uint16_t)(convertToVoltage(volts[i][1])*1000), (uint16_t)(convertToVoltage(volts[i][2])*1000), (uint16_t)(convertToVoltage(volts[i][3])*1000),
-			(uint16_t)(convertToVoltage(current[i][0])*1000), (uint16_t)(convertToVoltage(current[i][1])*1000), (uint16_t)(convertToVoltage(current[i][2])*1000), (uint16_t)(convertToVoltage(current[i][3])*1000));
+			(uint16_t)(convert_adc_to_mV(volts[i][0])), (uint16_t)(convert_adc_to_mV(volts[i][1])), (uint16_t)(convert_adc_to_mV(volts[i][2])), (uint16_t)(convert_adc_to_mV(volts[i][3])),
+			(uint16_t)(convert_adc_to_mV(current[i][0])), (uint16_t)(convert_adc_to_mV(current[i][1])), (uint16_t)(convert_adc_to_mV(current[i][2])), (uint16_t)(convert_adc_to_mV(current[i][3])));
 	}
 	
 	#endif
