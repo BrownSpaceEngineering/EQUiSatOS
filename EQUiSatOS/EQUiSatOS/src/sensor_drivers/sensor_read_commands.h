@@ -38,6 +38,8 @@
 #define GYRO_HIGH					~0
 #define RAD_VOLT_LOW				3500
 #define RAD_VOLT_HIGH				3700
+#define FV_EN_LOW					4800
+#define FV_EN_HIGH					5200
 
 typedef enum {
 	BCDS_LF_B1_BT,
