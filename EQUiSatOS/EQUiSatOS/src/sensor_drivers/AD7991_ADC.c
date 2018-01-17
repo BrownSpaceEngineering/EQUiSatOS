@@ -17,6 +17,7 @@ enum status_code AD7991_init(uint8_t board){
 }
 
 // Reads from all 4 channels of the chip, each num_samples times and averages them
+//results should be of length 4
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
 	// Initialize
 	int num_samples = 4;
@@ -44,3 +45,14 @@ enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
 	return read;
 }
 
+uint16_t ad7991_adc_to_mV(uint16_t reading) {
+	return reading*1000*33/4096/10;
+}
+
+enum status_code AD7991_read_all_mV(uint16_t *results, uint8_t addr) {
+	enum status_code status = AD7991_read_all(results, addr);
+	for (int i = 0; i < 4; i++) {
+		results[i] = ad7991_adc_to_mV(results[i]);
+	}
+	return status;
+}
