@@ -123,7 +123,8 @@ static void AD590_test(){
 		// I do not know if this was done yet :/
 		// temperature conversion from voltage -> current -> degrees celsius
 		uint16_t curTemp = (uint16_t)(convertToVoltage(temp) * 1000);
-		float current = ((float) convertToVoltage(temp))/2197 -0.0003551; //converts from V to A
+		float voltage = ((float) convertToVoltage(temp));
+		float current = voltage/2197 -0.000151763; //converts from V to A
 		float tempInC = (current)*1000000-273;// T = 454*V in C
 		
 		get_error(sc,error_str);	
@@ -408,7 +409,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 		set3V6Power(true);
 		setRadioPower(true);
 		set_output(true, P_5V_EN);
-		delay_ms(3000);
+		delay_ms(1000);
 	} else {
 		print("==============AD7991_CTRLBRD Test | regulators OFF==============\n");
 		setRadioPower(false);
