@@ -3,7 +3,7 @@
  *
  * Created: 9/10/2017 2:48:18 PM
  *  Author: jleiken
- * 
+ *
  * Errors should be constructed by combining the location and the code
  * i.e. if TEMP_5 was observing a dangerous temperature, the code would be: 16,27
  * where each number is one byte. It would then be transmitted as 00010000 00011011
@@ -13,7 +13,7 @@
  *   - Error code byte definitions should start with ECODE_ (error definition)
  *   - All caps, words separated by _, preferably tab to the right indentation
  *   - Numbers can't go past 255 so they stay in one byte
- */ 
+ */
 
 
 #ifndef ERRORS_H_
@@ -89,6 +89,7 @@
 #define ELOC_MRAM_READ					53
 #define ELOC_MRAM_WRITE					54
 #define ELOC_5V_EN						55
+#define ELOC_STATE_HANDLING			56
 
 /******************** PROBLEM CODES ********************/
 
@@ -128,6 +129,10 @@
 
 #define ECODE_CONFIRM_TIMEOUT			30
 #define ECODE_INCONSISTENT_DATA			31
+#define ECODE_UNEXPECTED_CASE				32
+#define ECODE_ENTER_RIP							33
+#define ECODE_UNCERTAIN_RIP					34
+
 
 /* Error storage and interfaces */
 #define PRIORITY_ERROR_STACK_MAX		30

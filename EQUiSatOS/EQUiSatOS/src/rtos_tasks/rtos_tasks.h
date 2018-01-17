@@ -20,13 +20,14 @@
 #include "data_handling/State_Structs.h"
 #include "data_handling/data_utils.h"
 #include "watchdog_task.h"
+#include "battery_charging_task.h"
 
 /************************************************************************/
 /* TASK HEADERS                                                         */
 /************************************************************************/
 // lowest-priority task... may be used for switching to lower power / other modes
 // FOR US, it handles state, and is implemented in init_rtos_tasks.c
-extern void vApplicationIdleHook(void); 
+extern void vApplicationIdleHook(void);
 void vApplicationStackOverflowHook(TaskHandle_t xTask,
                                     signed char *pcTaskName);
 

@@ -32,8 +32,6 @@ void pre_init_rtos_tasks(void) {
 	init_task_handles();
 }
 
-void state_handling_task(void* pvTaskParameters) {} // TODO, TODO, TODO!!
-
 /************************************************************************/
 /* Helper Functions														*/
 /************************************************************************/
