@@ -3,18 +3,17 @@
  *
  * Created: 10/15/2017 3:21:50 PM
  *  Author: rj16
- */ 
+ */
 
 
 #ifndef BATTERY_CHARGING_TASK_H_
 #define BATTERY_CHARGING_TASK_H_
 
-#define BATTERY_DEBUG
-
 #include "global.h"
 #include "rtos_tasks.h"
 
 // TODO: are there different thresholds for LifePo?
+// TODO: come up with better names for these
 // thresholds for making very critical charging decisions, including when to go into low power mode
 // and when to declare end of life
 #define critical   40
@@ -40,7 +39,7 @@ int batt_strikes[4];
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
 typedef enum
-{	
+{
 	LION_ONE = 0,
 	LION_TWO,
 	LIFE_PO_BANK_ONE,
@@ -58,16 +57,21 @@ typedef enum
 } charge_state;
 
 void battery_logic(
-	int lion_one_percentage, 
-	int lion_two_percentage, 
-	int life_po_bank_one_percentage, 
+	int lion_one_percentage,
+	int lion_two_percentage,
+	int life_po_bank_one_percentage,
 	int life_po_bank_two_percentage,
 	int life_po_bank_one_bat_one_percentage,
 	int life_po_bank_one_bat_two_percentage,
 	int life_po_bank_two_bat_one_percentage,
 	int life_po_bank_two_bat_two_percentage);
 
-int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage);
+int get_global_state(
+	int lion_one_percentage,
+	int lion_two_percentage,
+	int life_po_bank_one_percentage,
+	int life_po_bank_two_percentage);
+
 void check_for_end_of_life(int lion_one_percentage, int lion_two_percentage);
 void battery_charging_task(void *pvParameters);
 
