@@ -98,5 +98,5 @@ int main(void)
 	//set_charging_states(false, false, true, true);
 	//run_tests();
 
-	//run_rtos();
+	run_rtos();
 }

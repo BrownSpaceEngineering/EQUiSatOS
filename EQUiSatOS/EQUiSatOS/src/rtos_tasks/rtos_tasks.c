@@ -15,7 +15,8 @@
 /* TASK CONTROL FUNCTIONS                                               */
 /************************************************************************/
 static void init_task_handles(void) {
-	//task_handles[WATCHDOG_TASK] = &watchdog_task_handle;
+	//task_handles[WATCHDOG_TASK] =					&watchdog_task_handle; // TODO
+	//task_handles[STATE_HANDLING_TASK] =			&state_handling_task_handle;
 	task_handles[ANTENNA_DEPLOY_TASK] =			&antenna_deploy_task_handle;
 	task_handles[BATTERY_CHARGING_TASK] =		&battery_charging_task_handle;
 	task_handles[FLASH_ACTIVATE_TASK] =			&flash_activate_task_handle;
@@ -31,6 +32,7 @@ void pre_init_rtos_tasks(void) {
 	init_task_handles();
 }
 
+void state_handling_task(void* pvTaskParameters) {} // TODO, TODO, TODO!!
 
 /************************************************************************/
 /* Helper Functions														*/

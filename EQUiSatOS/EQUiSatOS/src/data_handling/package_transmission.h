@@ -19,7 +19,7 @@
 /* for all details and these values										*/
 /************************************************************************/
 // various section sizes in bytes
-#define MSG_PREAMBLE_LENGTH			10
+#define MSG_PREAMBLE_LENGTH			11
 #define MSG_CUR_DATA_LEN			16
 #define MSG_DATA_AND_ERRORS_LEN		196 // sum of possible data, error, and padding sections
 #define MSG_PARITY_LENGTH			32
@@ -28,7 +28,7 @@
 
 // start points for sections
 #define START_PREAMBLE				0
-#define START_CUR_DATA				10
+#define START_CUR_DATA				11
 #define START_DATA					27
 #define START_PARITY				223
 
