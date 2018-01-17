@@ -23,7 +23,7 @@ enum {
 	BATTERY_CHARGING_PRIORITY,
 	SECONDARY_ACTION_PRIORITY,
 	PRIMARY_ACTION_PRIORITY,
-	WATCHDOG_PRIORITY
+	STATE_HANDLING_PRIORITY
 };
 
 /************************************************************************/
@@ -32,11 +32,14 @@ enum {
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
 #define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
+#define TASK_STATE_HANDLING_STACK_SIZE				(1024)/sizeof(portSTACK_TYPE)
+#define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
+
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
 
 #define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
-#define TASK_WATCHDOG_STACK_PRIORITY				(WATCHDOG_PRIORITY)
+#define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
 #define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_ACTIVATE_PRIORITY				(PRIMARY_ACTION_PRIORITY)
@@ -73,6 +76,7 @@ typedef enum
 	INITIAL,
 	ANTENNA_DEPLOY,
 	HELLO_WORLD,
+	HELLO_WORLD_LOW_POWER,
 	IDLE_NO_FLASH,
 	IDLE_FLASH,
 	LOW_POWER,
@@ -137,6 +141,8 @@ typedef enum
 /************************************************************************/
 typedef enum
 {
+	WATCHDOG_TASK,
+	STATE_HANDLING_TASK,
 	ANTENNA_DEPLOY_TASK,
 	BATTERY_CHARGING_TASK,
 	TRANSMIT_TASK,
@@ -155,8 +161,10 @@ typedef enum
 /************************************************************************/ 
 
 /* action frequency periods in MS (some that actually have data collection are below) */
+#define STATE_HANDLING_TASK_FREQ				1000 // ms
 #define WATCHDOG_TASK_FREQ						20000	// must be larger than any task frequency but 
 														// smaller than the watchdog timeout
+														
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic

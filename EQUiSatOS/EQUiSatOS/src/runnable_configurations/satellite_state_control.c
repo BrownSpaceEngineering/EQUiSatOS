@@ -21,8 +21,7 @@ void run_rtos()
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
 	/************************************************************************/
-	
-	init_persistent_storage();
+
 	configure_state_from_reboot();
 	
 	pre_init_rtos_tasks(); // populate task_handles array and setup constants
@@ -71,6 +70,14 @@ void run_rtos()
 		TASK_ANTENNA_DEPLOY_PRIORITY,
 		antenna_deploy_task_stack,
 		&antenna_deploy_task_buffer);
+		
+	state_handling_task_handle = xTaskCreateStatic(state_handling_task,
+		"state handling action task",
+		TASK_STATE_HANDLING_STACK_SIZE,
+		NULL,
+		TASK_STATE_HANDLING_PRIORITY,
+		state_handling_task_stack,
+		&state_handling_task_buffer);
 
 	 // TODO: Should we even store this handle?
 	watchdog_task_handle = xTaskCreateStatic(watchdog_task,
