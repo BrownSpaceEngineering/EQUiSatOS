@@ -118,13 +118,11 @@ static void AD590_test(){
 		
 		delay_ms(1);
 
-		uint16_t temp;
-		enum status_code sc = read_adc(temp_instance,&temp);
-		// I do not know if this was done yet :/
-		// temperature conversion from voltage -> current -> degrees celsius
-		uint16_t curTemp = (uint16_t)(convertToVoltage(temp) * 1000);
-		float voltage = ((float) convertToVoltage(temp));
-		float current = voltage/2197 -0.000151763; //converts from V to A
+		uint16_t temp_mV;
+		enum status_code sc = read_adc_mV(temp_instance,&temp_mV);
+		
+		// temperature conversion from voltage -> current -> degrees celsius		
+		float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
 		float tempInC = (current)*1000000-273;// T = 454*V in C
 		
 		get_error(sc,error_str);	
@@ -154,7 +152,7 @@ static void AD590_test(){
 				strcpy(test_str,"LED1TEMP");
 				break;						
 		}
-		print(" %s \t %s \t %d \t %d C\n",test_str,error_str,curTemp, (int)tempInC);		
+		print(" %s \t %s \t %d mV \t %d C\n",test_str,error_str,temp_mV, (int)tempInC);		
 	}
 
 	// compare_results((void *) temps,(void *) expected,4, 5, "AD590");		
@@ -300,12 +298,12 @@ static float TEMD6200_test(){
 	char test_str[20];
 	struct adc_module pd_instance;
 	for (int i = 0; i < 6; i++){		
-		uint16_t pd_test;
+		uint16_t pd_mV;
 		configure_adc(&pd_instance,P_AI_PD_OUT);
 		uint8_t rs;		
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&pd_instance);
-		read_adc(pd_instance, &pd_test);
+		read_adc_mV(pd_instance, &pd_mV);
 		switch (i) {
 			case 0:
 			strcpy(test_str,"PD_ACCESS");
@@ -326,7 +324,7 @@ static float TEMD6200_test(){
 			strcpy(test_str,"PD_RBF\t");
 			break;
 		}
-		print("%s \t %d \n",test_str, (uint16_t)(convertToVoltage(pd_test)*1000));
+		print("%s \t %d \n",test_str, pd_mV);
 	}
 	
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	
@@ -471,9 +469,8 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 
 void readBatBoard(){
 	print("==============BATBRD Test==============\n");
-	struct adc_module bat_instance;	
-	uint16_t bat_readings[10];
-	float bat_ref_voltage_readings[10];
+	struct adc_module bat_instance;		
+	uint16_t bat_ref_voltage_readings[10];
 	float bat_voltage_readings[10];
 	char test_str[20];
 	char error_str[20];	
@@ -496,9 +493,8 @@ void readBatBoard(){
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
-		enum status_code sc = read_adc(bat_instance, &bat_readings[i]);
+		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);
 		get_error(sc,error_str);		
-		bat_ref_voltage_readings[i] = convertToVoltage(bat_readings[i]);
 		
 		switch (i) {
 			case 0:
@@ -542,7 +538,7 @@ void readBatBoard(){
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 		}
-		print(" %s \t %s \t %d mV\t %d mV\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]*1000), (uint16_t)(bat_voltage_readings[i]*1000));
+		print(" %s \t %s \t %4d mV\t %4d mV\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]), (uint16_t)(bat_voltage_readings[i]));
 	}
 	
 }

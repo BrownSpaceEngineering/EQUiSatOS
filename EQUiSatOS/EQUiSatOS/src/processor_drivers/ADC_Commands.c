@@ -1,11 +1,5 @@
-/*
- * CFile1.c
- *
- * Created: 5/8/2015 3:20:16 PM
- *  Author: Daniel
- */
-
 #include "ADC_Commands.h"
+
 enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
@@ -42,8 +36,7 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 	}
 }
 
-//reads the current voltage from the ADC connection
-// Currently reads a 10 bit value
+//reads the current voltage from the ADC connection (with hardware averaging) into a 16 bit buffer
 enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	if (!adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
@@ -51,9 +44,7 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	}
 
 	int status;
-
 	adc_start_conversion(&adc_instance);
-
 	//uint8_t scale = 218;//3300/1.48/1024.0; //3.3V/1.48 reference, 2^10 range
 
 	do {
@@ -67,45 +58,13 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	return adc_disable(&adc_instance);
 }
 
-uint8_t convert_ir_to_8_bit(uint16_t input) {
-	bool addOne = (input & 0b0000000000000011) >= 2;
-	uint8_t _8bitResult = input >> 2;
-	if (addOne) {
-		_8bitResult = _8bitResult+1;
-	}
-	return _8bitResult;
+//Converts from 16bit ADC reading to mV
+uint16_t convert_adc_to_mV(uint16_t reading){
+	return (reading*1000*330/4095/148);
 }
 
- // Given an ADC channel, reads from ADC with <num_avg> software averaging
-enum status_code readFromADC(enum adc_positive_input pin, int num_avg, uint16_t* buf){
-	 struct adc_module adc_instance;
-	 enum status_code sc = configure_adc(&adc_instance,pin);
-	 if (is_error(sc)) {
-		 return sc;
-	 }
-	 //read_adc(adc_instance); //TODO determine if we need to throw away the first reading
-	 //adc_enable(&adc_instance);
-	 uint16_t sum = 0;
-	 uint16_t in;
-	 for(int i=0; i<num_avg; i++){
-		 if(i>0){
-			 sc = adc_enable(&adc_instance);
-			 if (is_error(sc)) {
-				 return sc;
-			 }
-		 }
-		 sc = read_adc(adc_instance, &in);
-		 if (is_error(sc)) {
-			 return sc;
-		 }
-		 sum += in;
-	 }
-	 *buf = sum/num_avg;
-	 return sc;
- }
-
-//Converts from 10bit ADC reading to float voltage
-//Todo - remove this because no floats for real sat
-float convertToVoltage(uint16_t reading){
-	return (((float) (reading))/4095*3.300/1.48); //converts from 12 bit to V
+enum status_code read_adc_mV(struct adc_module adc_instance, uint16_t* buf) {
+	int status = read_adc(adc_instance, buf);
+	*buf = convert_adc_to_mV(*buf);
+	return status;
 }
