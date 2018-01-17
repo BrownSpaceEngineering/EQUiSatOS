@@ -43,7 +43,7 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 		return -1;
 	}
 
-	int status;
+	enum status_code status;
 	adc_start_conversion(&adc_instance);
 	//uint8_t scale = 218;//3300/1.48/1024.0; //3.3V/1.48 reference, 2^10 range
 
@@ -64,7 +64,7 @@ uint16_t convert_adc_to_mV(uint16_t reading){
 }
 
 enum status_code read_adc_mV(struct adc_module adc_instance, uint16_t* buf) {
-	int status = read_adc(adc_instance, buf);
+	enum status_code status = read_adc(adc_instance, buf);
 	*buf = convert_adc_to_mV(*buf);
 	return status;
 }

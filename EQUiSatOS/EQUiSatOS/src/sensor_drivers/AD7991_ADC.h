@@ -16,5 +16,7 @@
 
 enum status_code AD7991_init(uint8_t board);
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr);
+uint16_t ad7991_adc_to_mV(uint16_t reading);
+enum status_code AD7991_read_all_mV(uint16_t *results, uint8_t addr);
 
 #endif /* AD7991_ADC_H_ */

@@ -1,9 +1,3 @@
-/*
- * system_test.c
- *
- * Created: 10/22/2017 1:15:00 PM
- *  Author: Jarod Boone
- */
 #include "system_test.h"
 
 static void sensor_read_tests(void) {
@@ -388,16 +382,16 @@ static void AD7991_BAT_test(void){
 	int pass = 1;
 	char test_str[20];
 
-	float AD7991_results[4];
+	int AD7991_results[4];
 	//AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5;
-	int16_t results[4];
+	uint16_t results[4];
 	
-	enum status_code AD7991_code = AD7991_read_all(results, AD7991_BATBRD);
+	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
 
-	AD7991_results[0] = (((float) results[0])/4096*3.3-1.022)*2000;	//L2_SNS mA
-	AD7991_results[1] = (((float) results[1])/4096*3.3-0.985)*2000;	//L1_SNS mA
-	AD7991_results[2] = (((float) results[2])/4096*3.3-0.05)*2717;	//L_REF mV
-	AD7991_results[3] = (((float) results[3])/4096*3.3-0.13)*5580;	//PANELREF mV
+	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
+	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
+	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
 	
 	get_error(AD7991_code,test_str);
 	print("STATUS: \t %s\n",test_str);
@@ -424,7 +418,7 @@ static void AD7991_BAT_test(void){
 			break;
 		}
 
-		print("%s: \t %d \t %d m%c\n",test_str, results[i], (int16_t)AD7991_results[i], suffix);
+		print("%s: \t %d \t %d m%c\n",test_str, results[i], AD7991_results[i], suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
@@ -466,12 +460,12 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 		set_output(false, P_5V_EN);
 	}
 
-	enum status_code AD7991_code = AD7991_read_all(results, AD7991_CTRLBRD);
+	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_CTRLBRD);
 	
-	AD7991_results[0] = ((float) results[0])/4096*3.3*2.01;		//3V6Rf
-	AD7991_results[1] = ((float) results[1])/4096*3.3;			//3V6SNS
-	AD7991_results[2]= ((float)  results[2])/4096*3.3*3.381;	//5VREF
-	AD7991_results[3] = ((float) results[3])/4096*3.3*2.01;		//3V3REF
+	AD7991_results[0] = ((float) results[0])*2.01;		//3V6Rf
+	AD7991_results[1] = ((float) results[1])*3.3;		//3V6SNS
+	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
+	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
 	set3V6Power(false);
 	setRadioPower(false);
@@ -499,7 +493,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 			break;
 		}
 
-		print("%s: \t %d m%c\n",test_str,(uint16_t)(AD7991_results[i]*1000), suffix);
+		print("%s: \t %d m%c\n",test_str,(uint16_t)(AD7991_results[i]), suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
