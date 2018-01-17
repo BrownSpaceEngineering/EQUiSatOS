@@ -7,7 +7,7 @@
 
 #include "battery_charging_task.h"
 
-// High-level TODO's:
+// lion_down_mv-level TODO's:
 //  0. understand the code as it stands (done)
 //  1. be working in terms of raw voltages
 //  2. make sure of state changes
@@ -26,9 +26,11 @@ void battery_charging_task(void *pvParameters)
 	/// initialize key global variables
 	/////
 
-	curr_charge_state = FILL_LION;
+	// explicitly initializing this even though initial value doesn't matter
+	curr_charge_state = FILL_LI;
 
-	// let's explicitly initialize these to -1 -- their initial values don't matter
+	// explicitly initializing this even though initial value doesn't matter
+	// TODO: make sure it doesn't  matter
 	batt_charging = -1;
 	batt_discharging = -1;
 
@@ -46,69 +48,64 @@ void battery_charging_task(void *pvParameters)
  		// before getting into it, grab the percentages of each of the batteries
  		// lions
 
- 		lion_volts_batch lion_volts;
- 		read_lion_volts_batch(lion_volts);
-
- 		int lion_one_percentage = lion_volts[0];
- 		int lion_two_percentage = lion_volts[1];
-
- 		lifepo_volts_batch life_po_volts;
- 		read_lifepo_volts_batch(life_po_volts);
+		int li1_mv;
+		int li2_mv;
+ 		get_current_lion_volts(&li1_mv, &li2_mv, NULL);
 
  		// individual batteries within the life po banks
- 		int life_po_bank_one_bat_one_percentage = life_po_volts[0];
- 		int life_po_bank_one_bat_two_percentage = life_po_volts[1];
- 		int life_po_bank_two_bat_one_percentage = life_po_volts[2];
- 		int life_po_bank_two_bat_two_percentage = life_po_volts[3];
+ 		int lf1_mv;
+ 		int lf2_mv;
+ 		int lf3_mv;
+ 		int lf4_mv;
+		get_current_lifepo_volts(
+			&lf1_mv,
+			&lf2_mv,
+			&lf3_mv,
+			&lf4_mv,
+			NULL);
 
- 		// TODO: how do we actually derive this? currently just taking the average
- 		// life po banks
- 		int life_po_bank_one_percentage =
- 			(life_po_bank_one_bat_one_percentage + life_po_bank_one_bat_two_percentage) / 2;
- 		int life_po_bank_two_percentage =
- 			(life_po_bank_two_bat_one_percentage + life_po_bank_two_bat_two_percentage) / 2;
+ 		int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
+ 		int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
 
  		// NOTE: get_global_state and battery_logic are individual functions in order to make
  		// it easier to "unit test" them with contrived inputs
 
  		// what's the global state of the satellite?
  		int curr_global_state = get_global_state(
- 			lion_one_percentage,
- 			lion_two_percentage,
- 			life_po_bank_one_percentage,
- 			life_po_bank_two_percentage);
+ 			li1_mv,
+ 			li2_mv,
+ 			lfb1_avg_mv,
+ 			lfb2_avg_mv);
 
  		set_sat_state(curr_global_state);
 
  		// what batteries should we be charging?
  		battery_logic(
- 			lion_one_percentage,
- 			lion_two_percentage,
- 			life_po_bank_one_percentage,
- 			life_po_bank_two_percentage,
- 			life_po_bank_one_bat_one_percentage,
- 			life_po_bank_one_bat_two_percentage,
- 			life_po_bank_two_bat_one_percentage,
-			life_po_bank_two_bat_two_percentage);
+ 			li1_mv,
+ 			li2_mv,
+ 			lf1_mv,
+ 			lf2_mv,
+ 			lf3_mv,
+			lf4_mv);
 	}
 
 	// delete this task if it ever breaks out
 	vTaskDelete(NULL);
 }
 
-int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_po_bank_one_percentage, int life_po_bank_two_percentage)
+int get_global_state(int li1_mv, int li2_mv, int lfb1_avg_mv, int lfb2_avg_mv)
 {
 	if (get_sat_state() == RIP)
 	{
 		return RIP;
 	}
 
-	// enter the rip state if both are critical
-	if (lion_one_percentage <= critical && lion_two_percentage <= critical)
+	// enter the rip state if both are lion_critical_mv
+	if (li1_mv <= li_critical_mv && li2_mv <= li_critical_mv)
 	{
 		int end_of_life = 1;
 
-		// we want to be very sure that both are actually critical
+		// we want to be very sure that both are actually lion_critical_mv
 		for (int i = 0; i < 5; i++)
 		{
 			lion_volts_batch lion_volts;
@@ -117,10 +114,10 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 			// (i.e. it needs to call the function to compute the voltages instead
 		  // of that which gives those that were most recently calculated)
 			read_lion_volts_batch(lion_volts);
-			int recalc_lion_one_percentage = lion_volts[0];
-			int recalc_lion_two_percentage = lion_volts[1];
+			int recalc_li1_mv = lion_volts[0];
+			int recalc_li2_mv = lion_volts[1];
 
-			if (!(recalc_lion_one_percentage <= critical && recalc_lion_two_percentage <= critical))
+			if (!(recalc_li1_mv <= li_critical_mv && recalc_li2_mv <= li_critical_mv))
 			{
 				end_of_life = 0;
 				break;
@@ -128,7 +125,7 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 
 			// TODO: maybe reconsider this down the road
 			vTaskSuspendAll();
-			vTaskDelay(ms_to_wait_for_crit);
+			vTaskDelay(time_to_wait_for_crit_ms);
 			xTaskResumeAll();
 		}
 
@@ -161,7 +158,7 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 	}
 
 	// enter low power if lion's aren't great
-	if (lion_one_percentage < med || lion_two_percentage < med)
+	if (li1_mv < li_low_power_mv || li2_mv < li_low_power_mv)
 	{
 		return LOW_POWER;
 	}
@@ -169,7 +166,7 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 	// enter idle no flash if lion's are great but one of the two life po banks
 	// isn't great
 	// TODO: make sure that this is what we want
-	if (!(life_po_bank_one_percentage > high && life_po_bank_two_percentage > high))
+	if (!(lfb1_avg_mv > lf_flash_avg_mv && lfb2_avg_mv > lf_flash_avg_mv))
 	{
 		return IDLE_NO_FLASH;
 	}
@@ -178,21 +175,19 @@ int get_global_state(int lion_one_percentage, int lion_two_percentage, int life_
 }
 
 void battery_logic(
-	int lion_one_percentage,
-	int lion_two_percentage,
-	int life_po_bank_one_percentage,
-	int life_po_bank_two_percentage,
-	int life_po_bank_one_bat_one_percentage,
-	int life_po_bank_one_bat_two_percentage,
-	int life_po_bank_two_bat_one_percentage,
-	int life_po_bank_two_bat_two_percentage)
+	int li1_mv,
+	int li2_mv,
+	int lf1_mv,
+	int lf2_mv,
+	int lf3_mv,
+	int lf4_mv)
 {
-	// we often want to know the higher of the cells within the life po banks
-	int max_life_po_bank_one = Max(life_po_bank_one_bat_one_percentage, life_po_bank_one_bat_two_percentage);
-	int max_life_po_bank_two = Max(life_po_bank_two_bat_one_percentage, life_po_bank_two_bat_two_percentage);
+	// we often want to know the lion_down_mver of the cells within the life po banks
+	int max_lfb1_mv = Max(lf1_mv, lf2_mv);
+	int max_lfb2_mv = Max(lf3_mv, lf4_mv);
 
-	// we often want to know whether the higher cells within the life po banks have filled up
-	bool life_po_full = max_life_po_bank_one > full && max_life_po_bank_two > full;
+	// we often want to know whether the lion_down_mver cells within the life po banks have filled up
+	bool life_po_full_mv = max_lfb1_mv > lf_full_max_mv && max_lfb2_mv > lf_full_max_mv;
 
 	/////
 	// phase 0: determine whether any batteries should have their strikes incremented
@@ -207,26 +202,27 @@ void battery_logic(
 	// phase 1: determine whether we want to make a change to the charge state
 	/////
 
-	// the flow is as follows: we should charge the lion's up to full, and in the time between
+	// the flow is as follows: we should charge the lion's up to lion_up_mv, and in the time between
 	// their filling up and their dropping down below an optimal state, we should charge the
 	// lifepo
 
 	// more concretely:
-	//  - if we're in FILL_LION, we switch if the lifepo's aren't full and both lion's are
-	//  - if we're in FILL_LIFE_PO, we switch if the either lion is below med, or both are
-	//    below high
+	//  - if we're in FILL_LION, we switch if the lifepo's aren't lion_up_mv and both lion's are
+	//  - if we're in FILL_LIFE_PO, we switch if the either lion is below lion_low_power_mv, or both are
+	//    below lion_down_mv
 
 	// this isn't synonymous with the global state, but they're related in the following ways:
 	//  - if the global state is idle flash or idle not flash, we can be in either FILL_LION,
 	//    or FILL_LIFE_PO
 	//  - otherwise, FILL_LION is the only option
 
+	// TODO: incorporate charge pin in some way
 	// TODO: satellite state should be stored in a gloal somewhere instead of being searched
 	// for in this way
 	if (get_sat_state() != IDLE_FLASH && get_sat_state() != IDLE_NO_FLASH)
 	{
 		// TODO: make extra sure of this
-		curr_charge_state = FILL_LION;
+		curr_charge_state = FILL_LI;
 	}
 	else
 	{
@@ -235,20 +231,20 @@ void battery_logic(
 			// NOTE: these conditions are a subset of the low power conditions -- if it's low
 			// power, it'll be FILL_LION
 
-			case FILL_LION:
-				if (!life_po_full && (lion_one_percentage > full && lion_two_percentage > full))
+			case FILL_LI:
+				if (!life_po_full_mv && (li1_mv > li_up_mv && li2_mv > li_up_mv))
 				{
-					curr_charge_state = FILL_LIFE_PO;
+					curr_charge_state = FILL_LF;
 				}
 
 				break;
 
-			case FILL_LIFE_PO:
-				if ((lion_one_percentage < high && lion_two_percentage < high) ||
-					(lion_one_percentage < med || lion_two_percentage < med) ||
-					life_po_full)
+			case FILL_LF:
+				if ((li1_mv < li_down_mv && li2_mv < li_down_mv) ||
+					(li1_mv < li_low_power_mv || li2_mv < li_low_power_mv) ||
+					life_po_full_mv)
 				{
-					curr_charge_state = FILL_LION;
+					curr_charge_state = FILL_LI;
 				}
 
 				break;
@@ -261,43 +257,43 @@ void battery_logic(
 
 	switch (curr_charge_state)
 	{
-		case FILL_LION:
+		case FILL_LI:
 			// charge the lion with the the lower percentage
-			// discharge the lion with the higher percentages
-			if (lion_one_percentage <= lion_two_percentage)
+			// discharge the lion with the lion_down_mver percentages
+			if (li1_mv <= li2_mv)
 			{
-				batt_charging = LION_ONE;
-				batt_discharging = LION_TWO;
+				batt_charging = LI1;
+				batt_discharging = LI2;
 			}
 			else
 			{
-				batt_charging = LION_TWO;
-				batt_discharging = LION_ONE;
+				batt_charging = LI2;
+				batt_discharging = LI1;
 			}
 
 			break;
 
-		case FILL_LIFE_PO:
+		case FILL_LF:
 			// charge the life po bank with the lower max percentage
 			// NOTE: this might lead to issues if the cells are very
 			// unbalanced
-			if (max_life_po_bank_one <= max_life_po_bank_two)
+			if (max_lfb1_mv <= max_lfb2_mv)
 			{
-				batt_charging = LIFE_PO_BANK_ONE;
+				batt_charging = LFB1;
 			}
 			else
 			{
-				batt_charging = LIFE_PO_BANK_TWO;
+				batt_charging = LFB2;
 			}
 
-			// discharge the lion with the the higher percentage
-			if (lion_one_percentage <= lion_two_percentage)
+			// discharge the lion with the the lion_down_mver percentage
+			if (li1_mv <= li2_mv)
 			{
-				batt_discharging = LION_TWO;
+				batt_discharging = LI2;
 			}
 			else
 			{
-				batt_discharging = LION_ONE;
+				batt_discharging = LI1;
 			}
 
 			break;
@@ -317,7 +313,7 @@ void battery_logic(
 	// NOTE: very important to set the discharging pin to true before setting the other to false
 	int discharge_pin = 0;
 	int not_discharge_pin = 0;
-	if (batt_discharging == LION_ONE)
+	if (batt_discharging == LI1)
 	{
 		discharge_pin = P_L1_DISG;
 		not_discharge_pin = P_L2_DISG;
@@ -340,19 +336,19 @@ void battery_logic(
 		int charge_pin = 0;
 		switch (i)
 		{
-			case LION_ONE:
+			case LI1:
 				charge_pin = P_L1_RUN_CHG;
 				break;
 
-			case LION_TWO:
+			case LI2:
 				charge_pin = P_L2_RUN_CHG;
 				break;
 
-			case LIFE_PO_BANK_ONE:
+			case LFB1:
 				charge_pin = P_LF_B1_RUNCHG;
 				break;
 
-			case LIFE_PO_BANK_TWO:
+			case LFB2:
 				charge_pin = P_LF_B2_RUNCHG;
 				break;
 		}

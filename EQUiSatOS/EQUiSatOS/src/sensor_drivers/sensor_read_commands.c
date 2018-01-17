@@ -52,6 +52,8 @@ static uint16_t l_volt_1;
 static uint16_t l_volt_2;
 static uint16_t lf_volt_1;
 static uint16_t lf_volt_2;
+static uint16_t lf_volt_3;
+static uint16_t lf_volt_4;
 static uint32_t l_time;
 static uint32_t lf_time;
 
@@ -125,12 +127,12 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 	buf *= 2500;
 	l_volt_2 = buf;
 	batch[1] = truncate_16t(buf, ADC_16B);
-	
+
 	l_time = get_current_timestamp();
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
-	uint16_t results[4];	
+	uint16_t results[4];
 	sc = AD7991_read_all(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
 	// battery 1 voltage is Vin1
@@ -170,10 +172,13 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 // 	b0 = (batch[0]*3870) - batch[1];
 // 	b2 = (batch[2]*3870) - batch[3];
 
+	// TODO: make sure these are right
 	lf_volt_1 = b0;
-	lf_volt_2 = b2;
+	lf_volt_2 = b1;
+	lf_volt_3 = b2;
+	lf_volt_4 = b3;
 	lf_time = get_current_timestamp();
-	
+
 	batch[0] = truncate_16t(b0, ADC_16B);
 	batch[1] = truncate_16t(b1, ADC_16B);
 	batch[2] = truncate_16t(b2, ADC_16B);
@@ -247,7 +252,7 @@ void read_led_current_batch(led_current_batch batch) {
 
 void read_radio_volts_batch(radio_volts_batch* batch) {
 	// 3v6_ref and 3v6_sns
-	uint16_t results[4];	
+	uint16_t results[4];
 	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 
@@ -261,10 +266,10 @@ void read_radio_volts_batch(radio_volts_batch* batch) {
 
 void read_bat_charge_volts_batch(bat_charge_volts_batch batch) {
 	// analog voltages on spreadsheet
-	uint16_t results[4];	
+	uint16_t results[4];
 	sc = AD7991_read_all(results, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
-	
+
 	// 5V voltage is Vin2
 	batch[0] = truncate_16t(results[2], ADC_10B);
 	log_if_out_of_bounds(results[2], CHARGE_LOW, CHARGE_HIGH, ELOC_AD7991_1_2, true);
@@ -286,7 +291,7 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 	// TODO: Tyler will implement later
 	// eventually: XDL_get_temperature(batch);
 }
-// 
+//
 // void read_radio_current_batch(radio_current_batch* batch) {
 // 	// TODO
 // }
@@ -303,14 +308,24 @@ void read_imu_temp_batch(imu_temp_batch* batch) {
 
 }
 
-void get_current_lion_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp) {
+void get_current_lion_volts(
+		uint16_t* val_1,
+		uint16_t* val_2,
+		uint32_t* timestamp) {
 	*val_1 = l_volt_1;
 	*val_2 = l_volt_2;
 	*timestamp = l_time;
 }
 
-void get_current_lifepo_volts(uint16_t* val_1, uint16_t* val_2, uint32_t* timestamp) {
+void get_current_lifepo_volts(
+		uint16_t* val_1,
+		uint16_t* val_2,
+		uint16_t* val_3,
+		uint16_t* val_4,
+		uint32_t* timestamp) {
 	*val_1 = lf_volt_1;
 	*val_2 = lf_volt_2;
+	*val_3 = lf_volt_3;
+	*val_4 = lf_volt_4;
 	*timestamp = lf_time;
 }
