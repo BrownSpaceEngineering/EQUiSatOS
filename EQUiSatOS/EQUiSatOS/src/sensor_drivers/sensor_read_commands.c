@@ -83,7 +83,7 @@ static void commands_read_adc_truncate(uint8_t* dest, int pin, uint8_t eloc, uin
 	uint16_t read;
 	sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
-	sc = read_adc(adc_instance, &read);
+	sc = read_adc_mV(adc_instance, &read);
 	log_if_error(eloc, sc, priority);
 	log_if_out_of_bounds(read, low_bound, high_bound, eloc, priority);
 	*dest = truncate_16t(read);
@@ -95,7 +95,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 		sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
 		log_if_error(IR_ELOCS[i], sc, false);
 		log_if_out_of_bounds(obj, IR_OBJ_LOW, IR_OBJ_HIGH, IR_ELOCS[i], false);
-		batch[i] = truncate_16t(obj);
+		batch[i] = obj;
 	}
 }
 
