@@ -10,27 +10,20 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_state)
 {
   // enter the rip state if both are lion_critical_mv
-  if (li1_mv <= li_critical_mv && li2_mv <= li_critical_mv)
+  if (li1_mv <= LI_CRITICAL_MV && li2_mv <= LI_CRITICAL_MV)
   {
     int end_of_life = 1;
 
     // we want to be very sure that both are actually lion_critical_mv
     for (int i = 0; i < 5; i++)
     {
-      // TODO: see if there's a more elegant way to make sure that we're reading
-      // the up to date Lion voltages
       vTaskDelay(TIME_TO_WAIT_FOR_CRIT_MS);
 
-      // TODO: this will most likely result in seg fault because of the NULL being
-      // passed in
       uint16_t li1_recalc_mv;
       uint16_t li2_recalc_mv;
-      get_current_lion_volts(
-        &li1_recalc_mv,
-        &li2_recalc_mv,
-        NULL);
+      read_li_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
 
-      if (!(li1_recalc_mv <= li_critical_mv && li2_recalc_mv <= li_critical_mv))
+      if (!(li1_recalc_mv <= LI_CRITICAL_MV && li2_recalc_mv <= LI_CRITICAL_MV))
       {
         end_of_life = 0;
         break;
@@ -96,22 +89,20 @@ void state_handling_task(void *pvParameters)
 
       uint16_t li1_mv;
       uint16_t li2_mv;
-      get_current_lion_volts(
+      read_li_volts_precise(
         &li1_mv,
-        &li2_mv,
-        NULL);
+        &li2_mv);
 
       // individual batteries within the life po banks
       uint16_t lf1_mv;
       uint16_t lf2_mv;
       uint16_t lf3_mv;
       uint16_t lf4_mv;
-      get_current_lifepo_volts(
+      read_lf_volts_precise(
         &lf1_mv,
         &lf2_mv,
         &lf3_mv,
-        &lf4_mv,
-        NULL);
+        &lf4_mv);
 
       // average voltage for the batteries within each LF bank
       int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
@@ -134,33 +125,42 @@ void state_handling_task(void *pvParameters)
       // now it's time to check for all of the standard state changes
       ///
 
-      int both_li_above_down = li1_mv > li_down_mv && li2_mv > li_down_mv;
-      int one_li_below_low_power = li1_mv <= li_low_power_mv || li2_mv <= li_low_power_mv;
+      int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
+      int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
+      int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
 
-      int one_lf_above_flash = lfb1_avg_mv > lf_flash_avg_mv || lfb2_avg_mv > lf_flash_avg_mv;
+      int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
+
+      satellite_history_batch *sat_state = cache_get_sat_event_history(true);
 
       switch (current_state)
       {
+        // TODO: we need to make sure these global booleans are being set in the
+        // battery charging task
+        // TODO: do we want some notion of time?
         case INITIAL:
           if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S &&
-              both_li_above_down)
+              both_li_above_down &&
+              sat_state->lion_1_charged && sat_state->lion_2_charged)
             set_sat_state(ANTENNA_DEPLOY);
           break;
 
+        // TODO: the state changes from here should be here instead of antenna
+        // deploy task
         case ANTENNA_DEPLOY:
           // this is the one case in which the another task is responsible for
           // state changes
           break;
 
-        // TODO: thresholds to go in and out of low power are subject to change
         case HELLO_WORLD:
           // it's higher priority to go to low power
-          if (one_li_below_low_power)
+          if (one_li_below_down)
             set_sat_state(HELLO_WORLD_LOW_POWER);
           else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
             set_sat_state(IDLE_NO_FLASH);
           break;
 
+        // TODO: this needs to take into account the new conception of "full"
         case HELLO_WORLD_LOW_POWER:
           if (both_li_above_down)
             set_sat_state(HELLO_WORLD);

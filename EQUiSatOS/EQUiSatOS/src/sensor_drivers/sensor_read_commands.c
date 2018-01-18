@@ -48,15 +48,6 @@ static uint8_t PD_ELOCS[6] = {
 static struct adc_module adc_instance;
 static enum status_code sc;
 
-static uint16_t l_volt_1;
-static uint16_t l_volt_2;
-static uint16_t lf_volt_1;
-static uint16_t lf_volt_2;
-static uint16_t lf_volt_3;
-static uint16_t lf_volt_4;
-static uint32_t l_time;
-static uint32_t lf_time;
-
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
 static uint8_t truncate_16t(uint16_t src) {
@@ -109,18 +100,22 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	}
 }
 
+// TODO: make sure this all looks okay
 void read_lion_volts_batch(lion_volts_batch batch) {
+	read_li_volts_precise(&(batch[0]), &(batch[1]));
+	batch[0] = truncate_16t(batch[0]);
+	batch[1] = truncate_16t(batch[1]);
+}
+
+void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	uint16_t buf;
 	commands_read_adc(&buf, P_AI_L1_REF, ELOC_L1_REF, L_VOLT_LOW, L_VOLT_HIGH, true);
 	buf *= 2500;
-	l_volt_1 = buf;
-	batch[0] = truncate_16t(buf);
+	*val_1 = buf;
+
 	commands_read_adc(&buf, P_AI_L2_REF, ELOC_L2_REF, L_VOLT_LOW, L_VOLT_HIGH, true);
 	buf *= 2500;
-	l_volt_2 = buf;
-	batch[1] = truncate_16t(buf);
-
-	l_time = get_current_timestamp();
+	*val_2 = buf;
 }
 
 void read_lion_current_batch(lion_current_batch batch) {
@@ -163,29 +158,30 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 	commands_read_adc_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, LF_CUR_LOW, LF_CUR_HIGH, true);
 }
 
+// TODO: make sure this all looks okay
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	uint16_t b0, b1, b2, b3;
-	commands_read_adc(&b0, P_AI_LF1REF, ELOC_LF1REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&b1, P_AI_LF2REF, ELOC_LF2REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&b2, P_AI_LF3REF, ELOC_LF3REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
-	commands_read_adc(&b3, P_AI_LF4REF, ELOC_LF4REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	read_lf_volts_precise(&(batch[0]), &(batch[1]), &(batch[2]), &(batch[3]));
+
+	batch[0] = truncate_16t(batch[0]);
+	batch[1] = truncate_16t(batch[1]);
+	batch[2] = truncate_16t(batch[2]);
+	batch[3] = truncate_16t(batch[3]);
+}
+
+void read_lf_volts_precise(
+		uint16_t* val_1,
+		uint16_t* val_2,
+		uint16_t* val_3,
+		uint16_t* val_4) {
+	commands_read_adc(val_1, P_AI_LF1REF, ELOC_LF1REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(val_2, P_AI_LF2REF, ELOC_LF2REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(val_3, P_AI_LF3REF, ELOC_LF3REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
+	commands_read_adc(val_4, P_AI_LF4REF, ELOC_LF4REF, LF_VOLT_LOW, LF_VOLT_HIGH, true);
 
 // 	b1 *= 1950;
 // 	b3 *= 1950;
 // 	b0 = (batch[0]*3870) - batch[1];
 // 	b2 = (batch[2]*3870) - batch[3];
-
-	// TODO: make sure these are right
-	lf_volt_1 = b0;
-	lf_volt_2 = b1;
-	lf_volt_3 = b2;
-	lf_volt_4 = b3;
-	lf_time = get_current_timestamp();
-
-	batch[0] = truncate_16t(b0);
-	batch[1] = truncate_16t(b1);
-	batch[2] = truncate_16t(b2);
-	batch[3] = truncate_16t(b3);
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
@@ -314,26 +310,4 @@ bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t sh
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
 
-}
-
-void get_current_lion_volts(
-		uint16_t* val_1,
-		uint16_t* val_2,
-		uint32_t* timestamp) {
-	*val_1 = l_volt_1;
-	*val_2 = l_volt_2;
-	*timestamp = l_time;
-}
-
-void get_current_lifepo_volts(
-		uint16_t* val_1,
-		uint16_t* val_2,
-		uint16_t* val_3,
-		uint16_t* val_4,
-		uint32_t* timestamp) {
-	*val_1 = lf_volt_1;
-	*val_2 = lf_volt_2;
-	*val_3 = lf_volt_3;
-	*val_4 = lf_volt_4;
-	*timestamp = lf_time;
 }
