@@ -29,6 +29,9 @@ void run_rtos()
 	// watchdog has some extra initialization
 	watchdog_init();
 
+	// Initialize mutex for battery charging
+	_battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
+
 	// Initialize EQUiStack mutexes
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
 	_attitude_equistack_mutex = xSemaphoreCreateMutexStatic(&_attitude_equistack_mutex_d);
@@ -38,15 +41,15 @@ void run_rtos()
 
 	// Initialize EQUiStacks
 	equistack_Init(&idle_readings_equistack, &_idle_equistack_arr,
-		sizeof(idle_data_t), IDLE_STACK_MAX, &_idle_equistack_mutex);
+		sizeof(idle_data_t), IDLE_STACK_MAX, _idle_equistack_mutex);
 	equistack_Init(&attitude_readings_equistack, &_attitude_equistack_arr,
-		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, &_attitude_equistack_mutex);
+		sizeof(attitude_data_t), ATTITUDE_STACK_MAX, _attitude_equistack_mutex);
 	equistack_Init(&flash_readings_equistack, &_flash_equistack_arr,
-		sizeof(flash_data_t), FLASH_STACK_MAX, &_flash_equistack_mutex);
+		sizeof(flash_data_t), FLASH_STACK_MAX, _flash_equistack_mutex);
  	equistack_Init(&flash_cmp_readings_equistack, &_flash_cmp_equistack_arr,
-		sizeof(flash_cmp_data_t), FLASH_CMP_STACK_MAX, &_flash_cmp_equistack_mutex);
+		sizeof(flash_cmp_data_t), FLASH_CMP_STACK_MAX, _flash_cmp_equistack_mutex);
  	equistack_Init(&low_power_readings_equistack, &_low_power_equistack_arr,
-		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, &_low_power_equistack_mutex);
+		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, _low_power_equistack_mutex);
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */

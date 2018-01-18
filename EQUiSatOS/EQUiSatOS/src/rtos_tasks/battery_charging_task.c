@@ -10,7 +10,7 @@
 // lion_down_mv-level TODO's:
 //  0. understand the code as it stands (done)
 //  1. be working in terms of raw voltages (done)
-//  2. make sure of state changes
+//  2. make sure of state changes (done)
 //  3. work through TODO's
 //  4. implement strikes! (also, what will change once a battery has struck out?)
 //  5. write a simulator to test the correctness of the battery code
@@ -24,6 +24,8 @@ extern int batt_strikes[4] = {0, 0, 0, 0};
 // TODO*: make sure the flash task deals adequately with a potentially charging lifepo
 // TODO*: make sure that a global boolean flag is being set on the first time that
 // Lion's become full
+// TODO*: integrate the new concept of "fullness" the state changing task
+// TODO*: resolve all the warnings
 void battery_charging_task(void *pvParameters)
 {
 	/////
@@ -193,10 +195,7 @@ void battery_logic(
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 
-	// TODO*: reconsider, down the road, the effects of the suspend and resume all
-	// TODO*: make very sure this doesn't hang
-	#ifndef BATTERY_DEBUG
-	vTaskSuspendAll();
+	xSemaphoreTake(_battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
 
 	// set the lion that should be discharging to discharge
 	// set the other lion to not discharge
@@ -245,8 +244,7 @@ void battery_logic(
 
 		// TODO*: make sure this went through by looking at CHG
 		set_output(i == batt_charging, charge_pin);
-	}
 
-	xTaskResumeAll();
-	#endif
+		xSemaphoreGive(_battery_charging_mutex);
+	}
 }

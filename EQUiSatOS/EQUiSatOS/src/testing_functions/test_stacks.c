@@ -13,7 +13,7 @@ static void basic_push_usage(void) {
 	StaticSemaphore_t inner_mutex;
 	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
 	int _data_arr[4];
-	equistack_Init(test, &_data_arr, sizeof(int), 4, &mutex);
+	equistack_Init(test, &_data_arr, sizeof(int), 4, mutex);
 	
 	assert(test->top_index == -1);
 	assert(test->bottom_index == -1);
@@ -119,7 +119,7 @@ static void standard_case(void)
 	StaticSemaphore_t inner_mutex;
 	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
 	test_data _data_arr[4];
-	equistack_Init(test, &_data_arr, sizeof(test_data), 4, &mutex);
+	equistack_Init(test, &_data_arr, sizeof(test_data), 4, mutex);
 	
 	assert(test->cur_size == 0);
 	assert(test->top_index == -1);
@@ -229,7 +229,7 @@ static void big_case(void)
 	test_data _data_arr[20];
 	StaticSemaphore_t inner_mutex;
 	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
-	equistack_Init(bigTest, &_data_arr, sizeof(test_data), 20, &mutex);
+	equistack_Init(bigTest, &_data_arr, sizeof(test_data), 20, mutex);
 	
 	assert(bigTest->cur_size == 0);
 	assert(bigTest->top_index == -1);
@@ -342,7 +342,7 @@ static void multi_add(void)
 	test_data _data_arr[20];
 	StaticSemaphore_t inner_mutex;
 	SemaphoreHandle_t mutex = xSemaphoreCreateMutexStatic(&inner_mutex);
-	equistack_Init(bigTest, &_data_arr, sizeof(test_data), 20, &mutex);
+	equistack_Init(bigTest, &_data_arr, sizeof(test_data), 20, mutex);
 	
 	assert(bigTest->cur_size == 0);
 	assert(bigTest->top_index == -1);
