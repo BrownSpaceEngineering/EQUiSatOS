@@ -49,5 +49,6 @@
 void init_tracelyzer(void);
 void trace_print(const char *format);
 void global_init(void);
+void global_init_post_rtos(void);
 
 #endif /* GLOBAL_H_ */

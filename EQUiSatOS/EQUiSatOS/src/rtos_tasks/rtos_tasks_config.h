@@ -29,6 +29,9 @@ enum {
 /************************************************************************/
 /* Task Properties - see below for frequencies							*/
 /************************************************************************/
+#define TASK_INIT_STACK_SIZE						(1024)/sizeof(portSTACK_TYPE)
+#define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
+
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
 #define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
@@ -161,7 +164,7 @@ typedef enum
 /************************************************************************/ 
 
 /* action frequency periods in MS (some that actually have data collection are below) */
-#define STATE_HANDLING_TASK_FREQ				1000 // ms
+#define STATE_HANDLING_TASK_FREQ				60000	// ms
 #define WATCHDOG_TASK_FREQ						20000	// must be larger than any task frequency but 
 														// smaller than the watchdog timeout
 														

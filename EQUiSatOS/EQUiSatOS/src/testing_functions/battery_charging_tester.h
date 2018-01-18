@@ -11,4 +11,8 @@
 #include "rtos_tasks/rtos_tasks.h"
 #include "rtos_tasks/battery_charging_task.h"
 
+void run_core_logic_unit_tests(void);
+void run_convergence_tests(void);
+void run_battery_charging_tests(void);
+
 #endif

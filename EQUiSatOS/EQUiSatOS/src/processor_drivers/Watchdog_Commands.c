@@ -27,14 +27,12 @@ void configure_watchdog(void){
 
 /*
 //Only used for xplained pro
-void watchdog_early_warning_callback(void)
-{
+static void watchdog_early_warning_callback(void) {
 	port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
 }
 
 //only call when xplained pro is used
-void configure_watchdog_callbacks(void)
-{
+static void configure_watchdog_callbacks(void) {
 	//! [setup_5]
 	wdt_register_callback(watchdog_early_warning_callback, WDT_CALLBACK_EARLY_WARNING);
 	//! [setup_5]

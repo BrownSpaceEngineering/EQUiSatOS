@@ -61,7 +61,7 @@ bool watchdog_as_function(void) {
 }
 
 /************************************************************************/
-// NOTE: the watchdog is to tighly coupled with the satellite state that
+// NOTE: the watchdog is so tightly coupled with the satellite state that
 // those state handling functions need to lock it before changing state 
 // (this is also because we suspend the scheduler during state changes,	
 // and mutexes cannot be used without the scheduler running.)           

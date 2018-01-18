@@ -2,33 +2,34 @@
 * package_transmission.c
 *
 * Created: 12/6/2016 8:47:44 PM
-* Author: jleiken
+* Author: mckenna
 */
 #include "package_transmission.h"
 
 void assert_transmission_constants(void) {
-	// check that starts line up with data sizes
-	assert(MSG_PREAMBLE_LENGTH == START_CUR_DATA);
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN == START_DATA);
+	// NOTE: if these are correct, they may be optimized out (which is fine)
 	
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + IDLE_DATA_PACKETS * IDLE_DATA_PACKET_SIZE + 
+	// check that starts line up with data sizes
+	configASSERT(MSG_PREAMBLE_LENGTH == START_CUR_DATA);
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN == START_DATA);
+	
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + IDLE_DATA_PACKETS * IDLE_DATA_PACKET_SIZE + 
 		IDLE_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + IDLE_DATA_PADDING_SIZE == START_PARITY);
 		
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + ATTITUDE_DATA_PACKETS * ATTITUDE_DATA_PACKET_SIZE +
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + ATTITUDE_DATA_PACKETS * ATTITUDE_DATA_PACKET_SIZE +
 		ATTITUDE_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + ATTITUDE_DATA_PADDING_SIZE == START_PARITY);
 		
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_DATA_PACKETS * FLASH_DATA_PACKET_SIZE +
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_DATA_PACKETS * FLASH_DATA_PACKET_SIZE +
 		FLASH_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + FLASH_DATA_PADDING_SIZE == START_PARITY);
 		
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_CMP_DATA_PACKETS * FLASH_CMP_DATA_PACKET_SIZE +
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_CMP_DATA_PACKETS * FLASH_CMP_DATA_PACKET_SIZE +
 		FLASH_CMP_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + FLASH_CMP_DATA_PADDING_SIZE == START_PARITY);
 		
-	assert(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + LOW_POWER_DATA_PACKETS * LOW_POWER_DATA_PACKET_SIZE +
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + LOW_POWER_DATA_PACKETS * LOW_POWER_DATA_PACKET_SIZE +
 		LOW_POWER_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + LOW_POWER_DATA_PADDING_SIZE == START_PARITY);
 	
 	// check things will fit in buffer (one space for \0)
-	int top_length = MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN;
-	assert(top_length + START_PARITY + MSG_PARITY_LENGTH < MSG_BUFFER_SIZE - 1);
+	configASSERT(START_PARITY + MSG_PARITY_LENGTH <= MSG_BUFFER_SIZE - 1);
 }
 
 // forward declarations
@@ -93,29 +94,33 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	state_string |= (get_sat_state() & 0b111) << 2; // three LSB of satellite state
 
 	// incremented index in buffer
-	uint8_t buf_index;
+	uint8_t buf_index = 0;
+	
+	// clear out the whole packet buffer before writing
+	write_value_and_shift(msg_buffer, &buf_index, 0, MSG_BUFFER_SIZE);
+	buf_index = 0; // make sure to reset
 
 	write_preamble(msg_buffer, &buf_index, current_timestamp, state_string, num_data * size_data, num_errors);
-	assert(buf_index == START_CUR_DATA);
+	configASSERT(buf_index == START_CUR_DATA);
 
 	// read sensors and write current data to buffer; it's not dependent on state
 	write_current_data(msg_buffer, &buf_index, current_timestamp);
-	assert(buf_index == START_DATA);
+	configASSERT(buf_index == START_DATA);
 	
 	write_data_section(msg_buffer, &buf_index, msg_type, num_data);
 	// note that the start of errors/padding is determined dynamically by buf_index
-	assert(buf_index == START_DATA + size_data*num_data);
-	assert (buf_index < START_PARITY);
+	configASSERT(buf_index == START_DATA + size_data*num_data);
+	configASSERT (buf_index < START_PARITY);
 	
 	write_errors(msg_buffer, &buf_index, num_errors, current_timestamp);
-	assert(buf_index == START_DATA + size_data*num_data + num_errors*ERROR_PACKET_SIZE);
-	assert (buf_index <= START_PARITY);
+	configASSERT(buf_index == START_DATA + size_data*num_data + num_errors*ERROR_PACKET_SIZE);
+	configASSERT (buf_index <= START_PARITY);
 	
 	write_value_and_shift(msg_buffer, &buf_index, 0, padding_size);
-	assert(buf_index == START_PARITY);
+	configASSERT(buf_index == START_PARITY);
 	
 	write_parity(msg_buffer, &buf_index);
-	assert(buf_index == MSG_SIZE);
+	configASSERT(buf_index == MSG_SIZE);
 }
 
 /************************************************************************/
@@ -168,7 +173,7 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	read_bat_charge_volts_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(bat_charge_volts_batch);
 
-	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index));
+	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index)); // TODO
 	*buf_index += sizeof(bat_charge_dig_sigs_batch);
 	
 	read_lifepo_volts_batch((uint8_t*) (buffer + *buf_index));
@@ -202,7 +207,7 @@ void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t times
 	static int error_index = 0;
 	
 	for (int errors_written = 0; errors_written < count; errors_written++) {
-		assert(error_index >= 0);
+		configASSERT(error_index >= 0);
 		// i.e. this index is the index within the priority equistack if it's less than that stacks current
 		// size, and is the index within the normal equistack otherwise. If it becomes longer
 		// than the sum of their lengths, then it is reset to zero and we restart.
@@ -248,8 +253,8 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 
 	// note: _PACKETS should be less than _STACK_MAX, or we're wasting space!
 	int packets_written = 0;
-	int equi_i = 0;
-	bool skip_transmitted = true;
+	int equi_i = 0; // equistack iterator
+	bool retransmit = false;
 	while (packets_written < num_data) {
 		// write a packet according to message type, noting whether the particular packet
 		// was transmittable and its size
@@ -262,7 +267,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 		switch (msg_type) {
 			case IDLE_DATA: ;
 				idle_data_t* idle_data = (idle_data_t*) equistack_Get(&idle_readings_equistack, equi_i);
-				if (skip_transmitted && !idle_data->transmitted) {
+				if (retransmit || !idle_data->transmitted) {
 					write_idle_data_packet(buffer, buf_index, idle_data);
 					idle_data->transmitted = true;
 					transmittable = true;
@@ -272,7 +277,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 				
 			case ATTITUDE_DATA: ;
 				attitude_data_t* attitude_data = (attitude_data_t*) equistack_Get(&attitude_readings_equistack, equi_i);
-				if (skip_transmitted && !attitude_data->transmitted) {
+				if (retransmit || !attitude_data->transmitted) {
 					write_attitude_data_packet(buffer, buf_index, attitude_data);
 					attitude_data->transmitted = true;
 					transmittable = true;
@@ -282,7 +287,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case FLASH_DATA: ;
 				flash_data_t* flash_data = (flash_data_t*) equistack_Get(&flash_readings_equistack, equi_i);
-				if (skip_transmitted && !flash_data->transmitted) {
+				if (retransmit || !flash_data->transmitted) {
 					write_flash_data_packet(buffer, buf_index, flash_data);
 					flash_data->transmitted = true;
 					transmittable = true;
@@ -292,7 +297,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case FLASH_CMP_DATA: ;
 				flash_cmp_data_t* flash_cmp_data = (flash_cmp_data_t*) equistack_Get(&flash_cmp_readings_equistack, equi_i);
-				if (skip_transmitted && !flash_cmp_data->transmitted) {
+				if (retransmit || !flash_cmp_data->transmitted) {
 					write_flash_cmp_data_packet(buffer, buf_index, flash_cmp_data);
 					flash_cmp_data->transmitted = true;
 					transmittable = true;
@@ -302,7 +307,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case LOW_POWER_DATA: ;
 				low_power_data_t* low_power_data = (low_power_data_t*) equistack_Get(&low_power_readings_equistack, equi_i);
-				if (skip_transmitted && !low_power_data->transmitted) {
+				if (retransmit || !low_power_data->transmitted) {
 					write_low_power_data_packet(buffer, buf_index, low_power_data);
 					low_power_data->transmitted = true;
 					transmittable = true;
@@ -314,13 +319,13 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 				configASSERT(false);
 		}
 		
-		if (skip_transmitted && !transmittable) {
+		if (!retransmit && !transmittable) {
+			// if we're not retransmitting and it was already transmitted,
+			// skip it (don't note a write)
+			equi_i++;
+		} else {
 			// move along the equistack, noting (above) that this packet will be transmitted
 			packets_written++;
-			equi_i++;
-			
-		} else {
-			// if it was already transmitted, skip it (don't note a write)
 			equi_i++;
 		}
 		
@@ -329,7 +334,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			// packets in the equistack to fill a message, or there were too many already-transmitted packets (for the first time).
 			// In this case, stop caring about whether they were transmitted, and wrap back around to try again
 			equi_i = 0;
-			skip_transmitted = false;
+			retransmit = true;
 			
 			// if this has happened twice or more (we went through not skipping transmitted packets),
 			// then keep looping around the equistack and re-writing until we write all we need
@@ -427,13 +432,13 @@ void write_parity(uint8_t* buffer, uint8_t* buf_index) {
 	// encode using Reed-Solomon (START_PARITY is the number of bytes in buffer before parity section)
 	// NOTE we don't encode the callsign
 	encode_data(buffer + CALLSIGN_SIZE, START_PARITY - CALLSIGN_SIZE, buffer + CALLSIGN_SIZE);
-	(*buf_index)++;
+	*buf_index = *buf_index + MSG_PARITY_LENGTH;
 }
 
 /* Writes num_bytes from input to data, and shifts the value at buf_index up by num_bytes */
 void write_bytes_and_shift(uint8_t *data, uint8_t* buf_index, void *input, size_t num_bytes) {
 	// TODO: verify correctness
-	memcpy(data, (char*) input, num_bytes);
+	memcpy(data + *buf_index, (char*) input, num_bytes);
 	*buf_index += num_bytes;
 }
 

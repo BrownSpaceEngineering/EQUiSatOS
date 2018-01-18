@@ -102,9 +102,12 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 
 // TODO: make sure this all looks okay
 void read_lion_volts_batch(lion_volts_batch batch) {
-	read_li_volts_precise(&(batch[0]), &(batch[1]));
-	batch[0] = truncate_16t(batch[0]);
-	batch[1] = truncate_16t(batch[1]);
+	uint16_t val_1_precise;
+	uint16_t val_2_precise;
+	
+	read_li_volts_precise(&val_1_precise, &val_2_precise);
+	batch[0] = truncate_16t(val_1_precise);
+	batch[1] = truncate_16t(val_2_precise);
 }
 
 void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
@@ -130,17 +133,17 @@ void read_lion_current_batch(lion_current_batch batch) {
 	log_if_out_of_bounds(results[0], L_CUR_LOW, L_CUR_HIGH, ELOC_AD7991_0_0, true);
 }
 
-static void verify_5v_en(void) {
+static void verify_5v_ref(void) {
 	delay_ms(100); // ?
 	uint8_t res_5v[2];
 	// gets 5VREF in position 0
 	read_bat_charge_volts_batch(res_5v);
-	log_if_out_of_bounds(res_5v[0], FV_EN_LOW, FV_EN_HIGH, ELOC_5V_EN, true);
+	log_if_out_of_bounds(res_5v[0], FV_EN_LOW, FV_EN_HIGH, ELOC_5V_REF, true);
 }
 
 void read_led_temps_batch(led_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_5v_en();
+	verify_5v_ref();
 	for (int i = 4; i < 8; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -160,12 +163,17 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 
 // TODO: make sure this all looks okay
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	read_lf_volts_precise(&(batch[0]), &(batch[1]), &(batch[2]), &(batch[3]));
+	uint16_t val_1_precise;
+	uint16_t val_2_precise;
+	uint16_t val_3_precise;
+	uint16_t val_4_precise;	
+	
+	read_lf_volts_precise(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
-	batch[0] = truncate_16t(batch[0]);
-	batch[1] = truncate_16t(batch[1]);
-	batch[2] = truncate_16t(batch[2]);
-	batch[3] = truncate_16t(batch[3]);
+	batch[0] = truncate_16t(val_1_precise);
+	batch[1] = truncate_16t(val_2_precise);
+	batch[2] = truncate_16t(val_3_precise);
+	batch[3] = truncate_16t(val_4_precise);
 }
 
 void read_lf_volts_precise(
@@ -185,18 +193,19 @@ void read_lf_volts_precise(
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
+	// TODO: need to output to two bits of a uint16_t
 	for (int i = 0; i < 6; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(PD_ELOCS[i], sc, false);
 		commands_read_adc_truncate(&rs8, P_AI_PD_OUT, PD_ELOCS[i], PD_LOW, PD_HIGH, false);
-		batch[i] = rs8;
+		//batch[i] = rs8;
 	}
 }
 
 void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_5v_en();
+	verify_5v_ref();
 	for (int i = 0; i < 2; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -209,7 +218,7 @@ void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 
 void read_lion_temps_batch(lion_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_5v_en();
+	verify_5v_ref();
 	for (int i = 2; i < 4; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
