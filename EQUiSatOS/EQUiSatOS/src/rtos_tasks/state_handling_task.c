@@ -4,7 +4,9 @@
 #define MIN_TIME_IN_BOOT_S         (26*ORBITAL_PERIOD_S)
 #define TIME_TO_WAIT_FOR_CRIT_MS   2000
 
-// returns -1 if no change required
+sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_state);
+
+// returns the current state if no change required
 sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_state)
 {
   // enter the rip state if both are lion_critical_mv
@@ -21,8 +23,8 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 
       // TODO: this will most likely result in seg fault because of the NULL being
       // passed in
-      int li1_recalc_mv;
-      int li2_recalc_mv;
+      uint16_t li1_recalc_mv;
+      uint16_t li2_recalc_mv;
       get_current_lion_volts(
         &li1_recalc_mv,
         &li2_recalc_mv,
@@ -67,7 +69,7 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
     }
   }
 
-  return -1;
+  return current_state;
 }
 
 void state_handling_task(void *pvParameters)
@@ -92,18 +94,18 @@ void state_handling_task(void *pvParameters)
       // the timestamp -- we'll grab them here
       ///
 
-      int li1_mv;
-      int li2_mv;
+      uint16_t li1_mv;
+      uint16_t li2_mv;
       get_current_lion_volts(
         &li1_mv,
         &li2_mv,
         NULL);
 
       // individual batteries within the life po banks
-      int lf1_mv;
-      int lf2_mv;
-      int lf3_mv;
-      int lf4_mv;
+      uint16_t lf1_mv;
+      uint16_t lf2_mv;
+      uint16_t lf3_mv;
+      uint16_t lf4_mv;
       get_current_lifepo_volts(
         &lf1_mv,
         &lf2_mv,
@@ -121,7 +123,7 @@ void state_handling_task(void *pvParameters)
       ///
 
       sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-      if (checked_state != -1)
+      if (checked_state != current_state)
       {
         // checked state will be either RIP or LOW_POWER
         set_sat_state(checked_state);
