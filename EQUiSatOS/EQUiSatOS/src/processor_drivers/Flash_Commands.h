@@ -14,8 +14,8 @@
 #define FLASH_COMMANDS_H_
 
 void set_lifepo_output_enable(bool enabled);
-void set_lifepo_charge_disable();
-void set_lifepo_charge_enable();
+void set_lifepo_charge_disable(void);
+void set_lifepo_charge_enable(void);
 void flash_arm(void); // to be called at least 2ms before flashing
 void flash_activate(void);
 void flash_disarm(void); // to be called a minimum of 2ms after flashing

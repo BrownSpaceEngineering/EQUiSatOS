@@ -13,13 +13,13 @@ void set_lifepo_output_enable(bool enabled)
 	set_output(enabled, P_LF_B2_OUTEN);
 }
 
-void set_lifepo_charge_disable()
+void set_lifepo_charge_disable(void)
 {
 	set_output(false, P_LF_B1_RUNCHG);
 	set_output(false, P_LF_B1_RUNCHG);
 }
 
-void set_lifepo_charge_enable()
+void set_lifepo_charge_enable(void)
 {
 	if (batt_charging == LFB1)
 		set_output(true, P_LF_B1_RUNCHG);

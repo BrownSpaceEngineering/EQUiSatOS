@@ -17,11 +17,7 @@
 //  6. iron out threshold values (later)
 //  7. put algorithm through longevity tests (later)
 
-// number of strikes for each battery
-extern int batt_strikes[4] = {0, 0, 0, 0};
-
 // TODO*: make everything definitely consistent with new conception of state
-// TODO*: make sure the flash task deals adequately with a potentially charging lifepo
 // TODO*: make sure that a global boolean flag is being set on the first time that
 // Lion's become full
 // TODO*: integrate the new concept of "fullness" the state changing task
@@ -57,15 +53,15 @@ void battery_charging_task(void *pvParameters)
  		// lions and life po's
 		///
 
-		int li1_mv;
-		int li2_mv;
+		uint16_t li1_mv;
+		uint16_t li2_mv;
  		read_li_volts_precise(&li1_mv, &li2_mv);
 
  		// individual batteries within the life po banks
- 		int lf1_mv;
- 		int lf2_mv;
- 		int lf3_mv;
- 		int lf4_mv;
+ 		uint16_t lf1_mv;
+ 		uint16_t lf2_mv;
+ 		uint16_t lf3_mv;
+ 		uint16_t lf4_mv;
 		read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
  		// battery_logic is an individual function in order to make it easier to
