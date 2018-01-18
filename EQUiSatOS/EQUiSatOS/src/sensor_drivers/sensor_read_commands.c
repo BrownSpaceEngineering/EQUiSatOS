@@ -102,9 +102,12 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 
 // TODO: make sure this all looks okay
 void read_lion_volts_batch(lion_volts_batch batch) {
-	read_li_volts_precise(&(batch[0]), &(batch[1]));
-	batch[0] = truncate_16t(batch[0]);
-	batch[1] = truncate_16t(batch[1]);
+	uint16_t val_1_precise;
+	uint16_t val_2_precise;
+	
+	read_li_volts_precise(&val_1_precise, &val_2_precise);
+	batch[0] = truncate_16t(val_1_precise);
+	batch[1] = truncate_16t(val_2_precise);
 }
 
 void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
@@ -160,12 +163,17 @@ void read_lifepo_current_batch(lifepo_current_batch batch) {
 
 // TODO: make sure this all looks okay
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	read_lf_volts_precise(&(batch[0]), &(batch[1]), &(batch[2]), &(batch[3]));
+	uint16_t val_1_precise;
+	uint16_t val_2_precise;
+	uint16_t val_3_precise;
+	uint16_t val_4_precise;	
+	
+	read_lf_volts_precise(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
-	batch[0] = truncate_16t(batch[0]);
-	batch[1] = truncate_16t(batch[1]);
-	batch[2] = truncate_16t(batch[2]);
-	batch[3] = truncate_16t(batch[3]);
+	batch[0] = truncate_16t(val_1_precise);
+	batch[1] = truncate_16t(val_2_precise);
+	batch[2] = truncate_16t(val_3_precise);
+	batch[3] = truncate_16t(val_4_precise);
 }
 
 void read_lf_volts_precise(
@@ -185,12 +193,13 @@ void read_lf_volts_precise(
 }
 
 void read_pdiode_batch(pdiode_batch batch) {
+	// TODO: need to output to two bits of a uint16_t
 	for (int i = 0; i < 6; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(PD_ELOCS[i], sc, false);
 		commands_read_adc_truncate(&rs8, P_AI_PD_OUT, PD_ELOCS[i], PD_LOW, PD_HIGH, false);
-		batch[i] = rs8;
+		//batch[i] = rs8;
 	}
 }
 

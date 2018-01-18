@@ -10,11 +10,11 @@
 void init_errors(void) {
 	_priority_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_priority_error_equistack_mutex_d);
 	equistack_Init(&priority_error_equistack, &_priority_error_equistack_arr, sizeof(sat_error_t),
-		PRIORITY_ERROR_STACK_MAX, &_priority_error_equistack_mutex);
+		PRIORITY_ERROR_STACK_MAX, _priority_error_equistack_mutex);
 	
 	_normal_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_normal_error_equistack_mutex_d);
 	equistack_Init(&normal_error_equistack, &_normal_error_equistack_arr, sizeof(sat_error_t), 
-		NORMAL_ERROR_STACK_MAX, &_normal_error_equistack_mutex);
+		NORMAL_ERROR_STACK_MAX, _normal_error_equistack_mutex);
 }
 
 /*

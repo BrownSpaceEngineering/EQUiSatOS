@@ -16,13 +16,15 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
-#define LI_UP_MV                   4170
-#define LI_DOWN_MV                 4050
-#define LI_LOW_POWER_MV            3900
-#define LI_CRITICAL_MV             2750
+#define LI_UP_MV                   			4170
+#define LI_DOWN_MV                 			4050
+#define LI_LOW_POWER_MV            			3900
+#define LI_CRITICAL_MV             			2750
 
-#define LF_FULL_MAX_MV             3500
-#define LF_FLASH_AVG_MV            3250
+#define LF_FULL_MAX_MV             			3500
+#define LF_FLASH_AVG_MV            			3250
+
+#define BAT_MUTEX_WAIT_TIME_TICKS       1000
 
 // the battery that's currently charging
 int batt_charging;
@@ -36,6 +38,11 @@ int curr_charge_state;
 
 // number of strikes for each battery
 int batt_strikes[4];
+
+// anyone doing something during which the battery state should not
+// be changed needs to honor this mutex
+StaticSemaphore_t _battery_charging_mutex_d;
+SemaphoreHandle_t _battery_charging_mutex;
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
