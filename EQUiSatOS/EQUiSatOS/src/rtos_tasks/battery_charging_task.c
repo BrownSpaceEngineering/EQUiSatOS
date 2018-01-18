@@ -14,23 +14,28 @@
 //  3. work through TODO's
 //  4. implement strikes! (also, what will change once a battery has struck out?)
 //  5. write a simulator to test the correctness of the battery code
-//  6. iron out threshold values
-//  7. put algorithm through longevity tests
+//  6. iron out threshold values (later)
+//  7. put algorithm through longevity tests (later)
 
 // number of strikes for each battery
 extern int batt_strikes[4] = {0, 0, 0, 0};
 
+// TODO*: make everything definitely consistent with new conception of state
+// TODO*: make sure the flash task deals adequately with a potentially charging lifepo
+// TODO*: make sure that a global boolean flag is being set on the first time that
+// Lion's become full
 void battery_charging_task(void *pvParameters)
 {
 	/////
 	/// initialize key global variables
 	/////
 
-	// explicitly initializing this even though initial value doesn't matter
+	// we want to initially be in FILL_LI
 	curr_charge_state = FILL_LI;
 
-	// explicitly initializing this even though initial value doesn't matter
-	// TODO: make sure it doesn't matter
+	// explicitly initializing these even though initial value doesn't matter
+	// NOTE: nothing should rely on these variables' initial state without taking
+	// -1 into account
 	batt_charging = -1;
 	batt_discharging = -1;
 
@@ -45,36 +50,30 @@ void battery_charging_task(void *pvParameters)
     // report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
+		///
  		// before getting into it, grab the percentages of each of the batteries
- 		// lions
+ 		// lions and life po's
+		///
 
 		int li1_mv;
 		int li2_mv;
- 		get_current_lion_volts(&li1_mv, &li2_mv, NULL);
+ 		read_li_volts_precise(&li1_mv, &li2_mv);
 
  		// individual batteries within the life po banks
  		int lf1_mv;
  		int lf2_mv;
  		int lf3_mv;
  		int lf4_mv;
-		get_current_lifepo_volts(
-			&lf1_mv,
-			&lf2_mv,
-			&lf3_mv,
-			&lf4_mv,
-			NULL);
+		read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
- 		// NOTE: battery_logic is an individual function in order to make
- 		// it easier to "unit test" them with contrived inputs
+ 		// battery_logic is an individual function in order to make it easier to
+		// "unit test" them with contrived inputs
 
+		///
  		// what batteries should we be charging?
- 		battery_logic(
- 			li1_mv,
- 			li2_mv,
- 			lf1_mv,
- 			lf2_mv,
- 			lf3_mv,
-			lf4_mv);
+		///
+
+		battery_logic(li1_mv, li2_mv, lf1_mv, lf2_mv, lf3_mv, lf4_mv);
 	}
 
 	// delete this task if it ever breaks out
@@ -89,12 +88,12 @@ void battery_logic(
 	int lf3_mv,
 	int lf4_mv)
 {
-	// we often want to know the lower of the cells within the life po banks
+	// we often want to know the higher of the cells within the life po banks
 	int max_lfb1_mv = Max(lf1_mv, lf2_mv);
 	int max_lfb2_mv = Max(lf3_mv, lf4_mv);
 
-	// we often want to know whether the lower cells within the life po banks have filled up
-	bool life_po_full_mv = max_lfb1_mv > lf_full_max_mv && max_lfb2_mv > lf_full_max_mv;
+	// we often want to know whether the higher cells within the life po banks have filled up
+	bool life_po_full_mv = max_lfb1_mv > LF_FULL_MAX_MV && max_lfb2_mv > LF_FULL_MAX_MV;
 
 	/////
 	// phase 0: determine whether any batteries should have their strikes incremented
@@ -109,64 +108,56 @@ void battery_logic(
 	// phase 1: determine whether we want to make a change to the charge state
 	/////
 
-	// the flow is as follows: we should charge the lion's up to lion_up_mv, and in the time between
-	// their filling up and their dropping down below an optimal state, we should charge the
+	// the flow is as follows: we should charge the lion's up to LI_UP_MV, and in the time between
+	// their filling up and their dropping down below LI_DOWN_MV, we should charge the
 	// lifepo
 
 	// more concretely:
-	//  - if we're in FILL_LION, we switch if the lifepo's aren't lion_up_mv and both lion's are
-	//  - if we're in FILL_LIFE_PO, we switch if the either lion is below lion_low_power_mv, or both are
-	//    below lion_down_mv
+	//  - if we're in FILL_LI, we switch when the lion's becomes full (above LI_UP_MV)
+	//  - if we're in FILL_LF, we switch the when the max cell in both lifepo banks
+	//    becomes full (above LF_FULL_MAX_MV) or one of the lion's drops below LI_DOWN_MV
 
-	// this isn't synonymous with the global state, but they're related in the following ways:
-	//  - if the global state is idle flash or idle not flash, we can be in either FILL_LION,
-	//    or FILL_LIFE_PO
-	//  - otherwise, FILL_LION is the only option
+	// this is not equivalent with with the global state, but they're related in the following ways:
+	//  - if the global state is idle flash or idle not flash, we can be in either FILL_LI,
+	//    or FILL_LF
+	//  - otherwise, we can only be in FILL_LI
 
-	// TODO: incorporate charge pin in some way
-	// TODO: satellite state should be stored in a gloal somewhere instead of being searched
-	// for in this way
-	if (get_sat_state() != IDLE_FLASH && get_sat_state() != IDLE_NO_FLASH)
+	// NOTE: initial charge state is FILL_LI
+	// TODO*: incorporate charge pin in some way -- this needs to be very central to the determination
+	// of fullness
+	sat_state_t sat_state = get_sat_state();
+	switch (curr_charge_state)
 	{
-		// TODO: make extra sure of this
-		curr_charge_state = FILL_LI;
-	}
-	else
-	{
-		switch (curr_charge_state)
-		{
-			// NOTE: these conditions are a subset of the low power conditions -- if it's low
-			// power, it'll be FILL_LION
+		case FILL_LI:
+			if ((li1_mv > LI_UP_MV && li2_mv > LI_UP_MV) &&
+			    !life_po_full_mv &&
+				  (sat_state == IDLE_FLASH || sat_state == IDLE_NO_FLASH))
+				curr_charge_state = FILL_LF;
+			break;
 
-			case FILL_LI:
-				if (!life_po_full_mv && (li1_mv > li_up_mv && li2_mv > li_up_mv))
-				{
-					curr_charge_state = FILL_LF;
-				}
-
-				break;
-
-			case FILL_LF:
-				if ((li1_mv < li_down_mv && li2_mv < li_down_mv) ||
-					(li1_mv < li_low_power_mv || li2_mv < li_low_power_mv) ||
-					life_po_full_mv)
-				{
-					curr_charge_state = FILL_LI;
-				}
-
-				break;
-		}
+		case FILL_LF:
+			if ((li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV) ||
+				  life_po_full_mv ||
+				  (sat_state != IDLE_FLASH && sat_state != IDLE_NO_FLASH))
+				curr_charge_state = FILL_LI;
+			break;
 	}
 
 	/////
 	// phase 2: determine which batteries should be charging
 	/////
 
+	// this is generally dictated by wanting the two lion's or the two lifepo banks
+	// to be balanced as they charged and discharged
+
+	// therefore, in accordance with the charging state, the batteries with lower
+	// voltages will be charged, and those with higher voltages will be discharged
+
 	switch (curr_charge_state)
 	{
 		case FILL_LI:
-			// charge the lion with the the lower percentage
-			// discharge the lion with the lion_down_mver percentages
+			// charge the lion with the the lower voltage
+			// discharge the lion with the higher voltage
 			if (li1_mv <= li2_mv)
 			{
 				batt_charging = LI1;
@@ -185,23 +176,15 @@ void battery_logic(
 			// NOTE: this might lead to issues if the cells are very
 			// unbalanced
 			if (max_lfb1_mv <= max_lfb2_mv)
-			{
 				batt_charging = LFB1;
-			}
 			else
-			{
 				batt_charging = LFB2;
-			}
 
-			// discharge the lion with the the lion_down_mver percentage
+			// discharge the lion with the higher voltage
 			if (li1_mv <= li2_mv)
-			{
 				batt_discharging = LI2;
-			}
 			else
-			{
 				batt_discharging = LI1;
-			}
 
 			break;
 	}
@@ -210,8 +193,8 @@ void battery_logic(
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 
-	// TODO: reconsider, down the road, the effects of the suspend and resume all
-	// TODO: make very sure this doesn't hang
+	// TODO*: reconsider, down the road, the effects of the suspend and resume all
+	// TODO*: make very sure this doesn't hang
 	#ifndef BATTERY_DEBUG
 	vTaskSuspendAll();
 
@@ -231,8 +214,8 @@ void battery_logic(
 		not_discharge_pin = P_L1_DISG;
 	}
 
-	// TODO: make sure this went through by looking at the CHG PIN
-	// TODO: this should be done with more error checks
+	// TODO*: make sure this went through by looking at the CHG PIN
+	// TODO*: this should be done with more error checks
 	set_output(true, discharge_pin);
 	set_output(false, not_discharge_pin);
 
@@ -260,7 +243,7 @@ void battery_logic(
 				break;
 		}
 
-		// TODO: make sure this went through by looking at CHG
+		// TODO*: make sure this went through by looking at CHG
 		set_output(i == batt_charging, charge_pin);
 	}
 

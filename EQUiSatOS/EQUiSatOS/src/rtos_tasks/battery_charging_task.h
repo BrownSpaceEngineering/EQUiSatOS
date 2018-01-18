@@ -16,18 +16,19 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
-#define li_up_mv                   4170
-#define li_down_mv                 4050
-#define li_low_power_mv            3900
-#define li_critical_mv             2750
+#define LI_UP_MV                   4170
+#define LI_DOWN_MV                 4050
+#define LI_LOW_POWER_MV            3900
+#define LI_CRITICAL_MV             2750
 
-#define lf_full_max_mv             3500
-#define lf_flash_avg_mv            3250
+#define LF_FULL_MAX_MV             3500
+#define LF_FLASH_AVG_MV            3250
 
 // the battery that's currently charging
 int batt_charging;
 
 // the battery that's currently discharging
+// NOTE: this is only ever a Lion
 int batt_discharging;
 
 // charging state
