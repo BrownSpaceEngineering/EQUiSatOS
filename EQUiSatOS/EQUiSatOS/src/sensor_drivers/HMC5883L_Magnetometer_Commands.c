@@ -1,16 +1,11 @@
 #include "HMC5883L_Magnetometer_Commands.h"
 
-/*
-	Perform a standard initialization of the HMC5883L Magnetometer
-	CURRENT SETTINGS:
-	15HZ default measurement rate
-	Gain = 5
-	Single Measurement Mode
-*/
 void HMC5883L_init(){
 	
+	//Sets config register A to 0x70: 8 samples averaged, 15Hz data output rate, single measurement
 	static uint8_t write_buffer_1[2] = {0x00, 0x70};
 
+	//Sets config register B to 0xA0: Gain = 390 (LSB/Gauss)
 	static uint8_t write_buffer_2[2] = {0x01, 0xA0};
 	
 	struct i2c_master_packet write_packet_1 = {
@@ -29,8 +24,12 @@ void HMC5883L_init(){
 		.high_speed      = false,
 		.hs_master_code  = 0x0,
 	};
-	i2c_write_command(&write_packet_1);
-	i2c_write_command(&write_packet_2);
+	enum status_code status = i2c_write_command(&write_packet_1);
+	if (is_error(status)) {
+		return status;
+	}
+	status = i2c_write_command(&write_packet_2);
+	return status;
 }
 
 /*
@@ -58,16 +57,20 @@ void HMC5883L_read(uint8_t* read_buffer){
 		.hs_master_code  = 0x0,
 	};
 	
-	i2c_write_command(&write_packet);
-	i2c_read_command(&read_buffer);
+	enum status_code status = i2c_write_command(&write_packet);
+	if (is_error(status)) {
+		return status;
+	}
+	status = i2c_read_command(&read_packet);
+	return status;
 }
 
-//Converts the raw data from sensor into xyz coordinates in milligauss.
+//Converts the raw data from sensor into signed xyz coordinates
 //xyzBuffer must be of length 3 and will be populated with xyz.
 void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 	uint16_t x = ((uint16_t)readBuffer[0] << 8) | readBuffer[1];
-	uint16_t y = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
-	uint16_t z = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];
+	uint16_t z = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
+	uint16_t y = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];
 	xyzBuffer[0] = (int16_t) x;
 	xyzBuffer[1] = (int16_t) y;
 	xyzBuffer[2] = (int16_t) z;
