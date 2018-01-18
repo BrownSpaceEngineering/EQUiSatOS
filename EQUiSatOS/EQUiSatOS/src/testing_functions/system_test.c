@@ -235,7 +235,7 @@ static void MPU9250_test(bool rebias){
 
 		// status code ?
 		get_error(code,buffer);
-		print("acc \t %s \t x: %d \t y: %d \t z: %d\n",buffer,MPU9250_results[0],MPU9250_results[1],MPU9250_results[2]);
+		print("acc \t %s \t x: %d \t y: %d \t z: %d\n",buffer,(int16_t) MPU9250_results[0],(int16_t) MPU9250_results[1],(int16_t) MPU9250_results[2]);
 		//print_error(code);
 	}
 
@@ -247,7 +247,7 @@ static void MPU9250_test(bool rebias){
 
 		// status code?
 		get_error(code,buffer);
-		print("gyro \t %s \t x: %d \t y: %d \t z: %d\n",buffer,MPU9250_results[3],MPU9250_results[4],MPU9250_results[5]);
+		print("gyro \t %s \t x: %d \t y: %d \t z: %d\n",buffer,(int16_t) MPU9250_results[3],(int16_t) MPU9250_results[4],(int16_t) MPU9250_results[5]);
 		//print_error(code);
 	}
 
@@ -463,7 +463,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_CTRLBRD);
 	
 	AD7991_results[0] = ((float) results[0])*2.01;		//3V6Rf
-	AD7991_results[1] = ((float) results[1])*3.3;		//3V6SNS
+	AD7991_results[1] = ((float) results[1]);		//3V6SNS
 	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
 	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
