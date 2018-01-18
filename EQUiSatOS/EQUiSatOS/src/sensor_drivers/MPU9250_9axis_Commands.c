@@ -6,8 +6,8 @@ void MPU9250_init(void) {
 	//enum status_code statc1 = 
 	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
 	
-	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_2000_DPS};
-	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_16_G};
+	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_250_DPS};
+	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_2_G};
 	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
 	
 	//enum status_code statc2 = 
