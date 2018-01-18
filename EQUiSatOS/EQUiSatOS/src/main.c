@@ -14,16 +14,6 @@ static void run_tests(void) {
 	//assert_transmission_constants();
 
 	//system_test();
-	/************************************************************************/
-	/* AD HOC TESTS GO AFTER HERE - Make a FUNCTION for them                */
-	/************************************************************************/
-	/*configure_pwm(P_ANT_DRV1, P_ANT_DRV1_MUX);
-	init_tc();
-	while(get_count() < 3) {
-			set_pulse_width_fraction(3, 4);
-	}
-	disable_pwm();
-	*/
 }
 
 void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
