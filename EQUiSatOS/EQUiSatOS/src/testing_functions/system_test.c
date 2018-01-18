@@ -1,32 +1,32 @@
 #include "system_test.h"
 
-static void sensor_read_tests(void) {
-	uint8_t six_buf[6];
+void sensor_read_tests(void) {
+	uint16_t six_buf[6];
 	uint8_t six_buf_8t[6];
 	uint8_t three_buf[3];
 	uint8_t four_buf[4];
 	uint8_t two_buf[2];
 	delay_ms(100);
 	print("\n\n\n\n##### NEW RUN #####\n");
-
+	
 	print("\n# IMU #\n");
 	read_accel_batch(three_buf);
-	print("accel: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	print("accel: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 	read_gyro_batch(three_buf);
-	print("gyro: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	print("gyro: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 	read_magnetometer_batch(three_buf);
-	print("magnetometer: %d %d %d\n", three_buf[0], three_buf[1], three_buf[2]);
+	print("mag: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 
 	print("\n# IR #\n");
 	read_ir_ambient_temps_batch(six_buf);
-	print("ir ambs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
 	read_ir_object_temps_batch(six_buf);
-	print("ir objs: %d %d\n", (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]));
+	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
 
 	print("\n# PDIODE #\n");
 	read_pdiode_batch(six_buf_8t);
 	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, six_buf_8t[i]);
+		print("pdiode %d: %d\n",i, (uint16_t)(six_buf_8t[i])<<8);
 	}
 
 	print("\n\n# LiON VOLTS #\n");
