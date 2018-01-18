@@ -9,7 +9,7 @@
 
 // lion_down_mv-level TODO's:
 //  0. understand the code as it stands (done)
-//  1. be working in terms of raw voltages
+//  1. be working in terms of raw voltages (done)
 //  2. make sure of state changes
 //  3. work through TODO's
 //  4. implement strikes! (also, what will change once a battery has struck out?)
@@ -30,7 +30,7 @@ void battery_charging_task(void *pvParameters)
 	curr_charge_state = FILL_LI;
 
 	// explicitly initializing this even though initial value doesn't matter
-	// TODO: make sure it doesn't  matter
+	// TODO: make sure it doesn't matter
 	batt_charging = -1;
 	batt_discharging = -1;
 
@@ -64,20 +64,8 @@ void battery_charging_task(void *pvParameters)
 			&lf4_mv,
 			NULL);
 
- 		int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
- 		int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
-
- 		// NOTE: get_global_state and battery_logic are individual functions in order to make
+ 		// NOTE: battery_logic is an individual function in order to make
  		// it easier to "unit test" them with contrived inputs
-
- 		// what's the global state of the satellite?
- 		int curr_global_state = get_global_state(
- 			li1_mv,
- 			li2_mv,
- 			lfb1_avg_mv,
- 			lfb2_avg_mv);
-
- 		set_sat_state(curr_global_state);
 
  		// what batteries should we be charging?
  		battery_logic(
@@ -93,87 +81,6 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-int get_global_state(int li1_mv, int li2_mv, int lfb1_avg_mv, int lfb2_avg_mv)
-{
-	if (get_sat_state() == RIP)
-	{
-		return RIP;
-	}
-
-	// enter the rip state if both are lion_critical_mv
-	if (li1_mv <= li_critical_mv && li2_mv <= li_critical_mv)
-	{
-		int end_of_life = 1;
-
-		// we want to be very sure that both are actually lion_critical_mv
-		for (int i = 0; i < 5; i++)
-		{
-			lion_volts_batch lion_volts;
-
-			// TODO: this needs to match the new paradigm for reading voltages
-			// (i.e. it needs to call the function to compute the voltages instead
-		  // of that which gives those that were most recently calculated)
-			read_lion_volts_batch(lion_volts);
-			int recalc_li1_mv = lion_volts[0];
-			int recalc_li2_mv = lion_volts[1];
-
-			if (!(recalc_li1_mv <= li_critical_mv && recalc_li2_mv <= li_critical_mv))
-			{
-				end_of_life = 0;
-				break;
-			}
-
-			// TODO: maybe reconsider this down the road
-			vTaskSuspendAll();
-			vTaskDelay(time_to_wait_for_crit_ms);
-			xTaskResumeAll();
-		}
-
-		if (end_of_life)
-		{
-			return RIP;
-		}
-		else
-		{
-			// TODO: send a hi-pri error
-
-			// TODO: is this what we want to do?
-			return LOW_POWER;
-		}
-	}
-
-	if (get_sat_state() == HELLO_WORLD)
-	{
-		return HELLO_WORLD;
-	}
-
-	if (get_sat_state() == ANTENNA_DEPLOY)
-	{
-		return ANTENNA_DEPLOY;
-	}
-
-	if (get_sat_state() == INITIAL)
-	{
-		return INITIAL;
-	}
-
-	// enter low power if lion's aren't great
-	if (li1_mv < li_low_power_mv || li2_mv < li_low_power_mv)
-	{
-		return LOW_POWER;
-	}
-
-	// enter idle no flash if lion's are great but one of the two life po banks
-	// isn't great
-	// TODO: make sure that this is what we want
-	if (!(lfb1_avg_mv > lf_flash_avg_mv && lfb2_avg_mv > lf_flash_avg_mv))
-	{
-		return IDLE_NO_FLASH;
-	}
-
-	return IDLE_FLASH;
-}
-
 void battery_logic(
 	int li1_mv,
 	int li2_mv,
@@ -182,11 +89,11 @@ void battery_logic(
 	int lf3_mv,
 	int lf4_mv)
 {
-	// we often want to know the lion_down_mver of the cells within the life po banks
+	// we often want to know the lower of the cells within the life po banks
 	int max_lfb1_mv = Max(lf1_mv, lf2_mv);
 	int max_lfb2_mv = Max(lf3_mv, lf4_mv);
 
-	// we often want to know whether the lion_down_mver cells within the life po banks have filled up
+	// we often want to know whether the lower cells within the life po banks have filled up
 	bool life_po_full_mv = max_lfb1_mv > lf_full_max_mv && max_lfb2_mv > lf_full_max_mv;
 
 	/////

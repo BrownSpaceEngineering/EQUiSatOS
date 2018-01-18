@@ -19,7 +19,6 @@
 StaticSemaphore_t _watchdog_task_mutex_d;
 
 void watchdog_init(void);
-void watchdog_task(void *pvParameters);
 bool watchdog_as_function(void);
 
 void watchdog_mutex_take(void);

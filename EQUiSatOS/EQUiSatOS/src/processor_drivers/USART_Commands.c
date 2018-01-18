@@ -34,7 +34,7 @@ void usart_mutex_init(void) {
 }	
 
 //Receive handler
-void SERCOM3_Handler()
+void SERCOM3_Handler(void)
 {
 	if (SERCOM3->USART.INTFLAG.bit.RXC){
 		//char curByte = SERCOM3->USART.DATA.reg;
@@ -47,7 +47,7 @@ void SERCOM3_Handler()
 	}
 }
 
-void clear_USART_rx_buffer() {
+void clear_USART_rx_buffer(void) {
 	memset(receivebuffer, 0, LEN_RECEIVEBUFFER);
 	receiveIndex = 0;
 }

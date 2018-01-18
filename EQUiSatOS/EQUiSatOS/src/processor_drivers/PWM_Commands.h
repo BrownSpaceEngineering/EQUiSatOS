@@ -11,16 +11,15 @@
 
 #include <global.h>
 
-void configure_pwm(int pwm_pin, int pwm_mux);
+void configure_pwm(int pwm_pin, int pwm_mux, int p_ant);
 bool set_pulse_width_fraction(int numerator, int denominator);
 void disable_pwm(void);
 
 struct tcc_module tcc_instance;
+int channel;
 
 //Config parameters
 #define CONF_PWM_MODULE      TCC0
-#define CONF_PWM_CHANNEL     3 
-#define CONF_PWM_OUTPUT      6
 
 //period configuration
 #define PWM_PERIOD			0x10
