@@ -233,24 +233,29 @@ uint16_t get_orbits_since_launch(void) {
  *		at_orbit_fraction(0, 2, .1) = false
  */
 bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator) {
-	// first, we scale up by the denominator to bring our integer precision up to the 
-	// fractional (bucket) size. Thus, we will truncate all bits that determine how
-	// far we are inside a fractional bucket, and it will give us only the current one
-	// we're in
-	// TODO: Will the calculations stay in the 32 bit registers? I.e. will they overflow?
-	// (use 64 bit for now to be safe)
-	uint64_t cur_orbit_fraction = (get_current_timestamp() * orbit_fraction_denominator) / 
-									(ORBITAL_PERIOD_S * orbit_fraction_denominator);
-									
-	// strictly greater than because we only want this to return true on 
-	// a CHANGE, i.e. when the fraction moves from one "bucket" or 
-	// fraction component to the next we set prev_orbit_fraction 
-	// so that we wait the fractional amount before returning true again
-	if (cur_orbit_fraction > *prev_orbit_fraction) {
-		*prev_orbit_fraction = cur_orbit_fraction;
+	#ifdef TESTING_SPEEDUP
 		return true;
-	}
-	return false;
+	#else 
+		// first, we scale up by the denominator to bring our integer precision up to the 
+		// fractional (bucket) size. Thus, we will truncate all bits that determine how
+		// far we are inside a fractional bucket, and it will give us only the current one
+		// we're in
+		// TODO: Will the calculations stay in the 32 bit registers? I.e. will they overflow?
+		// (use 64 bit for now to be safe)
+		uint64_t cur_orbit_fraction = (get_current_timestamp() * orbit_fraction_denominator) / 
+										(ORBITAL_PERIOD_S * orbit_fraction_denominator);
+									
+		// strictly not equal to (really greater than) because we only want 
+		// this to return true on a CHANGE, 
+		// i.e. when the fraction moves from one "bucket" or 
+		// fraction component to the next we set prev_orbit_fraction 
+		// so that we wait the fractional amount before returning true again
+		if (cur_orbit_fraction != *prev_orbit_fraction) {
+			*prev_orbit_fraction = cur_orbit_fraction;
+			return true;
+		}
+		return false;
+	#endif
 }
 
 /************************************************************************/

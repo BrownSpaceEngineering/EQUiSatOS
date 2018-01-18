@@ -16,11 +16,17 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLIGHT
+#define FLATSAT
 
 //0 to suppress prints, 1 to print over USART
 #define PRINT_DEBUG 1
 
+// define this flag to enable flashing
+//#define FLASH_ACTIVE
+
+// define this flag to disable normal frequencies and read data faster
+// (ex: don't read data distributed around an orbit)
+#define TESTING_SPEEDUP
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */
@@ -38,9 +44,6 @@
 	#define IR_ACCESS	MLX90614_ACCESSPANEL_V4_7
 	#define IR_TOP1		MLX90614_TOPPANEL_V5_1
 	
-	//Remote ADCs
-	#define AD7991_BATBRD 0b0101000 //0x28 battery board
-	#define AD7991_CTRLBRD 0b0101001 //0x29 control board
 #endif
 #ifdef FLATSAT
 	//Sets processor pinouts
@@ -54,12 +57,18 @@
 	#define IR_ACCESS	MLX90614_ACCESSPANEL_V4_6
 	#define IR_TOP1		MLX90614_TOPPANEL_V4_1
 	
-	//Remote ADCs
-	#define AD7991_BATBRD 0b0101000 //0x28 battery board
-	#define AD7991_CTRLBRD 0b0101001 //0x29 control board
 #endif	
 #ifdef XPLAINED	
-	
+	//Sets processor pinouts
+	#define	CTRL_BRD_V3
+
+	/*Flatsat IR sensors (because we have nothing else to do) */
+	#define	IR_FLASH	MLX90614_FLASHPANEL_V6_2_1
+	#define	IR_SIDE1	MLX90614_SIDEPANEL_V4_2
+	#define	IR_SIDE2	MLX90614_SIDEPANEL_V5_2
+	#define	IR_RBF		MLX90614_RBFPANEL_V1
+	#define IR_ACCESS	MLX90614_ACCESSPANEL_V4_6
+	#define IR_TOP1		MLX90614_TOPPANEL_V4_1
 #endif
 
 #if configUSE_TRACE_FACILITY == 1
@@ -70,6 +79,10 @@
 /****************************************************************************************/
 /*					 SENSOR ADDRESSES BELOW THIS LINE - DO NOT EDIT					    */
 /****************************************************************************************/
+
+//Remote ADCs
+#define AD7991_BATBRD 0b0101000 //0x28 battery board
+#define AD7991_CTRLBRD 0b0101001 //0x29 control board
 
 /*IR CONFIGURATION*/
 //Test Sensors

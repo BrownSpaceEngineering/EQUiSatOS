@@ -2,9 +2,10 @@
 #include "runnable_configurations/flatsat.h"
 #include "runnable_configurations/bat_testing.h"
 #include "runnable_configurations/antenna_pwm.h"
+#include "data_handling/package_transmission.h"
 
 static void run_tests(void) {
-	pwm_test();
+	//pwm_test();
 	//sensor_read_tests();
 	//actuallyFlashingFlashBurstTest(); // as the name implies, this does ACTUALLY FLASH THE SATELLITES BIG LEDS
 	//flatsat_run(); //calls flatsat init
@@ -35,7 +36,7 @@ int main(void)
 	global_init();
 	set_charging_states(true, true, true, true);
 	system_test();
-	//run_tests();
+	run_tests();
 
 	run_rtos();
 }

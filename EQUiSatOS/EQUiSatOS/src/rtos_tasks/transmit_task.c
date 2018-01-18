@@ -46,10 +46,10 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t prev_msg_type) 
 		return -1;
 	}
 	
-	msg_data_type_t new_msg_type;
+	msg_data_type_t new_msg_type = prev_msg_type;
 	do {
 		// attempt to get next message type, wrapping around
-		new_msg_type = (prev_msg_type + 1) % NUM_MSG_TYPE;
+		new_msg_type = (new_msg_type + 1) % NUM_MSG_TYPE;
 		
 		// skip LOW_POWER_DATA
 		if (new_msg_type == LOW_POWER_DATA) {
@@ -73,9 +73,8 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t prev_msg_type) 
  */
 bool determine_data_to_transmit(void) {
 	// only grab new transmission and fill message buffer after we've transmitted this one enough
-	if (current_sequence_transmissions >= TRANSMIT_TASK_MSG_REPEATS) {
-		current_sequence_transmissions = 0;
-
+	// (indicated by starting at or wrapping around to 0)
+	if (current_sequence_transmissions == 0) {
 		// determine which message type we should transmit,
 		// attempting to transmit an increasing sequence of message type
 		// (if some or all of the equistacks are empty, then this sequence may not
@@ -138,9 +137,12 @@ void transmit_task(void *pvParameters)
 		usart_send_string(msg_buffer_2);
 		usart_send_string(msg_buffer_3);
 
-		current_sequence_transmissions++; // NOTE: putting this here as opposed to after the confirmation
-										// means we will try to send the newest packet if encountering failures,
-										// as opposed to the first one to fail.
+		// NOTE: putting this here as opposed to after the confirmation
+		// means we will try to send the newest packet if encountering failures,
+		// as opposed to the first one to fail.
+		// we wrap around here so that the transmit buffers are updated each time
+		// current_sequence_transmissions hits zero (mainly done so they're updated on first boot)
+		current_sequence_transmissions = (current_sequence_transmissions + 1) % TRANSMIT_TASK_MSG_REPEATS;
 
 		bool transmission_in_progress = true;
 		TickType_t start_tick = xTaskGetTickCount();
