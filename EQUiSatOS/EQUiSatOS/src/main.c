@@ -37,5 +37,5 @@ int main(void)
 	system_test();
 	//run_tests();
 
-	//run_rtos();
+	run_rtos();
 }

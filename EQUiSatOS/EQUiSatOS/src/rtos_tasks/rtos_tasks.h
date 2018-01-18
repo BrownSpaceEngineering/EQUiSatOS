@@ -20,13 +20,14 @@
 #include "data_handling/State_Structs.h"
 #include "data_handling/data_utils.h"
 #include "watchdog_task.h"
+#include "battery_charging_task.h"
 
 /************************************************************************/
 /* TASK HEADERS                                                         */
 /************************************************************************/
 // lowest-priority task... may be used for switching to lower power / other modes
 // FOR US, it handles state, and is implemented in init_rtos_tasks.c
-extern void vApplicationIdleHook(void); 
+extern void vApplicationIdleHook(void);
 void vApplicationStackOverflowHook(TaskHandle_t xTask,
                                     signed char *pcTaskName);
 
@@ -35,6 +36,8 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask,
 /************************************************************************************/
 
 // Action tasks
+void watchdog_task(void *pvParameters);
+void state_handling_task(void *pvParameters);
 void antenna_deploy_task(void *pvParameters);
 void battery_charging_task(void *pvParameters);
 void transmit_task(void *pvParameters);
@@ -52,6 +55,8 @@ void low_power_data_task(void *pvParameters);
 /******************************************************************************/
 StaticTask_t watchdog_task_buffer;
 StackType_t watchdog_task_stack					[TASK_WATCHDOG_STACK_SIZE];
+StaticTask_t state_handling_task_buffer;
+StackType_t state_handling_task_stack			[TASK_STATE_HANDLING_STACK_SIZE];
 StaticTask_t antenna_deploy_task_buffer;
 StackType_t antenna_deploy_task_stack			[TASK_ANTENNA_DEPLOY_STACK_SIZE];
 StaticTask_t battery_charging_task_buffer;
@@ -105,9 +110,10 @@ SemaphoreHandle_t _low_power_equistack_mutex;
 TaskHandle_t* task_handles[NUM_TASKS];
 
 /* Task handles for starting and stopping */
-TaskHandle_t watchdog_task_handle; // Should we have this?
+TaskHandle_t watchdog_task_handle; // TODO: Should we have this?
+TaskHandle_t state_handling_task_handle; // TODO: Should we have this?
 TaskHandle_t antenna_deploy_task_handle;
-TaskHandle_t battery_charging_task_handle; // Should we have this?
+TaskHandle_t battery_charging_task_handle; // TODO: Should we have this?
 TaskHandle_t flash_activate_task_handle;
 TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
