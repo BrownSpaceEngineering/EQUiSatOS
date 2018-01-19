@@ -26,6 +26,10 @@
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       1000
 
+#define TRY_PIN_DELAY_TIME_MS           100
+#define MAX_TIMES_TRY_PIN               3
+#define WAIT_TIME_BEFORE_PIN_CHECK_MS   10
+
 // the battery that's currently charging
 int batt_charging;
 

@@ -21,7 +21,6 @@
 // TODO*: make sure that a global boolean flag is being set on the first time that
 // Lion's become full
 // TODO*: integrate the new concept of "fullness" the state changing task
-// TODO*: resolve all the warnings
 void battery_charging_task(void *pvParameters)
 {
 	/////
@@ -45,7 +44,7 @@ void battery_charging_task(void *pvParameters)
 	{
 		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 
-    // report to watchdog
+        // report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
 		///
@@ -193,54 +192,107 @@ void battery_logic(
 
 	xSemaphoreTake(_battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
 
-	// set the lion that should be discharging to discharge
-	// set the other lion to not discharge
+	///
+	// phase 3a: set the lion that should be discharging to discharge and
+	//  set the other lion to not discharge
+	///
+
+	// TODO: make sure all of the logic with the checking works
 	// NOTE: very important to set the discharging pin to true before setting the other to false
-	int discharge_pin = 0;
-	int not_discharge_pin = 0;
-	if (batt_discharging == LI1)
+	int discharge_pin = (batt_discharging == LI1) ? P_L1_DISG : P_L2_DISG;
+	int discharge_success = 0;
+	for (int i = 0; !discharge_success && i < MAX_TIMES_TRY_PIN; i++)
 	{
-		discharge_pin = P_L1_DISG;
-		not_discharge_pin = P_L2_DISG;
-	}
-	else
-	{
-		discharge_pin = P_L2_DISG;
-		not_discharge_pin = P_L1_DISG;
+		// NOTE: discharge pins are active low
+		set_output(false, discharge_pin);
+		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+
+		bat_charge_dig_sigs_batch batch;
+		read_bat_charge_dig_sigs_batch(&batch);
+		discharge_success = (batt_discharging == LI1) ? (batch>>9)&0x1 : (batch>>8)&0x1;
 	}
 
-	// TODO*: make sure this went through by looking at the CHG PIN
-	// TODO*: this should be done with more error checks
-	set_output(true, discharge_pin);
-	set_output(false, not_discharge_pin);
+	if (!discharge_success)
+	{
+		// TODO: add a strike and take some action
+	}
 
-	// set the battery that should be charging to charge
-	// set the others to not charge
+	// set the lion that should not be discharging to not discharge
+	int not_discharge_pin = (batt_discharging == LI1) ? P_L2_DISG : P_L1_DISG;
+	int stop_discharge_success = 0;
+	for (int i = 0; !stop_discharge_success && i < MAX_TIMES_TRY_PIN; i++)
+	{
+		// NOTE: discharge pins are active low
+		set_output(true, not_discharge_pin);
+		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+
+		bat_charge_dig_sigs_batch batch;
+		read_bat_charge_dig_sigs_batch(&batch);
+
+		// it was a success if the battery is not contributing to the output at this point
+		stop_discharge_success = !((batt_discharging == LI1) ? (batch>>9)&0x1 : (batch>>8)&0x1);
+	}
+
+	if (!stop_discharge_success)
+	{
+		// TODO: add a strike and take some action
+	}
+
+	///
+	// phase 3a: set the battery that should be charging to charge and
+	//  set the others to not charge
+	///
+
+	// looping through each of the batteries
 	for (int i = 0; i < 4; i++)
 	{
 		int charge_pin = 0;
+		int should_be_charging = (i == batt_charging); // see the enum in .h
+
+		// this signifies the amount by which dig_sigs result must be shifted
+		int chgn_position = 0;
+
 		switch (i)
 		{
 			case LI1:
 				charge_pin = P_L1_RUN_CHG;
+				chgn_position = 12;
 				break;
 
 			case LI2:
 				charge_pin = P_L2_RUN_CHG;
+				chgn_position = 14;
 				break;
 
 			case LFB1:
 				charge_pin = P_LF_B1_RUNCHG;
+				chgn_position = 7;
 				break;
 
 			case LFB2:
 				charge_pin = P_LF_B2_RUNCHG;
+				chgn_position = 4;
 				break;
 		}
 
-		// TODO*: make sure this went through by looking at CHG
-		set_output(i == batt_charging, charge_pin);
+		int charge_success = 0;
+		for (int j = 0; !charge_success && j < MAX_TIMES_TRY_PIN; j++)
+		{
+			set_output(should_be_charging, charge_pin);
+			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 
-		xSemaphoreGive(_battery_charging_mutex);
+			bat_charge_dig_sigs_batch batch;
+			read_bat_charge_dig_sigs_batch(&batch);
+
+			// NOTE: CHGN is active low
+			charge_success = ((batch>>chgn_position)&0x1) != should_be_charging;
+		}
+
+		if (!charge_success)
+		{
+			// TODO: add a strike and take some action
+		}
 	}
+
+	xSemaphoreGive(_battery_charging_mutex);
 }
