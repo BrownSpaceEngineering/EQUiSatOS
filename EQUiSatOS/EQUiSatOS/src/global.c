@@ -70,6 +70,7 @@ void global_init(void) {
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();
+	HMC5883L_init();
 	delay_init();
 
 	init_persistent_storage();
