@@ -217,7 +217,7 @@ typedef enum
 #define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
 #define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transistions
+#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 #define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 // FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 
