@@ -60,24 +60,25 @@ void global_init(void) {
 	// Initialize the SAM system
 	system_init();
 
-	/**
-	 * MUST be before anything RTOS-related:
-	 *   - USART_init(); NOW USES MUTEXES
-	 *   - init_errors(); error equistack
-	 */ 
+	// MUST be before anything RTOS-related
+	// (most notably, those creating mutexes)
 	init_tracelyzer();	
 
 	pin_init();
-	init_rtc();
+ 	init_rtc();
 	USART_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();
 	delay_init();
-	
+
 	init_persistent_storage();
 	init_errors();
-	
+	watchdog_init();
+}
+
+// initialization that can only be done with RTOS started
+void global_init_post_rtos(void) {
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	// TODO: we can't do this here because we haven't yet populated the error equistacks
 	// from MRAM and these errors here may be overwritten once we do

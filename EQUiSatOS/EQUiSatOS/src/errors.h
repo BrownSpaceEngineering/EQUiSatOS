@@ -88,8 +88,8 @@
 #define ELOC_CACHED_PERSISTENT_STATE	52
 #define ELOC_MRAM_READ					53
 #define ELOC_MRAM_WRITE					54
-#define ELOC_5V_EN						55
-#define ELOC_STATE_HANDLING			56
+#define ELOC_5V_REF						55
+#define ELOC_STATE_HANDLING				56
 
 /******************** PROBLEM CODES ********************/
 

@@ -26,7 +26,8 @@
 /* TASK HEADERS                                                         */
 /************************************************************************/
 // lowest-priority task... may be used for switching to lower power / other modes
-// FOR US, it handles state, and is implemented in init_rtos_tasks.c
+// FOR US, it will eventually do nothing, but currently is used for testing (TODO)
+extern void vApplicationDaemonTaskStartupHook(void);
 extern void vApplicationIdleHook(void);
 void vApplicationStackOverflowHook(TaskHandle_t xTask,
                                     signed char *pcTaskName);
@@ -53,6 +54,8 @@ void low_power_data_task(void *pvParameters);
 /******************************************************************************/
 /* Global static memory allocated for tasks; stack and data structure holding */
 /******************************************************************************/
+StaticTask_t init_task_buffer;
+StackType_t init_task_stack						[TASK_INIT_STACK_SIZE];
 StaticTask_t watchdog_task_buffer;
 StackType_t watchdog_task_stack					[TASK_WATCHDOG_STACK_SIZE];
 StaticTask_t state_handling_task_buffer;
@@ -133,6 +136,7 @@ void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, 
 uint32_t get_time_of_next_flash(void); // implemented in flash_activate_task
 equistack* get_msg_type_equistack(msg_data_type_t msg_type);
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
+int num_tries_ant_deploy(void); // returns the number of times we've tried to deploy the antenna
 
 /************************************************************************/
 /*  Required functions for FreeRTOS 9 static allocation                 */

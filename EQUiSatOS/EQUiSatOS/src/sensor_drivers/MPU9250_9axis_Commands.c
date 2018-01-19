@@ -18,7 +18,7 @@ void MPU9250_init(void) {
 	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
-enum status_code MPU9250_read_mag(uint16_t toFill[3]){
+enum status_code MPU9250_read_mag(int16_t toFill[3]){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
 	//enum status_code statc1 = 
@@ -43,7 +43,8 @@ enum status_code MPU9250_read_mag(uint16_t toFill[3]){
 	return statc2;
 }
 
-enum status_code MPU9250_read_acc(uint16_t toFill[3]){
+//toFill in the order of xyz
+enum status_code MPU9250_read_acc(int16_t toFill[3]){
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
 	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,ACC_READ_ADDRESS,MPU9250_SHOULD_STOP);
@@ -56,7 +57,18 @@ enum status_code MPU9250_read_acc(uint16_t toFill[3]){
 	return statc;
 }
 
-enum status_code MPU9250_read_gyro(uint16_t toFill[3]){	
+enum status_code MPU9250_read_acc_EQUiSat_coords(int16_t toFill[3]) {	
+	MPU9250_read_acc(toFill);
+	int16_t temp = toFill[2];
+	toFill[2] = toFill[1]*-1;
+	toFill[1] = temp;
+	
+
+	
+}
+
+
+enum status_code MPU9250_read_gyro(int16_t toFill[3]){	
 	uint8_t data[6] = {0,0,0,0,0,0};
 	//Read data
 	enum status_code statc = readFromAddressAndMemoryLocation(data,6,MPU9250_ADDRESS,GYRO_READ_ADDRESS,MPU9250_SHOULD_STOP);

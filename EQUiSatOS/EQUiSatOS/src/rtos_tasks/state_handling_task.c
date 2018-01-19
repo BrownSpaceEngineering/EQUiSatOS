@@ -145,11 +145,19 @@ void state_handling_task(void *pvParameters)
             set_sat_state(ANTENNA_DEPLOY);
           break;
 
-        // TODO: the state changes from here should be here instead of antenna
-        // deploy task
         case ANTENNA_DEPLOY:
-          // this is the one case in which the another task is responsible for
-          // state changes
+          // if the antenna is open kill the task because the antenna has been deployed
+          // or kill it if it's run more than 5 times because it's a lost cause
+          if ((get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) || num_tries_ant_deploy() >= 5) {
+	          // switch state to hello world, then determine whether we should keep trying
+	          // (we WON'T be suspended on state change)
+	          set_sat_state(HELLO_WORLD);
+	          
+	          // only suspend if the antenna has actually deployed
+	          if (!get_input(P_DET_RTN)) {
+		          suspend_antenna_deploy(); // we're the only task that can suspend a task explicitly
+	          }
+          }
           break;
 
         case HELLO_WORLD:
