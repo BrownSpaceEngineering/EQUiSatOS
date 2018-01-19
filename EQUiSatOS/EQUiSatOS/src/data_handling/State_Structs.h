@@ -30,7 +30,7 @@ typedef struct idle_data_t
 	lion_volts_batch lion_volts_data;
 	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;
-	bat_charge_volts_batch bat_charge_volts_data;
+	panelref_lref_batch panelref_lref_data;
 	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
 	radio_temp_batch radio_temp_data;
 	proc_temp_batch proc_temp_data;
@@ -99,7 +99,7 @@ typedef struct low_power_data_t
 	lion_volts_batch lion_volts_data;
 	lion_current_batch lion_current_data;
 	lion_temps_batch lion_temps_data;
-	bat_charge_volts_batch bat_charge_volts_data;
+	panelref_lref_batch panelref_lref_data;
 	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
 	ir_object_temps_batch ir_obj_temps_data;
 	gyro_batch gyro_data;

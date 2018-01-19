@@ -12,6 +12,7 @@
 
 typedef uint8_t lion_volts_batch			[2];
 typedef uint8_t lion_current_batch			[2];
+typedef uint8_t panelref_lref_batch			[2];
 typedef uint8_t lion_temps_batch			[2];
 typedef uint8_t led_temps_batch				[4];
 typedef uint8_t lifepo_current_batch		[4];
@@ -22,10 +23,10 @@ typedef uint8_t ir_ambient_temps_batch		[6];
 typedef uint8_t radio_temp_batch;			// single value
 typedef uint8_t radio_volts_batch;			// single value
 typedef uint8_t proc_temp_batch;			// single value
-typedef uint8_t bat_charge_volts_batch		[2];
+typedef uint16_t ad7991_ctrlbrd_batch		[4];
 typedef uint16_t bat_charge_dig_sigs_batch;	// single value
 typedef uint16_t ir_object_temps_batch		[6];
-typedef uint16_t pdiode_batch;				// single bit array
+typedef uint16_t pdiode_batch;				// 2 bits per reading
 typedef uint8_t accelerometer_batch			[3];
 typedef uint8_t gyro_batch					[3];
 typedef uint8_t magnetometer_batch			[3];
