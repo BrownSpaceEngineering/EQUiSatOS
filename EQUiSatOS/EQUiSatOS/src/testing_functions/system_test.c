@@ -5,15 +5,15 @@ void sensor_read_tests(void) {
 	uint8_t six_buf_8t[6];
 	uint8_t three_buf[3];
 	uint8_t four_buf[4];
-	uint8_t two_buf[2];
-	delay_ms(100);
+	uint16_t four_buf_16t[4];
+	uint8_t two_buf[2];	
 	print("\n\n\n\n##### NEW RUN #####\n");
 	
 	print("\n# IMU #\n");
 	read_accel_batch(three_buf);
-	print("accel: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
+	print("accel: x: %d y: %d z: %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 	read_gyro_batch(three_buf);
-	print("gyro: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
+	print("gyro: x: %d y: %d z: %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 	read_magnetometer_batch(three_buf);
 	print("mag: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 
@@ -32,10 +32,31 @@ void sensor_read_tests(void) {
 	print("\n\n# LiON VOLTS #\n");
 	read_lion_volts_batch(two_buf);
 	print("lion volts: %d %d\n", two_buf[0], two_buf[1]);
-
-	print("# LiON CURRENT #\n");
-	read_lion_current_batch(two_buf);
-	print("lion current: %d %d\n", two_buf[0], two_buf[1]);
+	
+	print("# ad7991_batbrd #\n");
+	read_ad7991_batbrd(four_buf, four_buf+2);	
+	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	
+	setRadioPower(false);
+	set3V6Power(false);
+	set_output(false, P_5V_EN);
+	
+	print("# ad7991_ctrlbrd regs OFF#\n");
+	read_ad7991_ctrlbrd(four_buf_16t);
+	print("3V6REF: %d, 3V6_SNS %d, 5Vref %d, 3V3REF %d\n", four_buf_16t[0], four_buf_16t[1], four_buf_16t[2], four_buf_16t[3]);	
+	
+	set3V6Power(true);
+	setRadioPower(true);
+	set_output(true, P_5V_EN);
+	delay_ms(1000);
+	
+	print("# ad7991_ctrlbrd regs ON#\n");
+	read_ad7991_ctrlbrd(four_buf_16t);
+	print("3V6REF: %d, 3V6_SNS %d, 5Vref %d, 3V3REF %d\n", four_buf_16t[0], four_buf_16t[1], four_buf_16t[2], four_buf_16t[3]);
+	
+	setRadioPower(false);
+	set3V6Power(false);
+	set_output(false, P_5V_EN);
 
 	print("# LiON TEMPS #\n");
 	read_lion_temps_batch(two_buf);
@@ -305,13 +326,9 @@ static void MPU9250_test(bool rebias){
 
 //Magnetometer test
 static void HMC5883L_test(void){
-	print("==============HMC5883L Test==============\n");
-	uint8_t buffer[6];
-	int16_t xyz[3];
-
-	HMC5883L_init();
-	HMC5883L_read(buffer);
-	HMC5883L_getXYZ(buffer, xyz);
+	print("==============HMC5883L Test==============\n");	
+	int16_t xyz[3];		
+	HMC5883L_readXYZ(xyz);
 	print("x: %d \t y: %d \t z: %d \n", xyz[0],xyz[1],xyz[2]);
 
 }
