@@ -247,7 +247,8 @@ void write_flash_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_data_t* 
 void write_flash_cmp_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_cmp_data_t* flash_cmp_data);
 void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_data_t* low_power_data);
 
-/* writes the data section corresponding to msg_type, and returns the end of this (the start of the error section) */
+/* writes the data section corresponding to msg_type, and returns the end of this (the start of the error section).
+   The packet equistack associated with msg_type should not be empty. */
 void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg_type, int num_data) {
 	*buf_index = START_DATA; // to be certain
 
@@ -262,12 +263,14 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 		int equistack_size;
 		
 		// for each type, grab the current index (note that msg_type is constant),
-		// and write a packet if it should be written
-		// also note the above variables
+		// and write a packet and note it "transmitted" if we're either retransmitting right now,
+		// or the current packet is not transmitted otherwise. 
+		// Also, skip any NULL packets (empty check is below)
+		// Also note the above variables
 		switch (msg_type) {
 			case IDLE_DATA: ;
 				idle_data_t* idle_data = (idle_data_t*) equistack_Get(&idle_readings_equistack, equi_i);
-				if (retransmit || !idle_data->transmitted) {
+				if (idle_data != NULL && (retransmit || !idle_data->transmitted)) {
 					write_idle_data_packet(buffer, buf_index, idle_data);
 					idle_data->transmitted = true;
 					transmittable = true;
@@ -277,7 +280,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 				
 			case ATTITUDE_DATA: ;
 				attitude_data_t* attitude_data = (attitude_data_t*) equistack_Get(&attitude_readings_equistack, equi_i);
-				if (retransmit || !attitude_data->transmitted) {
+				if (attitude_data != NULL && (retransmit || !attitude_data->transmitted)) {
 					write_attitude_data_packet(buffer, buf_index, attitude_data);
 					attitude_data->transmitted = true;
 					transmittable = true;
@@ -287,7 +290,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case FLASH_DATA: ;
 				flash_data_t* flash_data = (flash_data_t*) equistack_Get(&flash_readings_equistack, equi_i);
-				if (retransmit || !flash_data->transmitted) {
+				if (flash_data != NULL && (retransmit || !flash_data->transmitted)) {
 					write_flash_data_packet(buffer, buf_index, flash_data);
 					flash_data->transmitted = true;
 					transmittable = true;
@@ -297,7 +300,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case FLASH_CMP_DATA: ;
 				flash_cmp_data_t* flash_cmp_data = (flash_cmp_data_t*) equistack_Get(&flash_cmp_readings_equistack, equi_i);
-				if (retransmit || !flash_cmp_data->transmitted) {
+				if (flash_cmp_data != NULL && (retransmit || !flash_cmp_data->transmitted)) {
 					write_flash_cmp_data_packet(buffer, buf_index, flash_cmp_data);
 					flash_cmp_data->transmitted = true;
 					transmittable = true;
@@ -307,7 +310,7 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			
 			case LOW_POWER_DATA: ;
 				low_power_data_t* low_power_data = (low_power_data_t*) equistack_Get(&low_power_readings_equistack, equi_i);
-				if (retransmit || !low_power_data->transmitted) {
+				if (low_power_data != NULL && (retransmit || !low_power_data->transmitted)) {
 					write_low_power_data_packet(buffer, buf_index, low_power_data);
 					low_power_data->transmitted = true;
 					transmittable = true;
@@ -318,6 +321,10 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			default:
 				configASSERT(false);
 		}
+		
+		// check for completely empty equistack (return because otherwise we'll infinite loop)
+		if (equistack_size == 0) 
+			return;
 		
 		if (!retransmit && !transmittable) {
 			// if we're not retransmitting and it was already transmitted,
@@ -346,85 +353,56 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 /* Functions to translate packet types to corresponding message format  */
 /************************************************************************/
 void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* idle_data) {
-	if (idle_data != NULL) {
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->satellite_history),		sizeof(satellite_history_batch));
-		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_volts_data,				sizeof(lion_volts_batch));
-		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_current_data,			sizeof(lion_current_batch));
-		write_bytes_and_shift(buffer, buf_index,	idle_data->lion_temps_data,				sizeof(lion_temps_batch));
-		write_bytes_and_shift(buffer, buf_index,	idle_data->bat_charge_volts_data,		sizeof(bat_charge_volts_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),sizeof(bat_charge_dig_sigs_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->radio_temp_data),			sizeof(radio_temp_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->proc_temp_data),			sizeof(proc_temp_batch));
-		write_bytes_and_shift(buffer, buf_index,	idle_data->ir_amb_temps_data,			sizeof(ir_ambient_temps_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(idle_data->timestamp),				4 /* uint32_t */);
-	} else {
-		// write all 0s to buffer for idle data
-		write_value_and_shift(buffer, buf_index, 0, IDLE_DATA_PACKET_SIZE);
-	}
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->satellite_history),		sizeof(satellite_history_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_volts_data,				sizeof(lion_volts_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_current_data,			sizeof(lion_current_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_temps_data,				sizeof(lion_temps_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->bat_charge_volts_data,		sizeof(bat_charge_volts_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),sizeof(bat_charge_dig_sigs_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->radio_temp_data),			sizeof(radio_temp_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->proc_temp_data),			sizeof(proc_temp_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->ir_amb_temps_data,			sizeof(ir_ambient_temps_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->timestamp),				4 /* uint32_t */);
 }
 
 void write_attitude_data_packet(uint8_t* buffer, uint8_t* buf_index, attitude_data_t* attitude_data) {
-	// we have to fill up the entire section, so either write the data or its null equivalent
-	if (attitude_data != NULL) {
-		write_bytes_and_shift(buffer, buf_index,	attitude_data->ir_obj_temps_data,	sizeof(ir_object_temps_batch)	/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	attitude_data->pdiode_data,			sizeof(pdiode_batch)			/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	attitude_data->accelerometer_data,	sizeof(accelerometer_batch) * 2 /* [2] */);
-		write_bytes_and_shift(buffer, buf_index,	attitude_data->gyro_data,			sizeof(gyro_batch)				/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 2	/* [2] */);
-		write_bytes_and_shift(buffer, buf_index,	&attitude_data->timestamp,		4 /* uint32_t */);
-	} else {
-		// overwrite entire section with 0s
-		write_value_and_shift(buffer, buf_index, 0, ATTITUDE_DATA_PACKET_SIZE);
-	}
+	write_bytes_and_shift(buffer, buf_index,	attitude_data->ir_obj_temps_data,	sizeof(ir_object_temps_batch)	/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	attitude_data->pdiode_data,			sizeof(pdiode_batch)			/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	attitude_data->accelerometer_data,	sizeof(accelerometer_batch) * 2 /* [2] */);
+	write_bytes_and_shift(buffer, buf_index,	attitude_data->gyro_data,			sizeof(gyro_batch)				/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 2	/* [2] */);
+	write_bytes_and_shift(buffer, buf_index,	&attitude_data->timestamp,		4 /* uint32_t */);
 }
 
 void write_flash_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_data_t* flash_data) {
-	// we have to fill up the entire section, so either write the data or its null equivalent
-	if (flash_data != NULL) {
-		write_bytes_and_shift(buffer, buf_index,	flash_data->led_temps_data,			sizeof(led_temps_batch)		* FLASH_DATA_ARR_LEN /* [7] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_volts_data,		sizeof(lifepo_volts_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* FLASH_DATA_ARR_LEN /* [7] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_data->led_current_data,		sizeof(led_current_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_data->gyro_data,				sizeof(gyro_batch)			* FLASH_DATA_ARR_LEN /* [7] */);
-		write_bytes_and_shift(buffer, buf_index,	&flash_data->timestamp,			4 /* uint_32_t */);
-
-	} else {
-		// overwrite entire section with 0s
-		write_value_and_shift(buffer, buf_index, 0, FLASH_DATA_PACKET_SIZE);
-	}
+	write_bytes_and_shift(buffer, buf_index,	flash_data->led_temps_data,			sizeof(led_temps_batch)		* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_volts_data,		sizeof(lifepo_volts_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->led_current_data,		sizeof(led_current_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->gyro_data,				sizeof(gyro_batch)			* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	&flash_data->timestamp,			4 /* uint_32_t */);
 }
 
 void write_flash_cmp_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_cmp_data_t* flash_cmp_data) {
-	// we have to fill up the entire section, so either write the data or its null equivalent
-	if (flash_cmp_data != NULL) {
-		/* NOTE: Though these are the same types as in flash_data_t, they are those values AVERAGED */
-		write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_temps_avg_data,			sizeof(led_temps_batch)			/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_current_avg_data,	sizeof(lifepo_current_batch)	/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_current_avg_data,		sizeof(led_current_batch)		/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->mag_before_data,			sizeof(magnetometer_batch)		/* [1] */);
-		write_bytes_and_shift(buffer, buf_index,	&flash_cmp_data->timestamp,				4 /* uint_32_t */);
-	} else {
-		// overwrite entire section with 0s
-		write_value_and_shift(buffer, buf_index, 0, FLASH_CMP_DATA_PACKET_SIZE);
-	}
+	/* NOTE: Though these are the same types as in flash_data_t, they are those values AVERAGED */
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_temps_avg_data,			sizeof(led_temps_batch)			/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_current_avg_data,	sizeof(lifepo_current_batch)	/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_current_avg_data,		sizeof(led_current_batch)		/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->mag_before_data,			sizeof(magnetometer_batch)		/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	&flash_cmp_data->timestamp,				4 /* uint_32_t */);
 }
 	
 void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_data_t* low_power_data) {
-	if (low_power_data != NULL) {
-		write_bytes_and_shift(buffer, buf_index,	&(low_power_data->satellite_history),			sizeof(satellite_history_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_volts_data,				sizeof(lion_volts_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_current_data,				sizeof(lion_current_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_temps_data,				sizeof(lion_temps_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->bat_charge_volts_data,			sizeof(bat_charge_volts_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(low_power_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->ir_obj_temps_data,				sizeof(ir_object_temps_batch));
-		write_bytes_and_shift(buffer, buf_index,	low_power_data->gyro_data,						sizeof(gyro_batch));
-		write_bytes_and_shift(buffer, buf_index,	&(low_power_data->timestamp),					4 /* uint32_t */);
-	} else {
-		// write all 0s to buffer for idle data
-		write_value_and_shift(buffer, buf_index, 0, LOW_POWER_DATA_PACKET_SIZE);
-	}
+	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->satellite_history),			sizeof(satellite_history_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_volts_data,				sizeof(lion_volts_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_current_data,				sizeof(lion_current_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_temps_data,				sizeof(lion_temps_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->bat_charge_volts_data,			sizeof(bat_charge_volts_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->ir_obj_temps_data,				sizeof(ir_object_temps_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->gyro_data,						sizeof(gyro_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->timestamp),					4 /* uint32_t */);
 }
 
 /* writes error correction bytes. Must be called after full message before it was written, obviously. */
@@ -437,7 +415,6 @@ void write_parity(uint8_t* buffer, uint8_t* buf_index) {
 
 /* Writes num_bytes from input to data, and shifts the value at buf_index up by num_bytes */
 void write_bytes_and_shift(uint8_t *data, uint8_t* buf_index, void *input, size_t num_bytes) {
-	// TODO: verify correctness
 	memcpy(data + *buf_index, (char*) input, num_bytes);
 	*buf_index += num_bytes;
 }

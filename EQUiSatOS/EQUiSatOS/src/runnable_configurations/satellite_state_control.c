@@ -288,6 +288,7 @@ void vApplicationIdleHook(void) {
 // 		//print("test\n\r");
 // 	}
 
+	test_message_packaging();
 // 	test_normal_satellite_state_sequence();
 //	test_all_state_transitions();
 // 	test_watchdog_reset_bat_charging();

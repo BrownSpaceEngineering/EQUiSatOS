@@ -134,7 +134,9 @@
 #define ECODE_UNCERTAIN_RIP					34
 
 
-/* Error storage and interfaces */
+/************************************************************************/
+/* ERROR STORAGE / INTERFACES                                           */
+/************************************************************************/
 #define PRIORITY_ERROR_STACK_MAX		30
 #define NORMAL_ERROR_STACK_MAX			20
 
