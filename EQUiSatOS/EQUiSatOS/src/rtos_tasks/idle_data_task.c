@@ -45,10 +45,9 @@ void idle_data_task(void *pvParameters)
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		
 		current_struct->satellite_history = *(cache_get_sat_event_history(true)); // copy, wait on write
-		//read_lion_volts_batch(		current_struct->lion_volts_data);
-		//read_lion_current_batch(		current_struct->lion_current_data);
+		read_lion_volts_batch(			current_struct->lion_volts_data);		
 		read_lion_temps_batch(			current_struct->lion_temps_data);
-		read_bat_charge_volts_batch(	current_struct->bat_charge_volts_data);
+		read_ad7991_batbrd(			current_struct->lion_current_data, current_struct->panelref_lref_data);
 		read_bat_charge_dig_sigs_batch(	&(current_struct->bat_charge_dig_sigs_data));
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		read_proc_temp_batch(			&(current_struct->proc_temp_data));
