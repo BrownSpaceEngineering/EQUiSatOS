@@ -11,7 +11,7 @@
 #include "rtos_tasks/rtos_tasks.h"
 #include "data_handling/equistack.h"
 
-#include "task_testing.h"
+#include "testing_tasks.h"
 #include "testing_functions/struct_tests.h"
 #include "testing_functions/sat_data_tests.h"
 

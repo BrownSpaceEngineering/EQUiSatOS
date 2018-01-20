@@ -122,7 +122,7 @@
  * check the actual usage by selecting View menu -> Trace Details -> 
  * Resource Usage -> Object Table. 
  ******************************************************************************/
-#define TRC_CFG_NTASK			14 // there are 8 tasks... but we need more
+#define TRC_CFG_NTASK			18 // there are 8 tasks... but we need more
 #define TRC_CFG_NISR			5
 #define TRC_CFG_NQUEUE			30 // needed for equistacks AND mutexes
 #define TRC_CFG_NSEMAPHORE		30 // apparently need double

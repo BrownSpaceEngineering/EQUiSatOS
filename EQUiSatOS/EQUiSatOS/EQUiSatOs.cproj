@@ -308,8 +308,8 @@
     <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
     <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
-    <avrtoolserialnumber>J41800056157</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
+    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -680,6 +680,7 @@
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
   <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
+  <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
   <armgcc.linker.libraries.Libraries>
     <ListValues>
       <Value>libarm_cortexM0l_math</Value>
@@ -1158,10 +1159,10 @@
     <Compile Include="src\runnable_configurations\isItOn.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\task_testing.c">
+    <Compile Include="src\runnable_configurations\testing_tasks.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\task_testing.h">
+    <Compile Include="src\runnable_configurations\testing_tasks.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\sensor_drivers\M24M01_EEPROM_Commands.c">

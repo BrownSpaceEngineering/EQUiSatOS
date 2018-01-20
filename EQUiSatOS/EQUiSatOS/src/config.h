@@ -21,8 +21,13 @@
 //0 to suppress prints, 1 to print over USART
 #define PRINT_DEBUG 1
 
-// define this flag to enable flashing
-//#define FLASH_ACTIVE
+/** 
+ * flags to control dangerous / inconvenient functions of the satellite 
+ * MAKE SURE to RE-build solution to be double-sure they were disabled
+ */
+//#define FLASH_ACTIVE // enable flashing
+//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+//#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 // define this flag to disable normal frequencies and read data faster
 // (ex: don't read data distributed around an orbit)

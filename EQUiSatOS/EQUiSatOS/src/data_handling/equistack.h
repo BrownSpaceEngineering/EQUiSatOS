@@ -31,6 +31,7 @@ void* equistack_Get(equistack* S, int16_t n);
 void* equistack_Initial_Stage(equistack* S);
 void* equistack_Stage(equistack* S);
 void* equistack_Push(equistack* S, void* data);
+void __equistack_Clear(equistack* S);
 void clear_existing_data(void* ptr, size_t slot_size);
 
 #endif /* EQUISTACK_H_ */

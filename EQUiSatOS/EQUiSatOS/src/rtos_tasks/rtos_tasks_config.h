@@ -29,37 +29,37 @@ enum {
 /************************************************************************/
 /* Task Properties - see below for frequencies							*/
 /************************************************************************/
-#define TASK_INIT_STACK_SIZE						(1024)/sizeof(portSTACK_TYPE)
+#define TASK_INIT_STACK_SIZE						(768/sizeof(portSTACK_TYPE))
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024)/sizeof(portSTACK_TYPE)
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
-#define TASK_STATE_HANDLING_STACK_SIZE				(1024)/sizeof(portSTACK_TYPE)
+#define TASK_STATE_HANDLING_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_FLASH_ACTIVATE_PRIORITY				(PRIMARY_ACTION_PRIORITY)
 
-#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(TRANSMIT_PRIORITY)
 
-#define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#define TASK_IDLE_DATA_RD_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_IDLE_DATA_RD_PRIORITY					(DATA_READ_PRIORITY)
 
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
 
-#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(768/sizeof(portSTACK_TYPE))
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/

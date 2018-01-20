@@ -91,6 +91,11 @@ void startup_task(void* pvParameters) {
 	// suspend the scheduler while adding tasks so their task handles
 	// are non-null when they start executing (i.e. they can be controlled)
 	vTaskSuspendAll();
+	
+	
+	// FOR TESTING TASKS
+	create_testing_tasks();
+	
 
 	// TODO: Should we even store this handle?
 	battery_charging_task_handle = xTaskCreateStatic(battery_charging_task,
@@ -287,18 +292,6 @@ void vApplicationIdleHook(void) {
 // 		print("%d\n\r", tickCount);
 // 		//print("test\n\r");
 // 	}
-
-	test_message_packaging();
-// 	test_normal_satellite_state_sequence();
-//	test_all_state_transitions();
-// 	test_watchdog_reset_bat_charging();
-// 	test_watchdog_reset_bat_charging();
-// 	test_watchdog_reset_attitude_data();
-// 	test_watchdog_reset_antenna_deploy();
-// 	test_watchdog_reset_transmit_task();
-// 	test_watchdog_reset_idle_data_task();
-// 	test_watchdog_reset_flash_activate_task();
-// 	test_watchdog_reset_low_power_data_task();
 }
 
 

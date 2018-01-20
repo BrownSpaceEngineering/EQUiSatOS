@@ -76,6 +76,7 @@ void global_init(void) {
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();
+	initialize_ecc(); // for reed-solomon lookup tables, etc.
 }
 
 // initialization that can only be done with RTOS started
