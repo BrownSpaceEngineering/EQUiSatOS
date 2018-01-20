@@ -68,6 +68,10 @@ void sensor_read_tests(void) {
 	read_lifepo_current_batch(four_buf);
 	print("lifepo current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
+	print("# LED CURRENT #\n");
+	read_led_current_batch(four_buf);
+	print("led current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	
 	
 }
 
@@ -231,7 +235,7 @@ static void MPU9250_test(bool rebias){
 	print("Accelerometer readings in g, gyroscope readings in degrees per second\n");
 	// IMU
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
-	uint16_t MPU9250_results[6], MPU9250_err_margin = 20;
+	uint16_t MPU9250_err_margin = 20;
 	int sensors[] = {1, 1, 0};
 		
 	//initalize imu.... probably
@@ -243,39 +247,29 @@ static void MPU9250_test(bool rebias){
 		MPU9250_computeBias(gyroBias,accelBias);
 	}
 
-	uint16_t reader[3];
+	int16_t MPU9250_results[3];
 	char buffer[20];
 	enum status_code code;
 
 	if (sensors[0]){
-		code = MPU9250_read_acc(reader);
-		MPU9250_results[0] = reader[0];
-		MPU9250_results[1] = reader[1];
-		MPU9250_results[2] = reader[2];
-
-		// status code ?
+		code = MPU9250_read_acc(MPU9250_results);
+		
 		get_error(code,buffer);
-		print("acc \t %s \t x: %d \t y: %d \t z: %d\n",buffer,(int16_t) MPU9250_results[0],(int16_t) MPU9250_results[1],(int16_t) MPU9250_results[2]);
+		print("ACCELEROMETER: \t %s \n x: \t %d \t %.02f g \n y: \t %d \t %.02f g \n z: \t %d \t %.02f g\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/16384.,MPU9250_results[1], (float)MPU9250_results[1]/16384., MPU9250_results[2], (float)MPU9250_results[2]/16384.);
 		//print_error(code);
 	}
 
 	if (sensors[1]){
-		code = MPU9250_read_gyro(reader);
-		MPU9250_results[3] = reader[0];
-		MPU9250_results[4] = reader[1];
-		MPU9250_results[5] = reader[2];
+		code = MPU9250_read_gyro(MPU9250_results);		
 
 		// status code?
 		get_error(code,buffer);
-		print("gyro \t %s \t x: %d \t y: %d \t z: %d\n",buffer,(int16_t) MPU9250_results[3],(int16_t) MPU9250_results[4],(int16_t) MPU9250_results[5]);
+		print("GYRO: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/131.,MPU9250_results[1], (float)MPU9250_results[1]/131., MPU9250_results[2], (float)MPU9250_results[2]/131.);
 		//print_error(code);
 	}
 
 	if (sensors[2]){
-		code = MPU9250_read_mag(reader);
-		MPU9250_results[6] = reader[0];
-		MPU9250_results[7] = reader[1];
-		MPU9250_results[8] = reader[2];
+		code = MPU9250_read_mag(MPU9250_results);		
 
 		// status code?
 		print("MPU9250 read magnetometer");
