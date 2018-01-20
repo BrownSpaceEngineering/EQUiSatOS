@@ -15,6 +15,8 @@
 
 #define WATCHDOG_MUTEX_WAIT_TIME_TICKS ((TickType_t) 500)
 
+#define WATCHDOG_BUFFER 1000
+
 // static memory for watchdog task mutex
 StaticSemaphore_t _watchdog_task_mutex_d;
 

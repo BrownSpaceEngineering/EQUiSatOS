@@ -9,16 +9,28 @@
  */ 
 
 #include "Watchdog_Task.h"
-static uint16_t check_ins;
-static uint16_t is_running;
 
-static bool watch_block;
+uint8_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
+	WATCHDOG_TASK_FREQ + WATCHDOG_BUFFER,
+	STATE_HANDLING_TASK_FREQ + WATCHDOG_BUFFER,
+	ANTENNA_DEPLOY_TASK_FREQ + WATCHDOG_BUFFER,
+	BATTERY_CHARGING_TASK_FREQ + WATCHDOG_BUFFER,
+	TRANSMIT_TASK_FREQ + WATCHDOG_BUFFER,
+	FLASH_ACTIVATE_TASK_FREQ + WATCHDOG_BUFFER,
+	IDLE_DATA_TASK_FREQ + WATCHDOG_BUFFER,
+	LOW_POWER_DATA_TASK_FREQ + WATCHDOG_BUFFER,
+	ATTITUDE_DATA_TASK_FREQ + WATCHDOG_BUFFER,
+	PERSISTENT_DATA_BACKUP_TASK_FREQ + WATCHDOG_BUFFER
+};
+
+static bool check_ins[NUM_TASKS];
+static uint32_t running_times[NUM_TASKS];
+
 SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
-	check_ins = 0;
-	is_running = 0;
-	watch_block = 0;
+	memset(&check_ins, 0, sizeof(bool) * NUM_TASKS);
+	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
 	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
 }
 
@@ -40,21 +52,38 @@ bool watchdog_as_function(void) {
 	
 	// make sure the battery task is definitely set to run
 	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
-	if (battery_task_state == eDeleted || battery_task_state == eSuspended) {
-		watch_block = 1;
-	} else if (!check_task_state_consistency()) {
-		watch_block = 1;
+	bool watch_block = false;
+	if (battery_task_state == eDeleted || battery_task_state == eSuspended 
+			|| !check_task_state_consistency()) {
+		watch_block = true;
+	} else {
+		uint32_t curr_time = get_current_timestamp_ms();
+		for (int i = 0; i < NUM_TASKS; i++) {
+			if (!check_ins[i]) {
+				if (running_times[i]) {
+					watch_block = true;
+					break;
+				}
+			} else {
+				if (!running_times[i] || curr_time - running_times[i] > WATCHDOG_ALLOWED_TIMES_MS[i]) {
+					watch_block = true;
+					break;
+				}
+			}
+		}
 	}
-	if ((check_ins ^ is_running) > 0 || watch_block == 1) {
+
+	if (watch_block) {
 		// "kick" watchdog - RESTART SATELLITE
 		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
 		// it doesn't make sense to reset values here because the satellite will reboot
 		return false;
 	} else {
-		trace_print("Pet watchdog");
 		// pet watchdog - pass this watchdog test, move onto next
-		is_running = 0;
+		pet_watchdog();
+		memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
+		trace_print("Pet watchdog");
 		xSemaphoreGive(mutex);
 		return true;
 	}
@@ -83,25 +112,21 @@ void watchdog_mutex_give(void) {
 // tasks must check in when resuming from suspension or launching
 // NOTE: not safe to call without having gotten mutex
 void check_in_task_unsafe(task_type_t task_ind) {
-	check_ins = check_ins | (1 << task_ind); // set this task bit to 1
-	// set the running bit to 1 until next reset (we have to give the task the
-	// benefit of the doubt because it may take a while to initially start)
-	is_running = is_running | (1 << task_ind);
+	check_ins[task_ind] = true; // set this task bit to true
 }
 
 // tasks must check in while running to avoid the watchdog
 // (we'll set 'im loose on that task if it doesn't!)
 void report_task_running(task_type_t task_ind) {
 	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
-	is_running = is_running | (1 << task_ind);
+	running_times[task_ind] = get_current_timestamp_ms();
 	xSemaphoreGive(mutex);
 }
 
 // tasks must check out when suspending so they don't trip the watchdog
 // NOTE: not safe to call without having gotten mutex
 void check_out_task_unsafe(task_type_t task_ind) {
-	check_ins = check_ins & ~(1 << task_ind); // set this task bit to 0
-	// set the running bit to 0 as well, to avoid a watchdog reset on the next
-	// iteration (before the watchdog can clear is_running)
-	is_running = is_running & ~(1 << task_ind);
+	check_ins[task_ind] = false; // set this task bit to false
+	// set the running time to 0 so when  
+	running_times[task_ind] = 0;
 }

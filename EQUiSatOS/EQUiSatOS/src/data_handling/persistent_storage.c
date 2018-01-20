@@ -171,7 +171,7 @@ void update_sat_event_history(uint8_t antenna_deployed,
 										
 	//xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
 	
-	if (lion_1_charged)
+	if (antenna_deployed)
 		cached_state.sat_event_history.antenna_deployed = antenna_deployed;
 	if (lion_1_charged)
 		cached_state.sat_event_history.lion_1_charged = lion_1_charged;
@@ -179,7 +179,7 @@ void update_sat_event_history(uint8_t antenna_deployed,
 		cached_state.sat_event_history.lion_2_charged = lion_2_charged;
 	if (lifepo_b1_charged)
 		cached_state.sat_event_history.lifepo_b1_charged = lifepo_b1_charged;
-	if (lifepo_b1_charged)
+	if (lifepo_b2_charged)
 		cached_state.sat_event_history.lifepo_b2_charged = lifepo_b2_charged;
 	if (first_flash)
 		cached_state.sat_event_history.first_flash = first_flash;
