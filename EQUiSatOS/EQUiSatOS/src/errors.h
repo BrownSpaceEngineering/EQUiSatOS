@@ -90,6 +90,7 @@
 #define ELOC_MRAM_WRITE					54
 #define ELOC_5V_REF						55
 #define ELOC_STATE_HANDLING				56
+#define BAT_CHARGING            57
 
 /******************** PROBLEM CODES ********************/
 
