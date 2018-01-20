@@ -10,40 +10,42 @@
 
 #include "../global.h"
 
-#define B_IR_OBJ_LOW					0
-#define B_IR_OBJ_HIGH					~0
-#define B_IR_AMB_LOW					0
-#define B_IR_AMB_HIGH					~0
-#define B_PD_LOW						0
-#define B_PD_HIGH						~0
-#define B_LED_TEMP_LOW				0
-#define B_LED_TEMP_HIGH				~0
-#define B_LED_CUR_LOW					0
-#define B_LED_CUR_HIGH				~0
-#define B_L_TEMP_LOW					0
-#define B_L_TEMP_HIGH					~0
-#define B_LF_TEMP_LOW					0
-#define B_LF_TEMP_HIGH				~0
-#define B_LF_CUR_LOW					0
-#define B_LF_CUR_HIGH					~0
-#define B_L_CUR_LOW					0
-#define B_L_CUR_HIGH					~0
-#define B_LF_VOLT_LOW					0
-#define B_LF_VOLT_HIGH				~0
-#define B_L_VOLT_LOW					0
-#define B_L_VOLT_HIGH					~0
-#define B_LREF_LOW					0
-#define B_LREF_HIGH					~0
-#define B_PANELREF_LOW				0
-#define B_PANELREF_HIGH				~0
-#define B_CHARGE_LOW					0
-#define B_CHARGE_HIGH					~0
-#define B_GYRO_LOW					0
-#define B_GYRO_HIGH					~0
-#define B_RAD_VOLT_LOW				3500
-#define B_RAD_VOLT_HIGH				3700
-#define B_5V_EN_LOW					4800
-#define B_5V_EN_HIGH					5200
+#define IR_WAKE_DELAY			300
+
+#define B_IR_OBJ_LOW			0
+#define B_IR_OBJ_HIGH			~0
+#define B_IR_AMB_LOW			0
+#define B_IR_AMB_HIGH			~0
+#define B_PD_LOW				0
+#define B_PD_HIGH				~0
+#define B_LED_TEMP_LOW			0
+#define B_LED_TEMP_HIGH			~0
+#define B_LED_CUR_LOW			0
+#define B_LED_CUR_HIGH			~0
+#define B_L_TEMP_LOW			0
+#define B_L_TEMP_HIGH			~0
+#define B_LF_TEMP_LOW			0
+#define B_LF_TEMP_HIGH			~0
+#define B_LF_CUR_LOW			0
+#define B_LF_CUR_HIGH			~0
+#define B_L_CUR_LOW				0
+#define B_L_CUR_HIGH			~0
+#define B_LF_VOLT_LOW			0
+#define B_LF_VOLT_HIGH			~0
+#define B_L_VOLT_LOW			0
+#define B_L_VOLT_HIGH			~0
+#define B_LREF_LOW				0
+#define B_LREF_HIGH				~0
+#define B_PANELREF_LOW			0
+#define B_PANELREF_HIGH			~0
+#define B_CHARGE_LOW			0
+#define B_CHARGE_HIGH			~0
+#define B_GYRO_LOW				0
+#define B_GYRO_HIGH				~0
+#define B_RAD_VOLT_LOW			3500
+#define B_RAD_VOLT_HIGH			3700
+#define B_5V_EN_LOW				4800
+#define B_5V_EN_HIGH			5200
 
 typedef enum {
 	BCDS_LF_B1_BT,

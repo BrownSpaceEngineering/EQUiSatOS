@@ -81,6 +81,8 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 }
 
 void read_ir_object_temps_batch(ir_object_temps_batch batch) {
+	set_output(true, P_IR_PWR_CMD);
+	vTaskDelay(IR_WAKE_DELAY);
 	for (int i = 0; i < 6; i ++) {
 		uint16_t obj;
 		sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
@@ -88,9 +90,12 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 		log_if_out_of_bounds(obj, B_IR_OBJ_LOW, B_IR_OBJ_HIGH, IR_ELOCS[i], false);
 		batch[i] = obj;
 	}
+	set_output(false, P_IR_PWR_CMD);
 }
 
 void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
+	set_output(true, P_IR_PWR_CMD);
+	vTaskDelay(IR_WAKE_DELAY);
 	for (int i = 0; i < 6; i++) {
 		uint16_t amb;
 		sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
@@ -98,6 +103,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 		log_if_out_of_bounds(amb, B_IR_AMB_LOW, B_IR_AMB_HIGH, IR_ELOCS[i], false);
 		batch[i] = truncate_16t(amb);
 	}
+	set_output(false, P_IR_PWR_CMD);
 }
 
 // TODO: make sure this all looks okay

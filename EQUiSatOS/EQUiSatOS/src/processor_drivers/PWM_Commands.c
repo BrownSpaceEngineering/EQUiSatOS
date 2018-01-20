@@ -48,6 +48,7 @@ bool set_pulse_width_fraction(int numerator, int denominator) {
 			return true;
 		}
 	#endif
+	return false;
 }
 
 void disable_pwm(void) {
