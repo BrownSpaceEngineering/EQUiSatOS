@@ -23,26 +23,28 @@ StaticTask_t testing_task_buffer;
 
 void create_testing_tasks(void) 
 {
-	xTaskCreateStatic(testing_task,
-		"testing task",
-		TESTING_TASK_STACK_SIZE,
-		NULL,
-		STATE_HANDLING_PRIORITY, //tskIDLE_PRIORITY, // may change with different tests
-		testing_task_stack,
-		&testing_task_buffer);
+	#ifdef RUN_TESTING_TASKS
+		xTaskCreateStatic(testing_task,
+			"testing task",
+			TESTING_TASK_STACK_SIZE,
+			NULL,
+			STATE_HANDLING_PRIORITY, //tskIDLE_PRIORITY, // may change with different tests
+			testing_task_stack,
+			&testing_task_buffer);
 	
-// 	xTaskCreate(task_suicide_test,
-// 	 	"task suicide testing",
-// 	 	1024,
-// 	 	NULL,
-// 	 	DATA_READ_PRIORITY,
-// 		suicide_test_handle);
-// 	
-// 	xTaskCreate(task_stack_size_overflow_test,
-// 	 	"task stack size purpose test",
-// 	 	320/sizeof(portSTACK_TYPE), // 10 bytes of stack space
-// 	 	NULL,
-// 	 	tskIDLE_PRIORITY);
+	// 	xTaskCreate(task_suicide_test,
+	// 	 	"task suicide testing",
+	// 	 	1024,
+	// 	 	NULL,
+	// 	 	DATA_READ_PRIORITY,
+	// 		suicide_test_handle);
+	// 	
+	// 	xTaskCreate(task_stack_size_overflow_test,
+	// 	 	"task stack size purpose test",
+	// 	 	320/sizeof(portSTACK_TYPE), // 10 bytes of stack space
+	// 	 	NULL,
+	// 	 	tskIDLE_PRIORITY);
+	#endif
 }
 
 void testing_task(void *pvParameters) 
@@ -50,7 +52,7 @@ void testing_task(void *pvParameters)
 	// initialize xNextWakeTime once
 	TickType_t xNextWakeTime = xTaskGetTickCount();
 	
-	for ( ;; ) 
+	for ( ;; )
 	{
 		vTaskDelayUntil( &xNextWakeTime, TESTING_TASK_FREQ / portTICK_PERIOD_MS);
 		
@@ -59,6 +61,7 @@ void testing_task(void *pvParameters)
 		/************************************************************************/
 		test_message_packaging();
 		stress_test_message_packaging();
+		vTaskDelay(2000);
 		configASSERT(check_task_state_consistency());
 		
 		/************************************************************************/
@@ -66,7 +69,6 @@ void testing_task(void *pvParameters)
 		/************************************************************************/
 		// 	test_normal_satellite_state_sequence();
 		//	test_all_state_transitions();
-		// 	test_watchdog_reset_bat_charging();
 		// 	test_watchdog_reset_bat_charging();
 		// 	test_watchdog_reset_attitude_data();
 		// 	test_watchdog_reset_antenna_deploy();

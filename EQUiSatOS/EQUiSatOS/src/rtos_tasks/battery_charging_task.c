@@ -34,7 +34,7 @@ int get_run_chg_pin(battery_t bat)
 			return P_LF_B2_RUNCHG;
 
 		default:
-			log_error(BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
 			return P_L1_RUN_CHG;
 	}
 }
@@ -67,7 +67,7 @@ int get_chg_pin_val_w_conversion(battery_t bat)
 			break;
 
 		default:
-			log_error(BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
 			chg_position = 12;
 			break;
 	}

@@ -7,6 +7,9 @@
 
 #include "errors.h"
 
+void log_error_stack_error(uint8_t ecode);
+void add_error_to_equistack(equistack* stack, sat_error_t* error);
+
 void init_errors(void) {
 	_priority_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_priority_error_equistack_mutex_d);
 	equistack_Init(&priority_error_equistack, &_priority_error_equistack_arr, sizeof(sat_error_t),
@@ -142,12 +145,68 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	sat_error_t full_error;
 	full_error.timestamp = get_current_timestamp(); // time is now
 	full_error.eloc = loc;
-	full_error.ecode = priority << 7 || (0b01111111 & err); // priority bit at MSB
+	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
 	
 	if (priority) {
 		// memory will be copied so don't worry about scope issues with local var ptrs
-		equistack_Push(&priority_error_equistack, &full_error);
+		add_error_to_equistack(&priority_error_equistack, &full_error);
 	} else {
-		equistack_Push(&normal_error_equistack, &full_error); 
+		add_error_to_equistack(&normal_error_equistack, &full_error); 
+	}
+}
+
+/* logs error stack error; seperate to avoid recursion */
+void log_error_stack_error(uint8_t ecode) {
+	sat_error_t stack_error;
+	stack_error.timestamp = get_current_timestamp(); // time is now
+	stack_error.eloc = ELOC_ERROR_STACK;
+	stack_error.ecode = 0b01111111 & ecode; // priority bit at MSB
+	equistack_Push(&normal_error_equistack, &stack_error);
+}
+
+/* adds the given error to the given error equistack, in such a way 
+   that only two errors will ever be stored during a "period of errors":
+   one to mark the start and one to mark the most recent occurrence */
+// TODO: code review!
+void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
+	
+	sat_error_t* newest_same_error = NULL;
+	int num_same_errors = 0;
+	for (int i = 0; i < stack->cur_size; i++) {
+		sat_error_t* err = (sat_error_t*) equistack_Get(stack, i);
+		
+		if (err != NULL &&
+			err->eloc == new_error->eloc &&
+			err->ecode == new_error->ecode) {
+			num_same_errors++;
+			
+			// find newest error for later use (there should only be a max of two)
+			// (use ">" to favor first (newest) one found)
+			if (newest_same_error == NULL ||
+				err->timestamp > newest_same_error->timestamp) { 
+				newest_same_error = err;
+			}
+		}
+	}	
+	
+	if (num_same_errors == 0 || num_same_errors == 1) {
+		// if there are no similar errors in the stack, or only one
+		// (indicating the (known) start of the period of this error),
+		// then we just add the new error to the stack
+		// (it will be either the known start or the known "most recent", respectively)
+		equistack_Push(stack, new_error);
+		
+	} else if(num_same_errors == 2) {
+		configASSERT(newest_same_error != NULL);
+		// if two errors already exist, we just update the timestamp of the newest one to
+		// match the error being added
+		newest_same_error->timestamp = new_error->timestamp;
+		
+	} else {
+		// otherwise, the stack is not formatted as it should be, so log an error
+		// (we do this manually to avoid a possible infinite recursion (it's meta))
+		log_error_stack_error(ECODE_INCONSISTENT_DATA);
+		
+		//configASSERT(false);
 	}
 }

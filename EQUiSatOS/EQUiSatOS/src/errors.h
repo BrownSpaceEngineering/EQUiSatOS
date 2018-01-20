@@ -12,7 +12,8 @@
  *   - Location byte definitions should start with ELOC_ (error location)
  *   - Error code byte definitions should start with ECODE_ (error definition)
  *   - All caps, words separated by _, preferably tab to the right indentation
- *   - Numbers can't go past 255 so they stay in one byte
+ *   - Location numbers can't go past 255 so they stay in one byte
+ *	 - Code numbers can't go past 127 so they stay in 7 bits
  */
 
 
@@ -24,116 +25,119 @@
 
 /******************** LOCATIONS ********************/
 /* Error code that signified there is no error - "null error"; used in transmission */
-#define ECODE_NO_ERROR					0
+enum error_locations {
+	ELOC_NO_ERROR =						0,
 
-#define ELOC_IR_1						1
-#define ELOC_IR_2						2
-#define ELOC_IR_3						3
-#define ELOC_IR_4						4
-#define ELOC_IR_5						5
-#define ELOC_IR_6						6
+	ELOC_IR_1 = 						1,
+	ELOC_IR_2 = 						2,
+	ELOC_IR_3 = 						3,
+	ELOC_IR_4 = 						4,
+	ELOC_IR_5 = 						5,
+	ELOC_IR_6 = 						6,
 
-#define ELOC_PD_1						7
-#define ELOC_PD_2						8
-#define ELOC_PD_3						9
-#define ELOC_PD_4						10
-#define ELOC_PD_5						11
-#define ELOC_PD_6						12
+	ELOC_PD_1 = 						7,
+	ELOC_PD_2 = 						8,
+	ELOC_PD_3 = 						9,
+	ELOC_PD_4 = 						10,
+	ELOC_PD_5 = 						11,
+	ELOC_PD_6 = 						12,
 
-#define ELOC_TEMP_1						13
-#define ELOC_TEMP_2						14
-#define ELOC_TEMP_3						15
-#define ELOC_TEMP_4						16
-#define ELOC_TEMP_5						17
-#define ELOC_TEMP_6						18
-#define ELOC_TEMP_7						19
-#define ELOC_TEMP_8						20
+	ELOC_TEMP_1 = 						13,
+	ELOC_TEMP_2 = 						14,
+	ELOC_TEMP_3 = 						15,
+	ELOC_TEMP_4 = 						16,
+	ELOC_TEMP_5 = 						17,
+	ELOC_TEMP_6 = 						18,
+	ELOC_TEMP_7 = 						19,
+	ELOC_TEMP_8 = 						20,
 
-#define ELOC_RADIO_TEMP					21
+	ELOC_RADIO_TEMP = 					21,
 
-#define ELOC_IMU_ACC					22
-#define ELOC_IMU_GYRO					23
-#define ELOC_IMU_MAG					24
+	ELOC_IMU_ACC = 						22,
+	ELOC_IMU_GYRO = 					23,
+	ELOC_IMU_MAG = 						24,
 
-#define ELOC_LED1SNS					25
-#define ELOC_LED2SNS					26
-#define ELOC_LED3SNS					27
-#define ELOC_LED4SNS					28
-#define ELOC_LFB1OSNS					29
-#define ELOC_LFB1SNS					30
-#define ELOC_LFB2OSNS					31
-#define ELOC_LFB2SNS					32
-#define ELOC_LF1REF						33
-#define ELOC_LF2REF						34
-#define ELOC_LF3REF						35
-#define ELOC_LF4REF						36
-#define ELOC_L1_REF						37
-#define ELOC_L2_REF						38
+	ELOC_LED1SNS = 						25,
+	ELOC_LED2SNS = 						26,
+	ELOC_LED3SNS = 						27,
+	ELOC_LED4SNS = 						28,
+	ELOC_LFB1OSNS = 					29,
+	ELOC_LFB1SNS = 						30,
+	ELOC_LFB2OSNS = 					31,
+	ELOC_LFB2SNS = 						32,
+	ELOC_LF1REF = 						33,
+	ELOC_LF2REF = 						34,
+	ELOC_LF3REF = 						35,
+	ELOC_LF4REF = 						36,
+	ELOC_L1_REF = 						37,
+	ELOC_L2_REF = 						38,
 
-#define ELOC_DET_RTN					39
-#define ELOC_RADIO						40
+	ELOC_DET_RTN = 						39,
+	ELOC_RADIO = 						40,
 
-#define ELOC_AD7991_0					41
-#define ELOC_AD7991_0_0					42
-#define ELOC_AD7991_0_1					43
-#define ELOC_AD7991_0_2					44
-#define ELOC_AD7991_0_3					45
-#define ELOC_AD7991_1					46
-#define ELOC_AD7991_1_0					47
-#define ELOC_AD7991_1_1					48
-#define ELOC_AD7991_1_2					49
-#define ELOC_AD7991_1_3					50
+	ELOC_AD7991_0 = 					41,
+	ELOC_AD7991_0_0 = 					42,
+	ELOC_AD7991_0_1 = 					43,
+	ELOC_AD7991_0_2 = 					44,
+	ELOC_AD7991_0_3 = 					45,
+	ELOC_AD7991_1 = 					46,
+	ELOC_AD7991_1_0 = 					47,
+	ELOC_AD7991_1_1 = 					48,
+	ELOC_AD7991_1_2 = 					49,
+	ELOC_AD7991_1_3 = 					50,
 
-#define ELOC_TCA						51
-#define ELOC_CACHED_PERSISTENT_STATE	52
-#define ELOC_MRAM_READ					53
-#define ELOC_MRAM_WRITE					54
-#define ELOC_5V_REF						55
-#define ELOC_STATE_HANDLING				56
-#define BAT_CHARGING            57
+	ELOC_TCA = 							51,
+	ELOC_CACHED_PERSISTENT_STATE = 		52,
+	ELOC_MRAM_READ = 					53,
+	ELOC_MRAM_WRITE = 					54,
+	ELOC_5V_REF = 						55,
+	ELOC_STATE_HANDLING = 				56,
+	ELOC_BAT_CHARGING =					57,
+	ELOC_ERROR_STACK =					58,
+};
 
 /******************** PROBLEM CODES ********************/
-
+enum error_codes {
 /**** ATMEL DEFINED ****/
-#define ECODE_OK						0
-#define ECODE_VALID_DATA				1
-#define ECODE_NO_CHANGE					2
-#define ECODE_ABORTED					3
-#define ECODE_BUSY						4
-#define ECODE_SUSPEND					5
-#define ECODE_IO						6
-#define ECODE_REQ_FLUSHED				7
-#define ECODE_TIMEOUT					8
-#define ECODE_BAD_DATA					9
-#define ECODE_NOT_FOUND					10
-#define ECODE_UNSUPPORTED_DEV			11
-#define ECODE_NO_MEMORY					12
-#define ECODE_INVALID_ARG				13
-#define ECODE_BAD_ADDRESS				14
-#define ECODE_BAD_FORMAT				15
-#define ECODE_BAD_FRQ					16
-#define ECODE_DENIED					17
-#define ECODE_ALREADY_INITIALIZED		18
-#define ECODE_OVERFLOW					19
-#define ECODE_NOT_INITIALIZED			20
-#define ECODE_SAMPLERATE_UNAVAILABLE	21
-#define ECODE_RESOLUTION_UNAVAILABLE	22
-#define ECODE_BAUDRATE_UNAVAILABLE		23
-#define ECODE_PACKET_COLLISION			24
-#define ECODE_PROTOCOL					25
-#define ECODE_PIN_MUX_INVALID			26
+	ECODE_OK = 							0,
+	ECODE_VALID_DATA = 					1,
+	ECODE_NO_CHANGE = 					2,
+	ECODE_ABORTED = 					3,
+	ECODE_BUSY = 						4,
+	ECODE_SUSPEND = 					5,
+	ECODE_IO = 							6,
+	ECODE_REQ_FLUSHED = 				7,
+	ECODE_TIMEOUT = 					8,
+	ECODE_BAD_DATA = 					9,
+	ECODE_NOT_FOUND = 					10,
+	ECODE_UNSUPPORTED_DEV = 			11,
+	ECODE_NO_MEMORY = 					12,
+	ECODE_INVALID_ARG = 				13,
+	ECODE_BAD_ADDRESS = 				14,
+	ECODE_BAD_FORMAT = 					15,
+	ECODE_BAD_FRQ = 					16,
+	ECODE_DENIED = 						17,
+	ECODE_ALREADY_INITIALIZED = 		18,
+	ECODE_OVERFLOW = 					19,
+	ECODE_NOT_INITIALIZED = 			20,
+	ECODE_SAMPLERATE_UNAVAILABLE = 		21,
+	ECODE_RESOLUTION_UNAVAILABLE = 		22,
+	ECODE_BAUDRATE_UNAVAILABLE = 		23,
+	ECODE_PACKET_COLLISION = 			24,
+	ECODE_PROTOCOL = 					25,
+	ECODE_PIN_MUX_INVALID = 			26,
 
-/**** CUSTOM ****/
-#define ECODE_READING_HIGH				27
-#define ECODE_READING_LOW				28
-#define ECODE_SIGNAL_LOST				29
+	/**** CUSTOM ****/
+	ECODE_READING_HIGH = 				27,
+	ECODE_READING_LOW = 				28,
+	ECODE_SIGNAL_LOST = 				29,
 
-#define ECODE_CONFIRM_TIMEOUT			30
-#define ECODE_INCONSISTENT_DATA			31
-#define ECODE_UNEXPECTED_CASE				32
-#define ECODE_ENTER_RIP							33
-#define ECODE_UNCERTAIN_RIP					34
-
+	ECODE_CONFIRM_TIMEOUT = 			30,
+	ECODE_INCONSISTENT_DATA = 			31,
+	ECODE_UNEXPECTED_CASE = 			32,
+	ECODE_ENTER_RIP = 					33,
+	ECODE_UNCERTAIN_RIP = 				34,
+};
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */

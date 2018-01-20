@@ -103,9 +103,7 @@ void startup_task(void* pvParameters) {
 	
 	// FOR TESTING TASKS
 	create_testing_tasks();
-	
 
-	// TODO: Should we even store this handle?
 	battery_charging_task_handle = xTaskCreateStatic(battery_charging_task,
 		"battery charging action task",
 		TASK_BATTERY_CHARGING_STACK_SIZE,
@@ -114,7 +112,6 @@ void startup_task(void* pvParameters) {
 		battery_charging_task_stack,
 		&battery_charging_task_buffer);
 
-	// TODO: Should we even store this handle?
 	antenna_deploy_task_handle = xTaskCreateStatic(antenna_deploy_task,
 		"antenna deploy action task",
 		TASK_ANTENNA_DEPLOY_STACK_SIZE,
@@ -131,7 +128,6 @@ void startup_task(void* pvParameters) {
 		state_handling_task_stack,
 		&state_handling_task_buffer);
 
-	// TODO: Should we even store this handle?
 	watchdog_task_handle = xTaskCreateStatic(watchdog_task,
 		"watchdog task",
 		TASK_WATCHDOG_STACK_SIZE,
@@ -298,13 +294,16 @@ task_states get_sat_task_states(void) {
 // }
 
 // returns whether the given task state is consistent with its current RTOS state (given by its task handle state)
-bool task_state_consistent(uint8_t task_state, task_type_t task_id) {
-	configASSERT(task_state <= T_STATE_ANY);
-	switch (task_state) {
+bool task_state_consistent(uint8_t expected_state, task_type_t task_id) {
+	configASSERT(expected_state <= T_STATE_ANY);
+	eTaskState task_state_rtos = eTaskGetState(*task_handles[task_id]);
+	switch (expected_state) {
 		case T_STATE_RUNNING:
-			return eTaskGetState(task_handles[task_id]) == eRunning;
+			// note: a task will usually be blocked and possibly be ready; 
+			// it will only be running if it has called this function itself
+			return task_state_rtos == eBlocked || task_state_rtos == eReady || task_state_rtos == eRunning;
 		case T_STATE_SUSPENDED:
-			return eTaskGetState(task_handles[task_id]) == eSuspended;
+			return task_state_rtos == eSuspended;
 		case T_STATE_ANY:
 			// if a tasks state is not set in this state, make sure it matches its 
 			// previous state
@@ -318,8 +317,8 @@ bool task_state_consistent(uint8_t task_state, task_type_t task_id) {
 /* Returns whether the tasks that should be running/stopped actually are  (according to current RTOS internal task state) */
 bool check_task_state_consistency(void) {
 	bool result = true;
-	for (int task_id = 0; task_id < NUM_TASKS; task_id++) {
-		result = result && task_state_consistent(current_task_states.states[task_id], task_id);
+	for (task_type_t task_id = 0; task_id < NUM_TASKS; task_id++) {
+		result = task_state_consistent(current_task_states.states[task_id], task_id) && result;
 	}
 	return result;
 }

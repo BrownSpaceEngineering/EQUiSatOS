@@ -62,7 +62,7 @@ void global_init(void) {
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
-	//init_tracelyzer();	
+	init_tracelyzer();	
 
 	pin_init();
  	init_rtc();

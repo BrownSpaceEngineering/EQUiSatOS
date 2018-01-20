@@ -50,11 +50,8 @@ void watchdog_task(void *pvParameters) {
 bool watchdog_as_function(void) {
 	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 	
-	// make sure the battery task is definitely set to run
-	eTaskState battery_task_state = eTaskGetState(*task_handles[BATTERY_CHARGING_TASK]);
 	bool watch_block = false;
-	if (battery_task_state == eDeleted || battery_task_state == eSuspended 
-			|| !check_task_state_consistency()) {
+	if (!check_task_state_consistency()) {
 		watch_block = true;
 	} else {
 		uint32_t curr_time = get_current_timestamp_ms();

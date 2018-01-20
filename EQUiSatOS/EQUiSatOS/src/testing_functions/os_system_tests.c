@@ -31,7 +31,7 @@ void test_all_state_transitions(void)
 			if (valid_state)
 			{
 				// run for a bit after a valid state transition
-				delay_ms(TICKS_IN_EACH_VALID_STATE);
+				vTaskDelay(TICKS_IN_EACH_VALID_STATE);
 			}
 		}
 	}
@@ -44,7 +44,7 @@ void test_normal_satellite_state_sequence(void)
 	TickType_t ms = xTaskGetTickCount();
 	
 	if (state_num < 1) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 			TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);	
@@ -53,7 +53,7 @@ void test_normal_satellite_state_sequence(void)
 	
 	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
 	else if (state_num < 2) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
@@ -61,7 +61,7 @@ void test_normal_satellite_state_sequence(void)
 	}
 	
 	else if (state_num < 3) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
@@ -69,7 +69,7 @@ void test_normal_satellite_state_sequence(void)
 	}
 				
 	else if (state_num < 4) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);	
@@ -77,7 +77,7 @@ void test_normal_satellite_state_sequence(void)
 	}
 	
 	else if (state_num < 5) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		check_set_sat_state(IDLE_FLASH, LOW_POWER);		
@@ -85,7 +85,7 @@ void test_normal_satellite_state_sequence(void)
 	}
 	
 	else if (state_num < 6) {
-		delay_ms(IN_STATE_TIME);
+		vTaskDelay(IN_STATE_TIME);
 // 		delay_ms(2 * LOW_POWER_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
 // 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
 		// throw RIP in at the very end

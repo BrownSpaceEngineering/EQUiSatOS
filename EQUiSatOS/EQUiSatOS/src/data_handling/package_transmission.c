@@ -164,17 +164,18 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	read_lion_volts_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lion_volts_batch);
 
-	//TODO: Fix for lion currents and PANELREF/LREF
-	//read_ad7991_batbrd((uint8_t*) (buffer + *buf_index));
-	//*buf_index += sizeof(lion_current_batch);
+	// we read all battery board inputs at once,
+	// but we write to two different message buffer locations, so we
+	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
+	read_ad7991_batbrd((uint8_t*) (buffer + *buf_index), 
+		(uint8_t*) (buffer + *buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
+	*buf_index += sizeof(lion_current_batch);
 
 	read_lion_temps_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lion_temps_batch);
+	*buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
 
-	//read_ad7991_ctrlbrd((uint8_t*) (buffer + *buf_index));
-	//*buf_index += sizeof(ad7991_ctrlbrd_batch);
-
-	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index)); // TODO
+	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index));
 	*buf_index += sizeof(bat_charge_dig_sigs_batch);
 
 	read_lifepo_volts_batch((uint8_t*) (buffer + *buf_index));
@@ -377,8 +378,8 @@ void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* id
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_volts_data,				sizeof(lion_volts_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_current_data,			sizeof(lion_current_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_temps_data,				sizeof(lion_temps_batch));
-	write_bytes_and_shift(buffer, buf_index,	idle_data->panelref_lref_data,		sizeof(ad7991_ctrlbrd_batch));
-	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),sizeof(bat_charge_dig_sigs_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->panelref_lref_data,			sizeof(panelref_lref_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->radio_temp_data),			sizeof(radio_temp_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->proc_temp_data),			sizeof(proc_temp_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->ir_amb_temps_data,			sizeof(ir_ambient_temps_batch));
@@ -420,7 +421,7 @@ void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_volts_data,				sizeof(lion_volts_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_current_data,				sizeof(lion_current_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_temps_data,				sizeof(lion_temps_batch));
-	write_bytes_and_shift(buffer, buf_index,	low_power_data->panelref_lref_data, sizeof(panelref_lref_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->panelref_lref_data,				sizeof(panelref_lref_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->ir_obj_temps_data,				sizeof(ir_object_temps_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->gyro_data,						sizeof(gyro_batch));
