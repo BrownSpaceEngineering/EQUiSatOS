@@ -1,5 +1,11 @@
 #include "system_test.h"
 
+void set_regulator_power(bool on) {
+	set3V6Power(on);
+	setRadioPower(on);
+	set_output(on, P_5V_EN);
+}
+
 void sensor_read_tests(void) {
 	uint16_t six_buf[6];
 	uint8_t six_buf_8t[6];
@@ -7,6 +13,7 @@ void sensor_read_tests(void) {
 	uint8_t four_buf[4];
 	uint16_t four_buf_16t[4];
 	uint8_t two_buf[2];	
+	delay_ms(100);
 	print("\n\n\n\n##### NEW RUN #####\n");
 	
 	print("\n# IMU #\n");
@@ -18,10 +25,10 @@ void sensor_read_tests(void) {
 	print("mag: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 
 	print("\n# IR #\n");
-	read_ir_ambient_temps_batch(six_buf);
-	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
+	read_ir_ambient_temps_batch(six_buf_8t);
+	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf_8t[0] << 8), (uint16_t)dataToTemp(six_buf_8t[1] << 8), (uint16_t)dataToTemp(six_buf_8t[2] << 8), (uint16_t)dataToTemp(six_buf_8t[3] << 8), (uint16_t)dataToTemp(six_buf_8t[4] << 8), (uint16_t)dataToTemp(six_buf_8t[5] << 8));
 	read_ir_object_temps_batch(six_buf);
-	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
+	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0]), (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]), (uint16_t)dataToTemp(six_buf[3]), (uint16_t)dataToTemp(six_buf[4]), (uint16_t)dataToTemp(six_buf[5]));
 
 	print("\n# PDIODE #\n");
 	read_pdiode_batch(six_buf_8t);
@@ -31,45 +38,37 @@ void sensor_read_tests(void) {
 
 	print("\n\n# LiON VOLTS #\n");
 	read_lion_volts_batch(two_buf);
-	print("lion volts: %d %d\n", two_buf[0], two_buf[1]);
+	print("lion volts: %d %d\n", (uint16_t)two_buf[0]<<8, (uint16_t)two_buf[1]<<8);
 	
 	print("# ad7991_batbrd #\n");
 	read_ad7991_batbrd(four_buf, four_buf+2);	
-	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
-	setRadioPower(false);
-	set3V6Power(false);
-	set_output(false, P_5V_EN);
-	
+	set_regulator_power(false);
 	print("# ad7991_ctrlbrd regs OFF#\n");
 	read_ad7991_ctrlbrd(four_buf_16t);
 	print("3V6REF: %d, 3V6_SNS %d, 5Vref %d, 3V3REF %d\n", four_buf_16t[0], four_buf_16t[1], four_buf_16t[2], four_buf_16t[3]);	
-	
-	set3V6Power(true);
-	setRadioPower(true);
-	set_output(true, P_5V_EN);
+	set_regulator_power(true);
 	delay_ms(1000);
-	
 	print("# ad7991_ctrlbrd regs ON#\n");
 	read_ad7991_ctrlbrd(four_buf_16t);
 	print("3V6REF: %d, 3V6_SNS %d, 5Vref %d, 3V3REF %d\n", four_buf_16t[0], four_buf_16t[1], four_buf_16t[2], four_buf_16t[3]);
-	
-	setRadioPower(false);
-	set3V6Power(false);
-	set_output(false, P_5V_EN);
+	set_regulator_power(false);
 
 	print("# LiON TEMPS #\n");
 	read_lion_temps_batch(two_buf);
-	print("lion temps: %d %d\n", two_buf[0], two_buf[1]);
+	print("lion temps: %d %d\n", (uint16_t)two_buf[0]<<8, (uint16_t)two_buf[1]<<8);
 
 
 	print("\n# LiFePO VOLTS #\n");
 	read_lifepo_volts_batch(four_buf);
-	print("lifepo volts: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	print("lifepo volts: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 
 	print("# LiFePO CURRENT #\n");
 	read_lifepo_current_batch(four_buf);
-	print("lifepo current: %d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
+	print("lifepo current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	
+	
 }
 
 // Function that takes in a status code and prints out the matching status
@@ -466,15 +465,11 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	
 	if (regulatorsOn) {
 		print("==============AD7991_CTRLBRD Test | regulators ON==============\n");
-		set3V6Power(true);
-		setRadioPower(true);
-		set_output(true, P_5V_EN);
+		set_regulator_power(true);
 		delay_ms(1000);
 	} else {
 		print("==============AD7991_CTRLBRD Test | regulators OFF==============\n");
-		setRadioPower(false);
-		set3V6Power(false);		
-		set_output(false, P_5V_EN);
+		set_regulator_power(false);
 	}
 
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_CTRLBRD);
@@ -560,43 +555,43 @@ void readBatBoard(void){
 		
 		switch (i) {
 			case 0:
-			strcpy(test_str,"P_AI_LFB1OSNS");
+			strcpy(test_str,"LFB1OSNS");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
 			break;
 			case 1:
-			strcpy(test_str,"P_AI_LFB1SNS");
+			strcpy(test_str,"LFB1SNS");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.980 * 50;
 			break;
 			case 2:
-			strcpy(test_str,"P_AI_LFB2OSNS");
+			strcpy(test_str,"LFB2OSNS");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
 			break;
 			case 3:
-			strcpy(test_str,"P_AI_LFB2SNS");
+			strcpy(test_str,"LFB2SNS");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.979 * 50;
 			break;
 			case 4:
-			strcpy(test_str,"P_AI_LF2REF");
+			strcpy(test_str,"LF2REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
 			break;			
 			case 5:
-			strcpy(test_str,"P_AI_LF1REF");
+			strcpy(test_str,"LF1REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
 			break;
 			case 6:
-			strcpy(test_str,"P_AI_LF4REF");
+			strcpy(test_str,"LF4REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
 			break;			
 			case 7:
-			strcpy(test_str,"P_AI_LF3REF");
+			strcpy(test_str,"LF3REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
 			break;
 			case 8:
-			strcpy(test_str,"P_AI_L1_REF");
+			strcpy(test_str,"L1_REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 			case 9:
-			strcpy(test_str,"P_AI_L2_REF");
+			strcpy(test_str,"L2_REF");
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 		}
