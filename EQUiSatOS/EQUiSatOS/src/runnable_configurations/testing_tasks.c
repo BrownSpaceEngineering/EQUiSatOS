@@ -59,7 +59,7 @@ void testing_task(void *pvParameters)
 		/************************************************************************/
 		test_message_packaging();
 		stress_test_message_packaging();
-		configASSERT(task_state_consistent());
+		configASSERT(check_task_state_consistency());
 		
 		/************************************************************************/
 		/* STATE CHANGES														*/

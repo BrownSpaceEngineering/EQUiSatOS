@@ -218,22 +218,22 @@ void configure_state_from_reboot(void) {
 		// we use boot_task_states to explicitly set state for all tasks on boot
 		// (so at the end of this it won't contain any T_STATE_ANYs),
 		// while current_task_states signifies the current abstract state
-		assign_task_states(boot_task_states,	INITIAL_TASK_STATES); // may be modified
-		assign_task_states(prev_task_states,	INITIAL_TASK_STATES);
-		assign_task_states(current_task_states, INITIAL_TASK_STATES);
+		boot_task_states =		INITIAL_TASK_STATES; // may be modified
+		prev_task_states =		INITIAL_TASK_STATES;
+		current_task_states =	INITIAL_TASK_STATES;
 
 	} else {
-		current_sat_state = IDLE_NO_FLASH;
-		assign_task_states(boot_task_states,	IDLE_NO_FLASH_TASK_STATES); // may be modified
-		assign_task_states(prev_task_states,	IDLE_NO_FLASH_TASK_STATES);
-		assign_task_states(current_task_states, IDLE_NO_FLASH_TASK_STATES);
+		current_sat_state =		IDLE_NO_FLASH;
+		boot_task_states =		IDLE_NO_FLASH_TASK_STATES; // may be modified
+		prev_task_states =		IDLE_NO_FLASH_TASK_STATES;
+		current_task_states =	IDLE_NO_FLASH_TASK_STATES;
 	}
 
 	// get state of antenna deploy task and apply
 	if (cache_get_sat_event_history(false)->antenna_deployed) { // no one writing so don't wait
-		boot_task_states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
+		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
-		boot_task_states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
+		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
 	}
 
 	// add any errors we can from MRAM cache
@@ -251,7 +251,7 @@ void configure_state_from_reboot(void) {
 void init_task_state(task_type_t task_id) {
 	// one of two coming out of boot
 	configASSERT (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
-	set_single_task_state(boot_task_states[task_id], task_id);
+	set_single_task_state(boot_task_states.states[task_id], task_id);
 }
 
 /************************************************************************/
@@ -280,7 +280,7 @@ void vApplicationIdleHook(void) {
 /************************************************************************/
 /* STATE SETTING METHODS                                                */
 /************************************************************************/
-void set_all_task_states(const task_states states, sat_state_t state);
+void set_all_task_states(task_states states, sat_state_t state);
 
 /* Getter for current global satellite state */
 sat_state_t get_sat_state(void) {
@@ -288,14 +288,14 @@ sat_state_t get_sat_state(void) {
 }
 
 /* Getter for current global task states (what's supposed to be running, etc.) */
-enum task_state* get_sat_task_states(void) {
+task_states get_sat_task_states(void) {
 	return current_task_states;
 }
 
-// "assigns" the states_setting to states_to_set by array copying
-void assign_task_states(task_states states_to_set, const task_states states_setting) {
-	memcpy(states_to_set, states_setting, sizeof(enum task_state) * NUM_TASKS);
-}
+// // "assigns" the states_setting to states_to_set by array copying
+// void assign_task_states(task_states states_to_set, const task_states states_setting) {
+// 	memcpy(states_to_set, states_setting, sizeof(enum task_state) * NUM_TASKS);
+// }
 
 // returns whether the given task state is consistent with its current RTOS state (given by its task handle state)
 bool task_state_consistent(uint8_t task_state, task_type_t task_id) {
@@ -308,7 +308,7 @@ bool task_state_consistent(uint8_t task_state, task_type_t task_id) {
 		case T_STATE_ANY:
 			// if a tasks state is not set in this state, make sure it matches its 
 			// previous state
-			return task_state_consistent(prev_task_states[task_id], task_id);
+			return task_state_consistent(prev_task_states.states[task_id], task_id);
 		default:
 			configASSERT(false);
 			return true;
@@ -319,7 +319,7 @@ bool task_state_consistent(uint8_t task_state, task_type_t task_id) {
 bool check_task_state_consistency(void) {
 	bool result = true;
 	for (int task_id = 0; task_id < NUM_TASKS; task_id++) {
-		result = result && task_state_consistent(current_task_states[task_id], task_id);
+		result = result && task_state_consistent(current_task_states.states[task_id], task_id);
 	}
 	return result;
 }
@@ -420,7 +420,7 @@ void task_resume(task_type_t task_id);
 // sets all task states atomically by suspending the RTOS scheduler and watchdog,
 // resuming/suspending/ignoring task states, and setting the current
 // state variable (atomically in here)
-void set_all_task_states(const task_states states, sat_state_t state);
+void set_all_task_states(const task_states states, sat_state_t state)
 {
 	// Don't allow other tasks to run while we're changing state,
 	// and make sure to get the watchdog mutex so its state is stable
@@ -429,10 +429,10 @@ void set_all_task_states(const task_states states, sat_state_t state);
 
 	// values given by external-facing functions
 	current_sat_state = state;
-	assign_task_states(current_task_states, states);
+	current_task_states = states;
 
 	for (int task_id = 0; task_id < NUM_TASKS; task_id++) {
-		set_single_task_state(states[task_id], task_id);
+		set_single_task_state(states.states[task_id], task_id);
 	}
 
 	xTaskResumeAll();
@@ -446,18 +446,18 @@ void set_single_task_state(enum task_state state, task_type_t task_id) {
 	configASSERT(task_id < NUM_TASKS);
 	switch (state) {
 		case T_STATE_RUNNING:
-			prev_task_states[task_id] = T_STATE_RUNNING;
+			prev_task_states.states[task_id] = T_STATE_RUNNING;
 			task_resume(task_id);
 			return;
 		case T_STATE_SUSPENDED:
-			prev_task_states[task_id] = T_STATE_SUSPENDED;
+			prev_task_states.states[task_id] = T_STATE_SUSPENDED;
 			task_suspend(task_id);
 			return;
 		case T_STATE_ANY:
 			// note we don't set prev_task_states because it will 
 			// continue the (current) previous
-			configASSERT(prev_task_states[task_id] != T_STATE_ANY);
-			set_single_task_state(prev_task_states[task_id], task_id);
+			configASSERT(prev_task_states.states[task_id] != T_STATE_ANY);
+			set_single_task_state(prev_task_states.states[task_id], task_id);
 			return;
 		default:
 			configASSERT(false);
