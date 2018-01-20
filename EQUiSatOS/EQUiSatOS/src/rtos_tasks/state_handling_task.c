@@ -131,13 +131,10 @@ void state_handling_task(void *pvParameters)
 
       int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
 
-      satellite_history_batch *sat_state = cache_get_sat_event_history(true);
-
       switch (current_state)
       {
-        // TODO: we need to make sure these global booleans are being set in the
-        // battery charging task
         // TODO: do we want some notion of time?
+		satellite_history_batch *sat_state = cache_get_sat_event_history(true);
         case INITIAL:
           if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S &&
               both_li_above_down &&
@@ -146,15 +143,18 @@ void state_handling_task(void *pvParameters)
           break;
 
         case ANTENNA_DEPLOY:
+          // TODO: add something here to send to HELLO_WORLD_LOW_POWER if necesarry
           // if the antenna is open kill the task because the antenna has been deployed
           // or kill it if it's run more than 5 times because it's a lost cause
-          if ((get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) || num_tries_ant_deploy() >= 5) {
+          if (cache_get_sat_event_history(true)->antenna_deployed || 
+              (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) || num_tries_ant_deploy() >= 5) {
 	          // switch state to hello world, then determine whether we should keep trying
 	          // (we WON'T be suspended on state change)
 	          set_sat_state(HELLO_WORLD);
-	          
+
 	          // only suspend if the antenna has actually deployed
 	          if (!get_input(P_DET_RTN)) {
+              update_sat_event_history(1, 0, 0, 0, 0, 0);
 		          suspend_antenna_deploy(); // we're the only task that can suspend a task explicitly
 	          }
           }
@@ -162,13 +162,12 @@ void state_handling_task(void *pvParameters)
 
         case HELLO_WORLD:
           // it's higher priority to go to low power
-          if (one_li_below_down)
+          if (one_li_below_low_power)
             set_sat_state(HELLO_WORLD_LOW_POWER);
           else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
             set_sat_state(IDLE_NO_FLASH);
           break;
 
-        // TODO: this needs to take into account the new conception of "full"
         case HELLO_WORLD_LOW_POWER:
           if (both_li_above_down)
             set_sat_state(HELLO_WORLD);
