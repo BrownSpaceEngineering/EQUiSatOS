@@ -16,7 +16,7 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLATSAT
+#define FLIGHT
 
 //0 to suppress prints, 1 to print over USART
 #define PRINT_DEBUG 1
