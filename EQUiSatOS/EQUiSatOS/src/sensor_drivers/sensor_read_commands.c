@@ -113,17 +113,15 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	uint16_t buf;
 	commands_read_adc_mV(&buf, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-	buf *= 2500;
 	*val_1 = buf;
 
 	commands_read_adc_mV(&buf, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-	buf *= 2500;
 	*val_2 = buf;
 }
 
 void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t results[4];
-	sc = AD7991_read_all(results, AD7991_BATBRD);
+	sc = AD7991_read_all_mV(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
 	
 	// results[0] = L2_SNS
@@ -281,7 +279,7 @@ void read_led_current_batch(led_current_batch batch) {
 }*/
 
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
-	sc = AD7991_read_all(batch, AD7991_CTRLBRD);
+	sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
 	log_if_error(ELOC_AD7991_1, sc, false);
 	
 	// 3V6_REF is index 0
