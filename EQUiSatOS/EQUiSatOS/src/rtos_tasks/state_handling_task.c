@@ -67,10 +67,12 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 
 void state_handling_task(void *pvParameters)
 {
-  // initialize xNextWakeTime onces
+	// initialize xNextWakeTime onces
 	TickType_t prev_wake_time = xTaskGetTickCount();
+	
+	init_task_state(STATE_HANDLING_TASK);
 
-  while (true)
+  for ( ;; )
   {
     vTaskDelayUntil(&prev_wake_time, STATE_HANDLING_TASK_FREQ / portTICK_PERIOD_MS);
 

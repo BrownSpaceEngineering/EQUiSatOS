@@ -54,10 +54,16 @@ void testing_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, TESTING_TASK_FREQ / portTICK_PERIOD_MS);
 		
+		/************************************************************************/
+		/* MISC                                                                 */
+		/************************************************************************/
 		test_message_packaging();
 		stress_test_message_packaging();
+		configASSERT(task_state_consistent());
 		
-		/* state changes */
+		/************************************************************************/
+		/* STATE CHANGES														*/
+		/************************************************************************/
 		// 	test_normal_satellite_state_sequence();
 		//	test_all_state_transitions();
 		// 	test_watchdog_reset_bat_charging();

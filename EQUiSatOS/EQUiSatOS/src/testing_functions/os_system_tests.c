@@ -248,25 +248,25 @@ void force_set_state(sat_state_t new_state)
 {
 	switch (new_state) {
 		case INITIAL:
-			set_task_states(INITIAL_TASK_STATES, INITIAL);
+			set_all_task_states(INITIAL_TASK_STATES, INITIAL);
 			break;
 		case ANTENNA_DEPLOY:
-			set_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
+			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
 			break;
 		case HELLO_WORLD:
-			set_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
+			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
 			break;
 		case IDLE_NO_FLASH:
-			set_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
+			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
 			break;
 		case IDLE_FLASH:
-			set_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
+			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
 			break;
 		case LOW_POWER:
-			set_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
+			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
 			break;
 		case RIP:
-			set_task_states(RIP_TASK_STATES, RIP);
+			set_all_task_states(RIP_TASK_STATES, RIP);
 			break;
 		default:
 			configASSERT(false);
