@@ -140,6 +140,7 @@ enum error_codes {
 	ECODE_UNCERTAIN_RIP = 				34,
 	ECODE_WATCHDOG_EARLY_WARNING =		35,
 	ECODE_WACTHDOG_RESET =				36,
+	ECODE_WATCHDOG_DID_KICK =			37,
 };
 
 /************************************************************************/

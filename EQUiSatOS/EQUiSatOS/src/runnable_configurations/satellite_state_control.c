@@ -244,6 +244,11 @@ void configure_state_from_reboot(void) {
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
 	}
+	
+	// if the satellite restarted because of the watchdog, log that as an error so we know
+	if (did_watchdog_kick()) {
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
+	}
 
 	// add any errors we can from MRAM cache
 	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
