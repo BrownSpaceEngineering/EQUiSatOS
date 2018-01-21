@@ -572,7 +572,52 @@ void readBatBoard(void){
 		}
 		print(" %s \t %s \t %4d mV\t %4d mV\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]), (uint16_t)(bat_voltage_readings[i]));
 	}
+}
+
+void readLEDCurrent(bool printFloats){
+	print("==============LED Test==============\n");
+	struct adc_module bat_instance;
+	uint16_t voltage_readings[4];
+	float currentReadings[4];
+	char test_str[20];
+	char error_str[20];
+	enum adc_positive_input bat_adc_pins[4] = {
+		P_AI_LED1SNS,
+		P_AI_LED2SNS,
+		P_AI_LED3SNS,
+		P_AI_LED4SNS,
+	};
 	
+	for (int i=0; i<4; i++){
+		uint16_t buf;
+		configure_adc(&bat_instance,bat_adc_pins[i]);
+		uint8_t rs;
+		LTC1380_channel_select(0x4a, i, &rs);
+		adc_enable(&bat_instance);
+		enum status_code sc = read_adc_mV(bat_instance, &voltage_readings[i]);
+		get_status(sc,error_str);
+		
+		switch (i) {
+			case 0:
+			strcpy(test_str,"LED1SNS");			
+			break;
+			case 1:
+			strcpy(test_str,"LED2SNS");			
+			break;
+			case 2:
+			strcpy(test_str,"LED3SNS");			
+			break;
+			case 3:
+			strcpy(test_str,"LFB4SNS");			
+			break;			
+		}
+		currentReadings[i] = voltage_readings[i]*1000/30;
+		if (printFloats) {
+			print(" %s \t %s \t %d mV\t %.01f mA\n",test_str,error_str,(voltage_readings[i]), (currentReadings[i]));	
+		} else {
+			print(" %s \t %s \t %d mV\t %d mA\n",test_str,error_str,(voltage_readings[i]), (uint16_t)(currentReadings[i]));	
+		}
+	}
 }
 
 void system_test(bool printFloats){		
@@ -580,11 +625,12 @@ void system_test(bool printFloats){
 	print("=               SYSTEM Test           =\n");
 	print("=======================================\n");		
 	readBatBoard();
+	AD7991_BAT_test();
 	
 	AD7991_CTRL_test(false);
 	AD7991_CTRL_test(true);
 	
-	AD7991_BAT_test();
+	readLEDCurrent(printFloats);
 	
 	AD590_test();
 			
