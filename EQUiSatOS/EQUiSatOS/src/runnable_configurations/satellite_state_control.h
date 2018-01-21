@@ -46,7 +46,7 @@ typedef struct task_states {
 sat_state_t get_sat_state(void);
 bool set_sat_state(sat_state_t state);
 task_states get_sat_task_states(void);
-void suspend_antenna_deploy(void); // interface for ONLY antenna deploy task
+void set_task_state_safe(task_type_t task_id, bool run);
 bool check_task_state_consistency(void);
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS FOR TESTING - DONT YOU DARE USE THESE */

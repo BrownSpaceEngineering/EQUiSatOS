@@ -14,9 +14,11 @@ void pwm_test(void) {
 }
 
 void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant) {
-	configure_pwm(pin, pin_mux, p_ant);
-	set_pulse_width_fraction(3, 4);
-	delay_ms(ms);
-	//vTaskDelay(ms);
-	disable_pwm();
+	#ifdef ANTENNA_DEPLOY_ACTIVE
+		configure_pwm(pin, pin_mux, p_ant);
+		set_pulse_width_fraction(3, 4);
+		delay_ms(ms);
+		//vTaskDelay(ms);
+		disable_pwm();
+	#endif
 }

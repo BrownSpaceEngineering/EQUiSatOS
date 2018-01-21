@@ -74,8 +74,16 @@ bool watchdog_as_function(void) {
 		// "kick" watchdog - RESTART SATELLITE
 		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
+
+		write_state_to_storage();
+		
+		#ifdef WATCHDOG_RESET_ACTIVE
+			// TODO: actually reset satellite
+		#endif
+		
 		// it doesn't make sense to reset values here because the satellite will reboot
 		return false;
+		
 	} else {
 		// pet watchdog - pass this watchdog test, move onto next
 		pet_watchdog();
