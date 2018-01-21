@@ -75,7 +75,7 @@ void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t 
 /************************************************************************/
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
-	while (1) {}; // MIGHT hang here on stack overflow
+	configASSERT(false); // MIGHT hang here on stack overflow
 }
 
 /**

@@ -172,11 +172,8 @@ void transmit_task(void *pvParameters)
 		}
 		
 		// double-make sure radio is set to transmit (don't check regulators every time, however)
-		// (it should be on whenever this task is running)
-		set3V6Power(true);
-		setRadioPower(true);
-		setTXEnable(true);
-		setRXEnable(true);
+		// (it should be on whenever this task is running anyways)
+		setRadioState(true, false);
 		
 		// print a debug message
 		debug_print_msg_types();

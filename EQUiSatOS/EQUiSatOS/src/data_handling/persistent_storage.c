@@ -337,7 +337,7 @@ void write_custom_state(void) {
 	/*** CONFIG ***/
 	uint32_t secs_since_launch =				0;
 	uint8_t reboot_count =						0;
-	sat_state_t sat_state =						INITIAL;
+	sat_state_t sat_state =						IDLE_FLASH; // INITIAL
 	satellite_history_batch sat_event_history;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
