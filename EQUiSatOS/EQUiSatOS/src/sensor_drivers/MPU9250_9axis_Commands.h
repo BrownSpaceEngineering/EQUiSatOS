@@ -64,10 +64,13 @@
 #define		ZA_OFFSET_L_TC   0x0B
 
 void MPU9250_init(void);
+void convert_MPU9250_to_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_mag(int16_t toFill[3]);
+enum status_code MPU9250_read_mag_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_acc(int16_t toFill[3]);
 enum status_code MPU9250_read_acc_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro(int16_t toFill[3]);
+enum status_code MPU9250_read_gyro_EQUiSat_coords(int16_t toFill[3]);
 void MPU9250_computeBias(float *dest1, float *dest2);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 

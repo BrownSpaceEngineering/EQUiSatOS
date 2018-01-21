@@ -258,7 +258,7 @@ static void MPU9250_test(bool rebias, bool printFloats){
 	char buffer[20];
 	enum status_code code;
 	
-	code = MPU9250_read_acc(MPU9250_results);
+	code = MPU9250_read_acc_EQUiSat_coords(MPU9250_results);
 	get_status(code,buffer);
 	if (printFloats) {
 		print("ACCELEROMETER: \t %s \n x: \t %d \t %.02f g \n y: \t %d \t %.02f g \n z: \t %d \t %.02f g\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/16384.,MPU9250_results[1], (float)MPU9250_results[1]/16384., MPU9250_results[2], (float)MPU9250_results[2]/16384.);
@@ -266,7 +266,7 @@ static void MPU9250_test(bool rebias, bool printFloats){
 		print("ACCELEROMETER: \t %s \n x: \t %d \t %d g \n y: \t %d \t %d g \n z: \t %d \t %d g\n",buffer,MPU9250_results[0], MPU9250_results[0]/16384,MPU9250_results[1], MPU9250_results[1]/16384, MPU9250_results[2], MPU9250_results[2]/16384);
 	}			
 	
-	code = MPU9250_read_gyro(MPU9250_results);		
+	code = MPU9250_read_gyro_EQUiSat_coords(MPU9250_results);		
 	get_status(code,buffer);
 	if (printFloats) {
 		print("GYRO: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/131.,MPU9250_results[1], (float)MPU9250_results[1]/131., MPU9250_results[2], (float)MPU9250_results[2]/131.);
@@ -275,7 +275,7 @@ static void MPU9250_test(bool rebias, bool printFloats){
 	}
 	
 		
-	code = MPU9250_read_mag(MPU9250_results);
+	code = MPU9250_read_mag_EQUiSat_coords(MPU9250_results);
 	get_status(code, buffer);
 	if (printFloats) {
 		print("MAG: \t %s \n x: \t %d \t %.02f uT \n y: \t %d \t %.02f uT \n z: \t %d \t %.02f uT\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]*0.6,MPU9250_results[1], (float)MPU9250_results[1]*0.6, MPU9250_results[2], (float)MPU9250_results[2]*0.6);

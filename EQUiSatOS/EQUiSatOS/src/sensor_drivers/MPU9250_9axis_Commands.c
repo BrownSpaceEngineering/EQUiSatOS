@@ -18,6 +18,13 @@ void MPU9250_init(void) {
 	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
+void convert_MPU9250_to_EQUiSat_coords(int16_t toFill[3]) {
+	toFill[0] *= -1;
+	int16_t temp = toFill[2];
+	toFill[2] = toFill[1]*-1;
+	toFill[1] = temp;
+}
+
 enum status_code MPU9250_read_mag(int16_t toFill[3]){
 	// Request single magnetometer read to be performed
 	uint8_t reqData[] = {MAG_REQUEST_ADDRESS,MAG_SINGLE_MEASUREMENT};
@@ -43,6 +50,12 @@ enum status_code MPU9250_read_mag(int16_t toFill[3]){
 	return statc2;
 }
 
+enum status_code MPU9250_read_mag_EQUiSat_coords(int16_t toFill[3]) {
+	enum status_code status = MPU9250_read_mag(toFill);
+	convert_MPU9250_to_EQUiSat_coords(toFill);
+	return status;
+}
+
 //toFill in the order of xyz
 enum status_code MPU9250_read_acc(int16_t toFill[3]){
 	uint8_t data[6] = {0,0,0,0,0,0};
@@ -58,13 +71,9 @@ enum status_code MPU9250_read_acc(int16_t toFill[3]){
 }
 
 enum status_code MPU9250_read_acc_EQUiSat_coords(int16_t toFill[3]) {	
-	MPU9250_read_acc(toFill);
-	int16_t temp = toFill[2];
-	toFill[2] = toFill[1]*-1;
-	toFill[1] = temp;
-	
-
-	
+	enum status_code status = MPU9250_read_acc(toFill);
+	convert_MPU9250_to_EQUiSat_coords(toFill);
+	return status;
 }
 
 
@@ -79,6 +88,12 @@ enum status_code MPU9250_read_gyro(int16_t toFill[3]){
 	toFill[2]=data[4]<<8 | data[5];
 	
 	return statc;
+}
+
+enum status_code MPU9250_read_gyro_EQUiSat_coords(int16_t toFill[3]) {
+	enum status_code status = MPU9250_read_gyro(toFill);
+	convert_MPU9250_to_EQUiSat_coords(toFill);
+	return status;
 }
 
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z) {
