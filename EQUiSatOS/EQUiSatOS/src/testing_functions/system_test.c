@@ -44,6 +44,10 @@ void sensor_read_tests(void) {
 	read_ad7991_batbrd(four_buf, four_buf+2);	
 	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
+	print("# led current #\n");
+	read_led_current_batch(four_buf);
+	print("LED1SNS: %d, LED2SNS %d, LED3SNS %d, LED4SNS %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	
 	set_regulator_power(false);
 	print("# ad7991_ctrlbrd regs OFF#\n");
 	read_ad7991_ctrlbrd(four_buf_16t);
@@ -520,7 +524,6 @@ void readBatBoard(void){
 	};
 	
 	for (int i=0; i<10; i++){		
-		uint16_t buf;
 		configure_adc(&bat_instance,bat_adc_pins[i]);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
@@ -588,8 +591,7 @@ void readLEDCurrent(bool printFloats){
 		P_AI_LED4SNS,
 	};
 	
-	for (int i=0; i<4; i++){
-		uint16_t buf;
+	for (int i=0; i<4; i++){		
 		configure_adc(&bat_instance,bat_adc_pins[i]);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
