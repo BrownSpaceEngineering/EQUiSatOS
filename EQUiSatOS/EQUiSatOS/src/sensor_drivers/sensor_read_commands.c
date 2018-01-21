@@ -161,7 +161,7 @@ static void verify_regulators(bool on3v6, bool onRadio, bool on5v) {
 
 void read_led_temps_batch(led_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_regulators();
+	//verify_regulators(); TODO: Fill in
 	for (int i = 4; i < 8; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -219,7 +219,7 @@ void read_pdiode_batch(pdiode_batch batch) {
 
 void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_regulators();
+	//verify_regulators(); TODO: Fill in
 	for (int i = 0; i < 2; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
@@ -232,7 +232,7 @@ void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 
 void read_lion_temps_batch(lion_temps_batch batch) {
 	set_output(true, P_5V_EN);
-	verify_regulators();
+	//verify_regulators(); TODO: Fill in
 	for (int i = 2; i < 4; i++) {
 		uint8_t rs8;
 		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
