@@ -11,7 +11,7 @@
 
 #include <global.h>
 
-#define DEFAULT_PWM_MS_RUN 500
+#define PWM_LENGTH_MS 500
 
 void pwm_test(void);
 void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant);

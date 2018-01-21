@@ -9,12 +9,9 @@
 #define TASK_TESTING_H_
 
 #include <global.h>
-#include "task.h"
-#include "semphr.h"
+#include "rtos_tasks/rtos_tasks.h"
+#include "satellite_state_control.h"
 
-TaskHandle_t suicide_test_handle;
-
-void task_suicide_test(void *pvParameters);
-void task_stack_size_overflow_test(void *pvParameters);
+void create_testing_tasks(void);
 
 #endif /* TASK_TESTING_H_ */

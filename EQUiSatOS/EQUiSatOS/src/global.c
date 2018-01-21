@@ -62,11 +62,12 @@ void global_init(void) {
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
-	//init_tracelyzer();	
+	init_tracelyzer();	
 
 	pin_init();
  	init_rtc();
 	USART_init();
+	radio_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();
@@ -76,6 +77,7 @@ void global_init(void) {
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();
+	initialize_ecc(); // for reed-solomon lookup tables, etc.
 }
 
 // initialization that can only be done with RTOS started

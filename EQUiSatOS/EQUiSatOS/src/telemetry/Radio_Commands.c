@@ -8,6 +8,14 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
+void radio_init(void) {
+	// USART_init() should be called as well
+	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
+	setup_pin(true, P_RAD_SHDN); //init shutdown pin
+	setup_pin(true, P_TX_EN); //init send enable pin
+	setup_pin(true, P_RX_EN); //init receive enable pin
+}
+
 void set_command_mode(void) {
 	delay_ms(150);
 	usart_send_string((uint8_t*) "+++");
@@ -128,6 +136,22 @@ uint16_t XDL_get_temperature() {
 		//maybe wait a little longer? or reset radio?
 		//TODO: Log error: couldn't get temp from radio
 	}	
+}
+
+/* high-level function to bring radio systems online and check their state */
+void setRadioState(bool enable) {
+	set3V6Power(enable);
+	setRadioPower(enable);
+	#ifndef PRINT_DEBUG
+		setTXEnable(enable);
+		setRXEnable(enable);
+	#endif
+	
+	// if enabling, delay and check that the radio was enabled
+	if (enable) {
+		vTaskDelay(REGULATOR_MEASURE_DELAY);
+		verify_regulators(); // will throw error if regulator not valid
+	}
 }
 
 void setTXEnable(bool enable) {

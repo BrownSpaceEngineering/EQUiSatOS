@@ -135,3 +135,10 @@ void clear_existing_data(void* ptr, size_t slot_size)
 		*(byte_ptr + i) = 0;
 	}
 }
+
+/* clears equistack completely - DON'T USE BESIDES FOR TESTING */
+void __equistack_Clear(equistack* S) {
+	S->top_index = -1;
+	S->bottom_index = -1;
+	S->cur_size = 0;
+}

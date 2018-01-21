@@ -10,6 +10,7 @@
 
 #include "../global.h"
 
+#define IR_WAKE_DELAY					300
 #define B_IR_OBJ_LOW					0
 #define B_IR_OBJ_HIGH					~0
 #define B_IR_AMB_LOW					0
@@ -103,5 +104,7 @@ void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single valu
 
 void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
+
+void verify_regulators(void);
 
 #endif

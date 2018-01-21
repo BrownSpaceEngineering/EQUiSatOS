@@ -8,26 +8,26 @@
 
 void assert_transmission_constants(void) {
 	// NOTE: if these are correct, they may be optimized out (which is fine)
-	
+
 	// check that starts line up with data sizes
 	configASSERT(MSG_PREAMBLE_LENGTH == START_CUR_DATA);
 	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN == START_DATA);
-	
-	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + IDLE_DATA_PACKETS * IDLE_DATA_PACKET_SIZE + 
+
+	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + IDLE_DATA_PACKETS * IDLE_DATA_PACKET_SIZE +
 		IDLE_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + IDLE_DATA_PADDING_SIZE == START_PARITY);
-		
+
 	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + ATTITUDE_DATA_PACKETS * ATTITUDE_DATA_PACKET_SIZE +
 		ATTITUDE_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + ATTITUDE_DATA_PADDING_SIZE == START_PARITY);
-		
+
 	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_DATA_PACKETS * FLASH_DATA_PACKET_SIZE +
 		FLASH_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + FLASH_DATA_PADDING_SIZE == START_PARITY);
-		
+
 	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + FLASH_CMP_DATA_PACKETS * FLASH_CMP_DATA_PACKET_SIZE +
 		FLASH_CMP_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + FLASH_CMP_DATA_PADDING_SIZE == START_PARITY);
-		
+
 	configASSERT(MSG_PREAMBLE_LENGTH + MSG_CUR_DATA_LEN + LOW_POWER_DATA_PACKETS * LOW_POWER_DATA_PACKET_SIZE +
 		LOW_POWER_DATA_NUM_ERRORS * ERROR_PACKET_SIZE + LOW_POWER_DATA_PADDING_SIZE == START_PARITY);
-	
+
 	// check things will fit in buffer (one space for \0)
 	configASSERT(START_PARITY + MSG_PARITY_LENGTH <= MSG_BUFFER_SIZE - 1);
 }
@@ -40,9 +40,9 @@ void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t times
 void write_parity(uint8_t* buffer, uint8_t* buf_index);
 
 void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp) {
-	
+
 	uint8_t num_data, size_data, num_errors, padding_size;
-	
+
 	// determine constants based on message type
 	switch(msg_type)
 	{
@@ -73,7 +73,7 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 			num_errors =		FLASH_CMP_DATA_NUM_ERRORS;
 			padding_size =		FLASH_CMP_DATA_PADDING_SIZE;
 			break;
-		
+
 		case LOW_POWER_DATA:
 			num_data =			LOW_POWER_DATA_PACKETS;
 			size_data =			LOW_POWER_DATA_PACKET_SIZE;
@@ -85,9 +85,9 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 			// this is a problem
 			configASSERT(false);
 	};
-	
+
 	/* write sections of message */
-	
+
 	// configure state string
 	uint8_t state_string = 0;
 	state_string |=  msg_type & 0b11; // two LSB of msg_type (4 types)
@@ -95,7 +95,7 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 
 	// incremented index in buffer
 	uint8_t buf_index = 0;
-	
+
 	// clear out the whole packet buffer before writing
 	write_value_and_shift(msg_buffer, &buf_index, 0, MSG_BUFFER_SIZE);
 	buf_index = 0; // make sure to reset
@@ -106,19 +106,19 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	// read sensors and write current data to buffer; it's not dependent on state
 	write_current_data(msg_buffer, &buf_index, current_timestamp);
 	configASSERT(buf_index == START_DATA);
-	
+
 	write_data_section(msg_buffer, &buf_index, msg_type, num_data);
 	// note that the start of errors/padding is determined dynamically by buf_index
 	configASSERT(buf_index == START_DATA + size_data*num_data);
 	configASSERT (buf_index < START_PARITY);
-	
+
 	write_errors(msg_buffer, &buf_index, num_errors, current_timestamp);
 	configASSERT(buf_index == START_DATA + size_data*num_data + num_errors*ERROR_PACKET_SIZE);
 	configASSERT (buf_index <= START_PARITY);
-	
+
 	write_value_and_shift(msg_buffer, &buf_index, 0, padding_size);
 	configASSERT(buf_index == START_PARITY);
-	
+
 	write_parity(msg_buffer, &buf_index);
 	configASSERT(buf_index == MSG_SIZE);
 }
@@ -163,26 +163,28 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 
 	read_lion_volts_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lion_volts_batch);
-	
-	//TODO: Fix for lion currents and PANELREF/LREF
-	//read_ad7991_batbrd((uint8_t*) (buffer + *buf_index));
-	//*buf_index += sizeof(lion_current_batch);
-	
+
+	// we read all battery board inputs at once,
+	// but we write to two different message buffer locations, so we
+	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
+	read_ad7991_batbrd((uint8_t*) (buffer + *buf_index), 
+		(uint8_t*) (buffer + *buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
+	*buf_index += sizeof(lion_current_batch);
+
 	read_lion_temps_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lion_temps_batch);
+	*buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
 
-	//read_ad7991_ctrlbrd((uint8_t*) (buffer + *buf_index));
-	//*buf_index += sizeof(ad7991_ctrlbrd_batch);
-
-	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index)); // TODO
+	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index));
 	*buf_index += sizeof(bat_charge_dig_sigs_batch);
-	
+
 	read_lifepo_volts_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lifepo_volts_batch);
 }
 
 void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
 	// we have to fill up the error section, so either write the error or NULL bytes
+	// (it should be caught above but be extra-safe)
 	if (err != NULL) {
 		// we calculate an offset timestamp for each error (relative to the current packet)
 		// this saves space, but we need to reduce the resolution to ERROR_TIME_BUCKET_SIZE
@@ -203,26 +205,32 @@ void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t
 // make sure not to call this function (i.e. write_*_packet) more than once or it will
 // re-iterate over the errors!
 void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp) {
-	// when writing errors, treat the two error equistacks (their current size) as a single heap of 
+	// when writing errors, treat the two error equistacks (their current size) as a single heap of
 	// errors, and iterate through that on each transmission
 	static int error_index = 0;
-	
+
 	for (int errors_written = 0; errors_written < count; errors_written++) {
 		configASSERT(error_index >= 0);
 		// i.e. this index is the index within the priority equistack if it's less than that stacks current
 		// size, and is the index within the normal equistack otherwise. If it becomes longer
 		// than the sum of their lengths, then it is reset to zero and we restart.
-		// NOTE: Because of RTOS, the size of the stacks may change at any point here, but by the nature 
+		// NOTE: Because of RTOS, the size of the stacks may change at any point here, but by the nature
 		// of equistacks, it will only INCREASE, so we don't need to worry about it here
 		int priority_num = priority_error_equistack.cur_size;
 		int normal_num = normal_error_equistack.cur_size;
-		
-		if (error_index < priority_num) { 
+
+		// if both stacks are empty, just write zeros
+		if (priority_num + normal_num == 0) {
+			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
+			continue;
+		}
+
+		if (error_index < priority_num) {
 			// 0 <= error_index < priority_num
 			// write priority errors while we're set to
 			sat_error_t* err = (sat_error_t*) equistack_Get(&priority_error_equistack, error_index);
 			write_error(buffer, buf_index, err, timestamp);
-			
+
 		} else if (error_index - priority_num < normal_num) {
 			//    (index in normal_error_equistack)
 			// 0 <= error_index - priority_num < normal_num
@@ -230,13 +238,15 @@ void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t times
 			// write normal errors while we're set to ("start" index is when error_index == priority_num)
 			sat_error_t* err = (sat_error_t*) equistack_Get(&normal_error_equistack, error_index - priority_num);
 			write_error(buffer, buf_index, err, timestamp);
-			
 		} else {
-			// error_index > priority_num + normal_num; should be taken care of below and NOT happen here
+			// ELSE error_index >= priority_num + normal_num;
+			// (note we have caught completely empty stacks above)
+			// Should NOT happen in general, but will be resolved below
 			// (both priority_num and normal_num should only ever GROW, not SHRINK)
-			configASSERT(false);
+			// (although one test does do that, so we write null data in case)
+			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
 		}
-		
+
 		// increment, wrapping around the CURRENT end of the combined list
 		error_index = (error_index + 1) % (priority_num + normal_num);
 	}
@@ -262,10 +272,11 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 		// was transmittable and its size
 		bool transmittable = false;
 		int equistack_size;
-		
+		size_t equistack_data_size;
+
 		// for each type, grab the current index (note that msg_type is constant),
 		// and write a packet and note it "transmitted" if we're either retransmitting right now,
-		// or the current packet is not transmitted otherwise. 
+		// or the current packet is not transmitted otherwise.
 		// Also, skip any NULL packets (empty check is below)
 		// Also note the above variables
 		switch (msg_type) {
@@ -277,8 +288,9 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 					transmittable = true;
 				}
 				equistack_size = idle_readings_equistack.cur_size;
+				equistack_data_size = IDLE_DATA_PACKET_SIZE;
 				break;
-				
+
 			case ATTITUDE_DATA: ;
 				attitude_data_t* attitude_data = (attitude_data_t*) equistack_Get(&attitude_readings_equistack, equi_i);
 				if (attitude_data != NULL && (retransmit || !attitude_data->transmitted)) {
@@ -287,8 +299,9 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 					transmittable = true;
 				}
 				equistack_size = attitude_readings_equistack.cur_size;
+				equistack_data_size = ATTITUDE_DATA_PACKET_SIZE;
 				break;
-			
+
 			case FLASH_DATA: ;
 				flash_data_t* flash_data = (flash_data_t*) equistack_Get(&flash_readings_equistack, equi_i);
 				if (flash_data != NULL && (retransmit || !flash_data->transmitted)) {
@@ -297,8 +310,9 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 					transmittable = true;
 				}
 				equistack_size = flash_readings_equistack.cur_size;
+				equistack_data_size = FLASH_DATA_PACKET_SIZE;
 				break;
-			
+
 			case FLASH_CMP_DATA: ;
 				flash_cmp_data_t* flash_cmp_data = (flash_cmp_data_t*) equistack_Get(&flash_cmp_readings_equistack, equi_i);
 				if (flash_cmp_data != NULL && (retransmit || !flash_cmp_data->transmitted)) {
@@ -307,8 +321,9 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 					transmittable = true;
 				}
 				equistack_size = flash_cmp_readings_equistack.cur_size;
+				equistack_data_size = FLASH_CMP_DATA_PACKET_SIZE;
 				break;
-			
+
 			case LOW_POWER_DATA: ;
 				low_power_data_t* low_power_data = (low_power_data_t*) equistack_Get(&low_power_readings_equistack, equi_i);
 				if (low_power_data != NULL && (retransmit || !low_power_data->transmitted)) {
@@ -317,16 +332,21 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 					transmittable = true;
 				}
 				equistack_size = low_power_readings_equistack.cur_size;
+				equistack_data_size = LOW_POWER_DATA_PACKET_SIZE;
 				break;
-				
+
 			default:
 				configASSERT(false);
 		}
-		
-		// check for completely empty equistack (return because otherwise we'll infinite loop)
-		if (equistack_size == 0) 
-			return;
-		
+
+		// check for completely empty equistack
+		// (write out zeros and continue because otherwise we'll infinite loop)
+		if (equistack_size == 0) {
+			write_value_and_shift(buffer, buf_index, 0, equistack_data_size);
+			packets_written++;
+			continue;
+		}
+
 		if (!retransmit && !transmittable) {
 			// if we're not retransmitting and it was already transmitted,
 			// skip it (don't note a write)
@@ -336,14 +356,14 @@ void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg
 			packets_written++;
 			equi_i++;
 		}
-		
+
 		if (equi_i >= equistack_size) {
 			// if we reach the end of the list, it means there are either not enough
 			// packets in the equistack to fill a message, or there were too many already-transmitted packets (for the first time).
 			// In this case, stop caring about whether they were transmitted, and wrap back around to try again
 			equi_i = 0;
 			retransmit = true;
-			
+
 			// if this has happened twice or more (we went through not skipping transmitted packets),
 			// then keep looping around the equistack and re-writing until we write all we need
 		}
@@ -358,8 +378,8 @@ void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* id
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_volts_data,				sizeof(lion_volts_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_current_data,			sizeof(lion_current_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->lion_temps_data,				sizeof(lion_temps_batch));
-	write_bytes_and_shift(buffer, buf_index,	idle_data->panelref_lref_data,		sizeof(ad7991_ctrlbrd_batch));
-	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),sizeof(bat_charge_dig_sigs_batch));
+	write_bytes_and_shift(buffer, buf_index,	idle_data->panelref_lref_data,			sizeof(panelref_lref_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->radio_temp_data),			sizeof(radio_temp_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->proc_temp_data),			sizeof(proc_temp_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->ir_amb_temps_data,			sizeof(ir_ambient_temps_batch));
@@ -372,34 +392,36 @@ void write_attitude_data_packet(uint8_t* buffer, uint8_t* buf_index, attitude_da
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->accelerometer_data,	sizeof(accelerometer_batch) * 2 /* [2] */);
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->gyro_data,			sizeof(gyro_batch)				/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 2	/* [2] */);
-	write_bytes_and_shift(buffer, buf_index,	&attitude_data->timestamp,		4 /* uint32_t */);
+	write_bytes_and_shift(buffer, buf_index,	&attitude_data->timestamp,			4 /* uint32_t */);
 }
 
 void write_flash_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_data_t* flash_data) {
-	write_bytes_and_shift(buffer, buf_index,	flash_data->led_temps_data,			sizeof(led_temps_batch)		* FLASH_DATA_ARR_LEN /* [7] */);
-	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_volts_data,		sizeof(lifepo_volts_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
-	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)* FLASH_DATA_ARR_LEN /* [7] */);
-	write_bytes_and_shift(buffer, buf_index,	flash_data->led_current_data,		sizeof(led_current_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
-	write_bytes_and_shift(buffer, buf_index,	flash_data->gyro_data,				sizeof(gyro_batch)			* FLASH_DATA_ARR_LEN /* [7] */);
-	write_bytes_and_shift(buffer, buf_index,	&flash_data->timestamp,			4 /* uint_32_t */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->led_temps_data,			sizeof(led_temps_batch)			* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_bank_temps_data,	sizeof(lifepo_bank_temps_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_current_data,	sizeof(lifepo_current_batch)	* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->lifepo_volts_data,		sizeof(lifepo_volts_batch)		* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->led_current_data,		sizeof(led_current_batch)		* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_data->gyro_data,				sizeof(gyro_batch)				* FLASH_DATA_ARR_LEN /* [7] */);
+	write_bytes_and_shift(buffer, buf_index,	&flash_data->timestamp,				4 /* uint_32_t */);
 }
 
 void write_flash_cmp_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_cmp_data_t* flash_cmp_data) {
 	/* NOTE: Though these are the same types as in flash_data_t, they are those values AVERAGED */
 	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_temps_avg_data,			sizeof(led_temps_batch)			/* [1] */);
-	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_bank_temps_avg_data,	sizeof(lifepo_bank_temps_batch)	/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_current_avg_data,	sizeof(lifepo_current_batch)	/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->lifepo_volts_avg_data,		sizeof(lifepo_volts_batch)		/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->led_current_avg_data,		sizeof(led_current_batch)		/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	flash_cmp_data->mag_before_data,			sizeof(magnetometer_batch)		/* [1] */);
-	write_bytes_and_shift(buffer, buf_index,	&flash_cmp_data->timestamp,				4 /* uint_32_t */);
+	write_bytes_and_shift(buffer, buf_index,	&flash_cmp_data->timestamp,					4 /* uint_32_t */);
 }
-	
+
 void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_data_t* low_power_data) {
 	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->satellite_history),			sizeof(satellite_history_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_volts_data,				sizeof(lion_volts_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_current_data,				sizeof(lion_current_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->lion_temps_data,				sizeof(lion_temps_batch));
-	write_bytes_and_shift(buffer, buf_index,	low_power_data->panelref_lref_data, sizeof(panelref_lref_batch));
+	write_bytes_and_shift(buffer, buf_index,	low_power_data->panelref_lref_data,				sizeof(panelref_lref_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(low_power_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->ir_obj_temps_data,				sizeof(ir_object_temps_batch));
 	write_bytes_and_shift(buffer, buf_index,	low_power_data->gyro_data,						sizeof(gyro_batch));
