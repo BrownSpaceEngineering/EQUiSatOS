@@ -118,31 +118,35 @@ void battery_charging_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
-		///
- 		// before getting into it, grab the percentages of each of the batteries
- 		// lions and life po's
-		///
+		#ifdef BAT_CHARGING_ACTIVE
 
-		uint16_t li1_mv;
-		uint16_t li2_mv;
- 		read_li_volts_precise(&li1_mv, &li2_mv);
+			///
+ 			// before getting into it, grab the percentages of each of the batteries
+ 			// lions and life po's
+			///
 
- 		// individual batteries within the life po banks
- 		uint16_t lf1_mv;
- 		uint16_t lf2_mv;
- 		uint16_t lf3_mv;
- 		uint16_t lf4_mv;
-		read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+			uint16_t li1_mv;
+			uint16_t li2_mv;
+ 			read_li_volts_precise(&li1_mv, &li2_mv);
 
- 		// battery_logic is an individual function in order to make it easier to
-		// "unit test" it with contrived inputs
+ 			// individual batteries within the life po banks
+ 			uint16_t lf1_mv;
+ 			uint16_t lf2_mv;
+ 			uint16_t lf3_mv;
+ 			uint16_t lf4_mv;
+			read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
-		///
- 		// what batteries should we be charging?
-		///
+ 			// battery_logic is an individual function in order to make it easier to
+			// "unit test" it with contrived inputs
 
-		int curr_charging_filled_up = !get_chg_pin_val_w_conversion(batt_charging);
-		battery_logic(li1_mv, li2_mv, lf1_mv, lf2_mv, lf3_mv, lf4_mv, curr_charging_filled_up);
+			///
+ 			// what batteries should we be charging?
+			///
+
+			int curr_charging_filled_up = !get_chg_pin_val_w_conversion(batt_charging);
+			battery_logic(li1_mv, li2_mv, lf1_mv, lf2_mv, lf3_mv, lf4_mv, curr_charging_filled_up);
+			
+		#endif
 	}
 
 	// delete this task if it ever breaks out

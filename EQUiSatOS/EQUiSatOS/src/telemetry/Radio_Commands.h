@@ -17,7 +17,7 @@ uint16_t XDL_get_temperature(void);
 void warm_reset(void);
 
 void radio_init(void);
-void setRadioState(bool enable);
+void setRadioState(bool enable, bool confirm);
 void setTXEnable(bool enable);
 void setRXEnable(bool enable);
 void set3V6Power(bool on);

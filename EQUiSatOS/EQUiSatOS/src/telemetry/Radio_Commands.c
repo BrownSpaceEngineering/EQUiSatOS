@@ -139,20 +139,22 @@ uint16_t XDL_get_temperature() {
 }
 
 /* high-level function to bring radio systems online and check their state */
-void setRadioState(bool enable) {
-	set3V6Power(enable);
-	setRadioPower(enable);
-	#ifndef PRINT_DEBUG
-		setTXEnable(enable);
-		setRXEnable(enable);
-	#endif
+void setRadioState(bool enable, bool confirm) {
+	#ifdef RADIO_ACTIVE
+		set3V6Power(enable);
+		setRadioPower(enable);
+		#ifndef PRINT_DEBUG
+			setTXEnable(enable);
+			setRXEnable(enable);
+		#endif
 	
-	// if enabling, delay and check that the radio was enabled
-	if (enable) {
-		vTaskDelay(REGULATOR_MEASURE_DELAY);
-		//verify_regulators(); // will throw error if regulator not valid
-		//TODO uncomment when we can get state
-	}
+		// if enabling, delay and check that the radio was enabled
+		if (confirm && enable) {
+			vTaskDelay(REGULATOR_MEASURE_DELAY);
+			//verify_regulators(); // will throw error if regulator not valid
+			//TODO uncomment when we can get state
+		}
+	#endif
 }
 
 void setTXEnable(bool enable) {
@@ -164,9 +166,13 @@ void setRXEnable(bool enable) {
 }
 
 void set3V6Power(bool on) {
-	set_output(on, P_RAD_PWR_RUN);
+	#ifdef RADIO_ACTIVE
+		set_output(on, P_RAD_PWR_RUN);
+	#endif
 }
 
 void setRadioPower(bool on) {
-	set_output(on, P_RAD_SHDN);
+	#ifdef RADIO_ACTIVE
+		set_output(on, P_RAD_SHDN);
+	#endif
 }

@@ -24,6 +24,8 @@
  */
 //#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+//#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
+//#define BAT_CHARGING_ACTIVE // enable battery charging logic
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING / DEBUG ***/
@@ -31,10 +33,14 @@
 // (ex: don't read data distributed around an orbit)
 #define TESTING_SPEEDUP
 
-// whether to start up testing tasks
-//#define RUN_TESTING_TASKS
+// if defined, explicitly sets the initial SAT state (must set both)
+#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
 
-//0 to suppress prints, 1 to print over USART
+// whether to start up testing tasks
+#define RUN_TESTING_TASKS
+
+// 0 to suppress prints and send data to RADIO, 1 to print over USART
 #define PRINT_DEBUG 1
 
 /****************************************************************************************/
