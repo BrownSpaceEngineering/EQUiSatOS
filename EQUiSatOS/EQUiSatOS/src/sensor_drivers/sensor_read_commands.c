@@ -209,11 +209,11 @@ void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, ui
 void read_pdiode_batch(pdiode_batch batch) {
 	// TODO: need to output to two bits of a uint16_t
 	for (int i = 0; i < 6; i++) {
-		uint8_t rs8;
-		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs8);
+		uint16_t rs;
+		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 		log_if_error(PD_ELOCS[i], sc, false);
-		commands_read_adc_mV_truncate(&rs8, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
-		//batch[i] = rs8;
+		commands_read_adc_mV_truncate(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+		//batch[i] = truncate_16t(rs);
 	}
 }
 
