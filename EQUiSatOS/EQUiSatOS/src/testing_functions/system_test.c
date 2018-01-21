@@ -76,7 +76,7 @@ void sensor_read_tests(void) {
 }
 
 // Function that takes in a status code and prints out the matching status
-static void get_error(enum status_code code, char * buffer){
+static void get_status(enum status_code code, char * buffer){
 	switch(code){
 
 		case STATUS_OK:
@@ -144,7 +144,7 @@ static void get_ir_panel(int panel_addr, char* buffer){
 }
 
 // test all addresses in the array (addr) and fill results in (results) specify number of address input with (num)
-static void MLX90614_test(void){
+static void MLX90614_test(bool printFloats){
 	setup_pin(true, P_IR_PWR_CMD);
 	set_output(true, P_IR_PWR_CMD);
 	print("==============MLX90614 Test==============\n");
@@ -161,12 +161,20 @@ static void MLX90614_test(void){
 
 		get_ir_panel(addr[i],buffer); // get panel address string
 		print("%s: \t ",buffer);
-		get_error(sc,buffer); // get error code string
-		print("%s \t %d\t",buffer,(uint16_t) dataToTemp(buf));
+		get_status(sc,buffer); // get error code string
+		if (printFloats) {
+			print("%s \t %.02f\t",buffer,dataToTemp(buf));
+		} else {
+			print("%s \t %d\t",buffer,(uint16_t) dataToTemp(buf));
+		}	
 
 		sc = MLX90614_read_amb(addr[i],&buf);
-		get_error(sc,buffer);
-		print("%s \t %d\n",buffer,(uint16_t)dataToTemp(buf));
+		get_status(sc,buffer);
+		if (printFloats) {
+			print("%s \t %.02f\n",buffer,dataToTemp(buf));	
+		} else {
+			print("%s \t %d\n",buffer,(uint16_t)dataToTemp(buf));
+		}
 	}
 }
 
@@ -194,7 +202,7 @@ static void AD590_test(void){
 		float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
 		float tempInC = (current)*1000000-273;// T = 454*V in C
 		
-		get_error(sc,error_str);	
+		get_status(sc,error_str);	
 		switch (i) {
 			case 0:
 				strcpy(test_str,"LF3_TEMP");
@@ -230,16 +238,12 @@ static void AD590_test(void){
 //IMU test if rebias = 0 then don't compute the bias again
 // input length 3 array (sensors) each array entry corresponds to a sensor, 0 means don't read, else read
 // sensors[0] -> acc, sensors[1] -> gyro, sensors[3] -> mag  (length of toFill should correspond to sensor reads)
-static void MPU9250_test(bool rebias){
+static void MPU9250_test(bool rebias, bool printFloats){
 	print("==============MPU9250 Test==============\n");
 	print("Accelerometer readings in g, gyroscope readings in degrees per second\n");
 	// IMU
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
-	uint16_t MPU9250_err_margin = 20;
-	int sensors[] = {1, 1, 0};
-		
-	//initalize imu.... probably
-	MPU9250_init();
+	uint16_t MPU9250_err_margin = 20;		
 
 	// re compute bias on call
 	if (rebias) {
@@ -250,57 +254,33 @@ static void MPU9250_test(bool rebias){
 	int16_t MPU9250_results[3];
 	char buffer[20];
 	enum status_code code;
-
-	if (sensors[0]){
-		code = MPU9250_read_acc(MPU9250_results);
-		
-		get_error(code,buffer);
+	
+	code = MPU9250_read_acc(MPU9250_results);
+	get_status(code,buffer);
+	if (printFloats) {
 		print("ACCELEROMETER: \t %s \n x: \t %d \t %.02f g \n y: \t %d \t %.02f g \n z: \t %d \t %.02f g\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/16384.,MPU9250_results[1], (float)MPU9250_results[1]/16384., MPU9250_results[2], (float)MPU9250_results[2]/16384.);
-		//print_error(code);
-	}
-
-	if (sensors[1]){
-		code = MPU9250_read_gyro(MPU9250_results);		
-
-		// status code?
-		get_error(code,buffer);
+	} else {
+		print("ACCELEROMETER: \t %s \n x: \t %d \t %d g \n y: \t %d \t %d g \n z: \t %d \t %d g\n",buffer,MPU9250_results[0], MPU9250_results[0]/16384,MPU9250_results[1], MPU9250_results[1]/16384, MPU9250_results[2], MPU9250_results[2]/16384);
+	}			
+	
+	code = MPU9250_read_gyro(MPU9250_results);		
+	get_status(code,buffer);
+	if (printFloats) {
 		print("GYRO: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]/131.,MPU9250_results[1], (float)MPU9250_results[1]/131., MPU9250_results[2], (float)MPU9250_results[2]/131.);
-		//print_error(code);
+		} else {
+		print("GYRO: \t %s \n x: \t %d \t %d d/s \n y: \t %d \t %d d/s \n z: \t %d \t %d d/s\n",buffer,MPU9250_results[0], MPU9250_results[0]/131,MPU9250_results[1], MPU9250_results[1]/131, MPU9250_results[2], MPU9250_results[2]/131);
 	}
-
-	if (sensors[2]){
-		code = MPU9250_read_mag(MPU9250_results);		
-
-		// status code?
-		print("MPU9250 read magnetometer");
-		//print_error(code);
+	
+		
+	code = MPU9250_read_mag(MPU9250_results);
+	get_status(code, buffer);
+	if (printFloats) {
+		print("MAG: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]*0.6,MPU9250_results[1], (float)MPU9250_results[1]*0.6, MPU9250_results[2], (float)MPU9250_results[2]*0.6);
+		} else {
+		print("MAG: \t %s \n x: \t %d \t %d d/s \n y: \t %d \t %d d/s \n z: \t %d \t %d d/s\n",buffer,MPU9250_results[0], MPU9250_results[0]*3/5,MPU9250_results[1], MPU9250_results[1]*3/5, MPU9250_results[2], MPU9250_results[2]*3/5);
 	}
 	
 	//uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0};
-	//for (int i = 0; i < 6; i++){
-	//
-	//switch (i) {
-	//case 0:
-	//strcpy(test_str,"acc x");
-	//break;
-	//case 1:
-	//strcpy(test_str,"acc y");
-	//break;
-	//case 2:
-	//strcpy(test_str,"acc z");
-	//break;
-	//case 3:
-	//strcpy(test_str,"gyro x");
-	//break;
-	//case 4:
-	//strcpy(test_str,"acc y");
-	//break;
-	//case 5:
-	//strcpy(test_str,"acc z");
-	//break;
-	//}
-	//print("MPU Reading %s: %d\n",test_str,MPU9250_results[i]);
-	//
 	//if (MPU9250_results[i] > MPU9250_expected[i]){
 	//if((MPU9250_results[i] - MPU9250_expected[i]) >= MPU9250_err_margin) {
 	//print("Error in test MPU9250 number %d \n",i);
@@ -310,19 +290,21 @@ static void MPU9250_test(bool rebias){
 	//if((MPU9250_results[i] - MPU9250_expected[i]) >= MPU9250_err_margin) {
 	//print("Error in test MPU9250 number %d \n",i);
 	//pass = 0;
-	//}
-	//}
-	//}
-
-
+	//}	
 }
 
-//Magnetometer test
-static void HMC5883L_test(void){
-	print("==============HMC5883L Test==============\n");	
-	int16_t xyz[3];		
-	HMC5883L_readXYZ(xyz);
-	print("x: %d \t y: %d \t z: %d \n", xyz[0],xyz[1],xyz[2]);
+//HMC5883L Magnetometer test
+static void HMC5883L_test(bool printFloats){
+	print("==============HMC5883L Test==============\n");
+	char buffer[20];
+	int16_t xyz[3];	
+	enum status_code code = HMC5883L_readXYZ(xyz);
+	get_status(code, buffer);
+	if (printFloats) {
+		print("MAG: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,xyz[0], (float)xyz[0]/1370.,xyz[1], (float)xyz[1]/1370., xyz[2], (float)xyz[2]/1370.);
+	} else {
+		print("MAG: \t %s \n x: \t %d \t %d d/s \n y: \t %d \t %d d/s \n z: \t %d \t %d d/s\n",buffer,xyz[0], xyz[0]/1370,xyz[1], xyz[1]/1370, xyz[2], xyz[2]/1370);
+	}
 
 }
 
@@ -403,7 +385,7 @@ static void AD7991_BAT_test(void){
 	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
 	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
 	
-	get_error(AD7991_code,test_str);
+	get_status(AD7991_code,test_str);
 	print("STATUS: \t %s\n",test_str);
 
 	for (int i = 0; i < 4; i++){
@@ -469,7 +451,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_CTRLBRD);
 	
 	AD7991_results[0] = ((float) results[0])*2.01;		//3V6Rf
-	AD7991_results[1] = ((float) results[1]);		//3V6SNS
+	AD7991_results[1] = ((float) results[1]);			//3V6SNS
 	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
 	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
@@ -477,7 +459,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	setRadioPower(false);
 	set_output(false, P_5V_EN);
 	
-	get_error(AD7991_code,test_str);
+	get_status(AD7991_code,test_str);
 	print("STATUS: \t %s\n",test_str);
 
 	//check with expected values
@@ -545,7 +527,7 @@ void readBatBoard(void){
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
 		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);
-		get_error(sc,error_str);		
+		get_status(sc,error_str);		
 		
 		switch (i) {
 			case 0:
@@ -594,7 +576,7 @@ void readBatBoard(void){
 	
 }
 
-void system_test(void){		
+void system_test(bool printFloats){		
 	print("=======================================\n");
 	print("=               SYSTEM Test           =\n");
 	print("=======================================\n");		
@@ -607,10 +589,10 @@ void system_test(void){
 	
 	AD590_test();
 			
-	MLX90614_test();
+	MLX90614_test(printFloats);
 	
-	MPU9250_test(false);	
-	HMC5883L_test();	
+	MPU9250_test(false, printFloats);	
+	HMC5883L_test(printFloats);	
 	
 	TEMD6200_test();
 	

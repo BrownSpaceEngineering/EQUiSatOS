@@ -4,6 +4,6 @@
 #include "../global.h"
 
 void sensor_read_tests(void);
-void system_test(void); 
+void system_test(bool printFloats); 
 
 #endif
