@@ -139,10 +139,24 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_0_0, true);
 }
 
-static void verify_regulators(void) {
-	delay_ms(100); // ?
+static void verify_regulators(bool on3v6, bool onRadio, bool on5v) {
 	ad7991_ctrlbrd_batch batch;	
-	read_ad7991_ctrlbrd(batch); //will log errors for out of bounds	
+	read_ad7991_ctrlbrd(batch);
+	uint16_t low3v6RefBound = on3v6 ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
+	uint16_t high3v6RefBound = on3v6 ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
+	uint16_t low3v6SnsBound = onRadio ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
+	uint16_t high3v6SnsBound = onRadio ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
+	uint16_t low5vRefBound = on5v ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
+	uint16_t high5vRefBound = on5v ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
+	
+	// 3V6_REF is index 0
+	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_1_0, true);
+	// 3V6_SNS is index 1
+	log_if_out_of_bounds(batch[1], low3v6SnsBound, high3v6SnsBound, ELOC_AD7991_1_1, true);
+	// 5VREF is index 2
+	log_if_out_of_bounds(batch[2], low5vRefBound, high5vRefBound, ELOC_AD7991_1_2, true);
+	// 3V3REF current is index 3
+	log_if_out_of_bounds(batch[3], B_3V3_REF_LOW, B_3V3_REF_HIGH, ELOC_AD7991_1_3, true);
 }
 
 void read_led_temps_batch(led_temps_batch batch) {
@@ -280,16 +294,7 @@ void read_led_current_batch(led_current_batch batch) {
 
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 	sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
-	log_if_error(ELOC_AD7991_1, sc, false);
-	
-	// 3V6_REF is index 0
-	log_if_out_of_bounds(batch[0], B_RAD_VOLT_LOW, B_RAD_VOLT_HIGH, ELOC_AD7991_1_0, true);
-	// 3V6_SNS is index 1	
-	log_if_out_of_bounds(batch[1], B_RAD_VOLT_LOW, B_RAD_VOLT_HIGH, ELOC_AD7991_1_1, true);
-	// 5VREF is index 2	
-	log_if_out_of_bounds(batch[2], B_CHARGE_LOW, B_CHARGE_HIGH, ELOC_AD7991_1_2, true);
-	// 3V3REF current is index 3	
-	log_if_out_of_bounds(batch[3], B_CHARGE_LOW, B_CHARGE_HIGH, ELOC_AD7991_1_3, true);
+	log_if_error(ELOC_AD7991_1, sc, false);	
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
