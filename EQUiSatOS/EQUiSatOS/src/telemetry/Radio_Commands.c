@@ -17,12 +17,27 @@ void radio_init(void) {
 }
 
 void set_command_mode(void) {
-	delay_ms(150);
+	delay_ms(2000);
 	usart_send_string((uint8_t*) "+++");
-	delay_ms(150);
+	delay_ms(2000);
 }
 
-/*void set_dealer_mode(void) {
+bool send_command(int numBytesReceiving) {
+	clear_USART_rx_buffer();
+	set_command_mode();
+	waitingForData = true;
+	receiveDataReady = false;
+	expectedReceiveDataLen = numBytesReceiving;
+	usart_send_string(sendbuffer);
+	int i = 0;
+	while (!receiveDataReady && i < 20) {
+		delay_ms(50);
+		i++;
+	}
+	return receiveDataReady;
+}
+
+void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -30,7 +45,7 @@ void set_command_mode(void) {
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
 }
-
+/*
 void set_tx_freq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
@@ -106,14 +121,6 @@ int response_check(char arr[]){
 	return 1;
 }
 
-void get_temperature(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x50;
-	sendbuffer[2] = ~0x50;
-	sendbuffer[3] = '\0';
-	usart_send_string(sendbuffer);
-}
-
 unsigned char calculate_checksum(char* data, int dataLen) {
 	unsigned char checksum = 0;
 	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
@@ -121,20 +128,21 @@ unsigned char calculate_checksum(char* data, int dataLen) {
 }
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
-uint16_t XDL_get_temperature() {
-	set_command_mode();
-	get_temperature();
-	delay_ms(200);
-	//TODO: Check packet validity and extract data
-	if (calculate_checksum(receivebuffer+1, 2) == receivebuffer[3]) {
-		uint16_t radioTemp = (receivebuffer[1] << 8) | receivebuffer[2];
-		clear_USART_rx_buffer();
-		warm_reset();
-		delay_ms(500);
-		return radioTemp;
-	} else {
-		//maybe wait a little longer? or reset radio?
-		//TODO: Log error: couldn't get temp from radio
+uint16_t XDL_get_temperature() {	
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x50;
+	sendbuffer[2] = ~0x50;
+	sendbuffer[3] = '\0';
+	if (send_command(5)) {
+		//TODO: Check packet validity and extract data
+		if (calculate_checksum(receivebuffer+1, 3) == receivebuffer[4]) {
+			uint16_t radioTemp = (receivebuffer[1] << 8) | receivebuffer[2];			
+			warm_reset();			
+			return radioTemp;
+		} else {
+			//maybe wait a little longer? or reset radio?
+			//TODO: Log error: couldn't get temp from radio
+		}	
 	}	
 }
 

@@ -21,6 +21,9 @@
 #define PRINT_MUTEX_WAIT_TIME_TICKS				((TickType_t) 1000)
 #define USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS ((TickType_t) 1000)
 
+uint8_t expectedReceiveDataLen;
+bool receiveDataReady;
+bool waitingForData;
 uint8_t receiveIndex;
 char receivebuffer[LEN_RECEIVEBUFFER];
 uint8_t sendbuffer[LEN_SENDBUFFER];
