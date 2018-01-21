@@ -90,6 +90,10 @@ int get_st_val(battery_t bat)
 
 void battery_charging_task(void *pvParameters)
 {
+	// delay to offset task relative to others, then start
+	vTaskDelay(BATTERY_CHARGING_TASK_FREQ_OFFSET);
+	TickType_t prev_wake_time = xTaskGetTickCount();
+	
 	/////
 	/// initialize key global variables
 	/////
@@ -104,9 +108,7 @@ void battery_charging_task(void *pvParameters)
 	lion_discharging = -1;
 
 	already_set_sat_state = false;
-
-	// initialize xNextWakeTime onces
-	TickType_t prev_wake_time = xTaskGetTickCount();
+	
 	init_task_state(BATTERY_CHARGING_TASK); // suspend or run on boot (ALWAYS RUN!)
 
 	while (true)

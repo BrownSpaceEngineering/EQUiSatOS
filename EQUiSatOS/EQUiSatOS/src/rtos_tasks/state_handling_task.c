@@ -83,7 +83,8 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 
 void state_handling_task(void *pvParameters)
 {
-	// initialize xNextWakeTime onces
+	// delay to offset task relative to others, then start
+	vTaskDelay(STATE_HANDLING_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	init_task_state(STATE_HANDLING_TASK);
@@ -161,10 +162,13 @@ void state_handling_task(void *pvParameters)
 					break;
 
 				case ANTENNA_DEPLOY:
-					// TODO: add something here to send to HELLO_WORLD_LOW_POWER if necessary
+					// if we should go to low power, do so
+					if (one_li_below_down) {
+						set_sat_state(HELLO_WORLD_LOW_POWER);
+							
 					// if the antenna is open kill the task because the antenna has been deployed
 					// or kill it if it's run more than 5 times because it's a lost cause
-					if (sat_history->antenna_deployed
+					} else if (sat_history->antenna_deployed
 						|| (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once (TODO)
 						|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
 						// switch state to hello world, then determine whether we should keep trying

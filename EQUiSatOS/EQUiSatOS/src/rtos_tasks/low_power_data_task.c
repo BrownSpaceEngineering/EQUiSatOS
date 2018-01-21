@@ -9,8 +9,9 @@
 
 void low_power_data_task(void *pvParameters)
 {
-	// initialize xNextWakeTime onces
-	TickType_t prev_wake_time = xTaskGetTickCount();										
+	// delay to offset task relative to others, then start
+	vTaskDelay(LOW_POWER_DATA_TASK_FREQ_OFFSET);
+	TickType_t prev_wake_time = xTaskGetTickCount();
 	
 	// initialize first struct
 	low_power_data_t *current_struct = (low_power_data_t*) equistack_Initial_Stage(&low_power_readings_equistack);

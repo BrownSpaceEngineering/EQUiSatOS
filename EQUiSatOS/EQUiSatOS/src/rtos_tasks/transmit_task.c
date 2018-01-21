@@ -151,7 +151,8 @@ void debug_print_msg_types(void);
 
 void transmit_task(void *pvParameters)
 {
-	// initialize xNextWakeTime once
+	// delay to offset task relative to others, then start
+	vTaskDelay(TRANSMIT_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	init_task_state(TRANSMIT_TASK); // suspend or run on boot

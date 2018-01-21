@@ -264,29 +264,6 @@ void init_task_state(task_type_t task_id) {
 }
 
 /************************************************************************/
-/* FOR DEBUGGING - DON'T SET STATES THIS WAY                            */
-/************************************************************************/
-/**
- * The "idle" hook for FreeRTOS - this is is code run in the idle task of RTOS, which
- * runs whenever something else is NOT. It should NOT call hanging RTOS functions
- * or take up much computational power in general.
- * See http://www.freertos.org/RTOS-idle-task.html for more details.
- */
-void vApplicationIdleHook(void) {
-	// FOR TESTING
-
-// 	static int oldTickCount = 0;
-// 	int tickCount = xTaskGetTickCount();
-// 	int div_tickCount = tickCount / 1000;
-// 	if (div_tickCount != oldTickCount) {
-// 		oldTickCount = div_tickCount;
-// 		print("%d\n\r", tickCount);
-// 		//print("test\n\r");
-// 	}
-}
-
-
-/************************************************************************/
 /* STATE SETTING METHODS                                                */
 /************************************************************************/
 void set_all_task_states(task_states states, sat_state_t state);

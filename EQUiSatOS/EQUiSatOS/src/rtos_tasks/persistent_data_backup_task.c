@@ -9,6 +9,8 @@
 
 // super simple task that periodically writes satellite state to non-volatile memory
 void persistent_data_backup_task(void *pvParameters) {
+	// delay to offset task relative to others, then start
+	vTaskDelay(PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	init_task_state(PERSISTENT_DATA_BACKUP_TASK);

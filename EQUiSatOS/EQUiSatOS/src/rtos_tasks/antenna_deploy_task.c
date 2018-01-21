@@ -17,6 +17,8 @@ int num_tries_ant_deploy(void) {
 }
 
 void antenna_deploy_task(void *pvParameters) {
+	// delay to offset task relative to others, then start
+	vTaskDelay(ANTENNA_DEPLOY_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 	
 	init_task_state(ANTENNA_DEPLOY_TASK); // suspend or run on boot

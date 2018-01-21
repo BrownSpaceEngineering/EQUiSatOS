@@ -13,7 +13,7 @@ void assert_triggered( const char * file, uint32_t line );
 #endif
 
 #define configUSE_PREEMPTION                    1
-#define configUSE_IDLE_HOOK                     1
+#define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
 #define configPRIO_BITS                         2
 #define configCPU_CLOCK_HZ                      ( 8000000 )

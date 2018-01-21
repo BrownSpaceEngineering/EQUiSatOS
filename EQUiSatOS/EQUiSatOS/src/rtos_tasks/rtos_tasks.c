@@ -68,9 +68,25 @@ void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t 
 	loops_since_last_log[data_type] = 0;
 }
 
+
+
+/************************************************************************/
+/* RTOS HOOKS															*/
+/************************************************************************/
+
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
 	while (1) {}; // MIGHT hang here on stack overflow
 }
+
+/**
+ * The "idle" hook for FreeRTOS - this is is code run in the idle task of RTOS, which
+ * runs whenever something else is NOT. It should NOT call hanging RTOS functions
+ * or take up much computational power in general.
+ * See http://www.freertos.org/RTOS-idle-task.html for more details.
+ */
+//void vApplicationIdleHook(void) {
+	// FOR TESTING
+//}
 
 /************************************************************************/
 /* Required functions for FreeRTOS 9 static allocation					*/

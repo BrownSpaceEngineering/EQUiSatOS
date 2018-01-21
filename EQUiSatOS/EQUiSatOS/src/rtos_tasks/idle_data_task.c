@@ -9,7 +9,8 @@
 
 void idle_data_task(void *pvParameters)
 {
-	// initialize xNextWakeTime onces
+	// delay to offset task relative to others, then start
+	vTaskDelay(IDLE_DATA_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	// initialize first struct

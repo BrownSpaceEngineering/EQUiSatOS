@@ -48,8 +48,9 @@ uint32_t get_time_of_next_flash(void) {
 
 void flash_activate_task(void *pvParameters)
 {
-	// initialize xNextWakeTime once
-	TickType_t prev_wake_time = xTaskGetTickCount();
+	// delay to offset task relative to others, then start
+	vTaskDelay(FLASH_ACTIVATE_TASK_FREQ_OFFSET);
+	TickType_t prev_wake_time = xTaskGetTickCount();	
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 
 	// data storage variables for flash data

@@ -35,6 +35,8 @@ void watchdog_init(void) {
 }
 
 void watchdog_task(void *pvParameters) {
+	// delay to offset task relative to others, then start
+	vTaskDelay(WATCHDOG_TASK_FREQ_OFFSET);
 	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	for( ;; )

@@ -158,31 +158,46 @@ typedef enum
 } task_type_t;
 
 /************************************************************************/
-/* TASK EXECUTE FREQUENCIES												*/
+/* TASK EXECUTE FREQUENCIES	AND INITIAL OFFSETS							*/
 /* These can be complex because of multi-frequency data collection		*/
 /* issues... see below for details.				                        */
-/************************************************************************/ 
+/************************************************************************/
+
+// these are offsets are added to "start time" to avoid periodic contention of tasks
+// offsets should be different especially for tasks that have similar (high) frequencies/priorities
+// these are all within 1000ms because that's the highest task frequency
+#define WATCHDOG_TASK_FREQ_OFFSET				100 // high-freq 
+#define STATE_HANDLING_TASK_FREQ_OFFSET			200
+#define ANTENNA_DEPLOY_TASK_FREQ_OFFSET			300 // high-freq
+#define BATTERY_CHARGING_TASK_FREQ_OFFSET		400
+#define TRANSMIT_TASK_FREQ_OFFSET				500
+#define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600 // high-freq
+#define IDLE_DATA_TASK_FREQ_OFFSET				700 // high-freq
+#define LOW_POWER_DATA_TASK_FREQ_OFFSET			800 // high-freq
+#define ATTITUDE_DATA_TASK_FREQ_OFFSET			900 // high-freq
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	150	// high-freq
 
 /* action frequency periods in MS (some that actually have data collection are below) */
 #define STATE_HANDLING_TASK_FREQ				60000	// ms
-#define WATCHDOG_TASK_FREQ						20000	// must be larger than any task frequency but 
-														// smaller than the watchdog timeout
+
+#define WATCHDOG_TASK_FREQ						1500
 														
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
-#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+	
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
-#define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
 
 #define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit
-#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
-#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
-#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
+	#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
+	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
+	#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
 
 #define IDLE_DATA_TASK_FREQ						1000 // ms
-#define IDLE_DATA_MAX_READ_TIME					1000 
-#define IDLE_DATA_LOGS_PER_ORBIT				7 // == IDLE_DATA_PACKETS
+	#define IDLE_DATA_MAX_READ_TIME					1000 
+	#define IDLE_DATA_LOGS_PER_ORBIT				7 // == IDLE_DATA_PACKETS
+	
 #define LOW_POWER_DATA_TASK_FREQ				10000
-#define LOW_POWER_DATA_MAX_READ_TIME			1000
+	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		1000
 
@@ -192,34 +207,35 @@ typedef enum
  */
 
 #define ATTITUDE_DATA_TASK_FREQ					10000
-#define ATTITUDE_DATA_MAX_READ_TIME				1000
-#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
-/* Data array lengths for attitude data reader task */
-#define attitude_IR_DATA_ARR_LEN					1
-#define attitude_DIODE_DATA_ARR_LEN					1
-#define attitude_ACCELEROMETER_DATA_ARR_LEN			2
-#define attitude_GYRO_DATA_ARR_LEN					1
-#define attitude_MAGNETOMETER_DATA_ARR_LEN			2
+	#define ATTITUDE_DATA_MAX_READ_TIME				1000
+	#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
+	/* Data array lengths for attitude data reader task */
+	#define attitude_IR_DATA_ARR_LEN					1
+	#define attitude_DIODE_DATA_ARR_LEN					1
+	#define attitude_ACCELEROMETER_DATA_ARR_LEN			2
+	#define attitude_GYRO_DATA_ARR_LEN					1
+	#define attitude_MAGNETOMETER_DATA_ARR_LEN			2
 
-/* Attitude data read task reads per log */
-/* LOOPS_PER_LOG for each sensor at each state - 
-	How many times the whole sensor task loop must iterate before the given sensor is logged 
-	in a equistack for transmission. Note that this has an INVERSE relationship with the array length;
-	more frequent sensors (with fewer loops per log) must have longer arrays.
-	(see tests in rtos_tasks_config.c)
+	/* Attitude data read task reads per log */
+	/* LOOPS_PER_LOG for each sensor at each state - 
+		How many times the whole sensor task loop must iterate before the given sensor is logged 
+		in a equistack for transmission. Note that this has an INVERSE relationship with the array length;
+		more frequent sensors (with fewer loops per log) must have longer arrays.
+		(see tests in rtos_tasks_config.c)
 	
-	NOTE: because the actual HZ frequency entered here is only computed relative 
-	to the execution frequency of the reading RTOS task, it must be less than that frequency.
-	*/
-#define attitude_IR_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
-#define attitude_DIODE_LOOPS_PER_LOG				2 // = ms / [fastest log rate (ms) of any datum]
-#define attitude_ACCELEROMETER_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
-#define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
-#define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
+		NOTE: because the actual HZ frequency entered here is only computed relative 
+		to the execution frequency of the reading RTOS task, it must be less than that frequency.
+		*/
+	#define attitude_IR_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
+	#define attitude_DIODE_LOOPS_PER_LOG				2 // = ms / [fastest log rate (ms) of any datum]
+	#define attitude_ACCELEROMETER_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
+	#define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
+	#define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
 
-#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
-#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
-// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
+#define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
+	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
+	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
+	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 
 /*
  * A function to make sure that the constants defined here are internally consistent.
