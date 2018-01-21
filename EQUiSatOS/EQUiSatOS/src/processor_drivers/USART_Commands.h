@@ -34,6 +34,7 @@ void ext_usart_clock_init(void);
 void ext_usart_pin_init(void);
 void ext_usart_init(void);
 void usart_mutex_init(void);
+void usart_send_buf(const uint8_t *str_buf, int len);
 void usart_send_string(const uint8_t *str_buf);
 void print_old(const char *str_buf);  // deprecated
 void print(const char *format, ...);

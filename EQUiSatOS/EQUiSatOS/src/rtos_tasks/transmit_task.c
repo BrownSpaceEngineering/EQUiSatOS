@@ -190,9 +190,9 @@ void transmit_task(void *pvParameters)
 		// actually send buffer over USART to radio for transmission
 		// TODO: We will want to wait here between calls to allow for actual data transfer
 		// (this can be calculated from the baud rate)
-		usart_send_string(msg_buffer_1);
-		usart_send_string(msg_buffer_2);
-		usart_send_string(msg_buffer_3);
+		usart_send_buf(msg_buffer_1, MSG_SIZE);
+		usart_send_buf(msg_buffer_2, MSG_SIZE);
+		usart_send_buf(msg_buffer_3, MSG_SIZE);
 
 		// NOTE: putting this here as opposed to after the confirmation
 		// means we will try to send the newest packet if encountering failures,

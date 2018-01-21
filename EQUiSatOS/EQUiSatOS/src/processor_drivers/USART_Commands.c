@@ -239,12 +239,24 @@ void ext_usart_pin_init(void)
 	pin_set_peripheral_function(EXT_USART_TX_PIN);
 }
 
+void usart_send_buf(const uint8_t *str_buf, int len)
+{
+	xSemaphoreTake(usart_send_string_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+	for (int i = 0; i < len; i++)
+	{
+		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
+		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
+		str_buf++;
+	}
+	xSemaphoreGive(usart_send_string_mutex);
+}
+
 void usart_send_string(const uint8_t *str_buf)
 {
 	xSemaphoreTake(usart_send_string_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
 	while (*str_buf != '\0')
 	{
-		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE)); // error highlight is just due to uncertainty of above ifdefs
+		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
