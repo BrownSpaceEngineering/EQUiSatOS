@@ -32,7 +32,7 @@
 #define TESTING_SPEEDUP
 
 // whether to start up testing tasks
-#define RUN_TESTING_TASKS
+//#define RUN_TESTING_TASKS
 
 //0 to suppress prints, 1 to print over USART
 #define PRINT_DEBUG 1

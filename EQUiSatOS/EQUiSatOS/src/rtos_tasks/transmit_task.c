@@ -170,6 +170,13 @@ void transmit_task(void *pvParameters)
 			continue;
 		}
 		
+		// double-make sure radio is set to transmit (don't check regulators every time, however)
+		// (it should be on whenever this task is running)
+		set3V6Power(true);
+		setRadioPower(true);
+		setTXEnable(true);
+		setRXEnable(true);
+		
 		// print a debug message
 		debug_print_msg_types();
 		
@@ -178,7 +185,7 @@ void transmit_task(void *pvParameters)
 		write_packet(msg_buffer_1, buffer_1_msg_type, current_timestamp);
 		write_packet(msg_buffer_2, buffer_2_msg_type, current_timestamp);
 		write_packet(msg_buffer_3, buffer_3_msg_type, current_timestamp);
-
+		
 		// actually send buffer over USART to radio for transmission
 		// TODO: We will want to wait here between calls to allow for actual data transfer
 		// (this can be calculated from the baud rate)

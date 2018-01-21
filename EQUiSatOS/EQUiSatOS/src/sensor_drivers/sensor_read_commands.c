@@ -146,7 +146,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 }
 
 static void verify_regulators(void) {
-	delay_ms(100); // ? // TODO: no guarantee that's 100ms
+	delay_ms(100); // ?
 	ad7991_ctrlbrd_batch batch;	
 	read_ad7991_ctrlbrd(batch); //will log errors for out of bounds	
 }

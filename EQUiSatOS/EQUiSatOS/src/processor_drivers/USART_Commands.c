@@ -24,6 +24,12 @@ void USART_init() {
 	ext_usart_pin_init();
 	ext_usart_init();
 	usart_mutex_init();
+	
+	#ifdef PRINT_DEBUG
+		// if printing, make sure the USART is not sent to the radio
+		setTXEnable(false);
+		setRXEnable(false);
+	#endif
 }
 
 void usart_mutex_init(void) {

@@ -59,8 +59,8 @@ void testing_task(void *pvParameters)
 		/************************************************************************/
 		/* MISC                                                                 */
 		/************************************************************************/
-		test_message_packaging();
-		stress_test_message_packaging();
+		//test_message_packaging();
+		//stress_test_message_packaging();
 		vTaskDelay(2000);
 		configASSERT(check_task_state_consistency());
 		

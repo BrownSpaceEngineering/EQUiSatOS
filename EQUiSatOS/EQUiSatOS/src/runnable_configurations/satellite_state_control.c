@@ -8,8 +8,11 @@
 #include "satellite_state_control.h"
 #include "../testing_functions/os_system_tests.h"
 
-/* Satellite state info - ONLY accessible in this file */
-uint8_t current_sat_state;
+/* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
+uint8_t current_sat_state = INITIAL;
+
+// specific state for radio
+bool current_radio_state = false;
 
 // states that should be set upon task bootup (only used on boot)
 task_states boot_task_states;
@@ -323,6 +326,20 @@ bool check_task_state_consistency(void) {
 	return result;
 }
 
+/* wrapper for setting radio power state */
+void set_radio_by_sat_state(sat_state_t state) {
+	bool new_state = RADIO_STATES & 1 << state;
+	
+	if (new_state) {
+		// don't re-enable, because this entails waiting to confirm power on
+		if (current_radio_state != new_state) 
+			setRadioState(true);
+	} else {
+		setRadioState(false);
+	}
+	current_radio_state = new_state;
+}
+
 /* Sets the current satellite state to the given state, if a transition from
    the current state is valid; returns whether the state change was made (i.e. was valid)
    CAN be called consistenly (i.e. if state == CurrentState), which will ensure all correct tasks
@@ -345,6 +362,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == INITIAL) {
 				trace_print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
+				set_radio_by_sat_state(ANTENNA_DEPLOY);
 				return true;
 			}
 			return false;
@@ -353,6 +371,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == ANTENNA_DEPLOY) {
 				trace_print("CHANGED STATE to HELLO_WORLD");
 				set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
+				set_radio_by_sat_state(HELLO_WORLD);
 				return true;
 			}
 			return false;
@@ -361,6 +380,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == HELLO_WORLD) {
 				trace_print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
 				set_all_task_states(HELLO_WORLD_LOW_POWER_TASK_STATES, HELLO_WORLD_LOW_POWER);
+				set_radio_by_sat_state(HELLO_WORLD_LOW_POWER);
 				return true;
 			}
 
@@ -368,6 +388,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == IDLE_FLASH || current_sat_state == HELLO_WORLD || current_sat_state == LOW_POWER) {
 				trace_print("CHANGED STATE to IDLE_NO_FLASH");
 				set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
+				set_radio_by_sat_state(IDLE_NO_FLASH);
 				return true;
 			}
 			return false;
@@ -376,6 +397,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == IDLE_NO_FLASH) {
 				trace_print("CHANGED STATE to IDLE_FLASH");
 				set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
+				set_radio_by_sat_state(IDLE_FLASH);
 				return true;
 			}
 			return false;
@@ -384,6 +406,7 @@ bool set_sat_state_helper(sat_state_t state)
 			if (current_sat_state == IDLE_NO_FLASH || current_sat_state == IDLE_FLASH) {
 				trace_print("CHANGED STATE to LOW_POWER");
 				set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
+				set_radio_by_sat_state(LOW_POWER);
 				return true;
 			}
 			return false;
@@ -392,6 +415,7 @@ bool set_sat_state_helper(sat_state_t state)
 			// we can always go to RIP
 			trace_print("CHANGED STATE to RIP");
 			set_all_task_states(RIP_TASK_STATES, RIP);
+			set_radio_by_sat_state(RIP);
 			return true;
 
 		default:
