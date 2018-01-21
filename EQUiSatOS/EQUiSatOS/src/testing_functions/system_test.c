@@ -119,27 +119,27 @@ static void get_ir_panel(int panel_addr, char* buffer){
 	switch (panel_addr){
 
 		case IR_FLASH:
-		strcpy(buffer,"IR_FLASH");
+		strcpy(buffer,"IR_FLASH +Y");
 		break;
 
 		case IR_TOP1:
-		strcpy(buffer,"IR_TOP1");
+		strcpy(buffer,"IR_TOP1 +Z");
 		break;
 
 		case IR_RBF:
-		strcpy(buffer,"IR_RBF");
+		strcpy(buffer,"IR_RBF +X");
 		break;
 
 		case IR_ACCESS:
-		strcpy(buffer,"IR_ACCESS");
+		strcpy(buffer,"IR_ACCESS -Z");
 		break;
 
 		case IR_SIDE1:
-		strcpy(buffer,"IR_SIDE1");
+		strcpy(buffer,"IR_SIDE1 -X");
 		break;
 
 		case IR_SIDE2:
-		strcpy(buffer,"IR_SIDE2");
+		strcpy(buffer,"IR_SIDE2 -Y");
 		break;
 		
 		default:
@@ -158,7 +158,7 @@ static void MLX90614_test(bool printFloats){
 	uint16_t buf;
 	char buffer[40];
 	enum status_code sc;
-	uint8_t addr[] = {IR_FLASH, IR_SIDE1, IR_SIDE2, IR_RBF, IR_ACCESS, IR_TOP1};
+	uint8_t addr[] = {IR_TOP1, IR_SIDE1, IR_SIDE2, IR_FLASH, IR_ACCESS, IR_RBF};
 
 	for (int i = 0; i < 6; i++){
 		sc = MLX90614_read_all_obj(addr[i],&buf);
@@ -346,22 +346,22 @@ static float TEMD6200_test(void){
 		read_adc_mV(pd_instance, &pd_mV);
 		switch (i) {
 			case 0:
-			strcpy(test_str,"PD_ACCESS");
+			strcpy(test_str,"PD_TOP1 +Z");
 			break;
 			case 1:
-			strcpy(test_str,"PD_SIDE1");
+			strcpy(test_str,"PD_SIDE1 -X");
 			break;
 			case 2:
-			strcpy(test_str,"PD_SIDE2");
+			strcpy(test_str,"PD_SIDE2 -Y");
 			break;
 			case 3:
-			strcpy(test_str,"PD_FLASH");
+			strcpy(test_str,"PD_FLASH +Y");
 			break;
 			case 4:
-			strcpy(test_str,"PD_TOP1");
+			strcpy(test_str,"PD_ACCESS -Z");
 			break;
 			case 5:
-			strcpy(test_str,"PD_RBF\t");
+			strcpy(test_str,"PD_RBF +X");
 			break;
 		}
 		print("%s \t %d \n",test_str, pd_mV);
