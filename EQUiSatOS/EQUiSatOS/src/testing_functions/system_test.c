@@ -239,8 +239,7 @@ static void AD590_test(void){
 // input length 3 array (sensors) each array entry corresponds to a sensor, 0 means don't read, else read
 // sensors[0] -> acc, sensors[1] -> gyro, sensors[3] -> mag  (length of toFill should correspond to sensor reads)
 static void MPU9250_test(bool rebias, bool printFloats){
-	print("==============MPU9250 Test==============\n");
-	print("Accelerometer readings in g, gyroscope readings in degrees per second\n");
+	print("==============MPU9250 Test==============\n");	
 	// IMU
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
 	uint16_t MPU9250_err_margin = 20;		
@@ -275,9 +274,9 @@ static void MPU9250_test(bool rebias, bool printFloats){
 	code = MPU9250_read_mag(MPU9250_results);
 	get_status(code, buffer);
 	if (printFloats) {
-		print("MAG: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]*0.6,MPU9250_results[1], (float)MPU9250_results[1]*0.6, MPU9250_results[2], (float)MPU9250_results[2]*0.6);
+		print("MAG: \t %s \n x: \t %d \t %.02f uT \n y: \t %d \t %.02f uT \n z: \t %d \t %.02f uT\n",buffer,MPU9250_results[0], (float)MPU9250_results[0]*0.6,MPU9250_results[1], (float)MPU9250_results[1]*0.6, MPU9250_results[2], (float)MPU9250_results[2]*0.6);
 		} else {
-		print("MAG: \t %s \n x: \t %d \t %d d/s \n y: \t %d \t %d d/s \n z: \t %d \t %d d/s\n",buffer,MPU9250_results[0], MPU9250_results[0]*3/5,MPU9250_results[1], MPU9250_results[1]*3/5, MPU9250_results[2], MPU9250_results[2]*3/5);
+		print("MAG: \t %s \n x: \t %d \t %d uT \n y: \t %d \t %d uT \n z: \t %d \t %d uT\n",buffer,MPU9250_results[0], MPU9250_results[0]*3/5,MPU9250_results[1], MPU9250_results[1]*3/5, MPU9250_results[2], MPU9250_results[2]*3/5);
 	}
 	
 	//uint16_t MPU9250_expected[] = {0, 0, 0, 0, 0, 0};
@@ -301,9 +300,9 @@ static void HMC5883L_test(bool printFloats){
 	enum status_code code = HMC5883L_readXYZ(xyz);
 	get_status(code, buffer);
 	if (printFloats) {
-		print("MAG: \t %s \n x: \t %d \t %.02f d/s \n y: \t %d \t %.02f d/s \n z: \t %d \t %.02f d/s\n",buffer,xyz[0], (float)xyz[0]/1370.,xyz[1], (float)xyz[1]/1370., xyz[2], (float)xyz[2]/1370.);
-	} else {
-		print("MAG: \t %s \n x: \t %d \t %d d/s \n y: \t %d \t %d d/s \n z: \t %d \t %d d/s\n",buffer,xyz[0], xyz[0]/1370,xyz[1], xyz[1]/1370, xyz[2], xyz[2]/1370);
+		print("MAG: \t %s \n x: \t %d \t %.04f G \n y: \t %d \t %.04f G \n z: \t %d \t %.04f G\n",buffer,xyz[0], (float)xyz[0]/1370,xyz[1], (float)xyz[1]/1370, xyz[2], (float)xyz[2]/1370);
+		} else {
+		print("MAG: \t %s \n x: \t %d \t %d mG \n y: \t %d \t %d mG \n z: \t %d \t %d mG\n",buffer,xyz[0], xyz[0]*1000/1370,xyz[1], xyz[1]*1000/1370, xyz[2], xyz[2]*1000/1370);
 	}
 
 }
