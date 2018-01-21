@@ -77,10 +77,11 @@ bool watchdog_as_function(void) {
 		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
 
+		log_error(ELOC_WATCHDOG, ECODE_WACTHDOG_RESET, true);
 		write_state_to_storage();
 		
 		#ifdef WATCHDOG_RESET_ACTIVE
-			// TODO: actually reset satellite
+			system_reset();
 		#endif
 		
 		// it doesn't make sense to reset values here because the satellite will reboot
@@ -134,6 +135,13 @@ void report_task_running(task_type_t task_ind) {
 // NOTE: not safe to call without having gotten mutex
 void check_out_task_unsafe(task_type_t task_ind) {
 	check_ins[task_ind] = false; // set this task bit to false
-	// set the running time to 0 so when  
+	// set the running time to 0 so when the check task is run, it makes sure
+	// there were no incorrect report_task_running calls
 	running_times[task_ind] = 0;
+}
+
+// Writes state to storage if the watchdog is about to restart the satellite
+void watchdog_early_warning_callback(void) {
+	log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
+	write_state_to_storage();
 }

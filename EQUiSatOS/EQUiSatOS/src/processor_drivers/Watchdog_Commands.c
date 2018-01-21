@@ -21,25 +21,16 @@ void configure_watchdog(void){
 	
 	wdt_set_config(&config_wdt);
 	
-	//only call when xplained pro is used
-	//configure_watchdog_callbacks();
+	wdt_register_callback(watchdog_early_warning_callback, WDT_CALLBACK_EARLY_WARNING);
+	// only use with xplained pro
+	//wdt_register_callback(watchdog_early_warning_callback_xplained, WDT_CALLBACK_EARLY_WARNING);
+	wdt_enable_callback(WDT_CALLBACK_EARLY_WARNING);
 }
 
 /*
-//Only used for xplained pro
-static void watchdog_early_warning_callback(void) {
+// use for xplained pro
+static void watchdog_early_warning_callback_xplained(void) {
 	port_pin_set_output_level(LED_0_PIN, LED_0_ACTIVE);
-}
-
-//only call when xplained pro is used
-static void configure_watchdog_callbacks(void) {
-	//! [setup_5]
-	wdt_register_callback(watchdog_early_warning_callback, WDT_CALLBACK_EARLY_WARNING);
-	//! [setup_5]
-
-	//! [setup_6]
-	wdt_enable_callback(WDT_CALLBACK_EARLY_WARNING);
-	//! [setup_6]
 }
 */
 

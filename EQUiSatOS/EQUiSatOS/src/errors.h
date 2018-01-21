@@ -94,6 +94,7 @@ enum error_locations {
 	ELOC_STATE_HANDLING = 				56,
 	ELOC_BAT_CHARGING =					57,
 	ELOC_ERROR_STACK =					58,
+	ELOC_WATCHDOG =						59,
 };
 
 /******************** PROBLEM CODES ********************/
@@ -137,6 +138,8 @@ enum error_codes {
 	ECODE_UNEXPECTED_CASE = 			32,
 	ECODE_ENTER_RIP = 					33,
 	ECODE_UNCERTAIN_RIP = 				34,
+	ECODE_WATCHDOG_EARLY_WARNING =		35,
+	ECODE_WACTHDOG_RESET =				36,
 };
 
 /************************************************************************/
