@@ -55,9 +55,9 @@ static uint8_t truncate_16t(uint16_t src) {
 }
 
 static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc, bool priority) {
-	if (reading < low) {
+	if (reading <= low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
-	} else if (reading > high) {
+	} else if (reading >= high) {
 		log_error(eloc, ECODE_READING_HIGH, priority);
 	}
 }
@@ -130,12 +130,20 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	sc = AD7991_read_all_mV(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
 	
+	uint16_t low_limit, high_limit;
+	if (/* TODO: antenna is deploying or radio is transmitting */ true) {
+		low_limit = B_L_CUR_REG_LOW;
+		high_limit = B_L_CUR_REG_HIGH;
+	} else {
+		low_limit = B_L_CUR_HIGH_LOW;
+		high_limit = B_L_CUR_HIGH_HIGH;
+	}
 	// results[0] = L2_SNS
 	batch1[1] = truncate_16t(results[0]);
-	log_if_out_of_bounds(results[0], B_L_CUR_LOW, B_L_CUR_HIGH, ELOC_AD7991_0_0, true);
+	log_if_out_of_bounds(results[0], low_limit, high_limit, ELOC_AD7991_0_0, true);
 	// results[1] = L1_SNS
 	batch1[0] = truncate_16t(results[1]);
-	log_if_out_of_bounds(results[1], B_L_CUR_LOW, B_L_CUR_HIGH, ELOC_AD7991_0_1, true);
+	log_if_out_of_bounds(results[1], low_limit, high_limit, ELOC_AD7991_0_1, true);
 	
 	// results[2] = L_REF
 	batch2[1] = truncate_16t(results[2]);
@@ -179,10 +187,18 @@ void read_led_temps_batch(led_temps_batch batch) {
 }
 
 void read_lifepo_current_batch(lifepo_current_batch batch) {
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, B_LF_CUR_LOW, B_LF_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, B_LF_CUR_LOW, B_LF_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, B_LF_CUR_LOW, B_LF_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, B_LF_CUR_LOW, B_LF_CUR_HIGH, true);
+	uint low_limit, high_limit;
+	if (/* TODO: LEDs are flashing */ true) {
+		low_limit = B_LF_CUR_REG_LOW;
+		high_limit = B_LF_CUR_REG_HIGH;
+	} else {
+		low_limit = B_LF_CUR_FLASH_LOW;
+		high_limit = B_LF_CUR_FLASH_HIGH;
+	}
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, low_limit, high_limit, true);
 }
 
 // TODO: make sure this all looks okay
@@ -216,9 +232,10 @@ void read_pdiode_batch(pdiode_batch batch) {
 	// TODO: need to output to two bits of a uint16_t
 	for (int i = 0; i < 6; i++) {
 		uint16_t rs;
+		// TODO: LTC1380_channel_select takes a uint8, not 16
 		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 		log_if_error(PD_ELOCS[i], sc, false);
-		commands_read_adc_mV_truncate(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+		commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
 		//batch[i] = truncate_16t(rs);
 	}
 }
@@ -250,6 +267,7 @@ void read_lion_temps_batch(lion_temps_batch batch) {
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
+	// TODO: does IR power need to be turned back on???
 	int16_t rs[3];
 	sc = MPU9250_read_acc(rs);
 	log_if_error(ELOC_IMU_ACC, sc, false);
@@ -279,10 +297,18 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 void read_led_current_batch(led_current_batch batch) {
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, B_LED_CUR_LOW, B_LED_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, B_LED_CUR_LOW, B_LED_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, B_LED_CUR_LOW, B_LED_CUR_HIGH, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, B_LED_CUR_LOW, B_LED_CUR_HIGH, true);
+	uint low_limit, high_limit;
+	if (/* TODO: LEDs are flashing */ true) {
+		low_limit = B_LED_CUR_REG_LOW;
+		high_limit = B_LED_CUR_REG_HIGH;
+	} else {
+		low_limit = B_LED_CUR_FLASH_LOW;
+		high_limit = B_LED_CUR_FLASH_HIGH;
+	}
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, low_limit, high_limit, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, low_limit, high_limit, true);
 }
 
 /*void read_radio_volts_batch(radio_volts_batch* batch) {
@@ -309,7 +335,8 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 }
 
 void read_proc_temp_batch(proc_temp_batch* batch) {
-	// TODO: processor temperature (likely not a signal but an atmel call)
+	commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP, 
+		ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {

@@ -95,6 +95,7 @@ enum error_locations {
 	ELOC_BAT_CHARGING =					57,
 	ELOC_ERROR_STACK =					58,
 	ELOC_WATCHDOG =						59,
+	ELOC_PROC_TEMP =					60,
 };
 
 /******************** PROBLEM CODES ********************/

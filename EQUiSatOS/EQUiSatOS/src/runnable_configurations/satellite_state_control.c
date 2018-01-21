@@ -12,7 +12,7 @@
 const uint16_t RADIO_STATES = 0b10110100;
 
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
-uint8_t current_sat_state = INITIAL;
+sat_state_t current_sat_state = INITIAL;
 
 // specific state for radio
 bool current_radio_state = false;
@@ -210,6 +210,13 @@ void configure_state_from_reboot(void) {
 	// send first read command
 	read_state_from_storage();
 
+	#ifdef OVERRIDE_INIT_SAT_STATE
+		current_sat_state =		OVERRIDE_INIT_SAT_STATE;
+		boot_task_states =		OVERRIDE_INIT_TASK_STATES; // may be modified
+		prev_task_states =		OVERRIDE_INIT_TASK_STATES;
+		current_task_states =	OVERRIDE_INIT_TASK_STATES;
+	#else
+
 	// based on satellite state, set initial state
 	// (it will actually be set as tasks come online)
 	// (this is done differently than during normal satellite operation,
@@ -237,6 +244,7 @@ void configure_state_from_reboot(void) {
 		prev_task_states =		IDLE_NO_FLASH_TASK_STATES;
 		current_task_states =	IDLE_NO_FLASH_TASK_STATES;
 	}
+	#endif
 
 	// get state of antenna deploy task and apply
 	if (cache_get_sat_event_history(false)->antenna_deployed) { // no one writing so don't wait
@@ -283,11 +291,6 @@ task_states get_sat_task_states(void) {
 	return current_task_states;
 }
 
-// // "assigns" the states_setting to states_to_set by array copying
-// void assign_task_states(task_states states_to_set, const task_states states_setting) {
-// 	memcpy(states_to_set, states_setting, sizeof(enum task_state) * NUM_TASKS);
-// }
-
 // returns whether the given task state is consistent with its current RTOS state (given by its task handle state)
 bool task_state_consistent(uint8_t expected_state, task_type_t task_id) {
 	configASSERT(expected_state <= T_STATE_ANY);
@@ -325,9 +328,9 @@ void set_radio_by_sat_state(sat_state_t state) {
 	if (new_state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_radio_state != new_state) 
-			setRadioState(true);
+			setRadioState(true, true);
 	} else {
-		setRadioState(false);
+		setRadioState(false, false);
 	}
 	current_radio_state = new_state;
 }

@@ -10,6 +10,7 @@
 
 #include "../global.h"
 
+// TODO: all of these
 #define IR_WAKE_DELAY					300
 #define B_IR_OBJ_LOW					0
 #define B_IR_OBJ_HIGH					~0
@@ -19,16 +20,22 @@
 #define B_PD_HIGH						~0
 #define B_LED_TEMP_LOW					0
 #define B_LED_TEMP_HIGH					~0
-#define B_LED_CUR_LOW					0
-#define B_LED_CUR_HIGH					~0
+#define B_LED_CUR_REG_LOW				0
+#define B_LED_CUR_REG_HIGH				~0
+#define B_LED_CUR_FLASH_LOW				0
+#define B_LED_CUR_FLASH_HIGH			~0
 #define B_L_TEMP_LOW					0
 #define B_L_TEMP_HIGH					~0
 #define B_LF_TEMP_LOW					0
 #define B_LF_TEMP_HIGH					~0
-#define B_LF_CUR_LOW					0
-#define B_LF_CUR_HIGH					~0
-#define B_L_CUR_LOW						0
-#define B_L_CUR_HIGH					~0
+#define B_LF_CUR_REG_LOW				0
+#define B_LF_CUR_REG_HIGH				~0
+#define B_LF_CUR_FLASH_LOW				0
+#define B_LF_CUR_FLASH_HIGH				~0
+#define B_L_CUR_REG_LOW					0
+#define B_L_CUR_REG_HIGH				~0
+#define B_L_CUR_HIGH_LOW				0
+#define B_L_CUR_HIGH_HIGH				~0
 #define B_LF_VOLT_LOW					0
 #define B_LF_VOLT_HIGH					~0
 #define B_L_VOLT_LOW					0
@@ -41,6 +48,8 @@
 #define B_CHARGE_HIGH					~0
 #define B_GYRO_LOW						0
 #define B_GYRO_HIGH						~0
+#define B_PROC_TEMP_LOW					0
+#define B_PROC_TEMP_HIGH				~0
 #define B_3V3_REF_LOW					3000
 #define B_3V3_REF_HIGH					3600
 #define B_3V6_REF_OFF_LOW				0
