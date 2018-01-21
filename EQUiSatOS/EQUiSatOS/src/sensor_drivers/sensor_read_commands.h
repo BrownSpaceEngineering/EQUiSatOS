@@ -105,6 +105,6 @@ void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single valu
 void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
-void verify_regulators(void);
+static void verify_regulators(bool on3v6, bool onRadio, bool on5v);
 
 #endif

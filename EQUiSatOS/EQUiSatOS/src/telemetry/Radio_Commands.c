@@ -150,7 +150,8 @@ void setRadioState(bool enable) {
 	// if enabling, delay and check that the radio was enabled
 	if (enable) {
 		vTaskDelay(REGULATOR_MEASURE_DELAY);
-		verify_regulators(); // will throw error if regulator not valid
+		//verify_regulators(); // will throw error if regulator not valid
+		//TODO uncomment when we can get state
 	}
 }
 
