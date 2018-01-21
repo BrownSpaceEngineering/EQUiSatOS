@@ -7,8 +7,8 @@ void set_regulator_power(bool on) {
 }
 
 void sensor_read_tests(void) {
-	uint16_t six_buf[6];
-	uint8_t six_buf_8t[6];
+	uint16_t six_buf_16t[6];
+	uint8_t six_buf[6];
 	uint8_t three_buf[3];
 	uint8_t four_buf[4];
 	uint16_t four_buf_16t[4];
@@ -25,15 +25,15 @@ void sensor_read_tests(void) {
 	print("mag: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
 
 	print("\n# IR #\n");
-	read_ir_ambient_temps_batch(six_buf_8t);
-	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf_8t[0] << 8), (uint16_t)dataToTemp(six_buf_8t[1] << 8), (uint16_t)dataToTemp(six_buf_8t[2] << 8), (uint16_t)dataToTemp(six_buf_8t[3] << 8), (uint16_t)dataToTemp(six_buf_8t[4] << 8), (uint16_t)dataToTemp(six_buf_8t[5] << 8));
-	read_ir_object_temps_batch(six_buf);
-	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0]), (uint16_t)dataToTemp(six_buf[1]), (uint16_t)dataToTemp(six_buf[2]), (uint16_t)dataToTemp(six_buf[3]), (uint16_t)dataToTemp(six_buf[4]), (uint16_t)dataToTemp(six_buf[5]));
+	read_ir_ambient_temps_batch(six_buf);
+	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
+	read_ir_object_temps_batch(six_buf_16t);
+	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf_16t[0]), (uint16_t)dataToTemp(six_buf_16t[1]), (uint16_t)dataToTemp(six_buf_16t[2]), (uint16_t)dataToTemp(six_buf_16t[3]), (uint16_t)dataToTemp(six_buf_16t[4]), (uint16_t)dataToTemp(six_buf_16t[5]));
 
 	print("\n# PDIODE #\n");
-	read_pdiode_batch(six_buf_8t);
+	read_pdiode_batch(six_buf);
 	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, (uint16_t)(six_buf_8t[i])<<8);
+		print("pdiode %d: %d\n",i, (uint16_t)(six_buf[i])<<8);
 	}
 
 	print("\n\n# LiON VOLTS #\n");
