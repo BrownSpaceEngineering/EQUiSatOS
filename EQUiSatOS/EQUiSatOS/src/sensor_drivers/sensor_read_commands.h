@@ -41,7 +41,7 @@
 #define B_GYRO_LOW						0
 #define B_GYRO_HIGH						~0
 #define B_3V3_REF_LOW					3000
-#define B_3V3_REF_HIGH					3300
+#define B_3V3_REF_HIGH					3600
 #define B_3V6_REF_OFF_LOW				0
 #define B_3V6_REF_OFF_HIGH				400
 #define B_3V6_REF_ON_LOW				3400
