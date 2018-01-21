@@ -8,6 +8,9 @@
 #include "satellite_state_control.h"
 #include "../testing_functions/os_system_tests.h"
 
+// vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
+const uint16_t RADIO_STATES = 0b10110100;
+
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
 uint8_t current_sat_state = INITIAL;
 
@@ -90,6 +93,9 @@ void startup_task(void* pvParameters) {
  	equistack_Init(&low_power_readings_equistack, &_low_power_equistack_arr,
 		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, _low_power_equistack_mutex);
 
+	// function to write inital state to MRAM (ONCE)
+	//write_custom_state();
+
 	/************************************************************************/
 	/* TASK CREATION                                                        */
 	/************************************************************************/
@@ -103,9 +109,13 @@ void startup_task(void* pvParameters) {
 	// are non-null when they start executing (i.e. they can be controlled)
 	vTaskSuspendAll();
 	
-	
-	// FOR TESTING TASKS
+	/************************************************************************/
+	/* TESTING/MISC                                                         */
+	/************************************************************************/
 	create_testing_tasks();
+	/************************************************************************/
+	/* END TESTING                                                          */
+	/************************************************************************/
 
 	battery_charging_task_handle = xTaskCreateStatic(battery_charging_task,
 		"battery charging action task",

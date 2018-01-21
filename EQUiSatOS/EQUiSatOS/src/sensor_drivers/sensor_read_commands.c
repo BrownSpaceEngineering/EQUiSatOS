@@ -145,7 +145,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_0_0, true);
 }
 
-static void verify_regulators(void) {
+void verify_regulators(void) {
 	delay_ms(100); // ?
 	ad7991_ctrlbrd_batch batch;	
 	read_ad7991_ctrlbrd(batch); //will log errors for out of bounds	

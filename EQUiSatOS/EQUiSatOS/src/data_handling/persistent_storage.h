@@ -71,4 +71,6 @@ uint64_t get_current_timestamp_ms(void);
 uint16_t get_orbits_since_launch(void);
 bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
 
+void write_custom_state(void);
+
 #endif

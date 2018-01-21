@@ -83,13 +83,13 @@ void read_state_from_storage(void) {
 }
 
 void increment_reboot_count(void) {
-	//xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	cached_state.reboot_count++;
 	write_state_to_storage_unsafe(); // have the mutex so is safe
-	//xSemaphoreGive(cache_mutex);
+	xSemaphoreGive(cache_mutex);
 }
 
-// deep comparison of sturcts because thier bit organization may differ
+// deep comparison of structs because thier bit organization may differ
 bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2) {
 	bool result;
 	result = result && history1->antenna_deployed == history2->antenna_deployed;
@@ -169,7 +169,7 @@ void update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lifepo_b2_charged,
 								uint8_t first_flash) {
 										
-	//xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	
 	if (antenna_deployed)
 		cached_state.sat_event_history.antenna_deployed = antenna_deployed;
@@ -186,7 +186,7 @@ void update_sat_event_history(uint8_t antenna_deployed,
 	
 	write_state_to_storage_unsafe(); // we already have the mutex, so its safe
 	
-	//xSemaphoreGive(cache_mutex);
+	xSemaphoreGive(cache_mutex);
 }
 
 /************************************************************************/
@@ -270,34 +270,34 @@ bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_deno
 
 uint32_t cache_get_secs_since_launch(bool wait_on_write) {
 	uint32_t secs_since_launch;
-	//if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	secs_since_launch = cached_state.secs_since_launch;
-	//if (wait_on_write) xSemaphoreGive(cache_mutex);
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
 	return secs_since_launch;
 }
 
 uint8_t cache_get_reboot_count(bool wait_on_write) {
 	uint8_t reboot_count;
-	//if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	reboot_count = cached_state.reboot_count;
-	//if (wait_on_write) xSemaphoreGive(cache_mutex);
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
 	return reboot_count;
 }
 
 /* returns satellite state at last reboot */
 sat_state_t cache_get_sat_state(bool wait_on_write) {
 	sat_state_t sat_state;
-	//if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	if (wait_on_write) xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	sat_state = cached_state.sat_state;
-	//if (wait_on_write) xSemaphoreGive(cache_mutex);
+	if (wait_on_write) xSemaphoreGive(cache_mutex);
 	return sat_state;
 }
 
 satellite_history_batch* cache_get_sat_event_history(bool wait_on_write) {
 	satellite_history_batch* sat_event_history;
-	//xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	sat_event_history = &(cached_state.sat_event_history);
-	//xSemaphoreGive(cache_mutex);
+	xSemaphoreGive(cache_mutex);
 	return sat_event_history;
 }
 
@@ -305,7 +305,7 @@ satellite_history_batch* cache_get_sat_event_history(bool wait_on_write) {
 /* functions which require reading from MRAM (bypass cache)				*/
 /************************************************************************/
 void populate_error_stacks(equistack* priority_errors, equistack* normal_errors) {
-	//xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS); TODO
+	xSemaphoreTake(cache_mutex, CACHE_MUTEX_WAIT_TIME_TICKS);
 	
 	// read in errors from MRAM
 	uint8_t num_stored_priority_errors;
@@ -327,5 +327,83 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 		equistack_Push(normal_errors, &(normal_error_buf[i]));
 	}
 	
-	//xSemaphoreGive(cache_mutex);
+	xSemaphoreGive(cache_mutex);
+}
+
+/************************************************************************/
+/* Utilities for setting MRAM; used to write initial state              */
+/************************************************************************/
+void write_custom_state(void) {
+	/*** CONFIG ***/
+	uint32_t secs_since_launch =				0;
+	uint8_t reboot_count =						0;
+	sat_state_t sat_state =						INITIAL;
+	satellite_history_batch sat_event_history;
+	sat_event_history.antenna_deployed =		false;
+	sat_event_history.first_flash =				false;
+	sat_event_history.lifepo_b1_charged =		false;
+	sat_event_history.lifepo_b2_charged =		false;
+	sat_event_history.lion_1_charged =			false;
+	sat_event_history.lion_2_charged =			false;
+	
+	const uint8_t num_priority_errs = 0;
+	const uint8_t num_normal_errs = 0;
+	sat_error_t priority_errors[num_priority_errs];
+	sat_error_t normal_errors[num_normal_errs];
+	
+	/*** WRITING ***/
+	
+	// set write time right before writing
+	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+	
+	storage_write_bytes(1, (uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_write_bytes(1, (uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_write_bytes(1, (uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_write_bytes(1, (uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	// TODO: bootloader / program memory hashes
+
+	// write errors
+	storage_write_bytes(1, (uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
+	storage_write_bytes(1, (uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
+	storage_write_bytes(1, (uint8_t*) priority_errors, 
+		num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
+	storage_write_bytes(1, (uint8_t*) normal_errors,
+		num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+
+	/*** read it right back to confirm validity ***/
+	uint32_t temp_secs_since_launch;
+	uint8_t temp_reboot_count;
+	sat_state_t temp_sat_state;
+	satellite_history_batch temp_sat_event_history; // fits in one
+	
+	uint8_t temp_num_priority_errs;
+	uint8_t temp_num_normal_errs;
+	sat_error_t temp_priority_errors[num_priority_errs];
+	sat_error_t temp_normal_errors[num_normal_errs];
+
+	storage_read_bytes(1, (uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_read_bytes(1, (uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_read_bytes(1, (uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_read_bytes(1, (uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	// TODO: bootloader / program memory hashes
+	
+	storage_read_bytes(1, (uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
+	storage_read_bytes(1, (uint8_t*) &temp_num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
+	
+	configASSERT(temp_num_priority_errs == num_priority_errs);
+	configASSERT(temp_num_normal_errs == num_normal_errs);
+	
+	storage_read_bytes(1, (uint8_t*) temp_priority_errors,
+		num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
+	storage_read_bytes(1, (uint8_t*) temp_normal_errors,
+		num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	
+	/*** CHECKS ***/
+	configASSERT(temp_secs_since_launch == secs_since_launch);
+	configASSERT(temp_reboot_count == cached_state.reboot_count);
+	configASSERT(temp_sat_state == cached_state.sat_state);
+	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
+
+	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs));
+	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs));
 }

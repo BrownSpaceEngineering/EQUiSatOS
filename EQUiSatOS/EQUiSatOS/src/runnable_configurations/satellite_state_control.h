@@ -40,8 +40,7 @@ typedef struct task_states {
 #define IDLE_FLASH_TASK_STATES 			((task_states){T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_ANY,		T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING})
 #define LOW_POWER_TASK_STATES 			HELLO_WORLD_LOW_POWER_TASK_STATES
 #define RIP_TASK_STATES 				IDLE_NO_FLASH_TASK_STATES
-// vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
-const uint16_t RADIO_STATES = 0b10110100;
+// **see .c file for radio states**
 
 /* State functions */
 sat_state_t get_sat_state(void);
