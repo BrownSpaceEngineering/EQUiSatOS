@@ -532,8 +532,14 @@ void task_resume(task_type_t task_id)
 	}
 }
 
-void suspend_antenna_deploy(void) {
+/* suspends or resumes the given task, safely pausing the watchdog 
+   NOTE: CURRENTLY SHOULD ONLY BE CALLED ON THE ANTENNA_DEPLOY_TASK */
+void set_task_state_safe(task_type_t task_id, bool run) {
 	watchdog_mutex_take();
-	set_single_task_state(T_STATE_SUSPENDED, ANTENNA_DEPLOY_TASK);
+	if (run) {
+		task_resume(task_id);
+	} else {
+		task_suspend(task_id);
+	}
 	watchdog_mutex_give();
 }

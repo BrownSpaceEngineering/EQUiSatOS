@@ -167,7 +167,7 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	// we read all battery board inputs at once,
 	// but we write to two different message buffer locations, so we
 	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
-	read_ad7991_batbrd((uint8_t*) (buffer + *buf_index), 
+	read_ad7991_batbrd((uint8_t*) (buffer + *buf_index),
 		(uint8_t*) (buffer + *buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
 	*buf_index += sizeof(lion_current_batch);
 

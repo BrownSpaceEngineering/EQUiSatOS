@@ -12,6 +12,7 @@
 #include "../processor_drivers/Watchdog_Commands.h"
 #include "../rtos_tasks/rtos_tasks_config.h"
 #include "../rtos_tasks/rtos_tasks.h"
+#include "../data_handling/persistent_storage.h"
 
 #define WATCHDOG_MUTEX_WAIT_TIME_TICKS ((TickType_t) 500)
 
