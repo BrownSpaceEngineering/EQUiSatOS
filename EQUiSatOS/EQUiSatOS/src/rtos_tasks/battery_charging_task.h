@@ -17,13 +17,16 @@
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
 #define LI_FULL_SANITY_MV               4100
-#define LI_UP_MV                   			4170 // TODO: this needs to go
 #define LI_DOWN_MV                 			4050
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
 
 #define LF_FULL_MAX_MV             			3500
 #define LF_FLASH_AVG_MV            			3250
+
+// thresholds for error checking and the strikes system
+#define MIGHT_BE_FULL                   4000
+#define MAX_TIME_WITHOUT_FULL_s         6000
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       1000
 
@@ -49,38 +52,63 @@ typedef enum
 	FILL_LF
 } charge_state_t;
 
-// the battery that's currently charging
-battery_t batt_charging;
+typedef struct charging_data {
+	// the battery that's currently charging
+	battery_t bat_charging;
 
-// the battery that's currently discharging
-// NOTE: this is only ever a Lion
-battery_t lion_discharging;
+	// the battery that's currently discharging
+	// NOTE: this is only ever a Lion
+	battery_t lion_discharging;
 
-// charging state
-charge_state_t curr_charge_state;
+	// charging state
+	charge_state_t curr_charge_state;
 
-// number of strikes for each battery
-int batt_strikes[4];
+	// number of strikes for each battery
+	int bat_strikes[4];
 
-int already_set_sat_state;
+	// the last time each lion was full
+	int li1_full_timestamp;
+	int li2_full_timestamp;
 
+	// whether or not the satellite state has already been set
+	int already_set_sat_state;
+
+	// voltage data
+	// these aren't in an array indexed by enum because I think there shoud be
+	// only one battery enum with first class status, and I think it should be
+	// the one that treats
+	uint16_t li1_mv;
+	uint16_t li2_mv;
+	uint16_t lf1_mv;
+	uint16_t lf2_mv;
+	uint16_t lf3_mv;
+	uint16_t lf4_mv;
+
+	// old voltage data
+	uint16_t li1_mv_old;
+	uint16_t li2_mv_old;
+	uint16_t lf1_mv_old;
+	uint16_t lf2_mv_old;
+	uint16_t lf3_mv_old;
+	uint16_t lf4_mv_old;
+} charging_data_t
+
+// NOTE: these are initialized elsewhere -- should they maybe not be?
 // anyone doing something during which the battery state should not
 // be changed needs to honor this mutex
 StaticSemaphore_t _battery_charging_mutex_d;
 SemaphoreHandle_t _battery_charging_mutex;
+
+// although it somewhat breaks abstraction to have the main parameter to
+// battery logic be a global variable, this is necessary for some of the
+// helper functions that use as
+charging_data_t charging_data;
 
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);
 int get_chg_pin_val_w_conversion(battery_t bat);
 int get_st_val(battery_t bat);
 
-void battery_logic(
-	int li1_mv,
-	int li2_mv,
-	int lf1_mv,
-	int lf2_mv,
-	int lf3_mv,
-	int lf4_mv,
-	int curr_charging_filled_up);
+void battery_logic();
 
 #endif /* BATTERY_CHARGING_TASK_H_ */
