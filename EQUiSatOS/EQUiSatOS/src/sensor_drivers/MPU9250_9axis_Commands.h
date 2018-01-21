@@ -15,6 +15,7 @@
 #define		MAG_PASSTHROUGH_ADDRESS		0x37
 #define		ACC_READ_ADDRESS			0x3B
 #define		GYRO_READ_ADDRESS			0x43
+#define		TEMP_READ_ADDRESS			0x41
 #define		WHOAMI_ADDRESS				0x75
 
 //ram addresses (Magnetometer)
@@ -71,6 +72,7 @@ enum status_code MPU9250_read_acc(int16_t toFill[3]);
 enum status_code MPU9250_read_acc_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro_EQUiSat_coords(int16_t toFill[3]);
+enum status_code MPU9250_read_temp(int16_t* buf);
 void MPU9250_computeBias(float *dest1, float *dest2);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 

@@ -267,6 +267,7 @@ void read_lion_temps_batch(lion_temps_batch batch) {
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
+	// TODO: does IR power need to be turned back on???
 	int16_t rs[3];
 	sc = MPU9250_read_acc(rs);
 	log_if_error(ELOC_IMU_ACC, sc, false);
@@ -300,7 +301,7 @@ void read_led_current_batch(led_current_batch batch) {
 	if (/* TODO: LEDs are flashing */ true) {
 		low_limit = B_LED_CUR_REG_LOW;
 		high_limit = B_LED_CUR_REG_HIGH;
-		} else {
+	} else {
 		low_limit = B_LED_CUR_FLASH_LOW;
 		high_limit = B_LED_CUR_FLASH_HIGH;
 	}
@@ -334,7 +335,8 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 }
 
 void read_proc_temp_batch(proc_temp_batch* batch) {
-	// TODO: processor temperature (likely not a signal but an atmel call)
+	commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP, 
+		ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {
