@@ -29,8 +29,6 @@
 #define WRITE_COMMAND			0x02
 #define ENABLE_COMMAND			0x06
 
-#define NUM_FLUSH_BYTES			4 // enough to flush the uint32_t buffer of the SPI library
-
 /************************************************************************/
 /* Initialize the master, the baudrate should be inside the proper range*/
 /************************************************************************/

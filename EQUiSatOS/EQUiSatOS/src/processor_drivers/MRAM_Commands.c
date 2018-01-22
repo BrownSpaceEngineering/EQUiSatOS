@@ -10,17 +10,12 @@
 // global temp buffers used when sending commands
 uint8_t control_temp[NUM_CONTROL_BYTES];
 uint8_t control_rx_temp[NUM_CONTROL_BYTES];
-uint8_t rx_flush_temp[NUM_FLUSH_BYTES];
 
 void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
 	buffer[0] = command;
 	buffer[1] = 0x0; // only bottom 16 bits of address are decoded, so skip a byte
 	buffer[2] = address >> 8;		// upper byte
 	buffer[3] = address;			// lower byte
-}
-
-status_code_genare_t flush_rx_buffer(struct spi_module *spi_master_instance) {
-	return spi_read_buffer_wait(spi_master_instance, rx_flush_temp, NUM_FLUSH_BYTES, 0);
 }
 
 uint8_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate){
@@ -80,10 +75,6 @@ status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, st
 	if (!status_ok(s)) return s;
 	
 	s = spi_select_slave(spi_master_instance, slave, false);
-	if (!status_ok(s)) return s;
-	
-// 	// flush any bytes left in the buffer / any extra that the MRAM might have sent
-// 	s = flush_rx_buffer(spi_master_instance);
  	return s;
 }
 
@@ -108,16 +99,12 @@ status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, str
 	if (!status_ok(s)) return s;
 	
 	s = spi_select_slave(spi_master_instance, slave, false);
-	if (!status_ok(s)) return s;
-	
-// 	// flush any bytes left in the buffer / any extra that the MRAM might have sent
-// 	s = flush_rx_buffer(spi_master_instance);
 	return s;
 }
 
 status_code_genare_t mram_read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out) {
 	uint8_t data_tx_temp;
-	const uint8_t read_control = READ_STATUS_REG_COMMAND;
+	uint8_t read_control = READ_STATUS_REG_COMMAND;
 	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
 	if (!status_ok(s)) return s;
 
@@ -132,9 +119,5 @@ status_code_genare_t mram_read_status_register(struct spi_module *spi_master_ins
 	if (!status_ok(s)) return s;
 	
 	s = spi_select_slave(spi_master_instance, slave, false);
-	if (!status_ok(s)) return s;
-	
-// 	// flush any bytes left in the buffer / any extra that the MRAM might have sent
-// 	s = flush_rx_buffer(spi_master_instance);
 	return s;
 }
