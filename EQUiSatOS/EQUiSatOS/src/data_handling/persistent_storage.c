@@ -8,6 +8,7 @@
 #include "persistent_storage.h"
 
 /* mutex for locking the cache on reads / writes - ensures cache is always synced from reader's perspective */
+/* ALSO crucial for locking the buffers used in MRAM_Commands.c */
 StaticSemaphore_t _cache_mutex_d;
 SemaphoreHandle_t cache_mutex;
 
@@ -91,7 +92,7 @@ void increment_reboot_count(void) {
 
 // deep comparison of structs because thier bit organization may differ
 bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2) {
-	bool result;
+	bool result = true;
 	result = result && history1->antenna_deployed == history2->antenna_deployed;
 	result = result && history1->first_flash == history2->first_flash;
 	result = result && history1->lifepo_b1_charged == history2->lifepo_b1_charged;
@@ -337,7 +338,7 @@ void write_custom_state(void) {
 	/*** CONFIG ***/
 	uint32_t secs_since_launch =				0;
 	uint8_t reboot_count =						0;
-	sat_state_t sat_state =						IDLE_FLASH; // INITIAL
+	sat_state_t sat_state =						INITIAL;
 	satellite_history_batch sat_event_history;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
@@ -346,10 +347,20 @@ void write_custom_state(void) {
 	sat_event_history.lion_1_charged =			false;
 	sat_event_history.lion_2_charged =			false;
 	
-	const uint8_t num_priority_errs = 0;
-	const uint8_t num_normal_errs = 0;
-	sat_error_t priority_errors[num_priority_errs];
-	sat_error_t normal_errors[num_normal_errs];
+	#define NUM_PRIORITY_ERRS	0
+	#define NUM_NORMAL_ERRS		0
+	const uint8_t num_priority_errs = NUM_PRIORITY_ERRS;
+	const uint8_t num_normal_errs = NUM_NORMAL_ERRS;
+	sat_error_t priority_errors[NUM_PRIORITY_ERRS];
+	sat_error_t normal_errors[NUM_NORMAL_ERRS];
+// 	sat_error_t priority_errors[NUM_PRIORITY_ERRS] = {
+// 		{10, 12, 13}		
+// 	};
+// 	sat_error_t normal_errors[NUM_NORMAL_ERRS] = {
+// 		{10, 20, 40},
+// 		{11, 120, 247},
+// 		{1, 2, 3},
+// 	};
 	
 	/*** WRITING ***/
 	
@@ -365,10 +376,12 @@ void write_custom_state(void) {
 	// write errors
 	storage_write_bytes(1, (uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
 	storage_write_bytes(1, (uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
-	storage_write_bytes(1, (uint8_t*) priority_errors, 
-		num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	storage_write_bytes(1, (uint8_t*) normal_errors,
-		num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	if (num_priority_errs > 0)
+		storage_write_bytes(1, (uint8_t*) priority_errors, 
+			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
+	if (num_normal_errs > 0)
+		storage_write_bytes(1, (uint8_t*) normal_errors,
+			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
 
 	/*** read it right back to confirm validity ***/
 	uint32_t temp_secs_since_launch;
@@ -393,17 +406,19 @@ void write_custom_state(void) {
 	configASSERT(temp_num_priority_errs == num_priority_errs);
 	configASSERT(temp_num_normal_errs == num_normal_errs);
 	
-	storage_read_bytes(1, (uint8_t*) temp_priority_errors,
-		num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	storage_read_bytes(1, (uint8_t*) temp_normal_errors,
-		num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	if (num_priority_errs > 0)
+		storage_read_bytes(1, (uint8_t*) temp_priority_errors,
+			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
+	if (num_normal_errs > 0)
+		storage_read_bytes(1, (uint8_t*) temp_normal_errors,
+			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
 	
 	/*** CHECKS ***/
 	configASSERT(temp_secs_since_launch == secs_since_launch);
-	configASSERT(temp_reboot_count == cached_state.reboot_count);
-	configASSERT(temp_sat_state == cached_state.sat_state);
+	configASSERT(temp_reboot_count == reboot_count);
+	configASSERT(temp_sat_state == sat_state);
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
 
-	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs));
-	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs));
+	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs * sizeof(sat_error_t)) == 0);
+	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs  * sizeof(sat_error_t)) == 0);
 }
