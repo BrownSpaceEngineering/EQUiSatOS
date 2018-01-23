@@ -54,7 +54,7 @@ void flash_activate_task(void *pvParameters)
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 
 	// data storage variables for flash data
-	uint8_t data_arrays_tail;
+	uint8_t data_arrays_tail = 0;
 	flash_data_t *current_burst_struct = (flash_data_t*) equistack_Initial_Stage(&flash_readings_equistack);
 	struct flash_burst_data_sums current_sums_struct;
 	flash_cmp_data_t *current_cmp_struct = (flash_cmp_data_t*) equistack_Initial_Stage(&flash_cmp_readings_equistack);
@@ -103,7 +103,7 @@ void flash_activate_task(void *pvParameters)
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 									BATCH_READS_AFTER, &prev_data_read_time);
 			
-			configASSERT (data_arrays_tail < FLASH_DATA_ARR_LEN);
+			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
 			
 			// using the sums, compute and populate the flash compare struct corresponding to this burst
 			average_piecewise_uint8(current_cmp_struct->led_temps_avg_data, current_sums_struct.led_current_data_sums, 

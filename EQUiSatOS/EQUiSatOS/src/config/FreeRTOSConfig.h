@@ -26,7 +26,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		0 // no need if no heap
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                0			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
+#define configUSE_TRACE_FACILITY                1			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1
@@ -79,25 +79,13 @@ standard names - or at least those used in the unmodified vector table. */
 #define xPortPendSVHandler                      PendSV_Handler
 #define xPortSysTickHandler                     SysTick_Handler
 
-/* The lowest (highest-valued) interrupt priority that can be used in a call to 
-a "set priority" function. */
-#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY			0x3
-
-/* The highest interrupt priority that can be used by any interrupt service
-routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
-INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
-PRIORITY THAN THIS! (higher priorities are lower numeric values.) */
-// err heavily on the side of safety (over speed) by allowing any interrupt 
-// to use FreeRTOS API functions and therefore not blocking off any interrupts
-// in RTOS critical sections (this helps prevent associated hard faults)
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	0x0
-
-/* Interrupt priorities used by the kernel port layer itself.  These are generic
-to all Cortex-M ports, and do not rely on any particular library functions. */
-#define CORTEX_M_ISR_PRIORITY_MASK				(0xff >> configPRIO_BITS)
-// (the intent is to set the top configPRIO_BITS to the values, and the rest of the bits to 1)
-#define configKERNEL_INTERRUPT_PRIORITY 		( CORTEX_M_ISR_PRIORITY_MASK | (configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS)) )
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( CORTEX_M_ISR_PRIORITY_MASK | (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS)) )
+// Note that although https://www.freertos.org/a00110.html#kernel_priority suggests 
+// that we need to define configKERNEL_INTERRUPT_PRIORITY and configMAX_SYSCALL_INTERRUPT_PRIORITY,
+// we DO NOT need to, because we're running the Cortex-M0+, not the Cortex-M3's and M4's that article
+// is describing. See here for more the most details (see SUMMARY at end):
+// https://mcuoneclipse.com/2016/08/28/arm-cortex-m-interrupts-and-freertos-part-3/ 
+// To reassure yourself, look at ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\port.c
+// (lines 88-89; note how the interrupt priority is NOT user-configurable but is rather a property of the port)
 
 /* Integrates the Tracealyzer recorder with FreeRTOS */
 #if ( configUSE_TRACE_FACILITY == 1 )

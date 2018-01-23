@@ -175,8 +175,11 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	*buf_index += sizeof(lion_temps_batch);
 	*buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
 
-	read_bat_charge_dig_sigs_batch((uint16_t*) (buffer + *buf_index));
-	*buf_index += sizeof(bat_charge_dig_sigs_batch);
+	// use temp buffer because writing 2 bytes of data to what's actually a 1-byte 
+	// pointer results in a segfault :P
+	bat_charge_dig_sigs_batch dig_sigs;
+	read_bat_charge_dig_sigs_batch(&dig_sigs);
+	write_bytes_and_shift(buffer, buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
 
 	read_lifepo_volts_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lifepo_volts_batch);

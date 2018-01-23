@@ -34,11 +34,11 @@
 #define TESTING_SPEEDUP
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 
 // whether to start up testing tasks
-#define RUN_TESTING_TASKS
+//#define RUN_TESTING_TASKS
 
 // 0 to suppress prints and send data to RADIO, 1 to print over USART
 #define PRINT_DEBUG 1

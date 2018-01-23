@@ -272,7 +272,9 @@ void configure_state_from_reboot(void) {
  */
 void init_task_state(task_type_t task_id) {
 	// one of two coming out of boot
-	configASSERT (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
+	#ifndef OVERRIDE_INIT_SAT_STATE
+		configASSERT (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
+	#endif
 	set_single_task_state(boot_task_states.states[task_id], task_id);
 }
 
