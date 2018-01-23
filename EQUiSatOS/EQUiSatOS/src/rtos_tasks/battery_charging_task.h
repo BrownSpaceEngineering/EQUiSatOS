@@ -26,7 +26,9 @@
 
 // thresholds for error checking and the strikes system
 #define MIGHT_BE_FULL                   4000
-#define MAX_TIME_WITHOUT_FULL_s         6000
+#define MAX_TIME_WITHOUT_FULL_MS        6000
+#define MAX_VOLTAGE_DROP_MV             300
+#define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       1000
 
@@ -74,24 +76,11 @@ typedef struct charging_data {
 	int already_set_sat_state;
 
 	// voltage data
-	// these aren't in an array indexed by enum because I think there shoud be
-	// only one battery enum with first class status, and I think it should be
-	// the one that treats
-	uint16_t li1_mv;
-	uint16_t li2_mv;
-	uint16_t lf1_mv;
-	uint16_t lf2_mv;
-	uint16_t lf3_mv;
-	uint16_t lf4_mv;
+	int bat_voltages[4];
 
 	// old voltage data
-	uint16_t li1_mv_old;
-	uint16_t li2_mv_old;
-	uint16_t lf1_mv_old;
-	uint16_t lf2_mv_old;
-	uint16_t lf3_mv_old;
-	uint16_t lf4_mv_old;
-} charging_data_t
+	int old_bat_voltages[4];
+} charging_data_t;
 
 // NOTE: these are initialized elsewhere -- should they maybe not be?
 // anyone doing something during which the battery state should not
@@ -104,11 +93,14 @@ SemaphoreHandle_t _battery_charging_mutex;
 // helper functions that use as
 charging_data_t charging_data;
 
+int get_fault_pin_val_w_conversion(battery_t bat);
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);
 int get_chg_pin_val_w_conversion(battery_t bat);
 int get_st_val(battery_t bat);
-
-void battery_logic();
+int get_panel_ref_val(void);
+int is_lion(battery_t bat);
+void init_charging_data(void);
+void battery_logic(void);
 
 #endif /* BATTERY_CHARGING_TASK_H_ */
