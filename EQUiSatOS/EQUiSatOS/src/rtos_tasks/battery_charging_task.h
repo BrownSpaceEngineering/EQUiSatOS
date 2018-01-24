@@ -48,10 +48,36 @@ typedef enum
 
 typedef enum
 {
-	FILL_LI_NEITHER_FULL,
-	FILL_LI_LI1_FULL,
-	FILL_LI_LI2_FULL,
-	FILL_LF
+		// also known as A
+	  ALL_GOOD,
+
+		// also known as B
+		ONE_LI_DOWN,
+
+		// also known as C
+		TWO_LF_DOWN,
+
+		// also known as D
+		TWO_LI_DOWN
+} meta_charge_state_t;
+
+typedef enum
+{
+	// states in meta-state ALL_GOOD (A)
+	FILL_LI_NEITHER_FULL_A,
+	FILL_LI_LI1_FULL_A,
+	FILL_LI_LI2_FULL_A,
+	FILL_LF_A,
+
+	// states in meta-state ONE_LI_DOWN (B)
+	FILL_LI_B,
+	FILL_LF_B,
+
+	// states in meta-state TWO_LF_DOWN (C)
+	FILL_LI_C
+
+	// states in meta-state TWO_LI_DOWN(D)
+	FILL_LI_D
 } charge_state_t;
 
 typedef struct charging_data {
@@ -62,11 +88,11 @@ typedef struct charging_data {
 	// NOTE: this is only ever a Lion
 	battery_t lion_discharging;
 
+	// meta-charging state
+	meta_charge_state_t curr_meta_charge_state;
+
 	// charging state
 	charge_state_t curr_charge_state;
-
-	// number of strikes for each battery
-	int bat_strikes[4];
 
 	// the last time each lion was full
 	int li1_full_timestamp;
@@ -80,6 +106,21 @@ typedef struct charging_data {
 
 	// old voltage data
 	int old_bat_voltages[4];
+
+	// whether or not the batteries are decomissioned
+	int decomissionned[4];
+
+	// the time at which the battery was last decomissioned
+	int decomissioned_timestamp[4];
+
+	// the battery's total number of decomissions
+	int decomissioned_count[4];
+
+	// TODO: this same variable should be used fo rrecomissions
+	// true if a battery has been recently decommisioned
+	int recent_decomission;
+
+	int charging_parity;
 } charging_data_t;
 
 // NOTE: these are initialized elsewhere -- should they maybe not be?
