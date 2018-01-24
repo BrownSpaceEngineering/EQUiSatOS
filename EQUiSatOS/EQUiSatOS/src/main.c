@@ -5,6 +5,7 @@
 #include "data_handling/package_transmission.h"
 
 static void run_tests(void) {
+	//mram_test(); // make sure to not run init_persistent_storage() before this
 	//pwm_test();
 	//sensor_read_tests();
 	//actuallyFlashingFlashBurstTest(); // as the name implies, this does ACTUALLY FLASH THE SATELLITES BIG LEDS

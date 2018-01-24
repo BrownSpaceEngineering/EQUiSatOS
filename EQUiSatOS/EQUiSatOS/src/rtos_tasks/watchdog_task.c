@@ -29,6 +29,7 @@ static uint32_t running_times[NUM_TASKS];
 SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
+	configure_watchdog();
 	memset(&check_ins, 0, sizeof(bool) * NUM_TASKS);
 	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
 	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);

@@ -16,7 +16,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
 #define configPRIO_BITS                         2
-#define configCPU_CLOCK_HZ                      ( 8000000 )
+#define configCPU_CLOCK_HZ                      ( 8000000 ) // (system_gclk_gen_get_hz(GCLK_GENERATOR_0))
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 ) // so portTICK_PERIOD_MS = 1
 #define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
@@ -79,20 +79,13 @@ standard names - or at least those used in the unmodified vector table. */
 #define xPortPendSVHandler                      PendSV_Handler
 #define xPortSysTickHandler                     SysTick_Handler
 
-/* The lowest interrupt priority that can be used in a call to a "set priority"
-function. */
-#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY			0x0f
-
-/* The highest interrupt priority that can be used by any interrupt service
-routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
-INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
-PRIORITY THAN THIS! (higher priorities are lower numeric values. */
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	10
-
-/* Interrupt priorities used by the kernel port layer itself.  These are generic
-to all Cortex-M ports, and do not rely on any particular library functions. */
-#define configKERNEL_INTERRUPT_PRIORITY 		( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+// Note that although https://www.freertos.org/a00110.html#kernel_priority suggests 
+// that we need to define configKERNEL_INTERRUPT_PRIORITY and configMAX_SYSCALL_INTERRUPT_PRIORITY,
+// we DO NOT need to, because we're running the Cortex-M0+, not the Cortex-M3's and M4's that article
+// is describing. See here for more the most details (see SUMMARY at end):
+// https://mcuoneclipse.com/2016/08/28/arm-cortex-m-interrupts-and-freertos-part-3/ 
+// To reassure yourself, look at ASF\thirdparty\freertos\freertos-9.0.0\Source\portable\GCC\ARM_CM0\port.c
+// (lines 88-89; note how the interrupt priority is NOT user-configurable but is rather a property of the port)
 
 /* Integrates the Tracealyzer recorder with FreeRTOS */
 #if ( configUSE_TRACE_FACILITY == 1 )

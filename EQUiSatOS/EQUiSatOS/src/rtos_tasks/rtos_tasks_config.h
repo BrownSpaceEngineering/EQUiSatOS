@@ -29,7 +29,7 @@ enum {
 /************************************************************************/
 /* Task Properties - see below for frequencies							*/
 /************************************************************************/
-#define TASK_INIT_STACK_SIZE						(1024/sizeof(portSTACK_TYPE))
+#define TASK_INIT_STACK_SIZE						(1536/sizeof(portSTACK_TYPE))
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(768/sizeof(portSTACK_TYPE))

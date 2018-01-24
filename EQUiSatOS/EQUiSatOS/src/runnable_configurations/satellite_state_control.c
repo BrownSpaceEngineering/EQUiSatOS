@@ -56,6 +56,9 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
+	// utility function to write initial state to MRAM (ONCE before launch)
+	//write_custom_state();
+	
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
 	/************************************************************************/
@@ -92,9 +95,6 @@ void startup_task(void* pvParameters) {
 		sizeof(flash_cmp_data_t), FLASH_CMP_STACK_MAX, _flash_cmp_equistack_mutex);
  	equistack_Init(&low_power_readings_equistack, &_low_power_equistack_arr,
 		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, _low_power_equistack_mutex);
-
-	// function to write inital state to MRAM (ONCE)
-	//write_custom_state();
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */
@@ -272,7 +272,9 @@ void configure_state_from_reboot(void) {
  */
 void init_task_state(task_type_t task_id) {
 	// one of two coming out of boot
-	configASSERT (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
+	#ifndef OVERRIDE_INIT_SAT_STATE
+		configASSERT (current_sat_state == INITIAL || current_sat_state == IDLE_NO_FLASH);
+	#endif
 	set_single_task_state(boot_task_states.states[task_id], task_id);
 }
 

@@ -96,6 +96,7 @@ enum status_code MPU9250_read_gyro_EQUiSat_coords(int16_t toFill[3]) {
 	return status;
 }
 
+// to convert to Celsius: buf / 333.87 + 21.0
 enum status_code MPU9250_read_temp(int16_t* buf) {
 	uint8_t rawData[2];  // each byte of the data
 	enum status_code statc = readFromAddressAndMemoryLocation(rawData,2,MPU9250_ADDRESS,TEMP_READ_ADDRESS,MPU9250_SHOULD_STOP); 

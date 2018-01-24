@@ -230,7 +230,7 @@ char* get_msg_type_str(msg_data_type_t msg_type) {
 }
 
 void debug_print_msg_types(void) {
-	print("Sent messages: %s %s %s", 
+	print("\nSent messages: %s %s %s\n", 
 		get_msg_type_str(buffer_1_msg_type),
 		get_msg_type_str(buffer_2_msg_type),
 		get_msg_type_str(buffer_3_msg_type));
