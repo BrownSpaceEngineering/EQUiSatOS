@@ -27,6 +27,11 @@ task_states prev_task_states;
 // global current states
 task_states current_task_states;
 
+// global states for hardware + mutex
+struct hw_states hardware_states = {false, false, false, false, false};
+StaticSemaphore_t _hardware_state_mutex_d;
+SemaphoreHandle_t hardware_state_mutex;
+
 void configure_state_from_reboot(void);
 void assign_task_states(task_states states_to_set, const task_states states_setting);
 void set_single_task_state(enum task_state state, task_type_t task_id);
@@ -74,8 +79,9 @@ void startup_task(void* pvParameters) {
 	// populate task_handles array and setup constants
 	pre_init_rtos_tasks();
 
-	// Initialize mutex for battery charging
-	_battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
+	// Initialize misc. state mutexes
+	battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
+	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
 
 	// Initialize EQUiStack mutexes
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
@@ -247,7 +253,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task and apply
-	if (cache_get_sat_event_history(false)->antenna_deployed) { // no one writing so don't wait
+	if (cache_get_sat_event_history()->antenna_deployed) { // no one writing so don't wait
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -422,11 +428,13 @@ bool set_sat_state_helper(sat_state_t state)
 }
 
 bool set_sat_state(sat_state_t state) {
-	bool valid = set_sat_state_helper(state);
-	if (!valid) {
-		configASSERT(false); // busy loop because this is bad
-	}
-	return valid;
+	#if OVERRIDE_STATE_HOLD != 1
+		bool valid = set_sat_state_helper(state);
+		if (!valid) {
+			configASSERT(false); // busy loop because this is bad
+		}
+		return valid;
+	#endif
 }
 
 /************************************************************************/
@@ -529,4 +537,23 @@ void set_task_state_safe(task_type_t task_id, bool run) {
 		task_suspend(task_id);
 	}
 	watchdog_mutex_give();
+}
+
+
+/************************************************************************/
+/* HARDWARE STATE HANDLING                                              */
+/************************************************************************/
+
+// allows access to hardware states - make sure you have the mutex if changing
+// it or having the expectation that its true for any period of time
+struct hw_states* get_hw_states(void) {
+	return &hardware_states;
+}
+
+void hardware_mutex_take(void) {
+	xSemaphoreTake(&hardware_state_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+}
+
+void hardware_mutex_give(void) {
+	xSemaphoreGive(&hardware_state_mutex);
 }

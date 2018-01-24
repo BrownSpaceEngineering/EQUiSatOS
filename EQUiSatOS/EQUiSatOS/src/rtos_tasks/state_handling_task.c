@@ -98,131 +98,136 @@ void state_handling_task(void *pvParameters)
 		
 		// handle antenna deploy task specifically
 		handle_antenna_deploy_task();
-
-		sat_state_t current_state = get_sat_state();
-
-		// if the current state is RIP we don't want to do anything
-		if (current_state != RIP)
-		{
-			///
-			// the state decision will be predicated on the current battery levels and
-			// the timestamp -- we'll grab them here
-			///
-
-			uint16_t li1_mv;
-			uint16_t li2_mv;
-			read_li_volts_precise(&li1_mv, &li2_mv);
-
-			// individual batteries within the life po banks
-			uint16_t lf1_mv;
-			uint16_t lf2_mv;
-			uint16_t lf3_mv;
-			uint16_t lf4_mv;
-			read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
-
-			// average voltage for the batteries within each LF bank
-			int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
-			int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
-
-			///
-			// we always will need a check whether we want to go into RIP (or a low
-			// power state is the data is conflicted)
-			///
-
-			sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-			if (checked_state != current_state)
-			{
-				// checked state will be either RIP or LOW_POWER
-				set_sat_state(checked_state);
-				continue;
-			}
-
-			///
-			// now it's time to check for all of the standard state changes
-			///
-
-			int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
-			int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
-			int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
-
-			int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
-
-			// TODO: do we want some notion of time?
-			satellite_history_batch *sat_history = cache_get_sat_event_history(true);
-
-			switch (current_state)
-			{
-				case INITIAL:
-					if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S 
-						&& both_li_above_down 
-						&& sat_history->lion_1_charged  // TODO: Don't actually consider entire sat_history; we want to only consider last 30mins
-						&& sat_history->lion_2_charged) { // ""
-						set_sat_state(ANTENNA_DEPLOY);
-					}
-					break;
-
-				case ANTENNA_DEPLOY:
-					// if we should go to low power, do so
-					if (one_li_below_down) {
-						set_sat_state(HELLO_WORLD_LOW_POWER);
-							
-					// if the antenna is open kill the task because the antenna has been deployed
-					// or kill it if it's run more than 5 times because it's a lost cause
-					} else if (sat_history->antenna_deployed
-						|| (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once (TODO)
-						|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
-						// switch state to hello world, then determine whether we should keep trying
-						// (we WON'T be suspended on state change)
-						set_sat_state(HELLO_WORLD);
-
-						// suspend antenna deploy task if necessary
-						handle_antenna_deploy_task();
-					}
-					break;
-
-				case HELLO_WORLD:
-					// it's higher priority to go to low power
-					if (one_li_below_low_power)
-						set_sat_state(HELLO_WORLD_LOW_POWER);
-					else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
-						set_sat_state(IDLE_NO_FLASH);
-					break;
-
-				case HELLO_WORLD_LOW_POWER:
-					if (both_li_above_down)
-						set_sat_state(HELLO_WORLD);
-					break;
-
-				case IDLE_NO_FLASH:
-					// it's higher priority to go to low power
-					if (one_li_below_low_power)
-						set_sat_state(LOW_POWER);
-					else if (one_lf_above_flash)
-						set_sat_state(IDLE_FLASH);
-					break;
-
-				case IDLE_FLASH:
-					// it's higher priority to go to low power
-					if (one_li_below_low_power)
-						set_sat_state(LOW_POWER);
-					else if (!one_lf_above_flash)
-						set_sat_state(IDLE_NO_FLASH);
-					break;
-
-				case LOW_POWER:
-					if (both_li_above_down)
-						set_sat_state(IDLE_NO_FLASH);
-					break;
-
-				default:
-					configASSERT(false);
-					log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
-					set_sat_state(INITIAL);
-					break;
-			}
-		}
+		
+		#if OVERRIDE_STATE_HOLD_INIT != 1
+			decide_next_state(get_sat_state());
+		#endif
 	}
 
 	// delete this task if it ever breaks out
 	vTaskDelete(NULL);
+}
+
+static void decide_next_state(sat_state_t current_state) {
+	
+	// if the current state is RIP we don't want to do anything
+	if (current_state != RIP)
+	{
+		///
+		// the state decision will be predicated on the current battery levels and
+		// the timestamp -- we'll grab them here
+		///
+
+		uint16_t li1_mv;
+		uint16_t li2_mv;
+		read_li_volts_precise(&li1_mv, &li2_mv);
+
+		// individual batteries within the life po banks
+		uint16_t lf1_mv;
+		uint16_t lf2_mv;
+		uint16_t lf3_mv;
+		uint16_t lf4_mv;
+		read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+
+		// average voltage for the batteries within each LF bank
+		int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
+		int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
+
+		///
+		// we always will need a check whether we want to go into RIP (or a low
+		// power state is the data is conflicted)
+		///
+
+		sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
+		if (checked_state != current_state)
+		{
+			// checked state will be either RIP or LOW_POWER
+			set_sat_state(checked_state);
+			return;
+		}
+
+		///
+		// now it's time to check for all of the standard state changes
+		///
+
+		int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
+		int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
+		int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
+
+		int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
+
+		// TODO: do we want some notion of time?
+		satellite_history_batch *sat_history = cache_get_sat_event_history();
+
+		switch (current_state)
+		{
+			case INITIAL:
+				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S 
+					&& both_li_above_down 
+					&& sat_history->lion_1_charged  // TODO: Don't actually consider entire sat_history; we want to only consider last 30mins
+					&& sat_history->lion_2_charged) { // ""
+					set_sat_state(ANTENNA_DEPLOY);
+				}
+				break;
+
+			case ANTENNA_DEPLOY:
+				// if we should go to low power, do so
+				if (one_li_below_down) {
+					set_sat_state(HELLO_WORLD_LOW_POWER);
+							
+				// if the antenna is open kill the task because the antenna has been deployed
+				// or kill it if it's run more than 5 times because it's a lost cause
+				} else if (sat_history->antenna_deployed
+					|| (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once (TODO)
+					|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
+					// switch state to hello world, then determine whether we should keep trying
+					// (we WON'T be suspended on state change)
+					set_sat_state(HELLO_WORLD);
+
+					// suspend antenna deploy task if necessary
+					handle_antenna_deploy_task();
+				}
+				break;
+
+			case HELLO_WORLD:
+				// it's higher priority to go to low power
+				if (one_li_below_low_power)
+					set_sat_state(HELLO_WORLD_LOW_POWER);
+				else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
+					set_sat_state(IDLE_NO_FLASH);
+				break;
+
+			case HELLO_WORLD_LOW_POWER:
+				if (both_li_above_down)
+					set_sat_state(HELLO_WORLD);
+				break;
+
+			case IDLE_NO_FLASH:
+				// it's higher priority to go to low power
+				if (one_li_below_low_power)
+					set_sat_state(LOW_POWER);
+				else if (one_lf_above_flash)
+					set_sat_state(IDLE_FLASH);
+				break;
+
+			case IDLE_FLASH:
+				// it's higher priority to go to low power
+				if (one_li_below_low_power)
+					set_sat_state(LOW_POWER);
+				else if (!one_lf_above_flash)
+					set_sat_state(IDLE_NO_FLASH);
+				break;
+
+			case LOW_POWER:
+				if (both_li_above_down)
+					set_sat_state(IDLE_NO_FLASH);
+				break;
+
+			default:
+				configASSERT(false);
+				log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
+				set_sat_state(INITIAL);
+				break;
+		}
+	}
 }

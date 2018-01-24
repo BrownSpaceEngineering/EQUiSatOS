@@ -8,6 +8,9 @@
 #include "rtos_tasks.h"
 #include "data_handling/package_transmission.h"
 
+// how long message takes to transmit is function of #bytes and baud rate
+#define TIME_BTWN_MSGS_MS			100
+
 /**
  * Variables
  */
@@ -185,11 +188,13 @@ void transmit_task(void *pvParameters)
 		write_packet(msg_buffer_3, buffer_3_msg_type, current_timestamp);
 		
 		// actually send buffer over USART to radio for transmission
-		// TODO: We will want to wait here between calls to allow for actual data transfer
-		// (this can be calculated from the baud rate)
-		usart_send_buf(msg_buffer_1, MSG_SIZE);
-		usart_send_buf(msg_buffer_2, MSG_SIZE);
-		usart_send_buf(msg_buffer_3, MSG_SIZE);
+		// wait here between calls to give buffer
+		transmit_buf_wait(msg_buffer_1, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		transmit_buf_wait(msg_buffer_2, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		transmit_buf_wait(msg_buffer_3, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 
 		// NOTE: putting this here as opposed to after the confirmation
 		// means we will try to send the newest packet if encountering failures,
@@ -230,8 +235,11 @@ char* get_msg_type_str(msg_data_type_t msg_type) {
 }
 
 void debug_print_msg_types(void) {
-	print("\nSent messages: %s %s %s\n", 
-		get_msg_type_str(buffer_1_msg_type),
-		get_msg_type_str(buffer_2_msg_type),
-		get_msg_type_str(buffer_3_msg_type));
+	char* msg = "\nSent messages: %s %s %s\n";
+	char* type1 = get_msg_type_str(buffer_1_msg_type);
+	char* type2 = get_msg_type_str(buffer_2_msg_type);
+	char* type3 = get_msg_type_str(buffer_3_msg_type);
+	
+	trace_print(msg, type1, type2, type3);
+	print(msg, type1, type2, type3);
 }

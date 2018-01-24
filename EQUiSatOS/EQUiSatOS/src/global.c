@@ -19,14 +19,6 @@ void init_tracelyzer(void) {
 	#endif
 }
 
-void trace_print(const char *format)
-{
-	// NOTE: va_args won't work; no function that takes that :(
-	#if configUSE_TRACE_FACILITY == 1
-		vTracePrintF(global_trace_channel, format);
-	#endif
-}
-
 static void pin_init(void) {
 	// set write pins
 	setup_pin(true,P_LF_B1_OUTEN);

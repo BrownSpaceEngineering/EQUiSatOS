@@ -15,22 +15,23 @@
 #include "testing_functions/struct_tests.h"
 #include "testing_functions/sat_data_tests.h"
 
-void run_rtos(void);
-
-void init_task_state(task_type_t task);
-
-/* Satellite State Constructs */
+/************************************************************************/
+/* Satellite state constructs                                           */
+/************************************************************************/
 enum task_state {
 	T_STATE_SUSPENDED = false,	// MUST be suspended
 	T_STATE_RUNNING = true,		// MUST be running
 	T_STATE_ANY					// can be either, not controlled in current state
 };
 
+// array wrapped in struct to allow easy copying specification in #defines
 typedef struct task_states {
 	uint8_t states[NUM_TASKS];
 } task_states;
 
-// Defined task state sets - order must match enum in rtos_tasks_config.h:
+/************************************************************************/
+/* Defined task state sets - order must match enum in rtos_tasks_config.h: */
+/************************************************************************/
 //														WATCHDOG,		STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
 #define INITIAL_TASK_STATES				((task_states){T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING})
 #define ANTENNA_DEPLOY_TASK_STATES		((task_states){T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING})
@@ -42,12 +43,41 @@ typedef struct task_states {
 #define RIP_TASK_STATES 				IDLE_NO_FLASH_TASK_STATES
 // **see .c file for radio states**
 
-/* State functions */
+/************************************************************************/
+/* hardware states (used primarily to know what currents to expect, etc.) */
+/************************************************************************/ 
+struct hw_states {
+	bool rail_5v_enabled : 1;
+	bool rail_3v6_enabled : 1;
+	bool radio_on : 1;
+	bool radio_transmitting : 1;
+	bool antenna_deploying : 1;
+	bool flashing : 1;
+};
+#define HARDWARE_MUTEX_WAIT_TIME_TICKS		1000
+
+#define set_hw_state_safe(field, state) { \
+	hardware_mutex_take(); \
+	get_hw_states()->field = state; \
+	hardware_mutex_give(); \
+}
+
+/************************************************************************/
+/* State functions                                                      */
+/************************************************************************/
 sat_state_t get_sat_state(void);
 bool set_sat_state(sat_state_t state);
 task_states get_sat_task_states(void);
 void set_task_state_safe(task_type_t task_id, bool run);
 bool check_task_state_consistency(void);
+
+// hardware-specific functions
+struct hw_states* get_hw_states();
+void hardware_mutex_take(void);
+void hardware_mutex_give(void);
+
+void run_rtos(void);
+void init_task_state(task_type_t task);
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS FOR TESTING - DONT YOU DARE USE THESE */
 void set_all_task_states(task_states states, sat_state_t state);

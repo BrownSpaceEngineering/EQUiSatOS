@@ -35,7 +35,7 @@ void flash_arm()
 		// TODO: go over the logic around the use of a mutex here
 
 		// makes sure the battery charging task won't step in and change anything
-		xSemaphoreTake(_battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
+		xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
 
 		set_lifepo_charge_disable(); // make sure lifepo's aren't charging
 		set_lifepo_output_enable(true);
@@ -60,6 +60,6 @@ void flash_disarm(void)
 		set_lifepo_charge_enable(); // set the lifepo's to be charging again
 
 		// makes sure the battery charging task won't step in and change anything
-		xSemaphoreGive(_battery_charging_mutex);
+		xSemaphoreGive(battery_charging_mutex);
 	#endif
 }

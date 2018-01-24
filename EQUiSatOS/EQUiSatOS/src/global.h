@@ -47,8 +47,15 @@
 /************************************************************************/
 
 void init_tracelyzer(void);
-void trace_print(const char *format);
 void global_init(void);
 void global_init_post_rtos(void);
+
+#if configUSE_TRACE_FACILITY == 1
+	// http://www.delorie.com/gnu/docs/gcc/gcc_44.html
+	#define trace_print(format, ...) vTracePrintF(global_trace_channel, format, ##__VA_ARGS__);
+#else
+	#define trace_print(...) ((void)0);
+#endif
+
 
 #endif /* GLOBAL_H_ */
