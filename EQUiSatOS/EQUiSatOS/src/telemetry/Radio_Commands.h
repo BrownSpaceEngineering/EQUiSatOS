@@ -15,6 +15,7 @@
 void set_command_mode(void);
 uint16_t XDL_get_temperature(void);
 void warm_reset(void);
+void cold_reset(void);
 
 void radio_init(void);
 void setRadioState(bool enable, bool confirm);

@@ -8,18 +8,17 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
-void radio_init(void) {
-	// USART_init() should be called as well
+void radio_init(void) {	
 	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
 	setup_pin(true, P_RAD_SHDN); //init shutdown pin
 	setup_pin(true, P_TX_EN); //init send enable pin
 	setup_pin(true, P_RX_EN); //init receive enable pin
 }
 
-void set_command_mode(void) {
-	delay_ms(2000);
+void set_command_mode(void) {	
+	delay_ms(200);
 	usart_send_string((uint8_t*) "+++");
-	delay_ms(2000);
+	delay_ms(300);
 }
 
 bool send_command(int numBytesReceiving) {
@@ -31,9 +30,9 @@ bool send_command(int numBytesReceiving) {
 	usart_send_string(sendbuffer);
 	int i = 0;
 	while (!receiveDataReady && i < 20) {
-		delay_ms(50);
+		delay_ms(20);
 		i++;
-	}
+	}	
 	return receiveDataReady;
 }
 
@@ -83,6 +82,16 @@ void set_channel(void) {
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
 }*/
+
+void cold_reset(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x1d;
+	sendbuffer[2] = 0x00; //cold
+	sendbuffer[3] = ~0x1d;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+	delay_ms(200);
+}
 
 void warm_reset(void){
 	sendbuffer[0] = 0x01;
@@ -136,7 +145,7 @@ uint16_t XDL_get_temperature() {
 	if (send_command(5)) {
 		//TODO: Check packet validity and extract data
 		if (calculate_checksum(receivebuffer+1, 3) == receivebuffer[4]) {
-			uint16_t radioTemp = (receivebuffer[1] << 8) | receivebuffer[2];			
+			uint16_t radioTemp = (receivebuffer[2] << 8) | receivebuffer[3];			
 			warm_reset();			
 			return radioTemp;
 		} else {
