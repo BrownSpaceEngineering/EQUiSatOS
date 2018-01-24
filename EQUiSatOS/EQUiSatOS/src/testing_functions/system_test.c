@@ -623,13 +623,13 @@ void readLEDCurrent(bool printFloats){
 }
 
 void system_test(bool printFloats){		
-	//print("=======================================\n");
-	//print("=               SYSTEM Test           =\n");
-	//print("=======================================\n");		
+	print("=======================================\n");
+	print("=               SYSTEM Test           =\n");
+	print("=======================================\n");		
 	readBatBoard();
 	AD7991_BAT_test();
 	
-	/*AD7991_CTRL_test(false);
+	AD7991_CTRL_test(false);
 	AD7991_CTRL_test(true);
 	
 	readLEDCurrent(printFloats);
@@ -642,6 +642,6 @@ void system_test(bool printFloats){
 	HMC5883L_test(printFloats);	
 	
 	TEMD6200_test();
-	*/
+	
 	TCA9535_test();
 }
