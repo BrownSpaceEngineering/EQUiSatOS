@@ -158,7 +158,7 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 	}
 	write_bytes_and_shift(buffer, buf_index,	&secs_to_next_flash,	1);
 
-	uint8_t reboot_count = cache_get_reboot_count(false);
+	uint8_t reboot_count = cache_get_reboot_count();
 	write_bytes_and_shift(buffer, buf_index,	&reboot_count,			1);
 
 	read_lion_volts_batch((uint8_t*) (buffer + *buf_index));
@@ -171,7 +171,7 @@ void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp)
 		(uint8_t*) (buffer + *buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
 	*buf_index += sizeof(lion_current_batch);
 
-	read_lion_temps_batch((uint8_t*) (buffer + *buf_index));
+	en_and_read_lion_temps_batch((uint8_t*) (buffer + *buf_index));
 	*buf_index += sizeof(lion_temps_batch);
 	*buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
 

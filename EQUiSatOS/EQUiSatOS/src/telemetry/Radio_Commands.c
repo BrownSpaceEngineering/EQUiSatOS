@@ -1,4 +1,4 @@
-#include "Radio_Commands.h"
+	#include "Radio_Commands.h"
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -138,6 +138,18 @@ uint16_t XDL_get_temperature() {
 	}	
 }
 
+/* transmits the buffer of given size over the radio USART, 
+	then waits the expected transmit time to emulate an atomic operation */
+void transmit_buf_wait(const uint8_t* buf, size_t size) {
+	hardware_mutex_take();
+	usart_send_buf(buf, size);
+	get_hw_states()->radio_transmitting = true;
+	hardware_mutex_give();
+	
+	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);
+	set_hw_state_safe(radio_transmitting, false);
+}
+
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
 	#ifdef RADIO_ACTIVE
@@ -166,13 +178,21 @@ void setRXEnable(bool enable) {
 }
 
 void set3V6Power(bool on) {
-	#ifdef RADIO_ACTIVE
-		set_output(on, P_RAD_PWR_RUN);
+	hardware_mutex_take();
+	#ifndef RADIO_ACTIVE
+		on = false;
 	#endif
+	set_output(on, P_RAD_PWR_RUN);
+	get_hw_states()->rail_3v6_enabled = on;
+	hardware_mutex_give();
 }
 
 void setRadioPower(bool on) {
-	#ifdef RADIO_ACTIVE
-		set_output(on, P_RAD_SHDN);
+	hardware_mutex_take();
+	#ifndef RADIO_ACTIVE
+		on = false;
 	#endif
+	set_output(on, P_RAD_SHDN);
+	get_hw_states()->radio_on = on;
+	hardware_mutex_give();
 }

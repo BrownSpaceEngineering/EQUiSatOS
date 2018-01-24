@@ -45,7 +45,7 @@ void sensor_read_tests(void) {
 	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	print("# led current #\n");
-	read_led_current_batch(four_buf);
+	read_led_current_batch(four_buf, false);
 	print("LED1SNS: %d, LED2SNS %d, LED3SNS %d, LED4SNS %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	set_regulator_power(false);
@@ -60,7 +60,7 @@ void sensor_read_tests(void) {
 	set_regulator_power(false);
 
 	print("# LiON TEMPS #\n");
-	read_lion_temps_batch(two_buf);
+	en_and_read_lion_temps_batch(two_buf);
 	print("lion temps: %d %d\n", (uint16_t)two_buf[0]<<8, (uint16_t)two_buf[1]<<8);
 
 
@@ -69,11 +69,11 @@ void sensor_read_tests(void) {
 	print("lifepo volts: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 
 	print("# LiFePO CURRENT #\n");
-	read_lifepo_current_batch(four_buf);
+	read_lifepo_current_batch(four_buf, false);
 	print("lifepo current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	print("# LED CURRENT #\n");
-	read_led_current_batch(four_buf);
+	read_led_current_batch(four_buf, false);
 	print("led current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	

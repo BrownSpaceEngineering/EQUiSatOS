@@ -67,7 +67,7 @@ int already_set_sat_state;
 // anyone doing something during which the battery state should not
 // be changed needs to honor this mutex
 StaticSemaphore_t _battery_charging_mutex_d;
-SemaphoreHandle_t _battery_charging_mutex;
+SemaphoreHandle_t battery_charging_mutex;
 
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);

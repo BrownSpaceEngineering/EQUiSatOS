@@ -311,7 +311,7 @@ void battery_logic(
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 
-	xSemaphoreTake(_battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
 
 	///
 	// phase 3a: set the lion that should be discharging to discharge and
@@ -382,5 +382,5 @@ void battery_logic(
 		}
 	}
 
-	xSemaphoreGive(_battery_charging_mutex);
+	xSemaphoreGive(battery_charging_mutex);
 }
