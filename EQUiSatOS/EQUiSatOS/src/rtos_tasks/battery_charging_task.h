@@ -13,6 +13,7 @@
 #include "rtos_tasks.h"
 
 // TODO: figure out these thresholds fully
+// TODO: deal with scaling
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -121,10 +122,6 @@ typedef struct charging_data {
 
 	// the battery's total number of decomissions
 	int decommissioned_count[4];
-
-	// TODO: this same variable should be used fo rrecomissions
-	// true if a battery has been recently decommisioned
-	int recent_decomission;
 
 	int charging_parity;
 } charging_data_t;

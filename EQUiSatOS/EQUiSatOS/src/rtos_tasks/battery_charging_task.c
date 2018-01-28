@@ -12,10 +12,11 @@
 //  1. be working in terms of raw voltages (done)
 //  2. make sure of state changes (done)
 //  3. work through TODO's, including new idea of fullness (done)
-//  4. implement strikes! (also, what will change once a battery has struck out?)
-//  5. write a simulator to test the correctness of the battery code
-//  6. iron out threshold values (later)
-//  7. put algorithm through longevity tests (later)
+//  4. implement strikes! (also, what will change once a battery has struck out?) (done)
+//  5. how do charging states interface with global states
+//  6. write a simulator to test the correctness of the battery code and start reading through
+//  7. iron out threshold values (later)
+//  8. put algorithm through longevity tests (later)
 
 // TODO: how do we interface with global state?
 // TODO: read through TODO's and make sure of everything!
@@ -141,7 +142,6 @@ void decommission(battery_t bat)
 	charging_data.decommissioned[bat] = 1;
 	charging_data.decommissioned_timestamp[bat] = get_current_timestamp();
 	charging_data.decommissioned_count[bat]++;
-	charging_data.recent_decomission = 1;
 }
 
 int time_for_recomission(battery_t bat)
@@ -195,7 +195,6 @@ void init_charging_data()
 		charging_data.decommissioned_count[bat] = 0;
 	}
 
-	charging_data.recent_decomission = 0;
 	charging_data.charging_parity = 0;
 }
 
@@ -265,9 +264,6 @@ void battery_logic()
 				charging_data.li2_full_timestamp = get_current_timestamp();
 		}
 	}
-
-	// we need to reset the recent decomission variable
-	charging_data.recent_decomission = 0;
 
 	/////
 	// phase 0: determine whether any batteries should be decomissioned
@@ -369,43 +365,62 @@ void battery_logic()
 
 	// if someone has recently been decomissioned it will most likely result in a
 	// change in the meta-state -- we should take a look
-	if (charging_data.recent_decomission)
+	// TODO: this won't always capture a recent decomission because it's reset
+	// after some decomissions
+
+	meta_charge_state_t new_meta_charge_state = -1;
+	if (num_li_down == 0)
 	{
-		if (num_li_down == 0)
+		if (num_lf_down < 2)
 		{
-			if (num_lf_down < 2)
-			{
-				// ALL_GOOD (A)
-				charging_data.curr_meta_charge_state = ALL_GOOD;
-				charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
-			}
-			else
-			{
-				// TWO_LF_DOWN (C)
-				charging_data.curr_meta_charge_state = TWO_LF_DOWN;
-				charging_data.curr_charge_state = FILL_LI_C;
-			}
-		}
-		else if (num_li_down == 1)
-		{
-			if (num_lf_down < 2)
-			{
-				// ONE_LI_DOWN (B)
-				charging_data.curr_meta_charge_state = ONE_LI_DOWN;
-				charging_data.curr_charge_state = FILL_LI_B;
-			}
-			else
-			{
-				// TWO_LF_DOWN (C)
-				charging_data.curr_meta_charge_state = TWO_LF_DOWN;
-				charging_data.curr_charge_state = FILL_LI_C;
-			}
+			// ALL_GOOD (A)
+			new_meta_charge_state = ALL_GOOD;
 		}
 		else
 		{
-			// TWO_LI_DOWN (D)
-			charging_data.curr_meta_charge_state = TWO_LI_DOWN;
-			charging_data.curr_charge_state = FILL_LI_D;
+			// TWO_LF_DOWN (C)
+			new_meta_charge_state = TWO_LF_DOWN;
+		}
+	}
+	else if (num_li_down == 1)
+	{
+		if (num_lf_down < 2)
+		{
+			// ONE_LI_DOWN (B)
+			new_meta_charge_state = ONE_LI_DOWN;
+		}
+		else
+		{
+			// TWO_LF_DOWN (C)
+			new_meta_charge_state = TWO_LF_DOWN;
+		}
+	}
+	else
+	{
+		// TWO_LI_DOWN (D)
+		new_meta_charge_state = TWO_LI_DOWN;
+	}
+
+	if (new_meta_charge_state != charging_data.curr_meta_charge_state)
+	{
+		charging_data.curr_meta_charge_state = new_meta_charge_state;
+		switch (charging_data.curr_meta_charge_state)
+		{
+			case ALL_GOOD:
+				charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
+				break;
+
+			case ONE_LI_DOWN:
+				charging_data.curr_charge_state = FILL_LI_B;
+				break;
+
+			case TWO_LI_DOWN:
+				charging_data.curr_charge_state = FILL_LI_C;
+				break;
+
+			case TWO_LF_DOWN:
+				charging_data.curr_charge_state = FILL_LI_D;
+				break;
 		}
 	}
 	// otherwise, let's see if there's a state change to be made within the current
