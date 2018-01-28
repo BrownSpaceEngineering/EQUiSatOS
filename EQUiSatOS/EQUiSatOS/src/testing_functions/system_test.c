@@ -1,7 +1,6 @@
 #include "system_test.h"
 
 void set_regulator_power(bool on) {
-	set3V6Power(on);
 	setRadioPower(on);
 	set_output(on, P_5V_EN);
 }
@@ -458,7 +457,6 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
 	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
-	set3V6Power(false);
 	setRadioPower(false);
 	set_output(false, P_5V_EN);
 	

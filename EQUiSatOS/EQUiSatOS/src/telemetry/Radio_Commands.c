@@ -1,4 +1,4 @@
-	#include "Radio_Commands.h"
+#include "Radio_Commands.h"
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -8,12 +8,18 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
+// mutex to ensure only one thread can control radio power at a time
+#define RADIO_POWER_MUTEX_WAIT_TIME_TICKS		10000
+StaticSemaphore_t _radio_power_mutex_d;
+SemaphoreHandle_t radio_power_mutex;
+
 void radio_init(void) {
-	// USART_init() should be called as well
+	// USART_init() should be called as well (above)
 	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
 	setup_pin(true, P_RAD_SHDN); //init shutdown pin
 	setup_pin(true, P_TX_EN); //init send enable pin
 	setup_pin(true, P_RX_EN); //init receive enable pin
+	radio_power_mutex = xSemaphoreCreateMutexStatic(&_radio_power_mutex_d);
 }
 
 void set_command_mode(void) {
@@ -153,7 +159,6 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
 	#ifdef RADIO_ACTIVE
-		set3V6Power(enable);
 		setRadioPower(enable);
 		#ifndef PRINT_DEBUG
 			setTXEnable(enable);
@@ -163,8 +168,7 @@ void setRadioState(bool enable, bool confirm) {
 		// if enabling, delay and check that the radio was enabled
 		if (confirm && enable) {
 			vTaskDelay(REGULATOR_MEASURE_DELAY);
-			//verify_regulators(); // will throw error if regulator not valid
-			//TODO uncomment when we can get state
+			verify_regulators(); // will log error if regulator not valid
 		}
 	#endif
 }
@@ -177,22 +181,14 @@ void setRXEnable(bool enable) {
 	set_output(enable, P_RX_EN);
 }
 
-void set3V6Power(bool on) {
-	hardware_mutex_take();
-	#ifndef RADIO_ACTIVE
-		on = false;
-	#endif
-	set_output(on, P_RAD_PWR_RUN);
-	get_hw_states()->rail_3v6_enabled = on;
-	hardware_mutex_give();
-}
-
 void setRadioPower(bool on) {
 	hardware_mutex_take();
 	#ifndef RADIO_ACTIVE
 		on = false;
 	#endif
+	// enable / disable 3V6 regulator and radio power at the same time
+	set_output(on, P_RAD_PWR_RUN);
 	set_output(on, P_RAD_SHDN);
-	get_hw_states()->radio_on = on;
+	get_hw_states()->radio_powered = on;
 	hardware_mutex_give();
 }

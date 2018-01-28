@@ -83,27 +83,22 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 	*dest = truncate_16t(read);
 }
 
-/* regulator control */
-
-void set_5v_enable(bool on) {
-	hardware_mutex_take();
-	set_output(on, P_5V_EN);
-	get_hw_states()->rail_5v_enabled = on;
-	hardware_mutex_give();
-}
-
 void verify_regulators(void) {
+	// only lock hardware state mutex while needed to act on state,
+	// but long enough to ensure the state doesn't change in the middle of checking it
 	hardware_mutex_take();
 	
-	ad7991_ctrlbrd_batch batch;	
+	ad7991_ctrlbrd_batch batch;
 	read_ad7991_ctrlbrd(batch);
+	
 	struct hw_states* states = get_hw_states();
-	uint16_t low3v6RefBound = states->rail_3v6_enabled ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
-	uint16_t high3v6RefBound = states->rail_3v6_enabled ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
-	uint16_t low3v6SnsBound = states->radio_on ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
-	uint16_t high3v6SnsBound = states->radio_on ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
+	uint16_t low3v6RefBound = states->radio_powered ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
+	uint16_t high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
+	uint16_t low3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
+	uint16_t high3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
 	uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
 	uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
+	hardware_mutex_give();
 	
 	// 3V6_REF is index 0
 	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_1_0, true);
@@ -113,8 +108,6 @@ void verify_regulators(void) {
 	log_if_out_of_bounds(batch[2], low5vRefBound, high5vRefBound, ELOC_AD7991_1_2, true);
 	// 3V3REF current is index 3
 	log_if_out_of_bounds(batch[3], B_3V3_REF_LOW, B_3V3_REF_HIGH, ELOC_AD7991_1_3, true);
-	
-	hardware_mutex_give();
 }
 
 /************************************************************************/
@@ -168,12 +161,15 @@ void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 
 void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t results[4];
+		
+	// only lock hardware state mutex while needed to act on state,
+	// but long enough to ensure the state doesn't change in the middle of checking it
+	hardware_mutex_take();
 	sc = AD7991_read_all_mV(results, AD7991_BATBRD);
 	log_if_error(ELOC_AD7991_0, sc, true);
-	
-	hardware_mutex_take();
-	uint16_t low_limit, high_limit;
+
 	struct hw_states* states = get_hw_states();
+	uint16_t low_limit, high_limit;
 	if (states->antenna_deploying || states->radio_transmitting) {
 		low_limit = B_L_CUR_REG_LOW;
 		high_limit = B_L_CUR_REG_HIGH;
@@ -181,6 +177,8 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 		low_limit = B_L_CUR_HIGH_LOW;
 		high_limit = B_L_CUR_HIGH_HIGH;
 	}
+	hardware_mutex_give();
+	
 	// results[0] = L2_SNS
 	batch1[1] = truncate_16t(results[0]);
 	log_if_out_of_bounds(results[0], low_limit, high_limit, ELOC_AD7991_0_0, true);
@@ -194,8 +192,6 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	// results[3] = PANELREF
 	batch2[0] = truncate_16t(results[3]);
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_0_0, true);
-	
-	hardware_mutex_give();
 }
 
 void en_and_read_led_temps_batch(led_temps_batch batch) {
@@ -214,7 +210,7 @@ void read_led_temps_batch(led_temps_batch batch) {
 		batch[i - 4] = rs8;
 	}
 }
-
+	
 void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
 	uint low_limit, high_limit;
 	if (flashing_now) {

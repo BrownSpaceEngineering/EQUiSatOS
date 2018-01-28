@@ -1,8 +1,34 @@
 #include "MLX90614_IR_Sensor.h"
 
+// mutex to ensure only one thread can control 5V regulator at a time
+#define RAIL_5V_ENABLE_MUTEX_WAIT_TIME_TICKS		10000
+StaticSemaphore_t _rail_5v_enable_mutex_d;
+SemaphoreHandle_t rail_5v_enable_mutex;
+
 void MLX90614_init() {
 	irPower(true);
+	rail_5v_enable_mutex = xSemaphoreCreateMutexStatic(&_rail_5v_enable_mutex_d);
 }
+
+/* 5V regulator control */
+void set_5v_enable(bool on) {
+	// TODO: does this logic work
+	hardware_mutex_take();
+	
+	// take mutex when turning on, so we are sure to keep it on
+	if (on)
+		xSemaphoreTake(rail_5v_enable_mutex, RAIL_5V_ENABLE_MUTEX_WAIT_TIME_TICKS);
+	
+	set_output(on, P_5V_EN);
+	get_hw_states()->rail_5v_enabled = on;
+	hardware_mutex_give();
+	
+	// only give up mutex when same thread turns off 5V rail
+	if (!on) 
+		xSemaphoreGive(rail_5v_enable_mutex);
+}
+
+/* MLX90614 control */
 
 /*
 	Powers on or off the ir sensor.  True is on, false is off.

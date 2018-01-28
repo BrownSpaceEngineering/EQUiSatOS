@@ -44,17 +44,16 @@ typedef struct task_states {
 // **see .c file for radio states**
 
 /************************************************************************/
-/* hardware states (used primarily to know what currents to expect, etc.) */
+/* global hardware states (used primarily to know what currents to expect, etc.) */
 /************************************************************************/ 
 struct hw_states {
 	bool rail_5v_enabled : 1;
-	bool rail_3v6_enabled : 1;
-	bool radio_on : 1;
+	bool radio_powered : 1; // if true, both 3V6 regulator and radio power pin are on
 	bool radio_transmitting : 1;
 	bool antenna_deploying : 1;
 	bool flashing : 1;
 };
-#define HARDWARE_MUTEX_WAIT_TIME_TICKS		1000
+#define HARDWARE_MUTEX_WAIT_TIME_TICKS		2000 // can be used for a while
 
 #define set_hw_state_safe(field, state) { \
 	hardware_mutex_take(); \
