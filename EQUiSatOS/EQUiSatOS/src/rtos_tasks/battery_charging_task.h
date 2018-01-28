@@ -36,6 +36,12 @@
 #define MAX_TIMES_TRY_PIN               3
 #define WAIT_TIME_BEFORE_PIN_CHECK_MS   10
 
+#define MAX_TIME_TO_WAIT_FOR_DEPLOY_S   10000 // TODO: figure this out
+
+#define MAX_RECOMISSION_TIME_S          10000 // TODO: figure this out
+#define INITIAL_RECOMISSION_TIME_S      500
+#define RECOMISSION_TIME_INCREASE       2
+
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
 typedef enum
@@ -74,7 +80,7 @@ typedef enum
 	FILL_LF_B,
 
 	// states in meta-state TWO_LF_DOWN (C)
-	FILL_LI_C
+	FILL_LI_C,
 
 	// states in meta-state TWO_LI_DOWN(D)
 	FILL_LI_D
@@ -108,13 +114,13 @@ typedef struct charging_data {
 	int old_bat_voltages[4];
 
 	// whether or not the batteries are decomissioned
-	int decomissionned[4];
+	int decommissioned[4];
 
 	// the time at which the battery was last decomissioned
-	int decomissioned_timestamp[4];
+	int decommissioned_timestamp[4];
 
 	// the battery's total number of decomissions
-	int decomissioned_count[4];
+	int decommissioned_count[4];
 
 	// TODO: this same variable should be used fo rrecomissions
 	// true if a battery has been recently decommisioned
@@ -143,5 +149,8 @@ int get_panel_ref_val(void);
 int is_lion(battery_t bat);
 void init_charging_data(void);
 void battery_logic(void);
+void decommission(battery_t bat);
+int time_for_recomission(battery_t bat);
+void check_for_recomission(battery_t bat);
 
 #endif /* BATTERY_CHARGING_TASK_H_ */
