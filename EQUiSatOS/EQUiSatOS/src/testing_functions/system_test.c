@@ -31,7 +31,7 @@ void sensor_read_tests(void) {
 	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf_16t[0]), (uint16_t)dataToTemp(six_buf_16t[1]), (uint16_t)dataToTemp(six_buf_16t[2]), (uint16_t)dataToTemp(six_buf_16t[3]), (uint16_t)dataToTemp(six_buf_16t[4]), (uint16_t)dataToTemp(six_buf_16t[5]));
 
 	print("\n# PDIODE #\n");
-	read_pdiode_batch(six_buf);
+	read_pdiode_batch(&six_buf);
 	for (int i = 0; i < 6; i++){
 		print("pdiode %d: %d\n",i, (uint16_t)(six_buf[i])<<8);
 	}

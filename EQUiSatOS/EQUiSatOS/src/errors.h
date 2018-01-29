@@ -96,6 +96,11 @@ enum error_locations {
 	ELOC_ERROR_STACK =					58,
 	ELOC_WATCHDOG =						59,
 	ELOC_PROC_TEMP =					60,
+	
+	ELOC_IDLE_DATA =					61,
+	ELOC_ATTITUDE_DATA =				62,
+	ELOC_FLASH_DATA =					63, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				64,
 };
 
 /******************** PROBLEM CODES ********************/
@@ -140,8 +145,9 @@ enum error_codes {
 	ECODE_ENTER_RIP = 					33,
 	ECODE_UNCERTAIN_RIP = 				34,
 	ECODE_WATCHDOG_EARLY_WARNING =		35,
-	ECODE_WACTHDOG_RESET =				36,
+	ECODE_WATCHDOG_RESET =				36,
 	ECODE_WATCHDOG_DID_KICK =			37,
+	ECODE_EXCESSIVE_SUSPENSION =		38,
 };
 
 /************************************************************************/

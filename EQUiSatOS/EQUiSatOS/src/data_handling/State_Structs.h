@@ -50,11 +50,11 @@ typedef struct attitude_data_t
 	They are also inversely proportional to the LOOPS_PER_LOG of each
 	corresponding sensor because if MORE reads are required for each log,
 	the data is of LOWER frequency and thus needs a SMALLER array. */
-	ir_object_temps_batch ir_obj_temps_data					[attitude_IR_DATA_ARR_LEN];
-	pdiode_batch pdiode_data								[attitude_DIODE_DATA_ARR_LEN];
-	accelerometer_batch accelerometer_data					[attitude_ACCELEROMETER_DATA_ARR_LEN];
-	gyro_batch gyro_data									[attitude_GYRO_DATA_ARR_LEN];
-	magnetometer_batch magnetometer_data					[attitude_MAGNETOMETER_DATA_ARR_LEN];
+	ir_object_temps_batch ir_obj_temps_data;
+	pdiode_batch pdiode_data;
+	accelerometer_batch accelerometer_data					[2];
+	gyro_batch gyro_data;
+	magnetometer_batch magnetometer_data					[2];
 
 	uint32_t timestamp;
 	bool transmitted;

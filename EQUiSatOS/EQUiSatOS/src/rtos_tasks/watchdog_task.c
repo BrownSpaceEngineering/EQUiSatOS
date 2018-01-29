@@ -78,7 +78,7 @@ bool watchdog_as_function(void) {
 		trace_print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
 
-		log_error(ELOC_WATCHDOG, ECODE_WACTHDOG_RESET, true);
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_RESET, true);
 		write_state_to_storage();
 		
 		#ifdef WATCHDOG_RESET_ACTIVE
