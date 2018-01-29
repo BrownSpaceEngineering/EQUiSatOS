@@ -1,4 +1,4 @@
-#include "Radio_Commands.h"
+	#include "Radio_Commands.h"
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -23,12 +23,27 @@ void radio_init(void) {
 }
 
 void set_command_mode(void) {
-	delay_ms(150);
+	delay_ms(200);
 	usart_send_string((uint8_t*) "+++");
-	delay_ms(150);
+	delay_ms(300);
 }
 
-/*void set_dealer_mode(void) {
+bool send_command(int numBytesReceiving) {
+	clear_USART_rx_buffer();
+	set_command_mode();
+	waitingForData = true;
+	receiveDataReady = false;
+	expectedReceiveDataLen = numBytesReceiving;
+	usart_send_string(sendbuffer);
+	int i = 0;
+	while (!receiveDataReady && i < 20) {
+		delay_ms(20);
+		i++;
+	}
+	return receiveDataReady;
+}
+
+void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x44;
 	sendbuffer[2] = 0x01;
@@ -36,7 +51,7 @@ void set_command_mode(void) {
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
 }
-
+/*
 void set_tx_freq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
@@ -75,6 +90,16 @@ void set_channel(void) {
 	usart_send_string(sendbuffer);
 }*/
 
+void cold_reset(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x1d;
+	sendbuffer[2] = 0x00; //cold
+	sendbuffer[3] = ~0x1d;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+	delay_ms(200);
+}
+
 void warm_reset(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x1d;
@@ -112,14 +137,6 @@ int response_check(char arr[]){
 	return 1;
 }
 
-void get_temperature(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x50;
-	sendbuffer[2] = ~0x50;
-	sendbuffer[3] = '\0';
-	usart_send_string(sendbuffer);
-}
-
 unsigned char calculate_checksum(char* data, int dataLen) {
 	unsigned char checksum = 0;
 	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
@@ -128,30 +145,31 @@ unsigned char calculate_checksum(char* data, int dataLen) {
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
 uint16_t XDL_get_temperature() {
-	set_command_mode();
-	get_temperature();
-	delay_ms(200);
-	//TODO: Check packet validity and extract data
-	if (calculate_checksum(receivebuffer+1, 2) == receivebuffer[3]) {
-		uint16_t radioTemp = (receivebuffer[1] << 8) | receivebuffer[2];
-		clear_USART_rx_buffer();
-		warm_reset();
-		delay_ms(500);
-		return radioTemp;
-	} else {
-		//maybe wait a little longer? or reset radio?
-		//TODO: Log error: couldn't get temp from radio
-	}	
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x50;
+	sendbuffer[2] = ~0x50;
+	sendbuffer[3] = '\0';
+	if (send_command(5)) {
+		//TODO: Check packet validity and extract data
+		if (calculate_checksum(receivebuffer+1, 3) == receivebuffer[4]) {
+			uint16_t radioTemp = (receivebuffer[2] << 8) | receivebuffer[3];
+			warm_reset();
+			return radioTemp;
+		} else {
+			//maybe wait a little longer? or reset radio?
+			//TODO: Log error: couldn't get temp from radio
+		}
+	}
 }
 
-/* transmits the buffer of given size over the radio USART, 
+/* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	hardware_mutex_take();
 	usart_send_buf(buf, size);
 	get_hw_states()->radio_transmitting = true;
 	hardware_mutex_give();
-	
+
 	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);
 	set_hw_state_safe(radio_transmitting, false);
 }
@@ -164,7 +182,7 @@ void setRadioState(bool enable, bool confirm) {
 			setTXEnable(enable);
 			setRXEnable(enable);
 		#endif
-	
+
 		// if enabling, delay and check that the radio was enabled
 		if (confirm && enable) {
 			vTaskDelay(REGULATOR_MEASURE_DELAY);

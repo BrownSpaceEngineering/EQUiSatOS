@@ -391,7 +391,7 @@ void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* id
 
 void write_attitude_data_packet(uint8_t* buffer, uint8_t* buf_index, attitude_data_t* attitude_data) {
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->ir_obj_temps_data,	sizeof(ir_object_temps_batch)	/* [1] */);
-	write_bytes_and_shift(buffer, buf_index,	attitude_data->pdiode_data,			sizeof(pdiode_batch)			/* [1] */);
+	write_bytes_and_shift(buffer, buf_index,	&(attitude_data->pdiode_data),		sizeof(pdiode_batch)			/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->accelerometer_data,	sizeof(accelerometer_batch) * 2 /* [2] */);
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->gyro_data,			sizeof(gyro_batch)				/* [1] */);
 	write_bytes_and_shift(buffer, buf_index,	attitude_data->magnetometer_data,	sizeof(magnetometer_batch) * 2	/* [2] */);

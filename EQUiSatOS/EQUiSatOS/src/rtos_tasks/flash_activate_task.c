@@ -41,7 +41,7 @@ uint32_t get_time_of_next_flash(void) {
 	if (eTaskGetState(task_handles[FLASH_ACTIVATE_TASK]) != eSuspended) {
 		// previous wake time is the last time (using get_current_timestamp()) that vTaskDelayUntil resumed in this task,
 		// so that plus the frequency gives us an approximate time of next flash
-		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	
+		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	// TODO: what if RTOS goes to something higher priority?
 	}
 	return (uint32_t) -1;
 }

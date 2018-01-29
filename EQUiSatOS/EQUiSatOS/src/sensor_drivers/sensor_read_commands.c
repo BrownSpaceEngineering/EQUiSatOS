@@ -87,10 +87,10 @@ void verify_regulators(void) {
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
 	hardware_mutex_take();
-	
+
 	ad7991_ctrlbrd_batch batch;
 	read_ad7991_ctrlbrd(batch);
-	
+
 	struct hw_states* states = get_hw_states();
 	uint16_t low3v6RefBound = states->radio_powered ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
 	uint16_t high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
@@ -99,7 +99,7 @@ void verify_regulators(void) {
 	uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
 	uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
 	hardware_mutex_give();
-	
+
 	// 3V6_REF is index 0
 	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_1_0, true);
 	// 3V6_SNS is index 1
@@ -144,7 +144,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 void read_lion_volts_batch(lion_volts_batch batch) {
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
-	
+
 	read_li_volts_precise(&val_1_precise, &val_2_precise);
 	batch[0] = truncate_16t(val_1_precise);
 	batch[1] = truncate_16t(val_2_precise);
@@ -161,7 +161,7 @@ void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 
 void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t results[4];
-		
+
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
 	hardware_mutex_take();
@@ -178,20 +178,22 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 		high_limit = B_L_CUR_HIGH_HIGH;
 	}
 	hardware_mutex_give();
-	
+
 	// results[0] = L2_SNS
 	batch1[1] = truncate_16t(results[0]);
 	log_if_out_of_bounds(results[0], low_limit, high_limit, ELOC_AD7991_0_0, true);
 	// results[1] = L1_SNS
 	batch1[0] = truncate_16t(results[1]);
 	log_if_out_of_bounds(results[1], low_limit, high_limit, ELOC_AD7991_0_1, true);
-	
+
 	// results[2] = L_REF
 	batch2[1] = truncate_16t(results[2]);
 	log_if_out_of_bounds(results[2], B_LREF_LOW, B_LREF_HIGH, ELOC_AD7991_0_1, true);
 	// results[3] = PANELREF
 	batch2[0] = truncate_16t(results[3]);
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_0_0, true);
+
+	hardware_mutex_give();
 }
 
 void en_and_read_led_temps_batch(led_temps_batch batch) {
@@ -210,7 +212,7 @@ void read_led_temps_batch(led_temps_batch batch) {
 		batch[i - 4] = rs8;
 	}
 }
-	
+
 void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
 	uint low_limit, high_limit;
 	if (flashing_now) {
@@ -231,8 +233,8 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
 	uint16_t val_3_precise;
-	uint16_t val_4_precise;	
-	
+	uint16_t val_4_precise;
+
 	read_lf_volts_precise(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
 	batch[0] = truncate_16t(val_1_precise);
@@ -253,11 +255,15 @@ void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, ui
 // 	b2 = (batch[2]*3870) - batch[3];
 }
 
-void read_pdiode_batch(pdiode_batch batch) {
+void read_pdiode_batch(pdiode_batch* batch) {
 	// TODO: need to output to two bits of a uint16_t
 	for (int i = 0; i < 6; i++) {
-		uint16_t rs;
+		uint8_t rs;
 		// TODO: LTC1380_channel_select takes a uint8, not 16
+
+		// TODO INFO: it looks like these (uint8_t) readings need to be
+		// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
+
 		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 		log_if_error(PD_ELOCS[i], sc, false);
 		commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
@@ -359,7 +365,7 @@ void read_led_current_batch(led_current_batch batch, bool flashing_now) {
 
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 	sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
-	log_if_error(ELOC_AD7991_1, sc, false);	
+	log_if_error(ELOC_AD7991_1, sc, false);
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
@@ -368,7 +374,7 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 }
 
 void read_proc_temp_batch(proc_temp_batch* batch) {
-	commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP, 
+	commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP,
 		ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
 }
 

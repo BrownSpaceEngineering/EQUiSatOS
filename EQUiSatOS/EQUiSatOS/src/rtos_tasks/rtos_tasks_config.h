@@ -209,6 +209,7 @@ typedef enum
 #define ATTITUDE_DATA_TASK_FREQ					10000
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
+<<<<<<< HEAD
 	/* Data array lengths for attitude data reader task */
 	#define attitude_IR_DATA_ARR_LEN					1
 	#define attitude_DIODE_DATA_ARR_LEN					1
@@ -231,15 +232,13 @@ typedef enum
 	#define attitude_ACCELEROMETER_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
 	#define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
 	#define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
+=======
+	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
+>>>>>>> origin/master
 
 #define FLASH_ACTIVATE_TASK_FREQ				15000//60000	// 1 minute; how often to flash
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
-
-/*
- * A function to make sure that the constants defined here are internally consistent.
- */
-void assert_rtos_constants(void);
 
 #endif

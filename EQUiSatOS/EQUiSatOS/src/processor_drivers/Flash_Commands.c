@@ -23,9 +23,9 @@ void set_lifepo_charge_disable(void)
 
 void set_lifepo_charge_enable(void)
 {
-	if (batt_charging == LFB1)
+	if (charging_data.bat_charging == LFB1)
 		set_output(true, P_LF_B1_RUNCHG);
-	else if (batt_charging == LFB2)
+	else if (charging_data.bat_charging == LFB2)
 		set_output(true, P_LF_B2_RUNCHG);
 }
 

@@ -61,10 +61,14 @@ void idle_data_task(void *pvParameters)
 		// if we took too long between the start of this packet and here, 
 		// DON'T add it and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
-		if (data_read_time <= IDLE_DATA_MAX_READ_TIME
-			&& at_orbit_fraction(&prev_orbit_fraction, IDLE_DATA_LOGS_PER_ORBIT)) {
-			// validate previous stored value in stack, getting back the next staged address we can start adding to
-			current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
+		if (data_read_time <= IDLE_DATA_MAX_READ_TIME) {
+			if (passed_orbit_fraction(&prev_orbit_fraction, IDLE_DATA_LOGS_PER_ORBIT)) {
+				// validate previous stored value in stack, getting back the next staged address we can start adding to
+				current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
+			}
+		} else {
+			// log error if the data read took too long
+			log_error(ELOC_IDLE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}
 	}
 	// delete this task if it ever breaks out

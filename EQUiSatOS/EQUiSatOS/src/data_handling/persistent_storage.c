@@ -236,10 +236,11 @@ uint16_t get_orbits_since_launch(void) {
  *		at_orbit_fraction(0, 2, .1) = false
  *		at_orbit_fraction(0, 2, .1) = false
  */
-bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator) {
+bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator) {
 	#ifdef TESTING_SPEEDUP
 		return true;
 	#else 
+		// TODO: Does this work??
 		// first, we scale up by the denominator to bring our integer precision up to the 
 		// fractional (bucket) size. Thus, we will truncate all bits that determine how
 		// far we are inside a fractional bucket, and it will give us only the current one
