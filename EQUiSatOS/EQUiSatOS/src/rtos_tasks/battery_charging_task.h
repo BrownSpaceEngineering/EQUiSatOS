@@ -13,11 +13,11 @@
 #include "rtos_tasks.h"
 
 // TODO: figure out these thresholds fully
+// TODO: deal with scaling
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
 #define LI_FULL_SANITY_MV               4100
-#define LI_UP_MV                   			4170 // TODO: this needs to go
 #define LI_DOWN_MV                 			4050
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
@@ -25,11 +25,23 @@
 #define LF_FULL_MAX_MV             			3500
 #define LF_FLASH_AVG_MV            			3250
 
+// thresholds for error checking and the strikes system
+#define MIGHT_BE_FULL                   4000
+#define MAX_TIME_WITHOUT_FULL_MS        6000
+#define MAX_VOLTAGE_DROP_MV             300
+#define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
+
 #define BAT_MUTEX_WAIT_TIME_TICKS       1000
 
 #define TRY_PIN_DELAY_TIME_MS           100
 #define MAX_TIMES_TRY_PIN               3
 #define WAIT_TIME_BEFORE_PIN_CHECK_MS   10
+
+#define MAX_TIME_TO_WAIT_FOR_DEPLOY_S   10000 // TODO: figure this out
+
+#define MAX_RECOMISSION_TIME_S          10000 // TODO: figure this out
+#define INITIAL_RECOMISSION_TIME_S      500
+#define RECOMISSION_TIME_INCREASE       2
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
@@ -43,44 +55,99 @@ typedef enum
 
 typedef enum
 {
-	FILL_LI_NEITHER_FULL,
-	FILL_LI_LI1_FULL,
-	FILL_LI_LI2_FULL,
-	FILL_LF
+		// also known as A
+	  ALL_GOOD,
+
+		// also known as B
+		ONE_LI_DOWN,
+
+		// also known as C
+		TWO_LF_DOWN,
+
+		// also known as D
+		TWO_LI_DOWN
+} meta_charge_state_t;
+
+typedef enum
+{
+	// states in meta-state ALL_GOOD (A)
+	FILL_LI_NEITHER_FULL_A,
+	FILL_LI_LI1_FULL_A,
+	FILL_LI_LI2_FULL_A,
+	FILL_LF_A,
+
+	// states in meta-state ONE_LI_DOWN (B)
+	FILL_LI_B,
+	FILL_LF_B,
+
+	// states in meta-state TWO_LF_DOWN (C)
+	FILL_LI_C,
+
+	// states in meta-state TWO_LI_DOWN(D)
+	FILL_LI_D
 } charge_state_t;
 
-// the battery that's currently charging
-battery_t batt_charging;
+typedef struct charging_data {
+	// the battery that's currently charging
+	battery_t bat_charging;
 
-// the battery that's currently discharging
-// NOTE: this is only ever a Lion
-battery_t lion_discharging;
+	// the battery that's currently discharging
+	// NOTE: this is only ever a Lion
+	battery_t lion_discharging;
 
-// charging state
-charge_state_t curr_charge_state;
+	// meta-charging state
+	meta_charge_state_t curr_meta_charge_state;
 
-// number of strikes for each battery
-int batt_strikes[4];
+	// charging state
+	charge_state_t curr_charge_state;
 
-int already_set_sat_state;
+	// the last time each lion was full
+	int li1_full_timestamp;
+	int li2_full_timestamp;
 
+	// whether or not the satellite state has already been set
+	int already_set_sat_state;
+
+	// voltage data
+	int bat_voltages[4];
+
+	// old voltage data
+	int old_bat_voltages[4];
+
+	// whether or not the batteries are decomissioned
+	int decommissioned[4];
+
+	// the time at which the battery was last decomissioned
+	int decommissioned_timestamp[4];
+
+	// the battery's total number of decomissions
+	int decommissioned_count[4];
+
+	int charging_parity;
+} charging_data_t;
+
+// NOTE: these are initialized elsewhere -- should they maybe not be?
 // anyone doing something during which the battery state should not
 // be changed needs to honor this mutex
 StaticSemaphore_t _battery_charging_mutex_d;
 SemaphoreHandle_t battery_charging_mutex;
 
+// although it somewhat breaks abstraction to have the main parameter to
+// battery logic be a global variable, this is necessary for some of the
+// helper functions that use as
+charging_data_t charging_data;
+
+int get_fault_pin_val_w_conversion(battery_t bat);
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);
 int get_chg_pin_val_w_conversion(battery_t bat);
 int get_st_val(battery_t bat);
-
-void battery_logic(
-	int li1_mv,
-	int li2_mv,
-	int lf1_mv,
-	int lf2_mv,
-	int lf3_mv,
-	int lf4_mv,
-	int curr_charging_filled_up);
+int get_panel_ref_val(void);
+int is_lion(battery_t bat);
+void init_charging_data(void);
+void battery_logic(void);
+void decommission(battery_t bat);
+int time_for_recomission(battery_t bat);
+void check_for_recomission(battery_t bat);
 
 #endif /* BATTERY_CHARGING_TASK_H_ */
