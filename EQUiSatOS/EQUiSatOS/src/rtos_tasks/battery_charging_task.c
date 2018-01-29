@@ -760,8 +760,6 @@ void battery_logic()
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	///
 	// phase epilogue: getting everything ready for next time through
 	///
@@ -769,6 +767,5 @@ void battery_logic()
 	for (battery_t bat = 0; bat < 4; bat++)
 		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
->>>>>>> origin/master
 	xSemaphoreGive(battery_charging_mutex);
 }

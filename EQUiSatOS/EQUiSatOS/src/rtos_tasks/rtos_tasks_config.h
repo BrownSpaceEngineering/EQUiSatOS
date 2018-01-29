@@ -209,32 +209,7 @@ typedef enum
 #define ATTITUDE_DATA_TASK_FREQ					10000
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
-<<<<<<< HEAD
-	/* Data array lengths for attitude data reader task */
-	#define attitude_IR_DATA_ARR_LEN					1
-	#define attitude_DIODE_DATA_ARR_LEN					1
-	#define attitude_ACCELEROMETER_DATA_ARR_LEN			2
-	#define attitude_GYRO_DATA_ARR_LEN					1
-	#define attitude_MAGNETOMETER_DATA_ARR_LEN			2
-
-	/* Attitude data read task reads per log */
-	/* LOOPS_PER_LOG for each sensor at each state - 
-		How many times the whole sensor task loop must iterate before the given sensor is logged 
-		in a equistack for transmission. Note that this has an INVERSE relationship with the array length;
-		more frequent sensors (with fewer loops per log) must have longer arrays.
-		(see tests in rtos_tasks_config.c)
-	
-		NOTE: because the actual HZ frequency entered here is only computed relative 
-		to the execution frequency of the reading RTOS task, it must be less than that frequency.
-		*/
-	#define attitude_IR_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
-	#define attitude_DIODE_LOOPS_PER_LOG				2 // = ms / [fastest log rate (ms) of any datum]
-	#define attitude_ACCELEROMETER_LOOPS_PER_LOG		1 // = ms / [fastest log rate (ms) of any datum]
-	#define attitude_GYRO_LOOPS_PER_LOG					2 // = ms / [fastest log rate (ms) of any datum]
-	#define attitude_MAGNETOMETER_LOOPS_PER_LOG			1 // = ms / [fastest log rate (ms) of any datum]
-=======
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
->>>>>>> origin/master
 
 #define FLASH_ACTIVATE_TASK_FREQ				15000//60000	// 1 minute; how often to flash
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
