@@ -45,25 +45,30 @@ void idle_data_task(void *pvParameters)
 		// read radio temp first because it takes a while to write & reset the radio
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		
-		current_struct->satellite_history = *(cache_get_sat_event_history(true)); // copy, wait on write
+		current_struct->satellite_history = *(cache_get_sat_event_history());
 		read_lion_volts_batch(			current_struct->lion_volts_data);		
-		read_lion_temps_batch(			current_struct->lion_temps_data);
-		read_ad7991_batbrd(			current_struct->lion_current_data, current_struct->panelref_lref_data);
+		en_and_read_lion_temps_batch(	current_struct->lion_temps_data);
+		read_ad7991_batbrd(				current_struct->lion_current_data, current_struct->panelref_lref_data);
 		read_bat_charge_dig_sigs_batch(	&(current_struct->bat_charge_dig_sigs_data));
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		read_proc_temp_batch(			&(current_struct->proc_temp_data));
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		verify_regulators();
 
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// if we took too long between the start of this packet and here, 
 		// DON'T add it and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
-		if (data_read_time <= IDLE_DATA_MAX_READ_TIME
-			&& at_orbit_fraction(&prev_orbit_fraction, IDLE_DATA_LOGS_PER_ORBIT)) {
-			// validate previous stored value in stack, getting back the next staged address we can start adding to
-			current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
+		if (data_read_time <= IDLE_DATA_MAX_READ_TIME) {
+			if (passed_orbit_fraction(&prev_orbit_fraction, IDLE_DATA_LOGS_PER_ORBIT)) {
+				// validate previous stored value in stack, getting back the next staged address we can start adding to
+				current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
+			}
+		} else {
+			// log error if the data read took too long
+			log_error(ELOC_IDLE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}
 	}
 	// delete this task if it ever breaks out

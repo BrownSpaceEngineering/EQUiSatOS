@@ -26,7 +26,7 @@ typedef uint8_t proc_temp_batch;			// single value
 typedef uint16_t ad7991_ctrlbrd_batch		[4];
 typedef uint16_t bat_charge_dig_sigs_batch;	// single value
 typedef uint16_t ir_object_temps_batch		[6];
-typedef uint16_t pdiode_batch;				// 2 bits per reading
+typedef uint16_t pdiode_batch;				// single value; 2 bits per reading
 typedef uint8_t accelerometer_batch			[3];
 typedef uint8_t gyro_batch					[3];
 typedef uint8_t magnetometer_batch			[3];

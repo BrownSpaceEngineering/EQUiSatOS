@@ -57,10 +57,10 @@ void update_sat_event_history(uint8_t antenna_deployed,
 									uint8_t first_flash);
 
 /* functions to get components of cached state */
-uint32_t					cache_get_secs_since_launch(bool wait_on_write);
-uint8_t						cache_get_reboot_count(bool wait_on_write);
-sat_state_t					cache_get_sat_state(bool wait_on_write);
-satellite_history_batch*	cache_get_sat_event_history(bool wait_on_write);
+uint32_t					cache_get_secs_since_launch(void);
+uint8_t						cache_get_reboot_count(void);
+sat_state_t					cache_get_sat_state(void);
+satellite_history_batch*	cache_get_sat_event_history(void);
 
 /* functions which require reading from MRAM (bypass cache) */
 void populate_error_stacks(equistack* priority_errors, equistack* normal_errors);
@@ -69,7 +69,7 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 uint32_t get_current_timestamp(void);
 uint64_t get_current_timestamp_ms(void);
 uint16_t get_orbits_since_launch(void);
-bool at_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
+bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
 
 void write_custom_state(void);
 

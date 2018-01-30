@@ -16,9 +16,19 @@ void pwm_test(void) {
 void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant) {
 	#ifdef ANTENNA_DEPLOY_ACTIVE
 		configure_pwm(pin, pin_mux, p_ant);
+		
+		hardware_mutex_take();
 		set_pulse_width_fraction(3, 4);
+		get_hw_states()->antenna_deploying = true;
+		hardware_mutex_give();
+		
 		delay_ms(ms);
 		//vTaskDelay(ms);
+		
+		hardware_mutex_take();
 		disable_pwm();
+		get_hw_states()->antenna_deploying = false;
+		hardware_mutex_give();
+		
 	#endif
 }

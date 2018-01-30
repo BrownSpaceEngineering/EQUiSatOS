@@ -41,7 +41,7 @@ uint32_t get_time_of_next_flash(void) {
 	if (eTaskGetState(task_handles[FLASH_ACTIVATE_TASK]) != eSuspended) {
 		// previous wake time is the last time (using get_current_timestamp()) that vTaskDelayUntil resumed in this task,
 		// so that plus the frequency gives us an approximate time of next flash
-		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	
+		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	// TODO: what if RTOS goes to something higher priority?
 	}
 	return (uint32_t) -1;
 }
@@ -81,12 +81,21 @@ void flash_activate_task(void *pvParameters)
 				
 			// enable lifepo output (before first data read to give a time buffer before flashing),
 			// and make sure the flash enable pin is high
+			// also make sure sensor regulators are primed and ready
+			set_5v_enable(true);
 			flash_arm();
+
+		trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 			
 			// delays for time of FLASH_DATA_READ_FREQ
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 									BATCH_READS_BEFORE, &prev_data_read_time);
-			
+
+			// notify that we're flashing (in case a task makes it in during our brief sleep times)
+			hardware_mutex_take();
+			get_hw_states()->flashing = true;
+			hardware_mutex_give();
+					
 			// send actual falling edge to flash circuitry to activate it
 			flash_activate();
 			
@@ -94,14 +103,24 @@ void flash_activate_task(void *pvParameters)
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 									BATCH_READS_DURING, &prev_data_read_time);
 									
-			// turn off the lifepos after the 100ms of data reading
-			// NOTE this does NOT actually stop the flashing - that is hardware controlled
-			flash_disarm(); 
-			// TODO: this will put disabling the Lifepos RIGHT ON the end of the 100ms... and it may cut off the flash
+			// note we're not flashing anymore (approximate timing, but okay)
+			hardware_mutex_take();
+			get_hw_states()->flashing = false;
+			hardware_mutex_give();
+									
+		trace_print("Ending flash @ %d ticks", xTaskGetTickCount());
 			
 			// read data after the flash
 			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 									BATCH_READS_AFTER, &prev_data_read_time);
+									
+			// turn off the lifepos after the 100ms of data reading
+			// NOTE this does NOT actually stop the flashing - that is hardware controlled
+			// (put after last data read to keep from accidentally cutting off the flash)
+			flash_disarm();
+			
+			// disable sensor regulators
+			set_5v_enable(false);
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
 			
@@ -115,7 +134,7 @@ void flash_activate_task(void *pvParameters)
 			average_piecewise_uint8(current_cmp_struct->lifepo_volts_avg_data, current_sums_struct.lifepo_volts_data_sums,
 								FLASH_DATA_ARR_LEN, 4);
 			average_piecewise_uint8(current_cmp_struct->led_current_avg_data, current_sums_struct.led_current_data_sums,
-								FLASH_DATA_ARR_LEN, 4);		
+								FLASH_DATA_ARR_LEN, 4);
 			
 			// store both sets of data in their equistacks
 			current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
@@ -164,7 +183,7 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	sum_piecewise_uint8(sums_struct->lifepo_bank_temps_data_sums, *lifepo_bank_temps, 2);
 	
 	lifepo_current_batch* lifepo_current = &burst_struct->lifepo_current_data[*data_arrays_tail];
-	read_lifepo_current_batch(*lifepo_current);
+	read_lifepo_current_batch(*lifepo_current, true);
 	sum_piecewise_uint8(sums_struct->lifepo_current_data_sums, *lifepo_current, 4);
 
 	lifepo_volts_batch* lifepo_volts = &burst_struct->lifepo_volts_data[*data_arrays_tail];
@@ -172,7 +191,7 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	sum_piecewise_uint8(sums_struct->lifepo_volts_data_sums, *lifepo_volts, 4);
 
 	led_current_batch* led_current = &burst_struct->led_current_data[*data_arrays_tail];
-	read_led_current_batch(*led_current);
+	read_led_current_batch(*led_current, true);
 	sum_piecewise_uint8(sums_struct->led_current_data_sums, *led_current, 4);
 	
 	(*data_arrays_tail)++;
