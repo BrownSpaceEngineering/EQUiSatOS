@@ -392,12 +392,7 @@ static void AD7991_BAT_test(void){
 	print("STATUS: \t %s\n",test_str);
 
 	for (int i = 0; i < 4; i++){
-		char suffix;
-		if (i > 1) {
-			suffix = 'V';
-		} else {
-			suffix = 'A';
-		}
+		char suffix = i > 1 ? 'V' : 'A';		
 		switch (i) {
 			case 0 :
 			strcpy(test_str,"L2_SNS");
@@ -413,7 +408,7 @@ static void AD7991_BAT_test(void){
 			break;
 		}
 
-		print("%s: \t %d \t %d m%c\n",test_str, results[i], AD7991_results[i], suffix);
+		print("%s: \t %d mV \t %d m%c\n",test_str, results[i], AD7991_results[i], suffix);
 		//if (AD7991_results[i] > AD7991_expected[i]){
 		//if((AD7991_results[i] - AD7991_expected[i]) >= AD7991_err_margin) {
 		//print("Error in test AD7991 number %d \n",i);
@@ -530,7 +525,7 @@ void readBatBoard(void){
 		adc_enable(&bat_instance);
 		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);
 		get_status(sc,error_str);		
-		
+		char suffix = i<4 ? 'A' : 'V';
 		switch (i) {
 			case 0:
 			strcpy(test_str,"LFB1OSNS");
@@ -538,7 +533,7 @@ void readBatBoard(void){
 			break;
 			case 1:
 			strcpy(test_str,"LFB1SNS");
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.980 * 50;
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-980) * 50;
 			break;
 			case 2:
 			strcpy(test_str,"LFB2OSNS");
@@ -546,15 +541,15 @@ void readBatBoard(void){
 			break;
 			case 3:
 			strcpy(test_str,"LFB2SNS");
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i]-0.979 * 50;
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-979) * 50;
 			break;
 			case 4:
 			strcpy(test_str,"LF2REF");
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
-			break;			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;			
+			break;		
 			case 5:
 			strcpy(test_str,"LF1REF");
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87 - bat_voltage_readings[i-1];
 			break;
 			case 6:
 			strcpy(test_str,"LF4REF");
@@ -562,7 +557,7 @@ void readBatBoard(void){
 			break;			
 			case 7:
 			strcpy(test_str,"LF3REF");
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87-bat_voltage_readings[i-1];
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87 - bat_voltage_readings[i-1];
 			break;
 			case 8:
 			strcpy(test_str,"L1_REF");
@@ -573,7 +568,7 @@ void readBatBoard(void){
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
 			break;
 		}
-		print(" %s \t %s \t %4d mV\t %4d mV\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]), (uint16_t)(bat_voltage_readings[i]));
+		print(" %s \t %s \t %4d mV\t %4d m%c\n",test_str,error_str,(uint16_t)(bat_ref_voltage_readings[i]), (int)(bat_voltage_readings[i]), suffix);
 	}
 }
 
