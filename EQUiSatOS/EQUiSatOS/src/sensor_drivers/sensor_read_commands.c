@@ -380,14 +380,11 @@ void read_proc_temp_batch(proc_temp_batch* batch) {
 		ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
 }
 
-void read_radio_temp_batch(radio_temp_batch* batch) {
-	// TODO: Tyler will implement later
-	// eventually: XDL_get_temperature(batch);
+void read_radio_temp_batch(radio_temp_batch* batch) {	
+	set_command_mode();
+	XDL_get_temperature(batch);
+	warm_reset();
 }
-//
-// void read_radio_current_batch(radio_current_batch* batch) {
-// 	// TODO
-// }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
 	return (batch >> shift) & 1;
