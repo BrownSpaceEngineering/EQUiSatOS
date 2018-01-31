@@ -88,19 +88,21 @@ enum error_locations {
 
 	ELOC_TCA = 							51,
 	ELOC_CACHED_PERSISTENT_STATE = 		52,
-	ELOC_MRAM_READ = 					53,
-	ELOC_MRAM_WRITE = 					54,
-	ELOC_5V_REF = 						55,
-	ELOC_STATE_HANDLING = 				56,
-	ELOC_BAT_CHARGING =					57,
-	ELOC_ERROR_STACK =					58,
-	ELOC_WATCHDOG =						59,
-	ELOC_PROC_TEMP =					60,
+	ELOC_MRAM1_READ = 					53,
+	ELOC_MRAM2_READ = 					54,
+	ELOC_MRAM1_WRITE = 					55,
+	ELOC_MRAM2_WRITE = 					56,
+	ELOC_5V_REF = 						57,
+	ELOC_STATE_HANDLING = 				58,
+	ELOC_BAT_CHARGING =					59,
+	ELOC_ERROR_STACK =					60,
+	ELOC_WATCHDOG =						61,
+	ELOC_PROC_TEMP =					62,
 	
-	ELOC_IDLE_DATA =					61,
-	ELOC_ATTITUDE_DATA =				62,
-	ELOC_FLASH_DATA =					63, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				64,
+	ELOC_IDLE_DATA =					63,
+	ELOC_ATTITUDE_DATA =				64,
+	ELOC_FLASH_DATA =					65, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				66,
 };
 
 /******************** PROBLEM CODES ********************/
