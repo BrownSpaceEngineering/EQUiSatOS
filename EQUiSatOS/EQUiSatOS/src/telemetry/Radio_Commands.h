@@ -16,8 +16,8 @@
 #define TRANSMIT_TIME_MS(bytes)		((1000 * bytes) / RADIO_BAUD_BYTES)
 
 void set_command_mode(void);
-uint16_t XDL_get_temperature(void);
-void warm_reset(void);
+bool XDL_get_temperature(uint16_t* radioTemp);
+bool warm_reset(void);
 void cold_reset(void);
 
 void radio_init(void);

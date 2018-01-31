@@ -15,6 +15,14 @@ void radio_init(void) {
 	setup_pin(true, P_RX_EN); //init receive enable pin
 }
 
+bool check_checksum(char* data, int dataLen, uint8_t actualChecksum) {
+	unsigned char checksum = 0;
+	for (int i = 0; i<dataLen; i++) {
+		checksum = (checksum + data[i]) & 0xFF;
+	}
+	return (~checksum == actualChecksum);
+}
+
 void set_command_mode(void) {	
 	delay_ms(200);
 	usart_send_string((uint8_t*) "+++");
@@ -22,8 +30,7 @@ void set_command_mode(void) {
 }
 
 bool send_command(int numBytesReceiving) {
-	clear_USART_rx_buffer();
-	set_command_mode();
+	clear_USART_rx_buffer();	
 	waitingForData = true;
 	receiveDataReady = false;
 	expectedReceiveDataLen = numBytesReceiving;
@@ -93,13 +100,23 @@ void cold_reset(void){
 	delay_ms(200);
 }
 
-void warm_reset(void){
+bool warm_reset(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x1d;
 	sendbuffer[2] = 0x01; //warm
 	sendbuffer[3] = ~0x1E;
 	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
+	if (send_command(3)) {
+		if ((check_checksum(receivebuffer+1, 1, receivebuffer[2])) && (receivebuffer[1] != 0)) {
+			return true;			
+		}
+	} else {		
+		//power cycle radio		
+		setRadioPower(false);
+		delay_ms(1000);
+		setRadioPower(true);
+		return false;
+	}
 }
 
 /*void set_modulation_format(void){
@@ -130,29 +147,21 @@ int response_check(char arr[]){
 	return 1;
 }
 
-unsigned char calculate_checksum(char* data, int dataLen) {
-	unsigned char checksum = 0;
-	for (int i = 0; i<dataLen; i++) checksum = (checksum + data[i]) & 0xFF;
-	return ~checksum;
-}
-
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
-uint16_t XDL_get_temperature() {	
+bool XDL_get_temperature(uint16_t* radioTemp) {	
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x50;
 	sendbuffer[2] = ~0x50;
 	sendbuffer[3] = '\0';
-	if (send_command(5)) {
-		//TODO: Check packet validity and extract data
-		if (calculate_checksum(receivebuffer+1, 3) == receivebuffer[4]) {
-			uint16_t radioTemp = (receivebuffer[2] << 8) | receivebuffer[3];			
-			warm_reset();			
-			return radioTemp;
+	bool toReturn = false;
+	if (send_command(5)) {		
+		if (toReturn = check_checksum(receivebuffer+1, 3, receivebuffer[4])) {
+			*radioTemp = (receivebuffer[2] << 8) | receivebuffer[3];					
 		} else {
-			//maybe wait a little longer? or reset radio?
-			//TODO: Log error: couldn't get temp from radio
-		}	
-	}	
+			//TODO: maybe wait a little longer? or reset radio?			
+		}		
+	}
+	return toReturn;
 }
 
 /* transmits the buffer of given size over the radio USART, 
