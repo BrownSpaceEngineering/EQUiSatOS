@@ -45,13 +45,19 @@ static uint8_t PD_ELOCS[6] = {
 	ELOC_PD_6,
 };
 
-static struct adc_module adc_instance;
-static enum status_code sc;
+static struct adc_module adc_instance; // global is allowed because we always lock the processor ADC
+
+void init_sensor_read_commands(void) {
+	i2c_irpow_mutex = xSemaphoreCreateMutexStatic(&_i2c_irpow_mutex_d);
+	processor_adc_mutex = xSemaphoreCreateMutexStatic(&_processor_adc_mutex_d);
+}
 
 /************************************************************************/
 /* HELPERS                                                              */
 /************************************************************************/
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
+
+void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
 static inline uint8_t truncate_16t(uint16_t src) {
 	return src >> 8;
@@ -65,8 +71,10 @@ static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc
 	}
 }
 
-static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, uint low_bound, uint high_bound, bool priority) {
-	sc = configure_adc(&adc_instance, pin);
+// note: processor ADC is locked externally to these methods for speed and for particular edge cases
+static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, 
+	uint low_bound, uint high_bound, bool priority) {
+	status_code_genare_t sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
 	sc = read_adc_mV(adc_instance, dest);
 	log_if_error(eloc, sc, priority);
@@ -75,7 +83,7 @@ static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, uint low
 
 static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, uint low_bound, uint high_bound, bool priority) {
 	uint16_t read;
-	sc = configure_adc(&adc_instance, pin);
+	status_code_genare_t sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
 	sc = read_adc_mV(adc_instance, &read);
 	log_if_error(eloc, sc, priority);
@@ -83,22 +91,30 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 	*dest = truncate_16t(read);
 }
 
-void verify_regulators(void) {
+void set_5v_enable(bool on) {
+	hardware_state_mutex_take();
+	set_output(on, P_5V_EN);
+	get_hw_states()->rail_5v_enabled = on;
+	hardware_state_mutex_give();
+}
+
+void verify_regulators_unsafe(void) {
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
-	hardware_mutex_take();
+	hardware_state_mutex_take();
 
-	ad7991_ctrlbrd_batch batch;
-	read_ad7991_ctrlbrd(batch);
+		ad7991_ctrlbrd_batch batch;
+		read_ad7991_ctrlbrd_unsafe(batch);
 
-	struct hw_states* states = get_hw_states();
-	uint16_t low3v6RefBound = states->radio_powered ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
-	uint16_t high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
-	uint16_t low3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
-	uint16_t high3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
-	uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
-	uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
-	hardware_mutex_give();
+		struct hw_states* states = get_hw_states();
+		uint16_t low3v6RefBound = states->radio_powered ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
+		uint16_t high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
+		uint16_t low3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
+		uint16_t high3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
+		uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
+		uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
+
+	hardware_state_mutex_give();
 
 	// 3V6_REF is index 0
 	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_1_0, true);
@@ -110,34 +126,51 @@ void verify_regulators(void) {
 	log_if_out_of_bounds(batch[3], B_3V3_REF_LOW, B_3V3_REF_HIGH, ELOC_AD7991_1_3, true);
 }
 
+void verify_regulators(void) {
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		verify_regulators_unsafe();
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+}
+
+
 /************************************************************************/
 /* SENSOR BATCH READING FUNCTIONS                                       */
 /************************************************************************/
 
 void read_ir_object_temps_batch(ir_object_temps_batch batch) {
-	set_output(true, P_IR_PWR_CMD);
-	vTaskDelay(IR_WAKE_DELAY);
-	for (int i = 0; i < 6; i ++) {
-		uint16_t obj;
-		sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
-		log_if_error(IR_ELOCS[i], sc, false);
-		log_if_out_of_bounds(obj, B_IR_OBJ_LOW, B_IR_OBJ_HIGH, IR_ELOCS[i], false);
-		batch[i] = obj;
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		set_output(true, P_IR_PWR_CMD);
+		vTaskDelay(IR_WAKE_DELAY);
+		for (int i = 0; i < 6; i ++) {
+			uint16_t obj;
+			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
+			log_if_error(IR_ELOCS[i], sc, false);
+			log_if_out_of_bounds(obj, B_IR_OBJ_LOW, B_IR_OBJ_HIGH, IR_ELOCS[i], false);
+			batch[i] = obj;
+		}
+		set_output(false, P_IR_PWR_CMD);
 	}
-	set_output(false, P_IR_PWR_CMD);
+	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
-	set_output(true, P_IR_PWR_CMD);
-	vTaskDelay(IR_WAKE_DELAY);
-	for (int i = 0; i < 6; i++) {
-		uint16_t amb;
-		sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
-		log_if_error(IR_ELOCS[i], sc, false);
-		log_if_out_of_bounds(amb, B_IR_AMB_LOW, B_IR_AMB_HIGH, IR_ELOCS[i], false);
-		batch[i] = truncate_16t(amb);
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		set_output(true, P_IR_PWR_CMD);
+		vTaskDelay(IR_WAKE_DELAY);
+		for (int i = 0; i < 6; i++) {
+			uint16_t amb;
+			status_code_genare_t sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
+			log_if_error(IR_ELOCS[i], sc, false);
+			log_if_out_of_bounds(amb, B_IR_AMB_LOW, B_IR_AMB_HIGH, IR_ELOCS[i], false);
+			batch[i] = truncate_16t(amb);
+		}
+		set_output(false, P_IR_PWR_CMD);
 	}
-	set_output(false, P_IR_PWR_CMD);
+	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 // TODO: make sure this all looks okay
@@ -145,39 +178,51 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
 
-	read_li_volts_precise(&val_1_precise, &val_2_precise);
+	// locks and releases processor_adc_mutex
+	read_lion_volts_precise(&val_1_precise, &val_2_precise); 
 	batch[0] = truncate_16t(val_1_precise);
 	batch[1] = truncate_16t(val_2_precise);
 }
 
-void read_li_volts_precise(uint16_t* val_1, uint16_t* val_2) {
-	uint16_t buf;
-	commands_read_adc_mV(&buf, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-	*val_1 = buf;
+void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		uint16_t buf;
+		commands_read_adc_mV(&buf, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+		*val_1 = buf;
 
-	commands_read_adc_mV(&buf, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-	*val_2 = buf;
+		commands_read_adc_mV(&buf, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+		*val_2 = buf;
+	}
+	xSemaphoreGive(processor_adc_mutex);
 }
 
 void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t results[4];
+	status_code_genare_t sc;
+	uint16_t low_limit, high_limit;
 
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
-	hardware_mutex_take();
-	sc = AD7991_read_all_mV(results, AD7991_BATBRD);
-	log_if_error(ELOC_AD7991_0, sc, true);
+	hardware_state_mutex_take();
+	{
+		xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+		{
+			sc = AD7991_read_all_mV(results, AD7991_BATBRD);	
+		}
+		xSemaphoreGive(i2c_irpow_mutex);
+		log_if_error(ELOC_AD7991_0, sc, true);
 
-	struct hw_states* states = get_hw_states();
-	uint16_t low_limit, high_limit;
-	if (states->antenna_deploying || states->radio_transmitting) {
-		low_limit = B_L_CUR_REG_LOW;
-		high_limit = B_L_CUR_REG_HIGH;
-	} else {
-		low_limit = B_L_CUR_HIGH_LOW;
-		high_limit = B_L_CUR_HIGH_HIGH;
+		struct hw_states* states = get_hw_states();
+		if (states->antenna_deploying || states->radio_transmitting) {
+			low_limit = B_L_CUR_REG_LOW;
+			high_limit = B_L_CUR_REG_HIGH;
+		} else {
+			low_limit = B_L_CUR_HIGH_LOW;
+			high_limit = B_L_CUR_HIGH_HIGH;
+		}
 	}
-	hardware_mutex_give();
+	hardware_state_mutex_give();
 
 	// results[0] = L2_SNS
 	batch1[1] = truncate_16t(results[0]);
@@ -192,28 +237,79 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	// results[3] = PANELREF
 	batch2[0] = truncate_16t(results[3]);
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_0_0, true);
-
-	hardware_mutex_give();
 }
+
+// TODO: why is ad7991_ctrlbrd required outside here??
+// unsafe version required for verify_regulators_unsafe
+void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
+	status_code_genare_t sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
+	log_if_error(ELOC_AD7991_1, sc, false);
+}
+
+void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		read_ad7991_ctrlbrd_unsafe(batch);
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+}
+
+/************************************************************************/
+/* FLASH-RELATED FUNCTIONS - include unsafe and safe version            */
+/************************************************************************/
 
 void en_and_read_led_temps_batch(led_temps_batch batch) {
-	set_5v_enable(true);
-	verify_regulators();
-	read_led_temps_batch(batch);
-	set_5v_enable(false);
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		set_5v_enable(true);
+		// TODO: time delay?
+		verify_regulators_unsafe();
+		read_led_temps_batch_unsafe(batch);
+		set_5v_enable(false);
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
 }
 
-void read_led_temps_batch(led_temps_batch batch) {
+// note: only called from flash_task, and with i2c_irpow_mutex held
+void read_led_temps_batch_unsafe(led_temps_batch batch) {
 	for (int i = 4; i < 8; i++) {
 		uint8_t rs8;
-		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
+		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
 		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_LED_TEMP_LOW, B_LED_TEMP_HIGH, true);
 		batch[i - 4] = rs8;
 	}
 }
 
-void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
+// TODO: may be unnecessary
+void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		set_5v_enable(true);
+		// TODO: time delay?
+		verify_regulators_unsafe(); 
+		read_lifepo_temps_batch_unsafe(batch);
+		set_5v_enable(false);
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
+}
+
+void read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
+	for (int i = 0; i < 2; i++) {
+		uint8_t rs8;
+		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
+		log_if_error(TEMP_ELOCS[i], sc, true);
+		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
+		batch[i] = rs8;
+	}
+}
+
+// TODO: only reason the second argument exists right now is because of system_test
+void read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing_now) {
 	uint low_limit, high_limit;
 	if (flashing_now) {
 		low_limit = B_LF_CUR_REG_LOW;
@@ -228,14 +324,35 @@ void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, low_limit, high_limit, true);
 }
 
-// TODO: make sure this all looks okay
-void read_lifepo_volts_batch(lifepo_volts_batch batch) {
+
+void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+	commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+	commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+	commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+	commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+	
+	// 	b1 *= 1950;
+	// 	b3 *= 1950;
+	// 	b0 = (batch[0]*3870) - batch[1];
+	// 	b2 = (batch[2]*3870) - batch[3];
+}
+
+void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		read_lf_volts_precise_unsafe(val_1, val_2, val_3, val_4);
+	}
+	xSemaphoreGive(processor_adc_mutex);
+}
+
+void read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
+	// TODO: make sure this all looks okay
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
 	uint16_t val_3_precise;
 	uint16_t val_4_precise;
 
-	read_lf_volts_precise(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
+	read_lf_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
 	batch[0] = truncate_16t(val_1_precise);
 	batch[1] = truncate_16t(val_2_precise);
@@ -243,99 +360,16 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	batch[3] = truncate_16t(val_4_precise);
 }
 
-void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
-	commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-
-// 	b1 *= 1950;
-// 	b3 *= 1950;
-// 	b0 = (batch[0]*3870) - batch[1];
-// 	b2 = (batch[2]*3870) - batch[3];
-}
-
-void read_pdiode_batch(pdiode_batch* batch) {
-	// TODO: need to output to two bits of a uint16_t
-	for (int i = 0; i < 6; i++) {
-		uint8_t rs;
-		// TODO: LTC1380_channel_select takes a uint8, not 16
-
-		// TODO INFO: it looks like these (uint8_t) readings need to be
-		// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
-
-		sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
-		log_if_error(PD_ELOCS[i], sc, false);
-		commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
-		//batch[i] = truncate_16t(rs);
+void read_lifepo_volts_batch(lifepo_volts_batch batch) {
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		read_lifepo_volts_batch_unsafe(batch);
 	}
+	xSemaphoreGive(processor_adc_mutex);
 }
 
-void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	set_5v_enable(true);
-	verify_regulators();
-	read_lifepo_temps_batch(batch);
-	set_5v_enable(false);
-}
-
-void read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	for (int i = 0; i < 2; i++) {
-		uint8_t rs8;
-		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
-		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
-		batch[i] = rs8;
-	}
-}
-
-void en_and_read_lion_temps_batch(lion_temps_batch batch) {
-	set_5v_enable(true);
-	verify_regulators();
-	read_lion_temps_batch(batch);
-	set_5v_enable(false);
-}
-
-void read_lion_temps_batch(lion_temps_batch batch) {
-	for (int i = 2; i < 4; i++) {
-		uint8_t rs8;
-		sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
-		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
-		batch[i - 2] = rs8;
-	}
-}
-
-void read_accel_batch(accelerometer_batch accel_batch) {
-	// TODO: does IR power need to be turned back on???
-	int16_t rs[3];
-	sc = MPU9250_read_acc(rs);
-	log_if_error(ELOC_IMU_ACC, sc, false);
-	for (int i = 0; i < 3; i++) {
-		accel_batch[i] = truncate_16t(rs[i]);
-	}
-}
-
-void read_gyro_batch(gyro_batch gyr_batch) {
-	int16_t rs[3];
-	sc = MPU9250_read_gyro(rs);
-	log_if_error(ELOC_IMU_GYRO, sc, false);
-	for (int i = 0; i < 3; i++) {
-		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
-		gyr_batch[i] = truncate_16t(rs[i]);
-	}
-}
-
-void read_magnetometer_batch(magnetometer_batch batch) {
-	int16_t rs[3];
-	//sc = MPU9250_read_mag(rs);
-	sc = HMC5883L_readXYZ(rs);
-	log_if_error(ELOC_IMU_MAG, sc, false);
-	for (int i = 0; i < 3; i++) {
-		batch[i] = truncate_16t(rs[i]);
-	}
-}
-
-void read_led_current_batch(led_current_batch batch, bool flashing_now) {
+// TODO: only reason the second argument exists right now is because of system_test
+void read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) {
 	uint low_limit, high_limit;
 	if (flashing_now) {
 		low_limit = B_LED_CUR_REG_LOW;
@@ -350,32 +384,119 @@ void read_led_current_batch(led_current_batch batch, bool flashing_now) {
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, low_limit, high_limit, true);
 }
 
-/*void read_radio_volts_batch(radio_volts_batch* batch) {
-	uint16_t results[4];
-	sc = AD7991_read_all(results, AD7991_CTRLBRD);
-	log_if_error(ELOC_AD7991_1, sc, false);
+/************************************************************************/
+/* END OF FLASH-RELATED FUNCTIONS                                       */
+/************************************************************************/ 
 
-	// 3V6_REF is Vin0
-	batch[0] = truncate_16t(results[0]);
-	log_if_out_of_bounds(results[0], RAD_VOLT_LOW, RAD_VOLT_HIGH, ELOC_AD7991_1_0, true);
-	// 3V6_SNS is Vin1
-	batch[1] = truncate_16t(results[1]);
-	log_if_out_of_bounds(results[1], RAD_VOLT_LOW, RAD_VOLT_HIGH, ELOC_AD7991_1_1, true);
-}*/
+void read_pdiode_batch(pdiode_batch* batch) {
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		// TODO: need to output to two bits of a uint16_t
+		for (int i = 0; i < 6; i++) {
+			uint8_t rs;
+			// TODO: LTC1380_channel_select takes a uint8, not 16
 
-void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
-	sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
-	log_if_error(ELOC_AD7991_1, sc, false);
+			// TODO INFO: it looks like these (uint8_t) readings need to be
+			// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
+
+			status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
+			log_if_error(PD_ELOCS[i], sc, false);
+			commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+			//batch[i] = truncate_16t(rs);
+		}
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
+}
+
+void en_and_read_lion_temps_batch(lion_temps_batch batch) {
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		set_5v_enable(true);
+		// TODO: time delay?
+		verify_regulators_unsafe();
+		
+		for (int i = 2; i < 4; i++) {
+			uint8_t rs8;
+			status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
+			log_if_error(TEMP_ELOCS[i], sc, true);
+			commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
+			batch[i - 2] = rs8;
+		}
+		
+		set_5v_enable(false);
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
+}
+
+void read_accel_batch(accelerometer_batch accel_batch) {
+	int16_t rs[3];
+	status_code_genare_t sc;
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		sc = MPU9250_read_acc(rs);
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+	
+	log_if_error(ELOC_IMU_ACC, sc, false);
+	for (int i = 0; i < 3; i++) {
+		accel_batch[i] = truncate_16t(rs[i]);
+	}
+}
+
+void read_gyro_batch(gyro_batch gyr_batch) {
+	int16_t rs[3];
+	status_code_genare_t sc;
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		sc = MPU9250_read_gyro(rs);
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+	
+	log_if_error(ELOC_IMU_GYRO, sc, false);
+	for (int i = 0; i < 3; i++) {
+		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
+		gyr_batch[i] = truncate_16t(rs[i]);
+	}
+}
+
+void read_magnetometer_batch(magnetometer_batch batch) {
+	int16_t rs[3];
+	status_code_genare_t sc;
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		//sc = MPU9250_read_mag(rs);
+		status_code_genare_t sc = HMC5883L_readXYZ(rs);
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+	
+	log_if_error(ELOC_IMU_MAG, sc, false);
+	for (int i = 0; i < 3; i++) {
+		batch[i] = truncate_16t(rs[i]);
+	}
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	sc = TCA9535_init(batch);
+	status_code_genare_t sc;
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		sc = TCA9535_init(batch);	
+	}
+	xSemaphoreGive(i2c_irpow_mutex);
+	
 	log_if_error(ELOC_TCA, sc, true);
 }
 
 void read_proc_temp_batch(proc_temp_batch* batch) {
-	commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP,
-		ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP,
+			ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
+	}
+	xSemaphoreGive(processor_adc_mutex);
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {
@@ -396,5 +517,11 @@ bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t sh
 // }
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
-
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		// it's safe now; have fun!
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
 }

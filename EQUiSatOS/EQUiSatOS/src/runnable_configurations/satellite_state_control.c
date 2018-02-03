@@ -550,10 +550,10 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-void hardware_mutex_take(void) {
-	xSemaphoreTake(&hardware_state_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+void hardware_state_mutex_take(void) {
+	xSemaphoreTake(&hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
 }
 
-void hardware_mutex_give(void) {
+void hardware_state_mutex_give(void) {
 	xSemaphoreGive(&hardware_state_mutex);
 }

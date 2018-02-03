@@ -237,7 +237,7 @@ void battery_logic()
 
 	sat_state_t sat_state = get_sat_state();
 
-	read_li_volts_precise(
+	read_lion_volts_precise(
 		(uint16_t *) &(charging_data.bat_voltages[LI1]),
 		(uint16_t *) &(charging_data.bat_voltages[LI2]));
 

@@ -66,6 +66,7 @@ void global_init(void) {
 	HMC5883L_init();
 	delay_init();
 
+	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();

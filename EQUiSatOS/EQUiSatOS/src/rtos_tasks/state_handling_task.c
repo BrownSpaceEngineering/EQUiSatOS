@@ -37,7 +37,7 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 
 			uint16_t li1_recalc_mv;
 			uint16_t li2_recalc_mv;
-			read_li_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
+			read_lion_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
 
 			if (!(li1_recalc_mv <= LI_CRITICAL_MV && li2_recalc_mv <= LI_CRITICAL_MV))
 			{
@@ -120,7 +120,7 @@ static void decide_next_state(sat_state_t current_state) {
 
 		uint16_t li1_mv;
 		uint16_t li2_mv;
-		read_li_volts_precise(&li1_mv, &li2_mv);
+		read_lion_volts_precise(&li1_mv, &li2_mv);
 
 		// individual batteries within the life po banks
 		uint16_t lf1_mv;

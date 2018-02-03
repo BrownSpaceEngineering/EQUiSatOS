@@ -165,13 +165,16 @@ uint16_t XDL_get_temperature() {
 /* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
-	hardware_mutex_take();
+	hardware_state_mutex_take();
 	usart_send_buf(buf, size);
 	get_hw_states()->radio_transmitting = true;
-	hardware_mutex_give();
+	hardware_state_mutex_give();
 
 	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);
-	set_hw_state_safe(radio_transmitting, false);
+	
+	hardware_state_mutex_take();
+	get_hw_states()->radio_transmitting = false;
+	hardware_state_mutex_give();
 }
 
 /* high-level function to bring radio systems online and check their state */
@@ -200,7 +203,7 @@ void setRXEnable(bool enable) {
 }
 
 void setRadioPower(bool on) {
-	hardware_mutex_take();
+	hardware_state_mutex_take();
 	#ifndef RADIO_ACTIVE
 		on = false;
 	#endif
@@ -208,5 +211,5 @@ void setRadioPower(bool on) {
 	set_output(on, P_RAD_PWR_RUN);
 	set_output(on, P_RAD_SHDN);
 	get_hw_states()->radio_powered = on;
-	hardware_mutex_give();
+	hardware_state_mutex_give();
 }

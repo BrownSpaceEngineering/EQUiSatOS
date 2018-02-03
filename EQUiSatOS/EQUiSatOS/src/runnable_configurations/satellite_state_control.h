@@ -53,13 +53,7 @@ struct hw_states {
 	bool antenna_deploying : 1;
 	bool flashing : 1;
 };
-#define HARDWARE_MUTEX_WAIT_TIME_TICKS		2000 // can be used for a while
-
-#define set_hw_state_safe(field, state) { \
-	hardware_mutex_take(); \
-	get_hw_states()->field = state; \
-	hardware_mutex_give(); \
-}
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	500 // it can be okay if we miss this
 
 /************************************************************************/
 /* State functions                                                      */
@@ -72,8 +66,8 @@ bool check_task_state_consistency(void);
 
 // hardware-specific functions
 struct hw_states* get_hw_states();
-void hardware_mutex_take(void);
-void hardware_mutex_give(void);
+void hardware_state_mutex_take(void);
+void hardware_state_mutex_give(void);
 
 void run_rtos(void);
 void init_task_state(task_type_t task);
