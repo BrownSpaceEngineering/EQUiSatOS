@@ -134,10 +134,12 @@ void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uin
 	*buf_index = START_PREAMBLE; // to be sure
 
 	// write callsign
-	buffer[(*buf_index)++] = 'K';
-	buffer[(*buf_index)++] = '1';
-	buffer[(*buf_index)++] = 'A';
-	buffer[(*buf_index)++] = 'D';
+	buffer[(*buf_index)++] = 'W';
+	buffer[(*buf_index)++] = 'L';
+	buffer[(*buf_index)++] = '9';
+	buffer[(*buf_index)++] = 'X';
+	buffer[(*buf_index)++] = 'Z';
+	buffer[(*buf_index)++] = 'E';
 
 	write_bytes_and_shift(buffer, buf_index,	&timestamp,			sizeof(timestamp)); // 4 byte timestamp
 	write_bytes_and_shift(buffer, buf_index,	&states,			sizeof(states)); // 1 byte state string

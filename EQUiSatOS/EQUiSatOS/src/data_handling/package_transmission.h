@@ -19,7 +19,7 @@
 /* for all details and these values										*/
 /************************************************************************/
 // various section sizes in bytes
-#define MSG_PREAMBLE_LENGTH			11
+#define MSG_PREAMBLE_LENGTH			13
 #define MSG_CUR_DATA_LEN			16
 #define MSG_DATA_AND_ERRORS_LEN		196 // sum of possible data, error, and padding sections
 #define MSG_PARITY_LENGTH			32
@@ -28,8 +28,8 @@
 
 // start points for sections
 #define START_PREAMBLE				0
-#define START_CUR_DATA				11
-#define START_DATA					27
+#define START_CUR_DATA				13
+#define START_DATA					29
 #define START_PARITY				223
 
 // set number of packets for each packet type
@@ -40,7 +40,7 @@
 #define LOW_POWER_DATA_PACKETS		5
 
 // size of each packet
-#define CALLSIGN_SIZE				4
+#define CALLSIGN_SIZE				6
 #define ERROR_PACKET_SIZE			3
 #define IDLE_DATA_PACKET_SIZE		23
 #define ATTITUDE_DATA_PACKET_SIZE	33
@@ -56,11 +56,11 @@
 #define LOW_POWER_DATA_NUM_ERRORS		((MSG_DATA_AND_ERRORS_LEN - LOW_POWER_DATA_PACKETS * LOW_POWER_DATA_PACKET_SIZE) / ERROR_PACKET_SIZE)
 	
 // size of padding after each packet (just get it off the spreadsheet, too hard to calc)
-#define IDLE_DATA_PADDING_SIZE			2
-#define ATTITUDE_DATA_PADDING_SIZE		1
-#define FLASH_DATA_PADDING_SIZE			0
-#define FLASH_CMP_DATA_PADDING_SIZE		1
-#define LOW_POWER_DATA_PADDING_SIZE		1
+#define IDLE_DATA_PADDING_SIZE			0
+#define ATTITUDE_DATA_PADDING_SIZE		2
+#define FLASH_DATA_PADDING_SIZE			1
+#define FLASH_CMP_DATA_PADDING_SIZE		2
+#define LOW_POWER_DATA_PADDING_SIZE		2
 
 // the time resolution to store error time deltas in;
 // we have chosen 300s = 5min because it gives approximately a
