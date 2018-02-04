@@ -5,15 +5,129 @@
  *  Author: mcken
  */
 
-#include "rtos_tasks.h"
-#include "data_handling/package_transmission.h"
+#include "transmit_task.h"
 
-// how long message takes to transmit is function of #bytes and baud rate
-#define TIME_BTWN_MSGS_MS			100
+/************************************************************************/
+/* RADIO CONTROL FUNCTIONS                                              */
+/************************************************************************/
+enum radio_state {
+	COMMAND_MODE,
+	RECIEVING_COMMAND, // subset of COMMAND_MODE // TODO
+	TX_RX_MODE,
+	POWERED_OFF
+} cur_radio_mode = POWERED_OFF;
+#define POWER_ON_RADIO_MODE		TX_RX_MODE // TODO
 
-/**
- * Variables
- */
+void radio_control_init(void) {
+	radio_init();
+	radio_command_queue = xQueueCreateStatic(RADIO_CMD_QUEUE_LEN,
+											 sizeof(radio_command_t),
+											 _radio_command_queue_storage,
+											 &_radio_command_queue_d);
+}
+
+// function to push radio command on to queue to be processed when ready
+bool submit_radio_command(enum radio_command_type type, 
+	void *input_arg, void *rx_data_dest, bool *rx_data_ready, TickType_t full_wait_time_ms) {
+	
+	struct radio_command_t cmd = {
+		type, 
+		input_arg,
+		rx_data_dest,
+		rx_data_ready
+	};
+	
+	// note: cmd is copied so it's fine to use a local var
+	return xQueueSendToFront(radio_command_queue, &cmd, full_wait_time_ms / portTICK_PERIOD_MS) == pdTRUE;
+}
+
+// performs the given radio command; returns whether the radio can accept more commands
+bool process_radio_command(radio_command_t *command) {
+	bool expecting_rx_data = false;
+	switch (command->type) {
+		// special commands
+		case POWER_OFF:
+			setRadioState(false, (bool) command->input_arg);
+			cur_radio_mode = POWERED_OFF;
+			return false;
+		// POWER_ON handled separately
+		
+		// COMMAND_MODE commands
+		case GET_TEMPERATURE:
+			expecting_rx_data = true;
+			XDL_get_temperature(); // XDL_get_temperature(command->rx_data_dest, command->rx_data_ready) TODO
+			break;
+			
+		case COLD_RESET:
+			expecting_rx_data = true;
+			cold_reset();
+			break;
+			
+		case WARM_RESET:
+			expecting_rx_data = true;
+			warm_reset();
+			break;
+			
+		default:
+			return true; // do nothing on bad command
+	}
+
+	// if there is data to be received, busy(ish) loop until then
+	// TODO: timeout!!
+	if (expecting_rx_data) {
+		while (!receiveDataReady) {
+			vTaskDelay(STATE_CHANGE_MONITOR_DELAY_TICKS);
+		}
+		if (command->rx_data_ready != NULL) 
+			*(command->rx_data_ready) = true;
+	}
+	return true;
+}
+
+// function to process radio commands for a specified time period before
+// returning radio to transmit state
+void process_radio_commands(TickType_t prev_transmit_time) {
+	static radio_command_t cur_command;
+	
+	// continue to try and process commands until we're close enough to the 
+	// time we need to transmit that we need to get prepared
+	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
+	TickType_t max_processing_time = prev_transmit_time +
+		(TRANSMIT_TASK_FREQ - MAX_CMD_MODE_RECOVERY_TIME_MS) / portTICK_PERIOD_MS;
+
+	while (xTaskGetTickCount() < max_processing_time) {
+		if (xQueueReceive(radio_command_queue, &cur_command, max_processing_time)) {
+			// turn on radio if it's not currently on
+			setRadioState(true, true);
+			// will delay while confirming
+			cur_radio_mode = POWER_ON_RADIO_MODE;
+			
+			// activate command mode on the radio if we're not currently in it
+			if (/* requires_command_mode(cur_command) && */ cur_radio_mode != COMMAND_MODE && cur_radio_mode != RECIEVING_COMMAND) {
+				vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS);
+				set_command_mode(false); // don't delay, we'll take care of it
+				vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS);
+			}
+			
+			if (!process_radio_command(&cur_command)) {
+				// power off command issued TODO: how to respond? probably suspend this task?
+				// TODO
+			}
+		}
+		// keep trying if nothing received
+	}
+	
+	// warm reset the radio if necessary before moving to transmit state
+	// so it can transmit
+	if (cur_radio_mode != TX_RX_MODE) {
+		warm_reset();
+		vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+	}
+}
+
+/************************************************************************/
+/* DATA TRANSMISSION FUNCTIONS                                          */
+/************************************************************************/
 // define buffer here to keep LOCAL
 uint8_t msg_buffer_1[MSG_BUFFER_SIZE];
 uint8_t msg_buffer_2[MSG_BUFFER_SIZE];
@@ -152,75 +266,111 @@ bool determine_data_to_transmit(void) {
 
 void debug_print_msg_types(void);
 
+// attempts to send transmission
+void attempt_transmission(void) {
+	
+	if (!determine_data_to_transmit()) {
+		// don't transmit right now
+		return;
+	}
+	
+	// double-make sure radio is set to transmit (don't check regulators every time, however)
+	// (it should be on whenever this task is running anyways)
+	setRadioState(true, false);
+	
+	// print a debug message
+	debug_print_msg_types();
+	
+	// actually write buffers
+	uint32_t current_timestamp = get_current_timestamp();
+	write_packet(msg_buffer_1, buffer_1_msg_type, current_timestamp);
+	write_packet(msg_buffer_2, buffer_2_msg_type, current_timestamp);
+	write_packet(msg_buffer_3, buffer_3_msg_type, current_timestamp);
+	
+	// actually send buffer over USART to radio for transmission
+	// wait here between calls to give buffer
+	transmit_buf_wait(msg_buffer_1, MSG_SIZE);
+	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+	transmit_buf_wait(msg_buffer_2, MSG_SIZE);
+	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+	transmit_buf_wait(msg_buffer_3, MSG_SIZE);
+	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+
+	// NOTE: putting this here as opposed to after the confirmation
+	// means we will try to send the newest packet if encountering failures,
+	// as opposed to the first one to fail.
+	// we wrap around here so that the transmit buffers are updated each time
+	// current_sequence_transmissions hits zero (mainly done so they're updated on first boot)
+	current_sequence_transmissions = (current_sequence_transmissions + 1) % TRANSMIT_TASK_MSG_REPEATS;
+
+	// TODO:::
+//	bool transmission_in_progress = true;
+// 	TickType_t start_tick = xTaskGetTickCount();
+// 	while (transmission_in_progress) {
+// 		// give control back to RTOS to let transmit data task read info
+// 		vTaskDelayUntil( prev_wake_time, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
+// 
+// 		transmission_in_progress = false; // TODO: query radio state / current
+// 
+// 		// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
+// 		if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
+// 			log_error(ELOC_RADIO, ECODE_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
+// 			return;
+// 		}
+// 	}
+}
+
+/************************************************************************/
+/* MAIN RTOS TRANSMIT + RADIO GATEKEEPER TASK                           */
+/************************************************************************/
+
 void transmit_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
 	vTaskDelay(TRANSMIT_TASK_FREQ_OFFSET);
-	TickType_t prev_wake_time = xTaskGetTickCount();
+	TickType_t prev_transmit_time = xTaskGetTickCount();
 
 	init_task_state(TRANSMIT_TASK); // suspend or run on boot
 
+	// block initially so we don't go right into command-processing mode
+	vTaskDelayUntil( &prev_transmit_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS); 
+
 	for( ;; )
 	{
-		// block for a time based on this task's globally-set frequency
-		// (Note: changes to the frequency can be delayed in taking effect by as much as the past frequency...)
-		vTaskDelayUntil( &prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
-
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);
 		
-		if (!determine_data_to_transmit()) {
-			// don't transmit right now
-			continue;
-		}
-		
-		// double-make sure radio is set to transmit (don't check regulators every time, however)
-		// (it should be on whenever this task is running anyways)
-		setRadioState(true, false);
-		
-		// print a debug message
-		debug_print_msg_types();
-		
-		// actually write buffers
-		uint32_t current_timestamp = get_current_timestamp();
-		write_packet(msg_buffer_1, buffer_1_msg_type, current_timestamp);
-		write_packet(msg_buffer_2, buffer_2_msg_type, current_timestamp);
-		write_packet(msg_buffer_3, buffer_3_msg_type, current_timestamp);
-		
-		// actually send buffer over USART to radio for transmission
-		// wait here between calls to give buffer
-		transmit_buf_wait(msg_buffer_1, MSG_SIZE);
-		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-		transmit_buf_wait(msg_buffer_2, MSG_SIZE);
-		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-		transmit_buf_wait(msg_buffer_3, MSG_SIZE);
-		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		/************************************************************************/
+		/* STAGE ILLUSTRATION:                                                  */
+		/* t			  t+x_1				   t+x_2		t+TRANSMIT_TASK_FREQ*/
+		/* |-transmission-|--command handling--|--sleep---------|-transmission-|*/
+		/* or												(cut short) 		*/
+		/* |-transmission-|--command handling-------------------|-transmission-|*/
+		/* (the difference is that not all the commands got handled in #2)		*/
+		/************************************************************************/
 
-		// NOTE: putting this here as opposed to after the confirmation
-		// means we will try to send the newest packet if encountering failures,
-		// as opposed to the first one to fail.
-		// we wrap around here so that the transmit buffers are updated each time
-		// current_sequence_transmissions hits zero (mainly done so they're updated on first boot)
-		current_sequence_transmissions = (current_sequence_transmissions + 1) % TRANSMIT_TASK_MSG_REPEATS;
-
-		bool transmission_in_progress = true;
-		TickType_t start_tick = xTaskGetTickCount();
-		while (transmission_in_progress) {
-			// give control back to RTOS to let transmit data task read info
-			vTaskDelayUntil( &prev_wake_time, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
-
-			transmission_in_progress = false; // TODO: query radio state / current
-
-			// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
-			if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
-				log_error(ELOC_RADIO, ECODE_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
-				break;
-			}
-		}
+		// enter command handling stage;
+		// process any commands on the command queue for a maximum time period of 
+		// approximately TRANSMIT_TASK_FREQ (minus expectations of transmission time)
+		process_radio_commands(prev_transmit_time);
+		
+		// block for any leftover time
+		vTaskDelayUntil( &prev_transmit_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// report to watchdog (again)
+		report_task_running(TRANSMIT_TASK);
+		
+		// enter transmission stage;
+		// after processing any radio commands, try a transmission
+		attempt_transmission();
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
 }
+
+/************************************************************************/
+/* UTILITY                                                              */
+/************************************************************************/
 
 char* get_msg_type_str(msg_data_type_t msg_type) {
 	switch (msg_type) {

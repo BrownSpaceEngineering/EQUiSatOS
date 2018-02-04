@@ -8,29 +8,24 @@ char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
-// mutex to ensure only one thread can control radio power at a time
-#define RADIO_POWER_MUTEX_WAIT_TIME_TICKS		10000
-StaticSemaphore_t _radio_power_mutex_d;
-SemaphoreHandle_t radio_power_mutex;
-
 void radio_init(void) {
 	// USART_init() should be called as well (above)
 	setup_pin(true, P_RAD_PWR_RUN); //3v6 enable
 	setup_pin(true, P_RAD_SHDN); //init shutdown pin
 	setup_pin(true, P_TX_EN); //init send enable pin
 	setup_pin(true, P_RX_EN); //init receive enable pin
-	radio_power_mutex = xSemaphoreCreateMutexStatic(&_radio_power_mutex_d);
+	radio_control_init(); 
 }
 
-void set_command_mode(void) {
-	delay_ms(200);
+void set_command_mode(bool delay) {
+	if (delay) delay_ms(SET_CMD_MODE_WAIT_BEFORE_MS);
 	usart_send_string((uint8_t*) "+++");
-	delay_ms(300);
+	if (delay) delay_ms(SET_CMD_MODE_WAIT_AFTER_MS);
 }
 
 bool send_command(int numBytesReceiving) {
 	clear_USART_rx_buffer();
-	set_command_mode();
+	set_command_mode(true);
 	waitingForData = true;
 	receiveDataReady = false;
 	expectedReceiveDataLen = numBytesReceiving;
@@ -188,7 +183,7 @@ void setRadioState(bool enable, bool confirm) {
 
 		// if enabling, delay and check that the radio was enabled
 		if (confirm && enable) {
-			vTaskDelay(REGULATOR_MEASURE_DELAY);
+			vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER);
 			verify_regulators(); // will log error if regulator not valid
 		}
 	#endif

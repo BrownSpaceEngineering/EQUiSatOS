@@ -7,37 +7,28 @@
 
 #include "USART_Commands.h"
 
-#if PRINT_DEBUG  // if debug mode
+#ifdef PRINT_DEBUG  // if debug mode
 	char debug_buf[256];
-	
+
 	StaticSemaphore_t _print_mutex_d;
 	SemaphoreHandle_t print_mutex;
 #endif
 
 uint8_t edbg_rx_data,ext_rx_data;
 
-StaticSemaphore_t _usart_send_string_mutex_d;
-SemaphoreHandle_t usart_send_string_mutex;
-
 void USART_init() {	
 	ext_usart_clock_init();
 	ext_usart_pin_init();
 	ext_usart_init();
-	usart_mutex_init();
-	
+
 	#ifdef PRINT_DEBUG
+		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
+	
 		// if printing, make sure the USART is not sent to the radio
 		setTXEnable(false);
 		setRXEnable(false);
 	#endif
 }
-
-void usart_mutex_init(void) {
-	usart_send_string_mutex = xSemaphoreCreateMutexStatic(&_usart_send_string_mutex_d);
-	#if PRINT_DEBUG
-		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
-	#endif
-}	
 
 //Receive handler
 void SERCOM3_Handler(void)
@@ -239,26 +230,34 @@ void ext_usart_pin_init(void)
 
 void usart_send_buf(const uint8_t *str_buf, int len)
 {
-	xSemaphoreTake(usart_send_string_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+	#ifdef PRINT_DEBUG
+		xSemaphoreTake(print_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+	#endif
 	for (int i = 0; i < len; i++)
 	{
 		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
-	xSemaphoreGive(usart_send_string_mutex);
+	#ifdef PRINT_DEBUG
+		xSemaphoreGive(print_mutex);
+	#endif
 }
 
 void usart_send_string(const uint8_t *str_buf)
 {
-	xSemaphoreTake(usart_send_string_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+	#ifdef PRINT_DEBUG
+		xSemaphoreTake(print_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+	#endif
 	while (*str_buf != '\0')
 	{
 		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
-	xSemaphoreGive(usart_send_string_mutex);
+	#ifdef PRINT_DEBUG
+		xSemaphoreGive(print_mutex);
+	#endif
 }
 
 // use in debug mode (set in header file)
@@ -266,7 +265,7 @@ void usart_send_string(const uint8_t *str_buf)
 // call to sprintf stores result in char *debug_buf
 void print(const char *format, ...)
 {
-	#if PRINT_DEBUG  // if debug mode
+	#ifdef PRINT_DEBUG  // if debug mode
 		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 		va_list arg;
 		va_start (arg, format);
@@ -275,5 +274,4 @@ void print(const char *format, ...)
 		usart_send_string((uint8_t*) debug_buf);
 		xSemaphoreGive(print_mutex);
 	#endif
-	
 }

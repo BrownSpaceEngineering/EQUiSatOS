@@ -337,8 +337,10 @@ void set_radio_by_sat_state(sat_state_t state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_radio_state != new_state) 
 			setRadioState(true, true);
+			//TODO: //submit_radio_command(POWER_ON, true /* (confirm) */, NULL, NULL, 4000);
 	} else {
 		setRadioState(false, false);
+		//TODO: //submit_radio_command(POWER_OFF, true /* (confirm) */, NULL, NULL, 2000);
 	}
 	current_radio_state = new_state;
 }

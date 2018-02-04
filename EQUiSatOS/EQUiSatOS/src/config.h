@@ -41,8 +41,8 @@
 // whether to start up testing tasks
 //#define RUN_TESTING_TASKS
 
-// 0 to suppress prints and send data to RADIO, 1 to print over USART
-#define PRINT_DEBUG 0
+// define this flag to print over USART, otherwise suppress prints and send data to RADIO
+#define PRINT_DEBUG
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

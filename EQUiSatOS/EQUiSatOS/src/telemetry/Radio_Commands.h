@@ -12,10 +12,14 @@
 #include "../processor_drivers/USART_Commands.h"
 #include "../sensor_drivers/sensor_read_commands.h"
 
+// constants
 #define RADIO_BAUD_BYTES			1200
 #define TRANSMIT_TIME_MS(bytes)		((1000 * bytes) / RADIO_BAUD_BYTES)
+#define SET_CMD_MODE_WAIT_BEFORE_MS	200 
+#define SET_CMD_MODE_WAIT_AFTER_MS	300
+#define WARM_RESET_WAIT_AFTER_MS	100 // TODO: necessary / what value?
 
-void set_command_mode(void);
+void set_command_mode(bool delay);
 uint16_t XDL_get_temperature(void);
 void warm_reset(void);
 void cold_reset(void);
