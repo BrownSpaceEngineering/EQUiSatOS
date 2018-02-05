@@ -92,11 +92,12 @@ void process_radio_commands(TickType_t prev_transmit_time) {
 	// continue to try and process commands until we're close enough to the 
 	// time we need to transmit that we need to get prepared
 	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
-	TickType_t max_processing_time = prev_transmit_time +
+	TickType_t processing_deadline = prev_transmit_time +
 		(TRANSMIT_TASK_FREQ - MAX_CMD_MODE_RECOVERY_TIME_MS) / portTICK_PERIOD_MS;
 
-	while (xTaskGetTickCount() < max_processing_time) {
-		if (xQueueReceive(radio_command_queue, &cur_command, max_processing_time)) {
+	while (xTaskGetTickCount() < processing_deadline) {
+		// try to receive command from queue, waiting the maximum time we can before the processing deadline
+		if (xQueueReceive(radio_command_queue, &cur_command, processing_deadline - xTaskGetTickCount())) {
 			// turn on radio if it's not currently on
 			setRadioState(true, true);
 			// will delay while confirming

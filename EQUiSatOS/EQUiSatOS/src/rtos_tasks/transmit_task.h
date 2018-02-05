@@ -44,7 +44,7 @@ typedef struct radio_command_t {
 // queue on which to send radio_command_t's to be fulfilled
 #define RADIO_CMD_QUEUE_LEN			15 // if anyone tries to add more, they'll get an error
 // internals
-static StaticQueue_t _radio_command_queue_d;
+StaticQueue_t _radio_command_queue_d;
 uint8_t _radio_command_queue_storage[RADIO_CMD_QUEUE_LEN * sizeof(radio_command_t)];
 // queue handle
 QueueHandle_t radio_command_queue;

@@ -101,6 +101,8 @@ enum error_locations {
 	ELOC_ATTITUDE_DATA =				62,
 	ELOC_FLASH_DATA =					63, // both flash and flash_cmp (for now)
 	ELOC_LOW_POWER_DATA =				64,
+	
+	ELOC_MRAM_SPI_MUTEX	=				65,
 };
 
 /******************** PROBLEM CODES ********************/

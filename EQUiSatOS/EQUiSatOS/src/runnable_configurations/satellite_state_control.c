@@ -253,7 +253,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task and apply
-	if (cache_get_sat_event_history()->antenna_deployed) { // no one writing so don't wait
+	if (cache_get_sat_event_history().antenna_deployed) { 
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -553,9 +553,9 @@ struct hw_states* get_hw_states(void) {
 }
 
 void hardware_state_mutex_take(void) {
-	xSemaphoreTake(&hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
 }
 
 void hardware_state_mutex_give(void) {
-	xSemaphoreGive(&hardware_state_mutex);
+	xSemaphoreGive(hardware_state_mutex);
 }

@@ -14,7 +14,6 @@ void radio_init(void) {
 	setup_pin(true, P_RAD_SHDN); //init shutdown pin
 	setup_pin(true, P_TX_EN); //init send enable pin
 	setup_pin(true, P_RX_EN); //init receive enable pin
-	radio_control_init(); 
 }
 
 void set_command_mode(bool delay) {

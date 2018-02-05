@@ -314,12 +314,12 @@ void mram_test(void) {
 	mram_initialize_master(&spi_master_instance, 10000000);
 	mram_initialize_slave(&slave, P_MRAM1_CS);
 	
-	#define TEST_ADDRESS	0x002
+	#define TEST_ADDRESS	0x049
 	#define EX_ARRAY_LEN	8
 	#define NUM_BYTES		100
 	uint8_t example_array[EX_ARRAY_LEN] = {0x01, 0x02, 0x03, 0x04, 0xa5, 0xfc, 0xff, 0x42};
-	uint8_t example_output_array_before[NUM_BYTES];// = {0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t example_output_array_after[NUM_BYTES];// = {0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t example_output_array_before[NUM_BYTES];
+	uint8_t example_output_array_after[NUM_BYTES];
 		
 	memset(example_output_array_before, 0, NUM_BYTES);
 	memset(example_output_array_after, 0, NUM_BYTES);
@@ -327,9 +327,9 @@ void mram_test(void) {
 	enum status_code sc;
 	uint8_t status_reg = 0x0;
 	sc = mram_read_status_register(&spi_master_instance, &slave, &status_reg);
-	sc = mram_read_bytes(&spi_master_instance, &slave, example_output_array_before, NUM_BYTES, TEST_ADDRESS + 1);
+	sc = mram_read_bytes(&spi_master_instance, &slave, example_output_array_before, NUM_BYTES, TEST_ADDRESS);
 	sc = mram_write_bytes(&spi_master_instance, &slave, example_array, EX_ARRAY_LEN, TEST_ADDRESS);
-	sc = mram_read_bytes(&spi_master_instance, &slave, example_output_array_after, NUM_BYTES, TEST_ADDRESS + 1);
+	sc = mram_read_bytes(&spi_master_instance, &slave, example_output_array_after, NUM_BYTES, TEST_ADDRESS);
 	
 	return;
 }

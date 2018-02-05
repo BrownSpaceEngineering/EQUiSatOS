@@ -56,6 +56,9 @@ void testing_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, TESTING_TASK_FREQ / portTICK_PERIOD_MS);
 		
+		// callback testing function in main
+		run_rtos_tests();
+		
 		/************************************************************************/
 		/* MISC                                                                 */
 		/************************************************************************/

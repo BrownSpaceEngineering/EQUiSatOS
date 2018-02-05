@@ -473,7 +473,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 	
-	log_if_error(ELOC_IMU_MAG, sc, false);
+	log_if_error(ELOC_IMU_MAG, sc, false); // TODO: managed to produce sc > 128
 	for (int i = 0; i < 3; i++) {
 		batch[i] = truncate_16t(rs[i]);
 	}
