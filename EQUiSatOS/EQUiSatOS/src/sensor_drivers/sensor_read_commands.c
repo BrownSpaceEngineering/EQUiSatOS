@@ -57,7 +57,7 @@ static inline uint8_t truncate_16t(uint16_t src) {
 	return src >> 8;
 }
 
-static void log_if_out_of_bounds(uint reading, uint low, uint high, uint8_t eloc, bool priority) {
+static void log_if_out_of_bounds(uint16_t reading, uint low, uint high, uint8_t eloc, bool priority) {
 	if (reading <= low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
 	} else if (reading >= high) {
