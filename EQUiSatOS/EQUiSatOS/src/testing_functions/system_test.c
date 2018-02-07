@@ -195,12 +195,12 @@ static void AD590_test(void){
 	for (int i = 0; i < 8; i++){
 		configure_adc(&temp_instance,P_AI_TEMP_OUT);
 		uint8_t rs;
-		LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
+		enum status_code sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
 		
 		delay_ms(1);
 
 		uint16_t temp_mV;
-		enum status_code sc = read_adc_mV(temp_instance,&temp_mV);
+		read_adc_mV(temp_instance,&temp_mV);
 		
 		// temperature conversion from voltage -> current -> degrees celsius		
 		float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
@@ -312,36 +312,41 @@ static void HMC5883L_test(bool printFloats){
 }
 
 //GPIO test
-static enum status_code TCA9535_test(void){
+static enum status_code TCA9535_test(bool printStData, bool printChargeData){
 	print("==============TCA9535 Test==============\n");
 	uint16_t res;
 	enum status_code sc = TCA9535_init(&res);
 	print("TCA return status: ");
 	print_error(sc);
-	print("L2_ST: \t\t %d\n", (res>>8)&0x1);
-	print("L1_ST: \t\t %d\n", (res>>9)&0x1);
-	print("SPF_ST: \t %d\n", (res>>10)&0x1);
-	print("L1_CHGN: \t %d\n", (res>>12)&0x1);
-	print("L1_FAULTN: \t %d\n", (res>>13)&0x1);
-	print("L2_CHGN: \t %d\n", (res>>14)&0x1);
-	print("L2_FAULTN: \t %d\n", (res>>15)&0x1);
-	print("LF_B1_CHGN: \t %d\n", (res>>7)&0x1);
-	print("LF_B1_FAULTN: \t %d\n", (res>>6)&0x1);
-	print("LF_B2_CHGN: \t %d\n", (res>>4)&0x1);
-	print("LF_B2_FAULTN: \t %d\n", (res>>5)&0x1);	
-	//print("TCA test: %d\n",rs);
+	if (printStData) {
+		print("L2_ST: \t\t %d\n", (res>>8)&0x1);
+		print("L1_ST: \t\t %d\n", (res>>9)&0x1);
+		print("SPF_ST: \t %d\n", (res>>10)&0x1);	
+	}
+	if (printChargeData) {
+		print("L1_CHGN: \t %d\n", (res>>12)&0x1);
+		print("L1_FAULTN: \t %d\n", (res>>13)&0x1);
+		print("L2_CHGN: \t %d\n", (res>>14)&0x1);
+		print("L2_FAULTN: \t %d\n", (res>>15)&0x1);
+		print("LF_B1_CHGN: \t %d\n", (res>>7)&0x1);
+		print("LF_B1_FAULTN: \t %d\n", (res>>6)&0x1);
+		print("LF_B2_CHGN: \t %d\n", (res>>4)&0x1);
+		print("LF_B2_FAULTN: \t %d\n", (res>>5)&0x1);	
+	}	
 }
 
 // Photodiode test
 static float TEMD6200_test(void){
 	print("==============TEMD6200 Test==============\n");
+	char buffer[20];	
 	char test_str[20];
 	struct adc_module pd_instance;
 	for (int i = 0; i < 6; i++){		
 		uint16_t pd_mV;
 		configure_adc(&pd_instance,P_AI_PD_OUT);
 		uint8_t rs;		
-		LTC1380_channel_select(0x4a, i, &rs);
+		enum status_code code = LTC1380_channel_select(0x4a, i, &rs);
+		get_status(code, buffer);
 		adc_enable(&pd_instance);
 		read_adc_mV(pd_instance, &pd_mV);
 		switch (i) {
@@ -364,7 +369,7 @@ static float TEMD6200_test(void){
 			strcpy(test_str,"PD_RBF +X");
 			break;
 		}
-		print("%s \t %d \n",test_str, pd_mV);
+		print("%s \t %s \t %d \n",test_str, buffer, pd_mV);
 	}
 	
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	
@@ -617,6 +622,22 @@ void readLEDCurrent(bool printFloats){
 	}
 }
 
+void LION_DISG_TEST(void) {
+	print("==============DISCHARGE Test==============\n");
+
+	print("L1 ON, L2 OFF\n");
+	set_output(false, P_L1_DISG);
+	set_output(true, P_L2_DISG);
+	delay_ms(500);
+	TCA9535_test(true, false);
+	
+	print("L1 OFF, L2 ON\n");
+	set_output(false, P_L2_DISG);
+	set_output(true, P_L1_DISG);	
+	delay_ms(500);
+	TCA9535_test(true, false);
+}
+
 void system_test(bool printFloats){		
 	print("=======================================\n");
 	print("=               SYSTEM Test           =\n");
@@ -638,5 +659,7 @@ void system_test(bool printFloats){
 	
 	TEMD6200_test();
 	
-	TCA9535_test();
+	TCA9535_test(true, true);
+	
+	LION_DISG_TEST();
 }
