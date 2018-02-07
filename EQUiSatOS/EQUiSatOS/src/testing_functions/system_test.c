@@ -313,7 +313,9 @@ static void HMC5883L_test(bool printFloats){
 
 //GPIO test
 static enum status_code TCA9535_test(bool printStData, bool printChargeData){
-	print("==============TCA9535 Test==============\n");
+	if (printStData && printChargeData) {
+		print("==============TCA9535 Test==============\n");
+	}
 	uint16_t res;
 	enum status_code sc = TCA9535_init(&res);
 	print("TCA return status: ");
@@ -622,7 +624,7 @@ void readLEDCurrent(bool printFloats){
 	}
 }
 
-void LION_DISG_TEST(void) {
+void LION_DISG_test(void) {
 	print("==============DISCHARGE Test==============\n");
 
 	print("L1 ON, L2 OFF\n");
@@ -636,6 +638,42 @@ void LION_DISG_TEST(void) {
 	set_output(true, P_L1_DISG);	
 	delay_ms(500);
 	TCA9535_test(true, false);
+}
+
+void set_chg_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {	
+	set_output(lion1, P_L1_RUN_CHG);	
+	set_output(lion2, P_L2_RUN_CHG);
+	set_output(lifepo_b1, P_LF_B1_RUNCHG);
+	set_output(lifepo_b2, P_LF_B2_RUNCHG);
+}
+
+void CHG_test() {
+	print("==============CHARGE Test==============\n");
+
+	print("CHARGE L1\n");
+	set_chg_states(true, false, false, false);
+	delay_ms(1000);
+	TCA9535_test(false, true);
+	
+	print("CHARGE L2\n");
+	set_chg_states(false, true, false, false);
+	delay_ms(1000);
+	TCA9535_test(false, true);
+	
+	print("CHARGE LFB1\n");
+	set_chg_states(false, false, true, false);
+	delay_ms(1000);
+	TCA9535_test(false, true);
+	
+	print("CHARGE LFB2\n");
+	set_chg_states(false, false, false, true);
+	delay_ms(1000);
+	TCA9535_test(false, true);
+	
+	print("CHARGE ALL\n");
+	set_chg_states(true, true, true, true);
+	delay_ms(1000);
+	TCA9535_test(false, true);
 }
 
 void system_test(bool printFloats){		
@@ -661,5 +699,7 @@ void system_test(bool printFloats){
 	
 	TCA9535_test(true, true);
 	
-	LION_DISG_TEST();
+	LION_DISG_test();
+	
+	CHG_test();
 }
