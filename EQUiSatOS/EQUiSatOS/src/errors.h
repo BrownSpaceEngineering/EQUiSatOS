@@ -93,16 +93,15 @@ enum error_locations {
 	ELOC_5V_REF = 						55,
 	ELOC_STATE_HANDLING = 				56,
 	ELOC_BAT_CHARGING =					57,
-	ELOC_ERROR_STACK =					58,
-	ELOC_WATCHDOG =						59,
-	ELOC_PROC_TEMP =					60,
+	ELOC_ANTENNA_DEPLOY	=				58,
+	ELOC_ERROR_STACK =					59,
+	ELOC_WATCHDOG =						60,
+	ELOC_PROC_TEMP =					61,
 	
-	ELOC_IDLE_DATA =					61,
-	ELOC_ATTITUDE_DATA =				62,
-	ELOC_FLASH_DATA =					63, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				64,
-	
-	ELOC_MRAM_SPI_MUTEX	=				65,
+	ELOC_IDLE_DATA =					62,
+	ELOC_ATTITUDE_DATA =				63,
+	ELOC_FLASH_DATA =					64, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				65,
 };
 
 /******************** PROBLEM CODES ********************/
@@ -150,6 +149,9 @@ enum error_codes {
 	ECODE_WATCHDOG_RESET =				36,
 	ECODE_WATCHDOG_DID_KICK =			37,
 	ECODE_EXCESSIVE_SUSPENSION =		38,
+	ECODE_MUTEX_TIMEOUT	=				39,
+	ECODE_MUTEX_TIMEOUT_NEST_1 =		40,
+	ECODE_MUTEX_TIMEOUT_NEST_2 =		41,
 };
 
 /************************************************************************/

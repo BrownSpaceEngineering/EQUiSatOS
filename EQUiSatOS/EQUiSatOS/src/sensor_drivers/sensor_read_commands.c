@@ -94,15 +94,20 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 void set_5v_enable(bool on) {
 	// note: to avoid chance of deadlock, any locks
 	// of the i2c bus / processor adc mutex must be above this
-	hardware_state_mutex_take();
-	set_output(on, P_5V_EN);
-	get_hw_states()->rail_5v_enabled = on;
+	if (hardware_state_mutex_take())
+	{
+		set_output(on, P_5V_EN);
+		get_hw_states()->rail_5v_enabled = on;
+	} else {
+		log_error(ELOC_5V_REF, ECODE_MUTEX_TIMEOUT, true);
+	}
 	hardware_state_mutex_give();
 }
 
 void verify_regulators_unsafe(void) {
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
+	// TODO: check this mutex and accept the syntactical consequences
 	hardware_state_mutex_take();
 
 		ad7991_ctrlbrd_batch batch;
@@ -131,9 +136,11 @@ void verify_regulators_unsafe(void) {
 }
 
 void verify_regulators(void) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		verify_regulators_unsafe();
+	} else {
+		log_error(ELOC_AD7991_0_0, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 }
@@ -144,7 +151,7 @@ void verify_regulators(void) {
 /************************************************************************/
 
 void read_ir_object_temps_batch(ir_object_temps_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		set_output(true, P_IR_PWR_CMD);
 		vTaskDelay(IR_WAKE_DELAY);
@@ -156,12 +163,14 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 			batch[i] = obj;
 		}
 		set_output(false, P_IR_PWR_CMD);
+	} else {
+		log_error(ELOC_IR_6, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		set_output(true, P_IR_PWR_CMD);
 		vTaskDelay(IR_WAKE_DELAY);
@@ -173,6 +182,8 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 			batch[i] = truncate_16t(amb);
 		}
 		set_output(false, P_IR_PWR_CMD);
+	} else {
+		log_error(ELOC_IR_1, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 }
@@ -189,7 +200,7 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 }
 
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		uint16_t buf;
 		commands_read_adc_mV(&buf, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
@@ -197,6 +208,8 @@ void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 
 		commands_read_adc_mV(&buf, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
 		*val_2 = buf;
+	} else {
+		log_error(ELOC_L1_REF, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(processor_adc_mutex);
 }
@@ -207,24 +220,30 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t low_limit, high_limit;
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	// only lock hardware state mutex while needed to act on state,
-	// but long enough to ensure the state doesn't change in the middle of checking it
-	hardware_state_mutex_take();
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		sc = AD7991_read_all_mV(results, AD7991_BATBRD);	
-		log_if_error(ELOC_AD7991_0, sc, true);
+		// only lock hardware state mutex while needed to act on state,
+		// but long enough to ensure the state doesn't change in the middle of checking it
+		if (hardware_state_mutex_take())
+		{
+			sc = AD7991_read_all_mV(results, AD7991_BATBRD);	
+			log_if_error(ELOC_AD7991_0, sc, true);
 
-		struct hw_states* states = get_hw_states();
-		if (states->antenna_deploying || states->radio_transmitting) {
-			low_limit = B_L_CUR_REG_LOW;
-			high_limit = B_L_CUR_REG_HIGH;
+			struct hw_states* states = get_hw_states();
+			if (states->antenna_deploying || states->radio_transmitting) {
+				low_limit = B_L_CUR_REG_LOW;
+				high_limit = B_L_CUR_REG_HIGH;
+			} else {
+				low_limit = B_L_CUR_HIGH_LOW;
+				high_limit = B_L_CUR_HIGH_HIGH;
+			}
 		} else {
-			low_limit = B_L_CUR_HIGH_LOW;
-			high_limit = B_L_CUR_HIGH_HIGH;
+			log_error(ELOC_AD7991_0, ECODE_MUTEX_TIMEOUT_NEST_1, true);
 		}
+		hardware_state_mutex_give();
+	} else {
+		log_error(ELOC_AD7991_0, ECODE_MUTEX_TIMEOUT, true);
 	}
-	hardware_state_mutex_give();
 	xSemaphoreGive(i2c_irpow_mutex);
 
 	// results[0] = L2_SNS
@@ -250,9 +269,11 @@ void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
 }
 
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		read_ad7991_ctrlbrd_unsafe(batch);
+	} else {
+		log_error(ELOC_AD7991_1, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 }
@@ -262,16 +283,22 @@ void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 /************************************************************************/
 
 void en_and_read_led_temps_batch(led_temps_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		set_5v_enable(true);
-		// TODO: time delay?
-		verify_regulators_unsafe();
-		read_led_temps_batch_unsafe(batch);
-		set_5v_enable(false);
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			set_5v_enable(true);
+			// TODO: time delay?
+			verify_regulators_unsafe();
+			read_led_temps_batch_unsafe(batch);
+			set_5v_enable(false);
+		} else {
+			log_error(ELOC_TEMP_4, ECODE_MUTEX_TIMEOUT_NEST_1, true);
+		}
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		log_error(ELOC_TEMP_4, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
@@ -288,16 +315,22 @@ void read_led_temps_batch_unsafe(led_temps_batch batch) {
 
 // TODO: may be unnecessary
 void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		set_5v_enable(true);
-		// TODO: time delay?
-		verify_regulators_unsafe(); 
-		read_lifepo_temps_batch_unsafe(batch);
-		set_5v_enable(false);
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			set_5v_enable(true);
+			// TODO: time delay?
+			verify_regulators_unsafe(); 
+			read_lifepo_temps_batch_unsafe(batch);
+			set_5v_enable(false);
+		} else {
+			log_error(ELOC_TEMP_1, ECODE_MUTEX_TIMEOUT_NEST_1, true);
+		}
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		log_error(ELOC_TEMP_1, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
@@ -343,9 +376,11 @@ void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* va
 }
 
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		read_lf_volts_precise_unsafe(val_1, val_2, val_3, val_4);
+	} else {
+		log_error(ELOC_L1_REF, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(processor_adc_mutex);
 }
@@ -366,9 +401,11 @@ void read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		read_lifepo_volts_batch_unsafe(batch);
+	} else {
+		log_error(ELOC_LF1REF, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(processor_adc_mutex);
 }
@@ -395,19 +432,25 @@ void verify_flash_readings(bool flashing_now) {
 	// on this line, and then comes back while flashing, the flash 
 	// task will have the mutex so we'll wait here until it's done
 	// (the passed flash state will be valid even if a flash happens)
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		uint8_t buffer[4]; // size of largest data type
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			uint8_t buffer[4]; // size of largest data type
 		
-		// read values to nowhere, making them check bounds for errorss
-		read_led_temps_batch_unsafe(buffer);
-		read_lifepo_temps_batch_unsafe(buffer);
-		read_lifepo_current_batch_unsafe(buffer, flashing_now);
-		read_lifepo_volts_batch_unsafe(buffer);
-		read_led_current_batch_unsafe(buffer, flashing_now);
+			// read values to nowhere, making them check bounds for errorss
+			read_led_temps_batch_unsafe(buffer);
+			read_lifepo_temps_batch_unsafe(buffer);
+			read_lifepo_current_batch_unsafe(buffer, flashing_now);
+			read_lifepo_volts_batch_unsafe(buffer);
+			read_led_current_batch_unsafe(buffer, flashing_now);
+		} else {
+			log_error(ELOC_LED1SNS, ECODE_MUTEX_TIMEOUT_NEST_1, true);
+		}
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		log_error(ELOC_LED1SNS, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
@@ -416,55 +459,69 @@ void verify_flash_readings(bool flashing_now) {
 /************************************************************************/ 
 
 void read_pdiode_batch(pdiode_batch* batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// TODO: need to output to two bits of a uint16_t
-		for (int i = 0; i < 6; i++) {
-			uint8_t rs;
-			// TODO: LTC1380_channel_select takes a uint8, not 16
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			// TODO: need to output to two bits of a uint16_t
+			for (int i = 0; i < 6; i++) {
+				uint8_t rs;
+				// TODO: LTC1380_channel_select takes a uint8, not 16
 
-			// TODO INFO: it looks like these (uint8_t) readings need to be
-			// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
+				// TODO INFO: it looks like these (uint8_t) readings need to be
+				// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
 
-			status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
-			log_if_error(PD_ELOCS[i], sc, false);
-			commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
-			//batch[i] = truncate_16t(rs);
+				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
+				log_if_error(PD_ELOCS[i], sc, false);
+				commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+				//batch[i] = truncate_16t(rs);
+			}
+		} else {
+			log_error(ELOC_PD_1, ECODE_MUTEX_TIMEOUT_NEST_1, true);
 		}
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		log_error(ELOC_PD_1, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 void en_and_read_lion_temps_batch(lion_temps_batch batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		set_5v_enable(true);
-		// TODO: time delay?
-		verify_regulators_unsafe();
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			set_5v_enable(true);
+			// TODO: time delay?
+			verify_regulators_unsafe();
 		
-		for (int i = 2; i < 4; i++) {
-			uint8_t rs8;
-			status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
-			log_if_error(TEMP_ELOCS[i], sc, true);
-			commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
-			batch[i - 2] = rs8;
+			for (int i = 2; i < 4; i++) {
+				uint8_t rs8;
+				status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
+				log_if_error(TEMP_ELOCS[i], sc, true);
+				commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
+				batch[i - 2] = rs8;
+			}
+		
+			set_5v_enable(false);
+		} else {
+			log_error(ELOC_TEMP_3, ECODE_MUTEX_TIMEOUT_NEST_1, true);
 		}
-		
-		set_5v_enable(false);
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		log_error(ELOC_TEMP_3, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 void read_accel_batch(accelerometer_batch accel_batch) {
 	int16_t rs[3];
 	status_code_genare_t sc;
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		sc = MPU9250_read_acc(rs);
+	} else {
+		log_error(ELOC_IMU_ACC, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 	
@@ -477,9 +534,11 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 void read_gyro_batch(gyro_batch gyr_batch) {
 	int16_t rs[3];
 	status_code_genare_t sc;
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		sc = MPU9250_read_gyro(rs);
+	} else {
+		log_error(ELOC_IMU_GYRO, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 	
@@ -493,10 +552,12 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 void read_magnetometer_batch(magnetometer_batch batch) {
 	int16_t rs[3];
 	status_code_genare_t sc;
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		//sc = MPU9250_read_mag(rs);
 		status_code_genare_t sc = HMC5883L_readXYZ(rs);
+	} else {
+		log_error(ELOC_IMU_MAG, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 	
@@ -508,9 +569,11 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	status_code_genare_t sc;
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		sc = TCA9535_init(batch);	
+	} else {
+		log_error(ELOC_TCA, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(i2c_irpow_mutex);
 	
@@ -518,10 +581,12 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 }
 
 void read_proc_temp_batch(proc_temp_batch* batch) {
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		commands_read_adc_mV_truncate(batch, ADC_POSITIVE_INPUT_TEMP,
 			ELOC_PROC_TEMP, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, true);
+	} else {
+		log_error(ELOC_PROC_TEMP, ECODE_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(processor_adc_mutex);
 }
@@ -544,11 +609,17 @@ bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t sh
 // }
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
-	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// it's safe now; have fun!
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			// it's safe now; have fun!
+		} else {
+			//log_error(ELOC_IMU_TEMP, ECODE_MUTEX_TIMEOUT_NEST_1, true);
+		}
+		xSemaphoreGive(processor_adc_mutex);
+	} else {
+		//log_error(ELOC_IMU_TEMP, ECODE_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(i2c_irpow_mutex);
 }

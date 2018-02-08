@@ -83,7 +83,7 @@ void read_state_from_storage(void) {
 			storage_read_bytes_unsafe(1, (uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		#endif
 	} else {
-		log_error(ELOC_MRAM_SPI_MUTEX, ECODE_TIMEOUT, false);
+		log_error(ELOC_MRAM_READ, ECODE_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 }
@@ -139,7 +139,7 @@ void write_state_to_storage(void) {
 		storage_read_bytes_unsafe(1, &temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
 		storage_read_bytes_unsafe(1, (uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	} else {
-		log_error(ELOC_MRAM_SPI_MUTEX, ECODE_TIMEOUT, false);
+		log_error(ELOC_MRAM_WRITE, ECODE_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 	
@@ -305,7 +305,7 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 			equistack_Push(normal_errors, &(normal_error_buf[i]));
 		}
 	} else {
-		log_error(ELOC_MRAM_SPI_MUTEX, ECODE_TIMEOUT, false);
+		log_error(ELOC_MRAM_READ, ECODE_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 }

@@ -290,12 +290,18 @@ void attempt_transmission(void) {
 	
 	// actually send buffer over USART to radio for transmission
 	// wait here between calls to give buffer
-	transmit_buf_wait(msg_buffer_1, MSG_SIZE);
-	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-	transmit_buf_wait(msg_buffer_2, MSG_SIZE);
-	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-	transmit_buf_wait(msg_buffer_3, MSG_SIZE);
-	vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+	if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) 
+	{
+		transmit_buf_wait(msg_buffer_1, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		transmit_buf_wait(msg_buffer_2, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		transmit_buf_wait(msg_buffer_3, MSG_SIZE);
+		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+	} else {
+		log_error(ELOC_RADIO, ECODE_MUTEX_TIMEOUT, true);
+	}
+	xSemaphoreGive(critical_action_mutex);
 
 	// NOTE: putting this here as opposed to after the confirmation
 	// means we will try to send the newest packet if encountering failures,

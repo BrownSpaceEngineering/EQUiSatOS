@@ -28,7 +28,7 @@ task_states prev_task_states;
 task_states current_task_states;
 
 // global states for hardware + mutex
-struct hw_states hardware_states = {false, false, false, false, false};
+struct hw_states hardware_states = {false, false, false, false};
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 
@@ -82,6 +82,7 @@ void startup_task(void* pvParameters) {
 	// Initialize misc. state mutexes
 	battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
 	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
+	critical_action_mutex = xSemaphoreCreateMutexStatic(&_critical_action_mutex_d);
 
 	// Initialize EQUiStack mutexes
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
@@ -552,8 +553,8 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-void hardware_state_mutex_take(void) {
-	xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
+BaseType_t hardware_state_mutex_take(void) {
+	return xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
 }
 
 void hardware_state_mutex_give(void) {

@@ -82,6 +82,7 @@ void flash_activate_task(void *pvParameters)
 			// obtain i2c_irpow_mutex throughout flash, to speed up sensor reads,
 			// and enable 5V regulator throughout as well
 			// NOTE: order is intentional!
+			xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS);
 			xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
 			xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
 			{
@@ -120,6 +121,7 @@ void flash_activate_task(void *pvParameters)
 			}			
 			xSemaphoreGive(processor_adc_mutex);
 			xSemaphoreGive(i2c_irpow_mutex);
+			xSemaphoreGive(critical_action_mutex);
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
 			
