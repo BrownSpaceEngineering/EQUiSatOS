@@ -92,6 +92,8 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 }
 
 void set_5v_enable(bool on) {
+	// note: to avoid chance of deadlock, any locks
+	// of the i2c bus / processor adc mutex must be above this
 	hardware_state_mutex_take();
 	set_output(on, P_5V_EN);
 	get_hw_states()->rail_5v_enabled = on;
@@ -111,10 +113,12 @@ void verify_regulators_unsafe(void) {
 		uint16_t high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
 		uint16_t low3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
 		uint16_t high3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
-		uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
-		uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
-
+		
 	hardware_state_mutex_give();
+	
+	// 5V regulator state is technically locked by both i2c_irpow_mutex and processor_adc_mutex
+	uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
+	uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
 
 	// 3V6_REF is index 0
 	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_1_0, true);
@@ -202,15 +206,13 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	status_code_genare_t sc;
 	uint16_t low_limit, high_limit;
 
+	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
 	hardware_state_mutex_take();
 	{
-		xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-		{
-			sc = AD7991_read_all_mV(results, AD7991_BATBRD);	
-		}
-		xSemaphoreGive(i2c_irpow_mutex);
+		sc = AD7991_read_all_mV(results, AD7991_BATBRD);	
 		log_if_error(ELOC_AD7991_0, sc, true);
 
 		struct hw_states* states = get_hw_states();
@@ -223,6 +225,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 		}
 	}
 	hardware_state_mutex_give();
+	xSemaphoreGive(i2c_irpow_mutex);
 
 	// results[0] = L2_SNS
 	batch1[1] = truncate_16t(results[0]);
@@ -303,6 +306,7 @@ void read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 		uint8_t rs8;
 		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
+		// TODO: define different 'on' range?
 		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
 		batch[i] = rs8;
 	}
@@ -326,6 +330,7 @@ void read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing_
 
 
 void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+	// note: lifepo voltages will not vary enough during flash to warrant a seperate bound for them
 	commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
 	commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
 	commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
@@ -371,7 +376,7 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 // TODO: only reason the second argument exists right now is because of system_test
 void read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) {
 	uint low_limit, high_limit;
-	if (flashing_now) {
+	if (flashing_now) { // protected by i2c_irpower_mutex (and processor_adc_mutex)
 		low_limit = B_LED_CUR_REG_LOW;
 		high_limit = B_LED_CUR_REG_HIGH;
 	} else {
@@ -382,6 +387,28 @@ void read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) {
 	commands_read_adc_mV_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, low_limit, high_limit, true);
 	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, low_limit, high_limit, true);
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, low_limit, high_limit, true);
+}
+
+
+void verify_flash_readings(bool flashing_now) {
+	// note: if this function happens to context switch into being flashing
+	// on this line, and then comes back while flashing, the flash 
+	// task will have the mutex so we'll wait here until it's done
+	// (the passed flash state will be valid even if a flash happens)
+	xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	{
+		uint8_t buffer[4]; // size of largest data type
+		
+		// read values to nowhere, making them check bounds for errorss
+		read_led_temps_batch_unsafe(buffer);
+		read_lifepo_temps_batch_unsafe(buffer);
+		read_lifepo_current_batch_unsafe(buffer, flashing_now);
+		read_lifepo_volts_batch_unsafe(buffer);
+		read_led_current_batch_unsafe(buffer, flashing_now);
+	}
+	xSemaphoreGive(processor_adc_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
 }
 
 /************************************************************************/

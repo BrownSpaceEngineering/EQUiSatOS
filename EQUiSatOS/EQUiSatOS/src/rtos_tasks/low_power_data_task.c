@@ -46,6 +46,7 @@ void low_power_data_task(void *pvParameters)
 		
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 		verify_regulators();
+		verify_flash_readings(false); // not flashing (function is thread-safe)
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// if we were suspended in some period between start of this packet and here, DON'T add it

@@ -80,12 +80,13 @@ void flash_activate_task(void *pvParameters)
 			read_magnetometer_batch(current_cmp_struct->mag_before_data);
 				
 			// obtain i2c_irpow_mutex throughout flash, to speed up sensor reads,
-			// and enable 5V regulator thorughout as well
+			// and enable 5V regulator throughout as well
 			// NOTE: order is intentional!
 			xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
 			xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
-			set_5v_enable(true);
 			{
+				set_5v_enable(true);
+				
 				// enable lifepo output (before first data read to give a time buffer before flashing),
 				// and make sure the flash enable pin is high
 				flash_arm();
@@ -96,23 +97,12 @@ void flash_activate_task(void *pvParameters)
 				read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 										BATCH_READS_BEFORE, &prev_data_read_time);
 
-				// notify that we're flashing (in case a task makes it in during our brief sleep times)
-				// TODO: taking this hardware mutex may hang for a while here...
-				hardware_state_mutex_take();
-				get_hw_states()->flashing = true;
-				hardware_state_mutex_give();
-					
 				// send actual falling edge to flash circuitry to activate it
 				flash_activate();
 			
 				// read data during the flash of 100ms
 				read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 										BATCH_READS_DURING, &prev_data_read_time);
-									
-				// note we're not flashing anymore (approximate timing, but okay)
-				hardware_state_mutex_take();
-				get_hw_states()->flashing = false;
-				hardware_state_mutex_give();
 									
 			trace_print("Ending flash @ %d ticks", xTaskGetTickCount());
 			
@@ -124,9 +114,10 @@ void flash_activate_task(void *pvParameters)
 				// NOTE this does NOT actually stop the flashing - that is hardware controlled
 				// (put after last data read to keep from accidentally cutting off the flash)
 				flash_disarm();
-			}
-			// disable sensor regulators and free up mutexes
-			set_5v_enable(false);
+				
+				// disable sensor regulators and free up mutexes
+				set_5v_enable(false);
+			}			
 			xSemaphoreGive(processor_adc_mutex);
 			xSemaphoreGive(i2c_irpow_mutex);
 			

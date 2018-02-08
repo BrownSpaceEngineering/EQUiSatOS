@@ -121,7 +121,7 @@ void read_radio_temp_batch(			radio_temp_batch* batch);			// pointer to single v
 void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch); //TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
 bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
-void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single value
+void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single 
 
 /* non-thread safe functions that should ONLY be called from FLASH TASK */
 void read_led_temps_batch_unsafe(			led_temps_batch batch);
@@ -136,5 +136,6 @@ void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, ui
 
 void set_5v_enable(bool on);
 void verify_regulators(void);
+void verify_flash_readings(bool flashing);
 
 #endif

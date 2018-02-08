@@ -45,13 +45,19 @@ typedef struct task_states {
 
 /************************************************************************/
 /* global hardware states (used primarily to know what currents to expect, etc.) */
+/* Places where we need to be sure of the state in this struct
+   (other places use other methods):
+   1. Validation of regulator voltages
+   2. Measuring battery currents										*/
 /************************************************************************/ 
 struct hw_states {
+	/* locked by peripheral mutexes - mainly done to simplify function arguments */
 	bool rail_5v_enabled : 1;
+	/* locked by hardware state mutex */
 	bool radio_powered : 1; // if true, both 3V6 regulator and radio power pin are on
 	bool radio_transmitting : 1;
 	bool antenna_deploying : 1;
-	bool flashing : 1;
+	/* note: flashing state is passed down */
 };
 #define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	500 // it can be okay if we miss this
 
