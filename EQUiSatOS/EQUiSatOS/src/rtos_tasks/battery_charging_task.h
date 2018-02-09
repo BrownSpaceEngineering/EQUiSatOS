@@ -40,6 +40,7 @@
 #define MAX_TIME_TO_WAIT_FOR_DEPLOY_S   10000 // TODO: figure this out
 
 #define MAX_RECOMISSION_TIME_S          10000 // TODO: figure this out
+#define MAX_TIME_BELOW_V_THRESHOLD_S    10000
 #define INITIAL_RECOMISSION_TIME_S      500
 #define RECOMISSION_TIME_INCREASE       2
 
@@ -102,8 +103,10 @@ typedef struct charging_data {
 	charge_state_t curr_charge_state;
 
 	// the last time each lion was full
-	int li1_full_timestamp;
-	int li2_full_timestamp;
+	int li_full_timestamp[2];
+
+	// the last time each lion was low voltage
+	int li_low_voltage_timestamp[2];
 
 	// whether or not the satellite state has already been set
 	int already_set_sat_state;

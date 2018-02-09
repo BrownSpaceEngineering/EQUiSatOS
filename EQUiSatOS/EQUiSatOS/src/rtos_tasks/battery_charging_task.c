@@ -8,15 +8,12 @@
 #include "battery_charging_task.h"
 
 // high-level TODO's:
-//  0. understand the code as it stands (done)
-//  1. be working in terms of raw voltages (done)
-//  2. make sure of state changes (done)
-//  3. work through TODO's, including new idea of fullness (done)
-//  4. implement strikes! (also, what will change once a battery has struck out?) (done)
-//  5. how do charging states interface with global states
-//  6. write a simulator to test the correctness of the battery code and start reading through
-//  7. iron out threshold values (later)
-//  8. put algorithm through longevity tests (later)
+//  0. read through and do eye test
+//  1. unit tests
+//  2. how do charging states interface with global states
+//  3. add last couple strikes features
+//  4. write simulator to sequentially run unit tests (later)
+//  5. iron out threshold values (later)
 
 // TODO: how do we interface with global state?
 // TODO: read through TODO's and make sure of everything!
@@ -136,7 +133,8 @@ int is_lion(battery_t bat)
 	return (bat == LI1 || bat == LI2);
 }
 
-// NOTE: it's important that batteries don't get doubly decomissioned
+// NOTE: it's important that batteries don't get doubly decomissioned in a single
+// loop of the battery logic
 void decommission(battery_t bat)
 {
 	charging_data.decommissioned[bat] = 1;
@@ -168,6 +166,7 @@ void init_charging_data()
 	// -1 into account
 	// TODO: check for edge cases where something is dependent on the initial value
 	// of these state variables
+	print("init");
 	charging_data.bat_charging = -1;
 	charging_data.lion_discharging = -1;
 
@@ -178,8 +177,11 @@ void init_charging_data()
 	charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 
 	// set all battery timestamps to -1
-	charging_data.li1_full_timestamp = -1;
-	charging_data.li2_full_timestamp = -1;
+	charging_data.li_full_timestamp[0] = -1;
+	charging_data.li_full_timestamp[1] = -1;
+
+	charging_data.li_low_voltage_timestamp[0] = -1;
+	charging_data.li_low_voltage_timestamp[1] = -1;
 
 	charging_data.already_set_sat_state = false;
 
@@ -249,7 +251,7 @@ void battery_logic()
 	read_lf_volts_precise(&(lf1_mv), &(lf2_mv), &(lf3_mv), &(lf4_mv));
 
 	// considering the voltage of the life po banks to be the max of the cells for
-	// our purposes here
+	// our purposes
 	charging_data.bat_voltages[LFB1] = Max(lf1_mv, lf2_mv);
 	charging_data.bat_voltages[LFB2] = Max(lf3_mv, lf4_mv);
 
@@ -259,14 +261,12 @@ void battery_logic()
 	{
 		curr_charging_filled_up = !get_chg_pin_val_w_conversion(charging_data.bat_charging) &&
 															charging_data.bat_charging > LI_FULL_SANITY_MV &&
-															(get_panel_ref_val() <= 8000);
+															(get_panel_ref_val() <= 8000); // TODO: how's this conditional?
 
 		if (curr_charging_filled_up)
 		{
-			if (charging_data.bat_charging == LI1)
-			 	charging_data.li1_full_timestamp = get_current_timestamp();
-			else if (charging_data.bat_charging == LI2)
-				charging_data.li2_full_timestamp = get_current_timestamp();
+			if (is_lion(charging_data.bat_charging))
+				charging_data.li_full_timestamp[charging_data.bat_charging] = get_current_timestamp();
 		}
 	}
 
@@ -282,43 +282,57 @@ void battery_logic()
 		}
 	}
 
+	// TODO: where else do we want to use PANEL_REF
 	for (battery_t bat = 0; bat < 4; bat++)
 	{
+		// TODO: really bad if structure here
 		// making sure that no one is decommissioned twice
 		if (!charging_data.decommissioned[bat])
 		{
 			if (get_fault_pin_val_w_conversion(bat))
 			{
 				decommission(bat);
+				continue;
 			}
-			else if (is_lion(bat))
+
+			if (is_lion(bat))
 			{
-				if (bat == LI1)
+				if ((charging_data.li_full_timestamp[bat] == -1 &&
+					   get_current_timestamp() > MAX_TIME_WITHOUT_FULL_MS) ||
+						(charging_data.li_full_timestamp[bat] != -1 &&
+						 (get_current_timestamp() - charging_data.li_full_timestamp[bat])
+						  > MAX_TIME_WITHOUT_FULL_MS))
+					decommission(bat);
+					continue;
+			}
+
+			// TODO: this should only happen when we've been under for a while
+			if (is_lion(bat))
+			{
+				if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
 				{
-					if ((charging_data.li1_full_timestamp == -1 &&
-						   get_current_timestamp() > MAX_TIME_WITHOUT_FULL_MS) ||
-							(charging_data.li1_full_timestamp != -1 &&
-							 (get_current_timestamp() - charging_data.li1_full_timestamp)
-							  > MAX_TIME_WITHOUT_FULL_MS))
-						decommission(bat);
+					if (charging_data.li_low_voltage_timestamp[bat] == -1)
+					{
+						charging_data.li_low_voltage_timestamp[bat] = get_current_timestamp()''
+					}
+					else if (get_current_timestamp() - charging_data.li_low_voltage_timestamp[bat] >
+									 MAX_TIME_BELOW_V_THRESHOLD_S)
+					{
+						// we should reset the low voltage timestamp, so this battery will get a chance
+						// next time
+						charging_data.li_low_voltage_timestamp[bat] = -1;
+						decomission(bat);
+						continue;
+					}
 				}
 				else
 				{
-					if ((charging_data.li1_full_timestamp == -1 &&
-						   get_current_timestamp() > MAX_TIME_WITHOUT_FULL_MS) ||
-							(charging_data.li1_full_timestamp != -1 &&
-							 (get_current_timestamp() - charging_data.li1_full_timestamp)
-							  > MAX_TIME_WITHOUT_FULL_MS))
-						decommission(bat);
+					charging_data.li_low_voltage_timestamp[bat] = -1;
 				}
 			}
-			// TODO: should there be a grace peiod here, and if so, under what
-			// circumstances?
-			else if (is_lion(bat) && charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
-			{
-				decommission(bat);
-			}
-			else if (charging_data.old_bat_voltages[bat] != -1)
+
+			// TODO: should we check a couple times here?
+			if (charging_data.old_bat_voltages[bat] != -1)
 			{
 				int voltage_drop_mv = charging_data.bat_voltages[bat] - charging_data.old_bat_voltages[bat];
 				int threshold = (bat == charging_data.bat_charging) ? MAX_VOLTAGE_DROP_W_CHARGE_MV : MAX_VOLTAGE_DROP_MV;
@@ -326,6 +340,7 @@ void battery_logic()
 				if (voltage_drop_mv > threshold)
 				{
 					decommission(bat);
+					continue; // just for consistency
 				}
 			}
 		}
@@ -344,6 +359,7 @@ void battery_logic()
 		good_lf = charging_data.decommissioned[LFB1] ? LFB2 : LFB1;
 
 	// we often want to know whether the higher cells within the life po banks have filled up
+	// TODO: how's this condition?
 	bool life_po_full = (charging_data.curr_meta_charge_state == ALL_GOOD &&
 											 charging_data.bat_voltages[LFB1] > LF_FULL_MAX_MV &&
 											 charging_data.bat_voltages[LFB2] > LF_FULL_MAX_MV) ||
@@ -370,8 +386,6 @@ void battery_logic()
 
 	// if someone has recently been decomissioned it will most likely result in a
 	// change in the meta-state -- we should take a look
-	// TODO: this won't always capture a recent decomission because it's reset
-	// after some decomissions
 
 	meta_charge_state_t new_meta_charge_state = -1;
 	if (num_li_down == 0)
