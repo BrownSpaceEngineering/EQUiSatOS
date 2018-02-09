@@ -324,7 +324,7 @@ void battery_logic()
 				{
 					if (charging_data.li_low_voltage_timestamp[bat] == -1)
 					{
-						charging_data.li_low_voltage_timestamp[bat] = get_current_timestamp()''
+						charging_data.li_low_voltage_timestamp[bat] = get_current_timestamp();
 					}
 					else if (get_current_timestamp() - charging_data.li_low_voltage_timestamp[bat] >
 									 MAX_TIME_BELOW_V_THRESHOLD_S)
@@ -333,7 +333,7 @@ void battery_logic()
 						// next time
 						print("decomissioning battery: %d because of long time at low voltage", bat);
 						charging_data.li_low_voltage_timestamp[bat] = -1;
-						decomission(bat);
+						decommission(bat);
 						continue;
 					}
 				}
@@ -773,9 +773,8 @@ void battery_logic()
 	{
 		// TODO: do we need immediate action here?
 		// TODO: do we want to try more here?
-		print("setting to not discharge failed, decomissioning bat: %d", lion_discharging);
+		print("setting to not discharge failed, decomissioning bat: %d", lion_not_discharging);
 		decommission(lion_not_discharging);
-		print("")
 		already_decomissioned = lion_not_discharging;
 	}
 
