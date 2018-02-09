@@ -181,6 +181,10 @@ void setRXEnable(bool enable) {
 /* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
+	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+	#endif
+	
 	hardware_state_mutex_take();
 	usart_send_buf(buf, size);
 	get_hw_states()->radio_transmitting = true;
@@ -191,13 +195,18 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	hardware_state_mutex_take();
 	get_hw_states()->radio_transmitting = false;
 	hardware_state_mutex_give();
+	
+	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+		xSemaphoreGive(print_mutex);
+	#endif
+	
 }
 
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
 	#ifdef RADIO_ACTIVE
 		setRadioPower(enable);
-		#ifndef PRINT_DEBUG
+		#ifdef PRINT_DEBUG == 0
 			setTXEnable(enable);
 			setRXEnable(enable);
 		#endif

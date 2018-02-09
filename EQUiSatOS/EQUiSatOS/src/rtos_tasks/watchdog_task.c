@@ -77,7 +77,7 @@ bool watchdog_as_function(void) {
 
 	if (watch_block) {
 		// "kick" watchdog - RESTART SATELLITE
-		trace_print("Watchdog kicked - RESTARTING Satellite");
+		print("Watchdog kicked - RESTARTING Satellite");
 		xSemaphoreGive(mutex);
 
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_RESET, true);
@@ -94,7 +94,7 @@ bool watchdog_as_function(void) {
 		// pet watchdog - pass this watchdog test, move onto next
 		pet_watchdog();
 		memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
-		trace_print("Pet watchdog");
+		print("Pet watchdog");
 		xSemaphoreGive(mutex);
 		return true;
 	}

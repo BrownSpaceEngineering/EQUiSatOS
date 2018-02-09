@@ -7,13 +7,6 @@
 
 #include "USART_Commands.h"
 
-#ifdef PRINT_DEBUG  // if debug mode
-	char debug_buf[256];
-
-	StaticSemaphore_t _print_mutex_d;
-	SemaphoreHandle_t print_mutex;
-#endif
-
 uint8_t edbg_rx_data,ext_rx_data;
 
 void USART_init() {	
@@ -21,9 +14,7 @@ void USART_init() {
 	ext_usart_pin_init();
 	ext_usart_init();
 
-	#ifdef PRINT_DEBUG
-		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
-	
+	#if PRINT_DEBUG != 0
 		// if printing, make sure the USART is not sent to the radio
 		setTXEnable(false);
 		setRXEnable(false);
@@ -246,26 +237,4 @@ void usart_send_string(const uint8_t *str_buf)
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
-}
-
-// use in debug mode (set in header file)
-// input: format string and arbitrary number of args to be passed to sprintf
-// call to sprintf stores result in char *debug_buf
-void print(const char *format, ...)
-{
-	#ifdef PRINT_DEBUG  // if debug mode
-		if (rtos_started) {
-			xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
-		}
-		
-		va_list arg;
-		va_start (arg, format);
-		vsprintf(debug_buf, format, arg);
-		va_end (arg);
-		usart_send_string((uint8_t*) debug_buf);
-		
-		if (rtos_started) {
-			xSemaphoreGive(print_mutex);
-		}
-	#endif
 }

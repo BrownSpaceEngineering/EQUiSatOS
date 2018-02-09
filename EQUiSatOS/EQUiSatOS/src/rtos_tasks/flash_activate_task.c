@@ -103,7 +103,7 @@ void flash_activate_task(void *pvParameters)
 							continue;
 						}
 
-					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
+					print("Starting flash @ %d ticks", xTaskGetTickCount());
 			
 						// delays for time of FLASH_DATA_READ_FREQ, as required by flash_arm
 						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
@@ -116,7 +116,7 @@ void flash_activate_task(void *pvParameters)
 						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
 												BATCH_READS_DURING, &prev_data_read_time);
 									
-					trace_print("Ending flash @ %d ticks", xTaskGetTickCount());
+					print("Ending flash @ %d ticks", xTaskGetTickCount());
 			
 						// read data after the flash
 						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,

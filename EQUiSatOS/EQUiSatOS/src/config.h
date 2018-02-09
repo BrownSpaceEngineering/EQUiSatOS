@@ -46,8 +46,12 @@
 // whether to start up testing tasks
 #define RUN_TESTING_TASKS
 
-// define this flag to print over USART, otherwise suppress prints and send data to RADIO
-#define PRINT_DEBUG
+// debug print control; set to:
+// 0 to suppress prints and allow radio transmission
+// 1 to print over USART
+// 2 to print over Tracelyzer trace_print
+// 3 to print over both
+#define PRINT_DEBUG 3
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

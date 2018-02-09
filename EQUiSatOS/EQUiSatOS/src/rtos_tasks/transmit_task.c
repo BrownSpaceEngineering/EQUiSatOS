@@ -397,6 +397,5 @@ void debug_print_msg_types(void) {
 	char* type2 = get_msg_type_str(buffer_2_msg_type);
 	char* type3 = get_msg_type_str(buffer_3_msg_type);
 	
-	trace_print(msg, type1, type2, type3);
 	print(msg, type1, type2, type3);
 }

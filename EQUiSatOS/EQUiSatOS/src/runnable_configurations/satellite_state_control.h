@@ -30,7 +30,7 @@ typedef struct task_states {
 } task_states;
 
 
-#ifdef PRINT_DEBUG
+#if PRINT_DEBUG != 0
 	bool rtos_started;
 #endif
 

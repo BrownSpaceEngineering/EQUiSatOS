@@ -68,7 +68,7 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
-	#ifdef PRINT_DEBUG
+	#if PRINT_DEBUG != 0
 		rtos_started = true;
 	#endif
 	
@@ -377,7 +377,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case ANTENNA_DEPLOY: ;
 			if (current_sat_state == INITIAL) {
-				trace_print("CHANGED STATE to ANTENNA_DEPLOY");
+				print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
 				set_radio_by_sat_state(ANTENNA_DEPLOY);
 				return true;
@@ -386,7 +386,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case HELLO_WORLD: ;
 			if (current_sat_state == ANTENNA_DEPLOY) {
-				trace_print("CHANGED STATE to HELLO_WORLD");
+				print("CHANGED STATE to HELLO_WORLD");
 				set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
 				set_radio_by_sat_state(HELLO_WORLD);
 				return true;
@@ -395,7 +395,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case HELLO_WORLD_LOW_POWER: ;
 			if (current_sat_state == HELLO_WORLD) {
-				trace_print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
+				print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
 				set_all_task_states(HELLO_WORLD_LOW_POWER_TASK_STATES, HELLO_WORLD_LOW_POWER);
 				set_radio_by_sat_state(HELLO_WORLD_LOW_POWER);
 				return true;
@@ -403,7 +403,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case IDLE_NO_FLASH: ;
 			if (current_sat_state == IDLE_FLASH || current_sat_state == HELLO_WORLD || current_sat_state == LOW_POWER) {
-				trace_print("CHANGED STATE to IDLE_NO_FLASH");
+				print("CHANGED STATE to IDLE_NO_FLASH");
 				set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
 				set_radio_by_sat_state(IDLE_NO_FLASH);
 				return true;
@@ -412,7 +412,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case IDLE_FLASH: ;
 			if (current_sat_state == IDLE_NO_FLASH) {
-				trace_print("CHANGED STATE to IDLE_FLASH");
+				print("CHANGED STATE to IDLE_FLASH");
 				set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
 				set_radio_by_sat_state(IDLE_FLASH);
 				return true;
@@ -421,7 +421,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case LOW_POWER: ;
 			if (current_sat_state == IDLE_NO_FLASH || current_sat_state == IDLE_FLASH) {
-				trace_print("CHANGED STATE to LOW_POWER");
+				print("CHANGED STATE to LOW_POWER");
 				set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
 				set_radio_by_sat_state(LOW_POWER);
 				return true;
@@ -430,7 +430,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case RIP: ;
 			// we can always go to RIP
-			trace_print("CHANGED STATE to RIP");
+			print("CHANGED STATE to RIP");
 			set_all_task_states(RIP_TASK_STATES, RIP);
 			set_radio_by_sat_state(RIP);
 			return true;

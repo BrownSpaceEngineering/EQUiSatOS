@@ -18,7 +18,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configPRIO_BITS                         2
 #define configCPU_CLOCK_HZ                      ( 8000000 ) // (system_gclk_gen_get_hz(GCLK_GENERATOR_0))
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 ) // so portTICK_PERIOD_MS = 1
-#define configMAX_PRIORITIES                    ( ( uint32_t ) 5 )
+#define configMAX_PRIORITIES                    ( ( uint32_t ) 6 )
 #define configMINIMAL_STACK_SIZE                ( ( uint16_t ) 100 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
 #define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 0 ) )
@@ -26,7 +26,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		0 // no need if no heap
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                0			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
+#define configUSE_TRACE_FACILITY                1			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1

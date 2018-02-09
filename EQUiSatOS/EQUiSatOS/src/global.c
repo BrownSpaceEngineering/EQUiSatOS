@@ -7,6 +7,12 @@
 
 #include "global.h"
 
+#if PRINT_DEBUG > 0 // if using debug print
+	char debug_buf[200];
+
+	StaticSemaphore_t _print_mutex_d;
+#endif
+
 void init_tracelyzer(void) {
 	#if configUSE_TRACE_FACILITY == 1
 		#if TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING
@@ -65,7 +71,11 @@ void global_init(void) {
 	MPU9250_init();
 	HMC5883L_init();
 	delay_init();
-
+	
+	#if PRINT_DEBUG != 0
+		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
+	#endif
+	
 	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
@@ -82,4 +92,35 @@ void global_init_post_rtos(void) {
 	// from MRAM and these errors here may be overwritten once we do
 	log_if_error(ELOC_AD7991_0, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_1, AD7991_init(AD7991_CTRLBRD), true);
+}
+
+// use in debug mode (set in header file)
+// input: format string and arbitrary number of args to be passed to sprintf
+// call to sprintf stores result in char *debug_buf
+void print(const char *format, ...)
+{
+	#if PRINT_DEBUG > 0 // if debug mode
+		if (rtos_started) {
+			xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+		}
+		
+		va_list arg;
+		va_start (arg, format);
+		vsprintf(debug_buf, format, arg);
+		va_end (arg);
+		
+		#if configUSE_TRACE_FACILITY == 1
+			#if PRINT_DEBUG == 2 || PRINT_DEBUG == 3
+				vTracePrint(global_trace_channel, debug_buf);
+			#endif
+		#endif
+		
+		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+			usart_send_string((uint8_t*) debug_buf);
+		#endif
+	
+		if (rtos_started) {
+			xSemaphoreGive(print_mutex);
+		}
+	#endif
 }
