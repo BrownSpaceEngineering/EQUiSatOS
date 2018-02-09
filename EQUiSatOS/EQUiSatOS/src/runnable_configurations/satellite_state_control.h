@@ -29,6 +29,11 @@ typedef struct task_states {
 	uint8_t states[NUM_TASKS];
 } task_states;
 
+
+#ifdef PRINT_DEBUG
+	bool rtos_started;
+#endif
+
 /************************************************************************/
 /* Defined task state sets - order must match enum in rtos_tasks_config.h: */
 /************************************************************************/

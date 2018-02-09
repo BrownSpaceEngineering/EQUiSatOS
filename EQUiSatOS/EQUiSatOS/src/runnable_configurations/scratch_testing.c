@@ -311,8 +311,8 @@ void mram_test(void) {
 	struct spi_module spi_master_instance;
 	struct spi_slave_inst slave;
 	
-	mram_initialize_master(&spi_master_instance, 10000000);
-	mram_initialize_slave(&slave, P_MRAM1_CS);
+	mram_initialize_master(&spi_master_instance, MRAM_SPI_BAUD);
+	mram_initialize_slave(&slave, P_MRAM2_CS);
 	
 	#define TEST_ADDRESS	0x049
 	#define EX_ARRAY_LEN	8

@@ -18,8 +18,10 @@ void task_suicide_test(void *pvParameters);
 void task_stack_size_overflow_test(void *pvParameters);
 
 // task data
-StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
-StaticTask_t testing_task_buffer;
+#ifdef RUN_TESTING_TASKS
+	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
+	StaticTask_t testing_task_buffer;
+#endif
 
 void create_testing_tasks(void) 
 {

@@ -166,6 +166,18 @@ bool XDL_get_temperature(uint16_t* radioTemp) {
 	return toReturn;
 }
 
+void setTXEnable(bool enable) {
+	set_output(enable, P_TX_EN);
+}
+
+void setRXEnable(bool enable) {
+	set_output(enable, P_RX_EN);
+}
+
+/************************************************************************/
+/* RTOS-Integrated Helpers                                              */
+/************************************************************************/
+
 /* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
@@ -196,14 +208,6 @@ void setRadioState(bool enable, bool confirm) {
 			verify_regulators(); // will log error if regulator not valid
 		}
 	#endif
-}
-
-void setTXEnable(bool enable) {
-	set_output(enable, P_TX_EN);
-}
-
-void setRXEnable(bool enable) {
-	set_output(enable, P_RX_EN);
 }
 
 void setRadioPower(bool on) {

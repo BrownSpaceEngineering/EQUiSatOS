@@ -7,11 +7,11 @@
  *  Author: mckenna
  */ 
 
-#include <asf.h>
-#include <inttypes.h>
-
 #ifndef RTOS_TASKS_CONFIG_H
 #define RTOS_TASKS_CONFIG_H
+
+#include <asf.h>
+#include <inttypes.h>
 
 /************************************************************************/
 /* Classes of Task Priorities                                           */
@@ -41,7 +41,7 @@ enum {
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
 #define TASK_FLASH_ACTIVATE_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
@@ -59,7 +59,7 @@ enum {
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(768/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(512/sizeof(portSTACK_TYPE))
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/

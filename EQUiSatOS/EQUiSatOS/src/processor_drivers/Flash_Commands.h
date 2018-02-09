@@ -5,13 +5,14 @@
  *  Author: mckenna
  */
 
+
+#ifndef FLASH_COMMANDS_H_
+#define FLASH_COMMANDS_H_
+
 #include <global.h>
 #include <proc_pins.h>
 #include "Direct_Pin_Commands.h"
 #include "rtos_tasks/battery_charging_task.h"
-
-#ifndef FLASH_COMMANDS_H_
-#define FLASH_COMMANDS_H_
 
 void set_lifepo_output_enable(bool enabled);
 void set_lifepo_charge_disable(void);

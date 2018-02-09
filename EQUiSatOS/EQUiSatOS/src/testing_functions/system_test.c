@@ -1,7 +1,9 @@
 #include "system_test.h"
 
 void set_regulator_power(bool on) {
-	setRadioPower(on);
+	// bypass RTOS
+	set_output(on, P_RAD_PWR_RUN);
+	set_output(on, P_RAD_SHDN);
 	set_output(on, P_5V_EN);
 }
 
@@ -459,8 +461,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
 	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
-	setRadioPower(false);
-	set_output(false, P_5V_EN);
+	set_regulator_power(false);
 	
 	get_status(AD7991_code,test_str);
 	print("STATUS: \t %s\n",test_str);

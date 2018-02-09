@@ -230,34 +230,22 @@ void ext_usart_pin_init(void)
 
 void usart_send_buf(const uint8_t *str_buf, int len)
 {
-	#ifdef PRINT_DEBUG
-		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
-	#endif
 	for (int i = 0; i < len; i++)
 	{
 		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
-	#ifdef PRINT_DEBUG
-		xSemaphoreGive(print_mutex);
-	#endif
 }
 
 void usart_send_string(const uint8_t *str_buf)
 {
-	#ifdef PRINT_DEBUG
-		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
-	#endif
 	while (*str_buf != '\0')
 	{
 		while(!(EXT_USART_SERCOM->USART.INTFLAG.bit.DRE));
 		EXT_USART_SERCOM->USART.DATA.reg = *str_buf;
 		str_buf++;
 	}
-	#ifdef PRINT_DEBUG
-		xSemaphoreGive(print_mutex);
-	#endif
 }
 
 // use in debug mode (set in header file)
@@ -266,12 +254,18 @@ void usart_send_string(const uint8_t *str_buf)
 void print(const char *format, ...)
 {
 	#ifdef PRINT_DEBUG  // if debug mode
-		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+		if (rtos_started) {
+			xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+		}
+		
 		va_list arg;
 		va_start (arg, format);
 		vsprintf(debug_buf, format, arg);
 		va_end (arg);
 		usart_send_string((uint8_t*) debug_buf);
-		xSemaphoreGive(print_mutex);
+		
+		if (rtos_started) {
+			xSemaphoreGive(print_mutex);
+		}
 	#endif
 }

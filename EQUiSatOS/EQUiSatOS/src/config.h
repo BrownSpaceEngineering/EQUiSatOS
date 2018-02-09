@@ -20,7 +20,7 @@
 
 /** 
  * flags to control dangerous / inconvenient functions of the satellite 
- * MAKE SURE to RE-build solution to be double-sure they were disabled
+ * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
@@ -29,9 +29,12 @@
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING / DEBUG ***/
-// define this flag to disable normal frequencies and read data faster
-// (ex: don't read data distributed around an orbit)
-#define TESTING_SPEEDUP
+// define this flag to disable normal frequencies and read data faster,
+// ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
+// ENUMERATION of changes when ON:
+// - don't read data distributed around an orbit
+// - don't populate ECC tables on boot (Reed-Solomon will be wrong)
+//#define TESTING_SPEEDUP
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
@@ -41,7 +44,7 @@
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up testing tasks
-//#define RUN_TESTING_TASKS
+#define RUN_TESTING_TASKS
 
 // define this flag to print over USART, otherwise suppress prints and send data to RADIO
 #define PRINT_DEBUG

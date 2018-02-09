@@ -213,12 +213,12 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		uint16_t buf;
+		uint16_t buf; // TODO: why seperate buffer?????
 		commands_read_adc_mV(&buf, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
 		*val_1 = buf;
 
 		commands_read_adc_mV(&buf, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-		*val_2 = buf;
+		*val_2 = buf; // TODO: why seperate buffer?????
 	} else {
 		log_error(ELOC_L1_REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 		memset(val_1, 0, sizeof(uint16_t));

@@ -11,12 +11,17 @@
 // vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
 const uint16_t RADIO_STATES = 0b10110100;
 
+/************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
+/************************************************************************/ 
 sat_state_t current_sat_state = INITIAL;
 
 // specific state for radio
 bool current_radio_state = false;
 
+/************************************************************************/
+/* task states                                                          */
+/************************************************************************/
 // states that should be set upon task bootup (only used on boot)
 task_states boot_task_states;
 // states tasks were at before their last (explicit) state change
@@ -27,7 +32,9 @@ task_states prev_task_states;
 // global current states
 task_states current_task_states;
 
-// global states for hardware + mutex
+/************************************************************************/
+/* global states for hardware + mutex                                   */
+/************************************************************************/ 
 struct hw_states hardware_states = {false, false, false, false};
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
@@ -61,6 +68,10 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
+	#ifdef PRINT_DEBUG
+		rtos_started = true;
+	#endif
+	
 	// utility function to write initial state to MRAM (ONCE before launch)
 	//write_custom_state();
 	

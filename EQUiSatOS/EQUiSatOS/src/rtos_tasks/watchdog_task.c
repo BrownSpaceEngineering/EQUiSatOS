@@ -58,7 +58,8 @@ bool watchdog_as_function(void) {
 	if (!check_task_state_consistency()) {
 		watch_block = true;
 	} else {
-		uint32_t curr_time = get_current_timestamp_ms();
+		// we only care about ticks since boot, not total timestamp
+		uint32_t curr_time = xTaskGetTickCount();
 		for (int i = 0; i < NUM_TASKS; i++) {
 			if (!check_ins[i]) {
 				if (running_times[i]) {
@@ -123,6 +124,9 @@ void watchdog_mutex_give(void) {
 // NOTE: not safe to call without having gotten mutex
 void check_in_task_unsafe(task_type_t task_ind) {
 	check_ins[task_ind] = true; // set this task bit to true
+	// set a tasks running time to the current one 
+	// (this acts as its first "check in"; it may not run before watchdog does right after changing state)
+	running_times[task_ind] = xTaskGetTickCount();
 }
 
 // tasks must check in while running to avoid the watchdog
@@ -132,7 +136,7 @@ void report_task_running(task_type_t task_ind) {
 		// log error, but continue becasue this is crucial 
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 	}
-	running_times[task_ind] = get_current_timestamp_ms();
+	running_times[task_ind] = xTaskGetTickCount();
 	xSemaphoreGive(mutex);
 }
 

@@ -37,11 +37,11 @@ void init_persistent_storage(void) {
 // wrapper for reading from MRAM; error checking
 bool storage_read_bytes_unsafe(uint8_t *data, int num_bytes, uint16_t address) {
 	uint8_t data_1[num_bytes];
-	bool success1 = log_if_error(ELOC_MRAM1_READ,
+	bool success1 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram1_slave, data_1, num_bytes, address),
 		true); // priority
 
-	bool success2 = log_if_error(ELOC_MRAM2_READ,
+	bool success2 = !log_if_error(ELOC_MRAM2_READ,
 		mram_read_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
 		true); // priority
 
@@ -71,10 +71,10 @@ bool storage_read_bytes_unsafe(uint8_t *data, int num_bytes, uint16_t address) {
 
 // wrapper for writing to MRAM; error checking
 bool storage_write_bytes_unsafe(uint8_t *data, int num_bytes, uint16_t address) {
-	bool success1 = log_if_error(ELOC_MRAM1_WRITE,
+	bool success1 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
 		true); // priority
-	return success1 && log_if_error(ELOC_MRAM2_WRITE,
+	return success1 && !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
 		true); // priority
 }
