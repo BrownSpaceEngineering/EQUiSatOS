@@ -217,15 +217,15 @@ void flashBurstTest(void) {
 	
 	
 	//print("\n# LED Temps #\n");
-	read_led_temps_batch_unsafe(four_buf);
+	_read_led_temps_batch_unsafe(four_buf);
 	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
 	//print("\n# LiFePO4 Temps #\n");
-	read_lifepo_temps_batch_unsafe(two_buf);
+	_read_lifepo_temps_batch_unsafe(two_buf);
 	//print("%d %d\n", two_buf[0], two_buf[1]);
 	
 	//print("# LiFePO4 CURRENT #\n");
-	read_lifepo_current_batch_unsafe(four_buf, false);
+	_read_lifepo_current_batch_unsafe(four_buf, false);
 	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
 	//print("\n# LiFePO4 VOLTS #\n");
@@ -233,7 +233,7 @@ void flashBurstTest(void) {
 	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
 	//print("# LED CURRENT #\n");
-	read_led_current_batch_unsafe(four_buf, false);
+	_read_led_current_batch_unsafe(four_buf, false);
 	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
 	//print("\n# GYRO #\n");
@@ -243,9 +243,9 @@ void flashBurstTest(void) {
 
 
 void abbreviatedFlashBurstTest(lifepo_volts_batch volts, lifepo_current_batch current, led_current_batch led_current) {
-	read_lifepo_volts_batch_unsafe(volts);
-	read_lifepo_current_batch_unsafe(current, true);
-	read_led_current_batch_unsafe(led_current, true);
+	_read_lifepo_volts_batch_unsafe(volts);
+	_read_lifepo_current_batch_unsafe(current, true);
+	_read_led_current_batch_unsafe(led_current, true);
 }
 
 void actuallyFlashingFlashBurstTest(void) {

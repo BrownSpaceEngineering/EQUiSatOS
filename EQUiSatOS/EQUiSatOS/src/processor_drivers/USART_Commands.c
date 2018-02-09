@@ -231,7 +231,7 @@ void ext_usart_pin_init(void)
 void usart_send_buf(const uint8_t *str_buf, int len)
 {
 	#ifdef PRINT_DEBUG
-		xSemaphoreTake(print_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 	#endif
 	for (int i = 0; i < len; i++)
 	{
@@ -247,7 +247,7 @@ void usart_send_buf(const uint8_t *str_buf, int len)
 void usart_send_string(const uint8_t *str_buf)
 {
 	#ifdef PRINT_DEBUG
-		xSemaphoreTake(print_mutex, USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS);
+		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 	#endif
 	while (*str_buf != '\0')
 	{

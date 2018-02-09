@@ -299,7 +299,7 @@ void attempt_transmission(void) {
 		transmit_buf_wait(msg_buffer_3, MSG_SIZE);
 		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 	} else {
-		log_error(ELOC_RADIO, ECODE_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 	}
 	xSemaphoreGive(critical_action_mutex);
 

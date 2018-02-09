@@ -92,7 +92,7 @@ typedef enum {
 /* HARDWARE MUTEXs - see https://www.draw.io/#G1bt9XDgZvyObssMtjbUi8nUNwu0kcQpVI */
 /* **ONLY** can be used outside this task in the flash_activate_task (for speed purposes) */
 /************************************************************************/
-#define HARDWARE_MUTEX_WAIT_TIME_TICKS	1000 
+#define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _i2c_irpow_mutex_d;
 SemaphoreHandle_t i2c_irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
@@ -124,17 +124,17 @@ bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t
 void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single 
 
 /* non-thread safe functions that should ONLY be called from FLASH TASK */
-void read_led_temps_batch_unsafe(			led_temps_batch batch);
-void read_lifepo_temps_batch_unsafe(		lifepo_bank_temps_batch batch);
-void read_lifepo_current_batch_unsafe(		lifepo_current_batch batch, bool flashing_now);
-void read_lifepo_volts_batch_unsafe(		lifepo_volts_batch batch);
-void read_led_current_batch_unsafe(			led_current_batch batch, bool flashing_now);
+void _read_led_temps_batch_unsafe(			led_temps_batch batch);
+void _read_lifepo_temps_batch_unsafe(		lifepo_bank_temps_batch batch);
+void _read_lifepo_current_batch_unsafe(		lifepo_current_batch batch, bool flashing_now);
+void _read_lifepo_volts_batch_unsafe(		lifepo_volts_batch batch);
+void _read_led_current_batch_unsafe(			led_current_batch batch, bool flashing_now);
 
 /* utility */
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
-void set_5v_enable(bool on);
+bool _set_5v_enable(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);
 

@@ -20,7 +20,7 @@
 #ifndef ERRORS_H_
 #define ERRORS_H_
 
-#include "global.h"
+#include <global.h>
 #include "data_handling/equistack.h"
 
 /******************** LOCATIONS ********************/
@@ -97,11 +97,15 @@ enum error_locations {
 	ELOC_ERROR_STACK =					59,
 	ELOC_WATCHDOG =						60,
 	ELOC_PROC_TEMP =					61,
+	ELOC_VERIFY_REGS =					62,
 	
-	ELOC_IDLE_DATA =					62,
-	ELOC_ATTITUDE_DATA =				63,
-	ELOC_FLASH_DATA =					64, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				65,
+	ELOC_IDLE_DATA =					63,
+	ELOC_ATTITUDE_DATA =				64,
+	ELOC_FLASH =						65, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				66,
+	ELOC_EQUISTACK_GET =				67,
+	ELOC_EQUISTACK_PUT =				68
+
 };
 
 /******************** PROBLEM CODES ********************/
@@ -149,9 +153,16 @@ enum error_codes {
 	ECODE_WATCHDOG_RESET =				36,
 	ECODE_WATCHDOG_DID_KICK =			37,
 	ECODE_EXCESSIVE_SUSPENSION =		38,
-	ECODE_MUTEX_TIMEOUT	=				39,
-	ECODE_MUTEX_TIMEOUT_NEST_1 =		40,
-	ECODE_MUTEX_TIMEOUT_NEST_2 =		41,
+	
+	ECODE_CRIT_ACTION_MUTEX_TIMEOUT =	39,
+	ECODE_I2C_MUTEX_TIMEOUT =			40,
+	ECODE_PROC_ADC_MUTEX_TIMEOUT =		41,
+	ECODE_HW_STATE_MUTEX_TIMEOUT =		42,
+	ECODE_USART_MUTEX_TIMEOUT =			43,
+	ECODE_SPI_MUTEX_TIMEOUT =			44,
+	ECODE_BAT_CHARGING_MUTEX_TIMEOUT =  45,
+	ECODE_WATCHDOG_MUTEX_TIMEOUT =		46,
+	ECODE_EQUISTACK_MUTEX_TIMEOUT =		47
 };
 
 /************************************************************************/

@@ -18,8 +18,7 @@
 #define LEN_RECEIVEBUFFER 16
 #define LEN_SENDBUFFER 16
 
-#define PRINT_MUTEX_WAIT_TIME_TICKS				((TickType_t) 1000)
-#define USART_SEND_STRING_MUTEX_WAIT_TIME_TICKS ((TickType_t) 1000)
+#define PRINT_MUTEX_WAIT_TIME_TICKS				((TickType_t) 1000 / portTICK_PERIOD_MS)
 
 uint8_t expectedReceiveDataLen;
 bool receiveDataReady;

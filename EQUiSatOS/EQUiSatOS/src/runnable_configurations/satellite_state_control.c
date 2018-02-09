@@ -455,7 +455,10 @@ void set_all_task_states(const task_states states, sat_state_t state)
 {
 	// Don't allow other tasks to run while we're changing state,
 	// and make sure to get the watchdog mutex so its state is stable
-	watchdog_mutex_take();
+	if (!watchdog_mutex_take()) {
+		// if the watchdog manages to time out, 
+		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+	}
 	vTaskSuspendAll();
 
 	// values given by external-facing functions
