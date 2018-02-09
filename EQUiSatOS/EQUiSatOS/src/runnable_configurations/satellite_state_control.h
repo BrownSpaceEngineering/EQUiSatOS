@@ -44,23 +44,36 @@ typedef struct task_states {
 // **see .c file for radio states**
 
 /************************************************************************/
-/* hardware states (used primarily to know what currents to expect, etc.) */
+/* global hardware states												
+   (used primarily to know what currents to expect, etc.)		
+   		
+   This mutex is take briefly by any hardware changing state,
+   such that any section of code that must be run with a consistent hardware
+   state can take the hardware state mutex and be assured of the state in 
+   this struct.
+   
+   Places where we need to be sure of the state in this struct
+   (other places use other methods, namely the lower-level peripheral mutexes):
+	   1. Validation of regulator voltages
+	   2. Measuring battery currents									*/
 /************************************************************************/ 
 struct hw_states {
+	/* locked by peripheral mutexes - mainly done to simplify function arguments */
 	bool rail_5v_enabled : 1;
-	bool rail_3v6_enabled : 1;
-	bool radio_on : 1;
+	/* locked by hardware state mutex */
+	bool radio_powered : 1; // if true, both 3V6 regulator and radio power pin are on
 	bool radio_transmitting : 1;
 	bool antenna_deploying : 1;
-	bool flashing : 1;
+	/* note: flashing state is passed down */
 };
-#define HARDWARE_MUTEX_WAIT_TIME_TICKS		1000
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	500
 
-#define set_hw_state_safe(field, state) { \
-	hardware_mutex_take(); \
-	get_hw_states()->field = state; \
-	hardware_mutex_give(); \
-}
+/************************************************************************/
+/* Mutex for major satellite operations that should be mutually exclusive*/
+/************************************************************************/
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			2000 // these can take a while
+StaticSemaphore_t _critical_action_mutex_d;
+SemaphoreHandle_t critical_action_mutex;
 
 /************************************************************************/
 /* State functions                                                      */
@@ -73,8 +86,8 @@ bool check_task_state_consistency(void);
 
 // hardware-specific functions
 struct hw_states* get_hw_states();
-void hardware_mutex_take(void);
-void hardware_mutex_give(void);
+BaseType_t hardware_state_mutex_take(void);
+void hardware_state_mutex_give(void);
 
 void run_rtos(void);
 void init_task_state(task_type_t task);

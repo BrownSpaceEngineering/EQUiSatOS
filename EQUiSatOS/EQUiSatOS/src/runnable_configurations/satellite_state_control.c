@@ -28,7 +28,7 @@ task_states prev_task_states;
 task_states current_task_states;
 
 // global states for hardware + mutex
-struct hw_states hardware_states = {false, false, false, false, false};
+struct hw_states hardware_states = {false, false, false, false};
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 
@@ -82,6 +82,7 @@ void startup_task(void* pvParameters) {
 	// Initialize misc. state mutexes
 	battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
 	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
+	critical_action_mutex = xSemaphoreCreateMutexStatic(&_critical_action_mutex_d);
 
 	// Initialize EQUiStack mutexes
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
@@ -253,7 +254,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task and apply
-	if (cache_get_sat_event_history()->antenna_deployed) { // no one writing so don't wait
+	if (cache_get_sat_event_history().antenna_deployed) { 
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -337,8 +338,10 @@ void set_radio_by_sat_state(sat_state_t state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_radio_state != new_state) 
 			setRadioState(true, true);
+			//TODO: //submit_radio_command(POWER_ON, true /* (confirm) */, NULL, NULL, 4000);
 	} else {
 		setRadioState(false, false);
+		//TODO: //submit_radio_command(POWER_OFF, true /* (confirm) */, NULL, NULL, 2000);
 	}
 	current_radio_state = new_state;
 }
@@ -452,7 +455,10 @@ void set_all_task_states(const task_states states, sat_state_t state)
 {
 	// Don't allow other tasks to run while we're changing state,
 	// and make sure to get the watchdog mutex so its state is stable
-	watchdog_mutex_take();
+	if (!watchdog_mutex_take()) {
+		// if the watchdog manages to time out, 
+		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+	}
 	vTaskSuspendAll();
 
 	// values given by external-facing functions
@@ -550,10 +556,10 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-void hardware_mutex_take(void) {
-	xSemaphoreTake(&hardware_state_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+BaseType_t hardware_state_mutex_take(void) {
+	return xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
 }
 
-void hardware_mutex_give(void) {
-	xSemaphoreGive(&hardware_state_mutex);
+void hardware_state_mutex_give(void) {
+	xSemaphoreGive(hardware_state_mutex);
 }

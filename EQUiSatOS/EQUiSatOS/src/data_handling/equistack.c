@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "equistack.h"
+#include "errors.h"
 
 /**
  * Takes in a pointer to an equistack to construct and a pointer to a data array to use, the size
@@ -47,7 +48,10 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 // Returns a pointer to the nth most recent element
 void* equistack_Get(equistack* S, int16_t n)
 {
-	xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	if (xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
+		// log error, but continue on because we're just reading
+		log_error(ELOC_EQUISTACK_GET, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+	}
 
 	// We want to ignore the bottom index which is currently staged and maybe
 	// being overwritten
@@ -79,34 +83,44 @@ void* equistack_Initial_Stage(equistack* S)
 
 // Returns the next pointer and "finalizes" the previous one (staging)
 // Overwrites the bottom value if need be
+// NOTE: if fails to obtain mutex (timeout), returns previous pointer
+// (does not add onto stack)
 void* equistack_Stage(equistack* S)
 {
-	xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
-
-	S->top_index = (S->top_index + 1) % S->max_size;
-
-	if (S->bottom_index == (S->top_index + 1) % S->max_size)
+	void *staged_pointer = NULL;
+	if (xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS))
 	{
-		S->bottom_index = (S->bottom_index + 1) % S->max_size;
-	}
-	else
-	{
-		// It doesn't make sense for the current size to be the max size because
-		// at least one value is always being rewritten
-		if (S->cur_size < S->max_size - 1)
+		S->top_index = (S->top_index + 1) % S->max_size;
+
+		if (S->bottom_index == (S->top_index + 1) % S->max_size)
 		{
-			S->cur_size++;
+			S->bottom_index = (S->bottom_index + 1) % S->max_size;
+		}
+		else
+		{
+			// It doesn't make sense for the current size to be the max size because
+			// at least one value is always being rewritten
+			if (S->cur_size < S->max_size - 1)
+			{
+				S->cur_size++;
+			}
+
+			if (S->bottom_index == -1)
+			{
+				S->bottom_index = 0;
+			}
 		}
 
-		if (S->bottom_index == -1)
-		{
-			S->bottom_index = 0;
-		}
+		staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
+		clear_existing_data(staged_pointer, S->data_size);
+	} else {
+		// log error if mutex can't be obtained, and give pointer to previously staged 
+		// struct (the one currently at the top index; 
+		// note that the above staged_pointer is using an incremented top_index)
+		// TODO: check
+		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		staged_pointer = S->data + (S->data_size)*((S->top_index + 1) % S->max_size);
 	}
-
-	void* staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
-	clear_existing_data(staged_pointer, S->data_size);
-
 	xSemaphoreGive(S->mutex);
 	return staged_pointer; // return pointer to staged data
 }

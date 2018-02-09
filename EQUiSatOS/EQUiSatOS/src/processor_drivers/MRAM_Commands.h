@@ -41,13 +41,13 @@ uint8_t mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin);
 
 /************************************************************************/
 /* Given master, slave number of bytes and initial address, the content */
-/* will be read to data                                                 */
+/* will be read to data (note only address bits 0-18 (inclusive!) are used*/
 /************************************************************************/
 status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
 
 /************************************************************************/
 /* Given master, slave number of bytes and initial address, the content */
-/* of data will be written                                              */
+/* of data will be written (note only address bits 0-18 (inclusive!) are used*/
 /************************************************************************/
 status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address);
 

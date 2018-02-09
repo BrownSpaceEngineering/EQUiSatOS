@@ -79,48 +79,75 @@ void flash_activate_task(void *pvParameters)
 			// read a single magnetometer batch before flash
 			read_magnetometer_batch(current_cmp_struct->mag_before_data);
 				
-			// enable lifepo output (before first data read to give a time buffer before flashing),
-			// and make sure the flash enable pin is high
-			// also make sure sensor regulators are primed and ready
-			set_5v_enable(true);
-			flash_arm();
+			// obtain i2c_irpow_mutex throughout flash, to speed up sensor reads,
+			// and enable 5V regulator throughout as well
+			// NOTE: order is intentional!
+			bool actually_flashed = false;
+			if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
+			{
+				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+				{
+					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+					{
+						_set_5v_enable(true);
+				
+						// enable lifepo output (before first data read to give a time buffer before flashing),
+						// and make sure the flash enable pin is high
+						// If we can't, halt flash (this may happen due to a mutex timeout; very very unlikely)
+						if (!flash_arm()) {
+							// error would've been logged
+							_set_5v_enable(false);
+							xSemaphoreGive(processor_adc_mutex);
+							xSemaphoreGive(i2c_irpow_mutex);
+							xSemaphoreGive(critical_action_mutex);
+							continue;
+						}
 
-		trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
+					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 			
-			// delays for time of FLASH_DATA_READ_FREQ
-			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
-									BATCH_READS_BEFORE, &prev_data_read_time);
+						// delays for time of FLASH_DATA_READ_FREQ, as required by flash_arm
+						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
+												BATCH_READS_BEFORE, &prev_data_read_time);
 
-			// notify that we're flashing (in case a task makes it in during our brief sleep times)
-			hardware_mutex_take();
-			get_hw_states()->flashing = true;
-			hardware_mutex_give();
-					
-			// send actual falling edge to flash circuitry to activate it
-			flash_activate();
+						// send actual falling edge to flash circuitry to activate it
+						flash_activate();
 			
-			// read data during the flash of 100ms
-			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
-									BATCH_READS_DURING, &prev_data_read_time);
+						// read data during the flash of 100ms
+						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
+												BATCH_READS_DURING, &prev_data_read_time);
 									
-			// note we're not flashing anymore (approximate timing, but okay)
-			hardware_mutex_take();
-			get_hw_states()->flashing = false;
-			hardware_mutex_give();
-									
-		trace_print("Ending flash @ %d ticks", xTaskGetTickCount());
+					trace_print("Ending flash @ %d ticks", xTaskGetTickCount());
 			
-			// read data after the flash
-			read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
-									BATCH_READS_AFTER, &prev_data_read_time);
+						// read data after the flash
+						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct,
+												BATCH_READS_AFTER, &prev_data_read_time);
 									
-			// turn off the lifepos after the 100ms of data reading
-			// NOTE this does NOT actually stop the flashing - that is hardware controlled
-			// (put after last data read to keep from accidentally cutting off the flash)
-			flash_disarm();
+						// turn off the lifepos after the 100ms of data reading
+						// NOTE this does NOT actually stop the flashing - that is hardware controlled
+						// (put after last data read to keep from accidentally cutting off the flash)
+						flash_disarm();
+						
+						actually_flashed = true;
+				
+					} else {
+						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+					}	
+					// disable sensor regulators and free up mutexes
+					_set_5v_enable(false);
+					xSemaphoreGive(processor_adc_mutex);
+				} else {
+					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+				}
+				xSemaphoreGive(i2c_irpow_mutex);
+			} else {
+				log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			}
+			xSemaphoreGive(critical_action_mutex);
 			
-			// disable sensor regulators
-			set_5v_enable(false);
+			// in case any mutex didn't get locked
+			if (!actually_flashed) {
+				continue;
+			}
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
 			
@@ -175,23 +202,23 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	// also add it to the average
 	// (note below that we can't assign to arrays, so we have to use pointers to the arrays)
 	led_temps_batch* led_temps = &burst_struct->led_temps_data[*data_arrays_tail];
-	read_led_temps_batch(*led_temps);
+	_read_led_temps_batch_unsafe(*led_temps);
 	sum_piecewise_uint8(sums_struct->led_temps_data_sums, *led_temps, 4);
 	
 	lifepo_bank_temps_batch* lifepo_bank_temps = &burst_struct->lifepo_bank_temps_data[*data_arrays_tail];
-	read_lifepo_temps_batch(*lifepo_bank_temps);
+	_read_lifepo_temps_batch_unsafe(*lifepo_bank_temps);
 	sum_piecewise_uint8(sums_struct->lifepo_bank_temps_data_sums, *lifepo_bank_temps, 2);
 	
 	lifepo_current_batch* lifepo_current = &burst_struct->lifepo_current_data[*data_arrays_tail];
-	read_lifepo_current_batch(*lifepo_current, true);
+	_read_lifepo_current_batch_unsafe(*lifepo_current, true);
 	sum_piecewise_uint8(sums_struct->lifepo_current_data_sums, *lifepo_current, 4);
 
 	lifepo_volts_batch* lifepo_volts = &burst_struct->lifepo_volts_data[*data_arrays_tail];
-	read_lifepo_volts_batch(*lifepo_volts);
+	_read_lifepo_volts_batch_unsafe(*lifepo_volts);
 	sum_piecewise_uint8(sums_struct->lifepo_volts_data_sums, *lifepo_volts, 4);
 
 	led_current_batch* led_current = &burst_struct->led_current_data[*data_arrays_tail];
-	read_led_current_batch(*led_current, true);
+	_read_led_current_batch_unsafe(*led_current, true);
 	sum_piecewise_uint8(sums_struct->led_current_data_sums, *led_current, 4);
 	
 	(*data_arrays_tail)++;

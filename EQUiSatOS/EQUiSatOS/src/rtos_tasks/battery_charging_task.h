@@ -31,7 +31,7 @@
 #define MAX_VOLTAGE_DROP_MV             300
 #define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
 
-#define BAT_MUTEX_WAIT_TIME_TICKS       1000
+#define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 
 #define TRY_PIN_DELAY_TIME_MS           100
 #define MAX_TIMES_TRY_PIN               3

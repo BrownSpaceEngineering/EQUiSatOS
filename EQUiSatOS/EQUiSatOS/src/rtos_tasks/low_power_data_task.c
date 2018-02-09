@@ -36,7 +36,7 @@ void low_power_data_task(void *pvParameters)
 		time_before_data_read = xTaskGetTickCount() / portTICK_PERIOD_MS;
 		
 		// add all sensors to batch
-		current_struct->satellite_history = *(cache_get_sat_event_history());
+		current_struct->satellite_history = cache_get_sat_event_history();
 		read_lion_volts_batch(current_struct->lion_volts_data);		
 		en_and_read_lion_temps_batch(current_struct->lion_temps_data);
 		read_ad7991_batbrd(current_struct->lion_current_data, current_struct->panelref_lref_data);
@@ -46,6 +46,7 @@ void low_power_data_task(void *pvParameters)
 		
 		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 		verify_regulators();
+		verify_flash_readings(false); // not flashing (function is thread-safe)
 		
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// if we were suspended in some period between start of this packet and here, DON'T add it

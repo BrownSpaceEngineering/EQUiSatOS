@@ -13,8 +13,8 @@ uint8_t control_rx_temp[NUM_CONTROL_BYTES];
 
 void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
 	buffer[0] = command;
-	buffer[1] = 0x0; // only bottom 16 bits of address are decoded, so skip a byte
-	buffer[2] = address >> 8;		// upper byte
+	buffer[1] = address >> 16;		// upper byte (only 3 bits are actually decoded)
+	buffer[2] = address >> 8;		// middle byte
 	buffer[3] = address;			// lower byte
 }
 

@@ -12,8 +12,8 @@
 #include <global.h>
 #include "../processor_drivers/I2C_Commands.h"
 
-#define AD7991_SHOULD_STOP false
-#define REGULATOR_MEASURE_DELAY		500 // ms; how long to wait after enabling regulators to read them
+#define AD7991_SHOULD_STOP				false
+#define REGULATOR_ENABLE_WAIT_AFTER		500 // ms; how long to wait after enabling regulators to read them
 
 enum status_code AD7991_init(uint8_t board);
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr);

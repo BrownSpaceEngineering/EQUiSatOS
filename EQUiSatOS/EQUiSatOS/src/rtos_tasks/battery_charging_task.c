@@ -237,7 +237,7 @@ void battery_logic()
 
 	sat_state_t sat_state = get_sat_state();
 
-	read_li_volts_precise(
+	read_lion_volts_precise(
 		(uint16_t *) &(charging_data.bat_voltages[LI1]),
 		(uint16_t *) &(charging_data.bat_voltages[LI2]));
 
@@ -671,7 +671,12 @@ void battery_logic()
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 
-	xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS);
+	if (!xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS)) {
+		// if for some reason we can't get the bat charging mutex (it times out), 
+		// ignore it and move on (the only things this mutex prevents is flashing while
+		// lifepos are charging, which is less worrisome than not running charging logic)
+		log_error(ELOC_BAT_CHARGING, ECODE_BAT_CHARGING_MUTEX_TIMEOUT, true);
+	}
 
 	///
 	// phase 3a: set the lion that should be discharging to discharge and

@@ -59,13 +59,14 @@ void global_init(void) {
 	pin_init();
  	init_rtc();
 	USART_init();
-	radio_init();
+	radio_control_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();
 	HMC5883L_init();
 	delay_init();
 
+	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();

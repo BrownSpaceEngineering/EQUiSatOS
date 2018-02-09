@@ -140,7 +140,7 @@ uint8_t atmel_to_equi_error(enum status_code sc) {
 
 /* Logs an error to the error stack, noting its timestamp */
 void log_error(uint8_t loc, uint8_t err, bool priority) {
-	configASSERT(err <= 127); // only 7 bits	
+	//configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
 	full_error.timestamp = get_current_timestamp(); // time is now

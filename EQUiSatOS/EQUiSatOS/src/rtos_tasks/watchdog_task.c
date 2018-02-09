@@ -4,13 +4,11 @@
  * Created: 3/1/2017 9:26:57 PM
  *  Author: jleiken
  *
- * Make sure to move into rtos_tasks.c upon branch merge
- * When we do this, put it at priority 
  */ 
 
 #include "Watchdog_Task.h"
 
-uint8_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
+uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 	WATCHDOG_TASK_FREQ + WATCHDOG_BUFFER,
 	STATE_HANDLING_TASK_FREQ + WATCHDOG_BUFFER,
 	ANTENNA_DEPLOY_TASK_FREQ + WATCHDOG_BUFFER,
@@ -51,7 +49,10 @@ void watchdog_task(void *pvParameters) {
 }
 
 bool watchdog_as_function(void) {
-	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+	if (!xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+		// this is an error but the watchdog is so critical we'll keep running
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+	}
 	
 	bool watch_block = false;
 	if (!check_task_state_consistency()) {
@@ -110,8 +111,8 @@ bool watchdog_as_function(void) {
 /************************************************************************/
 
 // These MUST be called when using check_in_task_unsafe and check_out_take_unsafe
-void watchdog_mutex_take(void) {
-	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+BaseType_t watchdog_mutex_take(void) {
+	return xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
 }
 
 void watchdog_mutex_give(void) {
@@ -127,7 +128,10 @@ void check_in_task_unsafe(task_type_t task_ind) {
 // tasks must check in while running to avoid the watchdog
 // (we'll set 'im loose on that task if it doesn't!)
 void report_task_running(task_type_t task_ind) {
-	xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
+	if (!xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+		// log error, but continue becasue this is crucial 
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+	}
 	running_times[task_ind] = get_current_timestamp_ms();
 	xSemaphoreGive(mutex);
 }
@@ -143,6 +147,7 @@ void check_out_task_unsafe(task_type_t task_ind) {
 
 // Writes state to storage if the watchdog is about to restart the satellite
 void watchdog_early_warning_callback(void) {
+	// TODO: is this all good from an interrupt???
 	log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
-	write_state_to_storage();
+	write_state_to_storage(); 
 }

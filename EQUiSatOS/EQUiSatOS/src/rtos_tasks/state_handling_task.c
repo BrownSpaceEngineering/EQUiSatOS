@@ -37,7 +37,7 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 
 			uint16_t li1_recalc_mv;
 			uint16_t li2_recalc_mv;
-			read_li_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
+			read_lion_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
 
 			if (!(li1_recalc_mv <= LI_CRITICAL_MV && li2_recalc_mv <= LI_CRITICAL_MV))
 			{
@@ -120,7 +120,7 @@ static void decide_next_state(sat_state_t current_state) {
 
 		uint16_t li1_mv;
 		uint16_t li2_mv;
-		read_li_volts_precise(&li1_mv, &li2_mv);
+		read_lion_volts_precise(&li1_mv, &li2_mv);
 
 		// individual batteries within the life po banks
 		uint16_t lf1_mv;
@@ -157,15 +157,15 @@ static void decide_next_state(sat_state_t current_state) {
 		int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
 
 		// TODO: do we want some notion of time?
-		satellite_history_batch *sat_history = cache_get_sat_event_history();
+		satellite_history_batch sat_history = cache_get_sat_event_history();
 
 		switch (current_state)
 		{
 			case INITIAL:
 				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S 
 					&& both_li_above_down 
-					&& sat_history->lion_1_charged  // TODO: Don't actually consider entire sat_history; we want to only consider last 30mins
-					&& sat_history->lion_2_charged) { // ""
+					&& sat_history.lion_1_charged  // TODO: Don't actually consider entire sat_history; we want to only consider last 30mins
+					&& sat_history.lion_2_charged) { // ""
 					set_sat_state(ANTENNA_DEPLOY);
 				}
 				break;
@@ -177,7 +177,7 @@ static void decide_next_state(sat_state_t current_state) {
 							
 				// if the antenna is open kill the task because the antenna has been deployed
 				// or kill it if it's run more than 5 times because it's a lost cause
-				} else if (sat_history->antenna_deployed
+				} else if (sat_history.antenna_deployed
 					|| (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once (TODO)
 					|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
 					// switch state to hello world, then determine whether we should keep trying

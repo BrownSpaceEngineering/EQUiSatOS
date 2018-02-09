@@ -16,5 +16,6 @@
 #include "testing_functions/system_test.h"
 
 static void run_tests(void);
+void run_rtos_tests(void);
 
 #endif /* MAIN_H */

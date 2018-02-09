@@ -1,7 +1,6 @@
 #include "system_test.h"
 
 void set_regulator_power(bool on) {
-	set3V6Power(on);
 	setRadioPower(on);
 	set_output(on, P_5V_EN);
 }
@@ -45,7 +44,7 @@ void sensor_read_tests(void) {
 	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	print("# led current #\n");
-	read_led_current_batch(four_buf, false);
+	_read_led_current_batch_unsafe(four_buf, false);
 	print("LED1SNS: %d, LED2SNS %d, LED3SNS %d, LED4SNS %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	set_regulator_power(false);
@@ -69,11 +68,11 @@ void sensor_read_tests(void) {
 	print("lifepo volts: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 
 	print("# LiFePO CURRENT #\n");
-	read_lifepo_current_batch(four_buf, false);
+	_read_lifepo_current_batch_unsafe(four_buf, false);
 	print("lifepo current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	print("# LED CURRENT #\n");
-	read_led_current_batch(four_buf, false);
+	_read_led_current_batch_unsafe(four_buf, false);
 	print("led current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	
@@ -460,7 +459,6 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	AD7991_results[2]= ((float)  results[2])*3.381;		//5VREF
 	AD7991_results[3] = ((float) results[3])*2.01;		//3V3REF
 
-	set3V6Power(false);
 	setRadioPower(false);
 	set_output(false, P_5V_EN);
 	
