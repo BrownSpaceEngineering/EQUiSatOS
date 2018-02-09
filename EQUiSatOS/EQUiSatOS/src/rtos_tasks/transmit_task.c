@@ -55,7 +55,7 @@ bool process_radio_command(radio_command_t *command) {
 		// COMMAND_MODE commands
 		case GET_TEMPERATURE:
 			expecting_rx_data = true;
-			XDL_get_temperature(); // XDL_get_temperature(command->rx_data_dest, command->rx_data_ready) TODO
+			XDL_get_temperature(command->rx_data_dest); // XDL_get_temperature(command->rx_data_dest, command->rx_data_ready) TODO
 			break;
 			
 		case COLD_RESET:

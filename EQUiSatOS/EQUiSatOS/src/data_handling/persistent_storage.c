@@ -90,13 +90,13 @@ void read_state_from_storage(void) {
 			cached_state.reboot_count = 0;
 			cached_state.sat_event_history;
 		#else
-			storage_read_bytes_unsafe(1, (uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-			storage_read_bytes_unsafe(1, &cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-			storage_read_bytes_unsafe(1, (uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-			storage_read_bytes_unsafe(1, (uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+			storage_read_bytes_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		#endif
 	} else {
-		log_error(ELOC_MRAM_READ, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 }
@@ -140,19 +140,19 @@ void write_state_to_storage(void) {
 
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
-		storage_write_bytes_unsafe(1, (uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_bytes_unsafe(1, (uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_bytes_unsafe(1, (uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_bytes_unsafe(1, (uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
-		storage_read_bytes_unsafe(1, (uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_read_bytes_unsafe(1, &temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_read_bytes_unsafe(1, &temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
-		storage_read_bytes_unsafe(1, (uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_read_bytes_unsafe(&temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_read_bytes_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
+		storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	} else {
-		log_error(ELOC_MRAM_WRITE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 
@@ -303,11 +303,11 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 		uint8_t num_stored_normal_errors;
 		sat_error_t priority_error_buf[PRIORITY_ERROR_STACK_MAX];
 		sat_error_t normal_error_buf[NORMAL_ERROR_STACK_MAX];
-		storage_read_bytes_unsafe(1, &num_stored_priority_errors,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe(1, &num_stored_normal_errors,	1, STORAGE_NORMAL_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe(1, (uint8_t*) priority_error_buf,
+		storage_read_bytes_unsafe(&num_stored_priority_errors,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
+		storage_read_bytes_unsafe(&num_stored_normal_errors,	1, STORAGE_NORMAL_ERR_NUM_ADDR);
+		storage_read_bytes_unsafe((uint8_t*) priority_error_buf,
 			PRIORITY_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-		storage_read_bytes_unsafe(1, (uint8_t*) normal_error_buf,
+		storage_read_bytes_unsafe((uint8_t*) normal_error_buf,
 			NORMAL_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
 
 		// read all errors that we have stored in MRAM in
@@ -318,7 +318,7 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 			equistack_Push(normal_errors, &(normal_error_buf[i]));
 		}
 	} else {
-		log_error(ELOC_MRAM_READ, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
 	xSemaphoreGive(mram_spi_mutex);
 }
@@ -359,20 +359,20 @@ void write_custom_state(void) {
 	// set write time right before writing
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 
-	storage_write_bytes_unsafe(1, (uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_write_bytes_unsafe(1, (uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_write_bytes_unsafe(1, (uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_write_bytes_unsafe(1, (uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	// TODO: bootloader / program memory hashes
 
 	// write errors
-	storage_write_bytes_unsafe(1, (uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_write_bytes_unsafe(1, (uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
 	if (num_priority_errs > 0)
-		storage_write_bytes_unsafe(1, (uint8_t*) priority_errors,
+		storage_write_bytes_unsafe((uint8_t*) priority_errors,
 			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
 	if (num_normal_errs > 0)
-		storage_write_bytes_unsafe(1, (uint8_t*) normal_errors,
+		storage_write_bytes_unsafe((uint8_t*) normal_errors,
 			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
 
 	/*** read it right back to confirm validity ***/
@@ -386,23 +386,23 @@ void write_custom_state(void) {
 	sat_error_t temp_priority_errors[num_priority_errs];
 	sat_error_t temp_normal_errors[num_normal_errs];
 
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	// TODO: bootloader / program memory hashes
 
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_read_bytes_unsafe(1, (uint8_t*) &temp_num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
 
 	configASSERT(temp_num_priority_errs == num_priority_errs);
 	configASSERT(temp_num_normal_errs == num_normal_errs);
 
 	if (num_priority_errs > 0)
-		storage_read_bytes_unsafe(1, (uint8_t*) temp_priority_errors,
+		storage_read_bytes_unsafe((uint8_t*) temp_priority_errors,
 			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
 	if (num_normal_errs > 0)
-		storage_read_bytes_unsafe(1, (uint8_t*) temp_normal_errors,
+		storage_read_bytes_unsafe((uint8_t*) temp_normal_errors,
 			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
 
 	/*** CHECKS ***/

@@ -88,23 +88,25 @@ enum error_locations {
 
 	ELOC_TCA = 							51,
 	ELOC_CACHED_PERSISTENT_STATE = 		52,
-	ELOC_MRAM_READ = 					53,
-	ELOC_MRAM_WRITE = 					54,
-	ELOC_5V_REF = 						55,
-	ELOC_STATE_HANDLING = 				56,
-	ELOC_BAT_CHARGING =					57,
-	ELOC_ANTENNA_DEPLOY	=				58,
-	ELOC_ERROR_STACK =					59,
-	ELOC_WATCHDOG =						60,
-	ELOC_PROC_TEMP =					61,
-	ELOC_VERIFY_REGS =					62,
+	ELOC_MRAM1_READ = 					53,
+	ELOC_MRAM2_READ = 					54,
+	ELOC_MRAM1_WRITE = 					55,
+	ELOC_MRAM2_WRITE = 					56,
+	ELOC_5V_REF = 						57,
+	ELOC_STATE_HANDLING = 				58,
+	ELOC_BAT_CHARGING =					59,
+	ELOC_ANTENNA_DEPLOY	=				60,
+	ELOC_ERROR_STACK =					61,
+	ELOC_WATCHDOG =						62,
+	ELOC_PROC_TEMP =					63,
+	ELOC_VERIFY_REGS =					64,
 
-	ELOC_IDLE_DATA =					63,
-	ELOC_ATTITUDE_DATA =				64,
-	ELOC_FLASH =						65, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				66,
-	ELOC_EQUISTACK_GET =				67,
-	ELOC_EQUISTACK_PUT =				68
+	ELOC_IDLE_DATA =					65,
+	ELOC_ATTITUDE_DATA =				66,
+	ELOC_FLASH =						67, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				68,
+	ELOC_EQUISTACK_GET =				69,
+	ELOC_EQUISTACK_PUT =				70
 
 };
 
