@@ -7,11 +7,11 @@
  *  Author: mckenna
  */ 
 
-#include <asf.h>
-#include <inttypes.h>
-
 #ifndef RTOS_TASKS_CONFIG_H
 #define RTOS_TASKS_CONFIG_H
+
+#include <asf.h>
+#include <inttypes.h>
 
 /************************************************************************/
 /* Classes of Task Priorities                                           */
@@ -32,19 +32,19 @@ enum {
 #define TASK_INIT_STACK_SIZE						(1536/sizeof(portSTACK_TYPE))
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
 #define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
 
 #define TASK_STATE_HANDLING_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(512/sizeof(portSTACK_TYPE)) // TODO: More
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE)) 
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(768/sizeof(portSTACK_TYPE)) 
 #define TASK_FLASH_ACTIVATE_PRIORITY				(PRIMARY_ACTION_PRIORITY)
 
 #define TASK_TRANSMIT_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
@@ -59,7 +59,7 @@ enum {
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(768/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(512/sizeof(portSTACK_TYPE))
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/
@@ -187,16 +187,16 @@ typedef enum
 	
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
 
-#define TRANSMIT_TASK_FREQ						5000//15000	// 15 secs; how often to transmit
+#define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit
 	#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
 	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
 	#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
 
-#define IDLE_DATA_TASK_FREQ						1000 // ms
+#define IDLE_DATA_TASK_FREQ						10000 // ms
 	#define IDLE_DATA_MAX_READ_TIME					1000 
 	#define IDLE_DATA_LOGS_PER_ORBIT				7 // == IDLE_DATA_PACKETS
 	
-#define LOW_POWER_DATA_TASK_FREQ				10000
+#define LOW_POWER_DATA_TASK_FREQ				30000
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		1000
@@ -206,14 +206,23 @@ typedef enum
  * all sensors are being read at the same frequency, unlike below.
  */
 
-#define ATTITUDE_DATA_TASK_FREQ					10000
+#define ATTITUDE_DATA_TASK_FREQ					20000
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
-#define FLASH_ACTIVATE_TASK_FREQ				15000//60000	// 1 minute; how often to flash
+#define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
+
+// higher-speed overrides
+#ifdef TESTING_SPEEDUP
+	#define IDLE_DATA_TASK_FREQ				2500
+	#define ATTITUDE_DATA_TASK_FREQ			5000
+	#define FLASH_ACTIVATE_TASK_FREQ		15000
+	#define LOW_POWER_DATA_TASK_FREQ		7500
+	#define BATTERY_CHARGING_TASK_FREQ		15000
+#endif
 
 #endif

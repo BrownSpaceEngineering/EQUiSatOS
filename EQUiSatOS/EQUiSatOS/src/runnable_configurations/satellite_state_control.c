@@ -11,12 +11,17 @@
 // vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
 const uint16_t RADIO_STATES = 0b10110100;
 
+/************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
+/************************************************************************/ 
 sat_state_t current_sat_state = INITIAL;
 
 // specific state for radio
 bool current_radio_state = false;
 
+/************************************************************************/
+/* task states                                                          */
+/************************************************************************/
 // states that should be set upon task bootup (only used on boot)
 task_states boot_task_states;
 // states tasks were at before their last (explicit) state change
@@ -27,8 +32,10 @@ task_states prev_task_states;
 // global current states
 task_states current_task_states;
 
-// global states for hardware + mutex
-struct hw_states hardware_states = {false, false, false, false, false};
+/************************************************************************/
+/* global states for hardware + mutex                                   */
+/************************************************************************/ 
+struct hw_states hardware_states = {false, false, false, false};
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 
@@ -61,6 +68,10 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
+	#if PRINT_DEBUG != 0
+		rtos_started = true;
+	#endif
+	
 	// utility function to write initial state to MRAM (ONCE before launch)
 	//write_custom_state();
 	
@@ -82,6 +93,7 @@ void startup_task(void* pvParameters) {
 	// Initialize misc. state mutexes
 	battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
 	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
+	critical_action_mutex = xSemaphoreCreateMutexStatic(&_critical_action_mutex_d);
 
 	// Initialize EQUiStack mutexes
 	_idle_equistack_mutex = xSemaphoreCreateMutexStatic(&_idle_equistack_mutex_d);
@@ -253,7 +265,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task and apply
-	if (cache_get_sat_event_history()->antenna_deployed) { // no one writing so don't wait
+	if (cache_get_sat_event_history().antenna_deployed) { 
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -337,8 +349,10 @@ void set_radio_by_sat_state(sat_state_t state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_radio_state != new_state) 
 			setRadioState(true, true);
+			//TODO: //submit_radio_command(POWER_ON, true /* (confirm) */, NULL, NULL, 4000);
 	} else {
 		setRadioState(false, false);
+		//TODO: //submit_radio_command(POWER_OFF, true /* (confirm) */, NULL, NULL, 2000);
 	}
 	current_radio_state = new_state;
 }
@@ -363,7 +377,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case ANTENNA_DEPLOY: ;
 			if (current_sat_state == INITIAL) {
-				trace_print("CHANGED STATE to ANTENNA_DEPLOY");
+				print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
 				set_radio_by_sat_state(ANTENNA_DEPLOY);
 				return true;
@@ -372,7 +386,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case HELLO_WORLD: ;
 			if (current_sat_state == ANTENNA_DEPLOY) {
-				trace_print("CHANGED STATE to HELLO_WORLD");
+				print("CHANGED STATE to HELLO_WORLD");
 				set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
 				set_radio_by_sat_state(HELLO_WORLD);
 				return true;
@@ -381,7 +395,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case HELLO_WORLD_LOW_POWER: ;
 			if (current_sat_state == HELLO_WORLD) {
-				trace_print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
+				print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
 				set_all_task_states(HELLO_WORLD_LOW_POWER_TASK_STATES, HELLO_WORLD_LOW_POWER);
 				set_radio_by_sat_state(HELLO_WORLD_LOW_POWER);
 				return true;
@@ -389,7 +403,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case IDLE_NO_FLASH: ;
 			if (current_sat_state == IDLE_FLASH || current_sat_state == HELLO_WORLD || current_sat_state == LOW_POWER) {
-				trace_print("CHANGED STATE to IDLE_NO_FLASH");
+				print("CHANGED STATE to IDLE_NO_FLASH");
 				set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
 				set_radio_by_sat_state(IDLE_NO_FLASH);
 				return true;
@@ -398,7 +412,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case IDLE_FLASH: ;
 			if (current_sat_state == IDLE_NO_FLASH) {
-				trace_print("CHANGED STATE to IDLE_FLASH");
+				print("CHANGED STATE to IDLE_FLASH");
 				set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
 				set_radio_by_sat_state(IDLE_FLASH);
 				return true;
@@ -407,7 +421,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case LOW_POWER: ;
 			if (current_sat_state == IDLE_NO_FLASH || current_sat_state == IDLE_FLASH) {
-				trace_print("CHANGED STATE to LOW_POWER");
+				print("CHANGED STATE to LOW_POWER");
 				set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
 				set_radio_by_sat_state(LOW_POWER);
 				return true;
@@ -416,7 +430,7 @@ bool set_sat_state_helper(sat_state_t state)
 
 		case RIP: ;
 			// we can always go to RIP
-			trace_print("CHANGED STATE to RIP");
+			print("CHANGED STATE to RIP");
 			set_all_task_states(RIP_TASK_STATES, RIP);
 			set_radio_by_sat_state(RIP);
 			return true;
@@ -452,7 +466,10 @@ void set_all_task_states(const task_states states, sat_state_t state)
 {
 	// Don't allow other tasks to run while we're changing state,
 	// and make sure to get the watchdog mutex so its state is stable
-	watchdog_mutex_take();
+	if (!watchdog_mutex_take()) {
+		// if the watchdog manages to time out, 
+		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+	}
 	vTaskSuspendAll();
 
 	// values given by external-facing functions
@@ -550,10 +567,10 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-void hardware_mutex_take(void) {
-	xSemaphoreTake(&hardware_state_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+BaseType_t hardware_state_mutex_take(void) {
+	return xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
 }
 
-void hardware_mutex_give(void) {
-	xSemaphoreGive(&hardware_state_mutex);
+void hardware_state_mutex_give(void) {
+	xSemaphoreGive(hardware_state_mutex);
 }

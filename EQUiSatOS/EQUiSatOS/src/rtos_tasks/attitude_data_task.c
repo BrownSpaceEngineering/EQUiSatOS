@@ -48,7 +48,7 @@ void attitude_data_task(void *pvParameters)
 		
 		// delay a bit and take a second batch of readings to allow rate measurements
 		// TODO: may want to error if this is off (by a tighter bound than ATTITUDE_DATA_MAX_READ_TIME)
-		vTaskDelay(FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
+		vTaskDelay(ATTITUDE_DATA_SECOND_SAMPLE_DELAY / portTICK_PERIOD_MS);
 		read_accel_batch(			current_struct->accelerometer_data	[1]);
 		read_magnetometer_batch(	current_struct->magnetometer_data	[1]);
 		

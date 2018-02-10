@@ -437,7 +437,9 @@ void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_
 void write_parity(uint8_t* buffer, uint8_t* buf_index) {
 	// encode using Reed-Solomon (START_PARITY is the number of bytes in buffer before parity section)
 	// NOTE we don't encode the callsign
-	encode_data(buffer + CALLSIGN_SIZE, START_PARITY - CALLSIGN_SIZE, buffer + CALLSIGN_SIZE);
+	#ifdef USE_REED_SOLOMON
+		encode_data(buffer + CALLSIGN_SIZE, START_PARITY - CALLSIGN_SIZE, buffer + CALLSIGN_SIZE);
+	#endif
 	*buf_index = *buf_index + MSG_PARITY_LENGTH;
 }
 

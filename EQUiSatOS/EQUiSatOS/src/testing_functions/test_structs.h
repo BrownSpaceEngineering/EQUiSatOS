@@ -8,7 +8,8 @@
 #ifndef TEST_STRUCTS_H
 #define TEST_STRUCTS_H
 
-#include <global.h>
+#include <asf.h>
+#include <inttypes.h>
 
 typedef struct one_batch
 {

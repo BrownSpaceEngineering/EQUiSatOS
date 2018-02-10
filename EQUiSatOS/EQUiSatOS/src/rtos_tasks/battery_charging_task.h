@@ -11,9 +11,12 @@
 
 #include "global.h"
 #include "rtos_tasks.h"
+#include "testing_functions/battery_charging_simulated_data.h"
 
 // TODO: figure out these thresholds fully
 // TODO: deal with scaling
+
+//#define BAT_TESTING
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -31,7 +34,7 @@
 #define MAX_VOLTAGE_DROP_MV             300
 #define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
 
-#define BAT_MUTEX_WAIT_TIME_TICKS       1000
+#define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 
 #define TRY_PIN_DELAY_TIME_MS           100
 #define MAX_TIMES_TRY_PIN               3
@@ -40,6 +43,7 @@
 #define MAX_TIME_TO_WAIT_FOR_DEPLOY_S   10000 // TODO: figure this out
 
 #define MAX_RECOMISSION_TIME_S          10000 // TODO: figure this out
+#define MAX_TIME_BELOW_V_THRESHOLD_S    10000
 #define INITIAL_RECOMISSION_TIME_S      500
 #define RECOMISSION_TIME_INCREASE       2
 
@@ -89,11 +93,11 @@ typedef enum
 
 typedef struct charging_data {
 	// the battery that's currently charging
-	battery_t bat_charging;
+	int bat_charging;
 
 	// the battery that's currently discharging
 	// NOTE: this is only ever a Lion
-	battery_t lion_discharging;
+	int lion_discharging;
 
 	// meta-charging state
 	meta_charge_state_t curr_meta_charge_state;
@@ -102,8 +106,10 @@ typedef struct charging_data {
 	charge_state_t curr_charge_state;
 
 	// the last time each lion was full
-	int li1_full_timestamp;
-	int li2_full_timestamp;
+	int li_full_timestamp[2];
+
+	// the last time each lion was low voltage
+	int li_low_voltage_timestamp[2];
 
 	// whether or not the satellite state has already been set
 	int already_set_sat_state;
@@ -137,6 +143,8 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions that use as
 charging_data_t charging_data;
 
+int get_current_timestamp_wrapped(void);
+sat_state_t get_sat_state_wrapped(void);
 int get_fault_pin_val_w_conversion(battery_t bat);
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);
@@ -145,9 +153,12 @@ int get_st_val(battery_t bat);
 int get_panel_ref_val(void);
 int is_lion(battery_t bat);
 void init_charging_data(void);
-void battery_logic(void);
+bool battery_logic(void);
 void decommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);
+
+void run_unit_tests(void);
+void run_simulations(void);
 
 #endif /* BATTERY_CHARGING_TASK_H_ */

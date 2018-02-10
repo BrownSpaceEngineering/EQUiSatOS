@@ -35,6 +35,7 @@
 #include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "sensor_drivers/M24M01_EEPROM_Commands.h"
 #include "rtos_tasks/rtos_tasks_config.h"
+#include "rtos_tasks/transmit_task.h"
 #include "data_handling/Sensor_Structs.h"
 #include "data_handling/persistent_storage.h"
 #include "telemetry/Radio_Commands.h"
@@ -45,17 +46,14 @@
 /************************************************************************/
 /* HELPER METHODS                                                       */
 /************************************************************************/
-
 void init_tracelyzer(void);
 void global_init(void);
 void global_init_post_rtos(void);
+void print(const char *format, ...);
 
-#if configUSE_TRACE_FACILITY == 1
-	// http://www.delorie.com/gnu/docs/gcc/gcc_44.html
-	#define trace_print(format, ...) vTracePrintF(global_trace_channel, format, ##__VA_ARGS__);
-#else
-	#define trace_print(...) ((void)0);
+#if PRINT_DEBUG > 0
+	// print mutex; used to both lock the print buffer and prevent USART contention while printing
+	SemaphoreHandle_t print_mutex;
 #endif
-
 
 #endif /* GLOBAL_H_ */

@@ -20,29 +20,41 @@
 
 /** 
  * flags to control dangerous / inconvenient functions of the satellite 
- * MAKE SURE to RE-build solution to be double-sure they were disabled
+ * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
-//#define BAT_CHARGING_ACTIVE // enable battery charging logic
+#define BAT_CHARGING_ACTIVE // enable battery charging logic
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING / DEBUG ***/
-// define this flag to disable normal frequencies and read data faster
-// (ex: don't read data distributed around an orbit)
+// define this flag to disable normal frequencies and read data faster,
+// ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
+// ENUMERATION of changes when ON:
+// - don't read data distributed around an orbit
+// - don't populate ECC tables on boot (Reed-Solomon will be wrong)
 #define TESTING_SPEEDUP
+
+// use this flag to disable reed-solomon tables (frees up memory)
+//#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
 #define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+//													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
+//#define OVERRIDE_INIT_TASK_STATES	((task_states){T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED})
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up testing tasks
-//#define RUN_TESTING_TASKS
+#define RUN_TESTING_TASKS
 
-// 0 to suppress prints and send data to RADIO, 1 to print over USART
-#define PRINT_DEBUG 0
+// debug print control; set to:
+// 0 to suppress prints and allow radio transmission
+// 1 to print over USART
+// 2 to print over Tracelyzer trace_print
+// 3 to print over both
+#define PRINT_DEBUG 1
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

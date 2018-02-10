@@ -28,9 +28,23 @@
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
-#define CACHE_MUTEX_WAIT_TIME_TICKS			((TickType_t) 1000) // ms
+#define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000) // ms
 
-/* helper structs */
+
+/************************************************************************/
+/* STATE CACHE                                                          */
+/* NOTE: this cached state is configured to match the ACTUAL state that 
+ the satellite code EXPECTS is stored in the MRAM. This is a tradeoff;
+ it means that this state may not persist if something is going wrong
+ with the MRAM, so the satellite (and those on the ground) may be 
+ 'deceived' by the impression that this state will persist. However,
+ the important thing is that they will NOT be deceived about the 
+ satellite state. In essence, the cache will represent what has actually
+ happened, and we just hope like heck that the MRAM will reflect that,
+ instead of holding the MRAM as the ground truth. 
+ In sum, this is why we ignore concurrency issues with an updated cache
+ being readable before the state could be written, etc.					*/
+/************************************************************************/
 struct persistent_data {
 	uint32_t secs_since_launch; // note: most recent one stored in MRAM, not current timestamp
 	uint8_t reboot_count;
@@ -60,7 +74,7 @@ void update_sat_event_history(uint8_t antenna_deployed,
 uint32_t					cache_get_secs_since_launch(void);
 uint8_t						cache_get_reboot_count(void);
 sat_state_t					cache_get_sat_state(void);
-satellite_history_batch*	cache_get_sat_event_history(void);
+satellite_history_batch		cache_get_sat_event_history(void);
 
 /* functions which require reading from MRAM (bypass cache) */
 void populate_error_stacks(equistack* priority_errors, equistack* normal_errors);

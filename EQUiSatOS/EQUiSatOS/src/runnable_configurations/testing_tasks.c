@@ -9,7 +9,7 @@
 
 /* task constants */
 #define TESTING_TASK_FREQ			1000
-#define TESTING_TASK_STACK_SIZE		256
+#define TESTING_TASK_STACK_SIZE		512
 
 // task functions / handles
 TaskHandle_t suicide_test_handle;
@@ -18,8 +18,10 @@ void task_suicide_test(void *pvParameters);
 void task_stack_size_overflow_test(void *pvParameters);
 
 // task data
-StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
-StaticTask_t testing_task_buffer;
+#ifdef RUN_TESTING_TASKS
+	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
+	StaticTask_t testing_task_buffer;
+#endif
 
 void create_testing_tasks(void) 
 {
@@ -56,11 +58,14 @@ void testing_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, TESTING_TASK_FREQ / portTICK_PERIOD_MS);
 		
+		// callback testing function in main
+		run_rtos_tests();
+		
 		/************************************************************************/
 		/* MISC                                                                 */
 		/************************************************************************/
-		test_message_packaging();
-		stress_test_message_packaging();
+		//test_message_packaging();
+		//stress_test_message_packaging();
 		vTaskDelay(2000);
 		//configASSERT(check_task_state_consistency());
 		

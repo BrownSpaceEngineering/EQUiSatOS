@@ -1102,6 +1102,9 @@
     <Compile Include="src\rtos_tasks\transmit_task.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\rtos_tasks\transmit_task.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\rtos_tasks\watchdog_task.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1184,6 +1187,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\telemetry\rscode-1.3\rs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\battery_charging_simulated_data.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\battery_charging_simulated_data.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\testing_functions\sat_data_tests.c">

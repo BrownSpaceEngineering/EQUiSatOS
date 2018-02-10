@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "bootloader", "bootloader\bootloader.cproj", "{FF0F88D3-E397-400C-A2A9-0E61D3D1B368}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF0F88D3-E397-400C-A2A9-0E61D3D1B368}.Debug|ARM.ActiveCfg = Debug|ARM
+		{FF0F88D3-E397-400C-A2A9-0E61D3D1B368}.Debug|ARM.Build.0 = Debug|ARM
+		{FF0F88D3-E397-400C-A2A9-0E61D3D1B368}.Release|ARM.ActiveCfg = Release|ARM
+		{FF0F88D3-E397-400C-A2A9-0E61D3D1B368}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

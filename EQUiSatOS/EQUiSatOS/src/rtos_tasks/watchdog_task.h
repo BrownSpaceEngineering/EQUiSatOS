@@ -24,7 +24,7 @@ StaticSemaphore_t _watchdog_task_mutex_d;
 void watchdog_init(void);
 bool watchdog_as_function(void);
 
-void watchdog_mutex_take(void);
+BaseType_t watchdog_mutex_take(void);
 void watchdog_mutex_give(void);
 void check_in_task_unsafe(task_type_t task_ind);
 void report_task_running(task_type_t task_ind); // always safe; uses mutex

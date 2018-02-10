@@ -37,3 +37,8 @@ Temporary Items
 *.eep
 
 EQUiSatOS/.vs/EQUiSatOS/v14/.atsuo
+
+# CLion
+.idea
+CMakeLists.txt
+cmake-build-debug
