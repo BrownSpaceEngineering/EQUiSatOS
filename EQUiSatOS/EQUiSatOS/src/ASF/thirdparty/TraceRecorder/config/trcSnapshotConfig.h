@@ -459,7 +459,7 @@
  *
  * Only applicable if TRC_CFG_USE_SEPARATE_USER_EVENT_BUFFER is 1.
  ******************************************************************************/
-#define TRC_CFG_UB_CHANNELS 32
+#define TRC_CFG_UB_CHANNELS 2
 
 /*******************************************************************************
  * TRC_CFG_ISR_TAILCHAINING_THRESHOLD

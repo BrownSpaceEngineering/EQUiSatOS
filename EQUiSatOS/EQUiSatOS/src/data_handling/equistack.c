@@ -48,7 +48,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 // Returns a pointer to the nth most recent element
 void* equistack_Get(equistack* S, int16_t n)
 {
-	if (xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
 		log_error(ELOC_EQUISTACK_GET, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
 	}

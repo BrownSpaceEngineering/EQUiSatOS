@@ -8,7 +8,7 @@
 #include "global.h"
 
 #if PRINT_DEBUG > 0 // if using debug print
-	char debug_buf[200];
+	char debug_buf[128];
 
 	StaticSemaphore_t _print_mutex_d;
 #endif

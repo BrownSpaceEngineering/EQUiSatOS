@@ -34,7 +34,10 @@
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
 // - don't populate ECC tables on boot (Reed-Solomon will be wrong)
-//#define TESTING_SPEEDUP
+#define TESTING_SPEEDUP
+
+// use this flag to disable reed-solomon tables (frees up memory)
+//#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
@@ -51,7 +54,7 @@
 // 1 to print over USART
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
-#define PRINT_DEBUG 3
+#define PRINT_DEBUG 1
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

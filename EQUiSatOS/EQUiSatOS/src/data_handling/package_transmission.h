@@ -10,7 +10,9 @@
 
 #include <global.h>
 #include "rtos_tasks/rtos_tasks.h"
-#include "../telemetry/rscode-1.3/ecc.h"
+#ifdef USE_REED_SOLOMON
+	#include "../telemetry/rscode-1.3/ecc.h"
+#endif
 #include "../data_handling/persistent_storage.h"
 
 /************************************************************************/
@@ -21,7 +23,7 @@
 // various section sizes in bytes
 #define MSG_PREAMBLE_LENGTH			13
 #define MSG_CUR_DATA_LEN			16
-#define MSG_DATA_AND_ERRORS_LEN		196 // sum of possible data, error, and padding sections
+#define MSG_DATA_AND_ERRORS_LEN		194 // sum of possible data, error, and padding sections (make sure up to date)
 #define MSG_PARITY_LENGTH			32
 #define MSG_SIZE					255
 #define MSG_BUFFER_SIZE				(MSG_SIZE + 1) // = sum of all sections (largest) + 1 for null terminator

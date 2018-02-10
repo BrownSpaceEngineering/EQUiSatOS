@@ -8,7 +8,9 @@
 #include "global.h"
 #include "scratch_testing.h"
 
-#include "../telemetry/rscode-1.3/ecc.h"
+#ifdef USE_REED_SOLOMON
+	#include "../telemetry/rscode-1.3/ecc.h"
+#endif
 #include "../processor_drivers/Flash_Commands.h"
 
 void runit(void){	
@@ -166,39 +168,41 @@ static void byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures
 }
 
 void rsTest(void) {
-	unsigned char msg[] = "The quick brown fox jumped over the lazy dog.";
-	unsigned char codeword[256];
+	#ifdef USE_REED_SOLOMON
+		unsigned char msg[] = "The quick brown fox jumped over the lazy dog.";
+		unsigned char codeword[256];
 	 
-	uint8_t erasures[16];
-	int nerasures = 0;
+		uint8_t erasures[16];
+		int nerasures = 0;
 	 
-	// Initialization the ECC library
-	initialize_ecc();
+		// Initialization the ECC library
+		initialize_ecc();
 	
-	encode_data(msg, sizeof(msg), codeword);
+		encode_data(msg, sizeof(msg), codeword);
 	
-	#define ML (sizeof (msg) + NPAR)
+		#define ML (sizeof (msg) + NPAR)
 	
-	//introduce errors and erasures	
-	byte_err(0x35, 3, codeword);
+		//introduce errors and erasures	
+		byte_err(0x35, 3, codeword);
 
-	byte_err(0x23, 17, codeword);
-	byte_err(0x34, 19, codeword);
+		byte_err(0x23, 17, codeword);
+		byte_err(0x34, 19, codeword);
 	
-	//We need to indicate the position of the erasures.  Eraseure
-    //positions are indexed (1 based) from the end of the message... 
-	erasures[nerasures++] = ML-17;
-	erasures[nerasures++] = ML-19;
+		//We need to indicate the position of the erasures.  Eraseure
+		//positions are indexed (1 based) from the end of the message... 
+		erasures[nerasures++] = ML-17;
+		erasures[nerasures++] = ML-19;
 	
-	decode_data(codeword, ML);
+		decode_data(codeword, ML);
 	
-	 //check if syndrome is all zeros
-	 if (check_syndrome () != 0) {
-		 correct_errors_erasures (codeword,
-		 ML,
-		 nerasures,
-		 erasures);		 		 
-	 }	   
+		 //check if syndrome is all zeros
+		 if (check_syndrome () != 0) {
+			 correct_errors_erasures (codeword,
+			 ML,
+			 nerasures,
+			 erasures);		 		 
+		 }	   
+	#endif
 }
 
 void simpleADCTest(void) {
