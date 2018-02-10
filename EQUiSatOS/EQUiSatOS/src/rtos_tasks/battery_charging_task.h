@@ -11,9 +11,12 @@
 
 #include "global.h"
 #include "rtos_tasks.h"
+#include "testing_functions/battery_charging_simulated_data.h"
 
 // TODO: figure out these thresholds fully
 // TODO: deal with scaling
+
+#define BAT_TESTING
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -140,6 +143,8 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions that use as
 charging_data_t charging_data;
 
+int get_current_timestamp_wrapped(void);
+sat_state_t get_sat_state_wrapped(void);
 int get_fault_pin_val_w_conversion(battery_t bat);
 int get_run_chg_pin(battery_t bat);
 int get_run_dischg_pin(battery_t bat);
@@ -152,5 +157,8 @@ void battery_logic(void);
 void decommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);
+
+void run_unit_tests(void);
+void run_simulations(void);
 
 #endif /* BATTERY_CHARGING_TASK_H_ */
