@@ -633,7 +633,7 @@ void LION_DISG_test(void) {
 	delay_ms(500);
 	TCA9535_test(true, false);
 	
-	print("L1 OFF, L2 ON\n");
+	print("\nL1 OFF, L2 ON\n");
 	set_output(false, P_L2_DISG);
 	set_output(true, P_L1_DISG);	
 	delay_ms(500);
@@ -650,30 +650,32 @@ void set_chg_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
 void CHG_test() {
 	print("==============CHARGE Test==============\n");
 
-	print("CHARGE L1\n");
+	print("CHARGE L1");
 	set_chg_states(true, false, false, false);
 	delay_ms(1000);
 	TCA9535_test(false, true);
 	
-	print("CHARGE L2\n");
+	print("\nCHARGE L2");
 	set_chg_states(false, true, false, false);
 	delay_ms(1000);
 	TCA9535_test(false, true);
 	
-	print("CHARGE LFB1\n");
+	print("\nCHARGE LFB1");
 	set_chg_states(false, false, true, false);
 	delay_ms(1000);
 	TCA9535_test(false, true);
 	
-	print("CHARGE LFB2\n");
+	print("\nCHARGE LFB2");
 	set_chg_states(false, false, false, true);
 	delay_ms(1000);
 	TCA9535_test(false, true);
 	
-	print("CHARGE ALL\n");
+	print("\nCHARGE ALL");
 	set_chg_states(true, true, true, true);
 	delay_ms(1000);
 	TCA9535_test(false, true);
+	
+	set_chg_states(false, false, false, false);
 }
 
 void system_test(bool printFloats){		
