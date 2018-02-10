@@ -16,7 +16,7 @@
 // TODO: figure out these thresholds fully
 // TODO: deal with scaling
 
-#define BAT_TESTING
+//#define BAT_TESTING
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -153,7 +153,7 @@ int get_st_val(battery_t bat);
 int get_panel_ref_val(void);
 int is_lion(battery_t bat);
 void init_charging_data(void);
-void battery_logic(void);
+bool battery_logic(void);
 void decommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);

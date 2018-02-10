@@ -253,7 +253,10 @@ void battery_charging_task(void *pvParameters)
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
 		#ifdef BAT_CHARGING_ACTIVE
-		battery_logic();
+		bool completed;
+		do {
+			completed = battery_logic();
+		} while (!completed);
 		#endif
 	}
 
@@ -261,7 +264,7 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-void battery_logic()
+bool battery_logic()
 {
 	print("entering battery logic");
 
@@ -273,7 +276,7 @@ void battery_logic()
 	sat_state_t sat_state = get_sat_state_wrapped();
 
 	#ifndef BAT_TESTING
-	read_li_volts_precise(
+	read_lion_volts_precise(
 		(uint16_t *) &(charging_data.bat_voltages[LI1]),
 		(uint16_t *) &(charging_data.bat_voltages[LI2]));
 
@@ -317,7 +320,7 @@ void battery_logic()
 	/////
 
 	#ifndef BAT_TESTING
-	for (battery_t bat = 0; bat < 4; bat++)
+	for (int bat = 0; bat < 4; bat++)
 	{
 		if (charging_data.decommissioned[bat])
 		{
@@ -328,7 +331,7 @@ void battery_logic()
 	}
 
 	// TODO: where else do we want to use PANEL_REF
-	for (battery_t bat = 0; bat < 4; bat++)
+	for (int bat = 0; bat < 4; bat++)
 	{
 		// making sure that no one is decommissioned twice
 		if (!charging_data.decommissioned[bat])
@@ -408,7 +411,7 @@ void battery_logic()
 	if (num_lf_down == 1)
 		good_lf = charging_data.decommissioned[LFB1] ? LFB2 : LFB1;
 
-	print("currently have %d good li and %d good lf", good_li, good_lf);
+	print("currently have %d good li and %d good lf", num_li_down, num_lf_down);
 
 	// we often want to know whether the higher cells within the life po banks have filled up
 	bool life_po_full = (num_lf_down == 0 &&
@@ -781,13 +784,13 @@ void battery_logic()
 		decommission(charging_data.lion_discharging);
 
 		// TODO: check with special attention here
-		for (battery_t bat = 0; bat < 4; bat++)
+		for (int bat = 0; bat < 4; bat++)
 			charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
 		// we're going to just restart the battery charging logic
 		xSemaphoreGive(battery_charging_mutex);
 		print("restarting battery logic");
-		battery_logic();
+		return false;
 	}
 
 	// set the lion that should not be discharging to not discharge
@@ -823,7 +826,7 @@ void battery_logic()
 	///
 
 	// looping through each of the batteries
-	for (battery_t bat_type = 0; bat_type < 4; bat_type++)
+	for (int bat_type = 0; bat_type < 4; bat_type++)
 	{
 		int charge_pin = get_run_chg_pin(bat_type);
 		int should_be_charging = (charging_data.bat_charging == bat_type); // see the enum in .h
@@ -862,11 +865,12 @@ void battery_logic()
 	// phase epilogue: getting everything ready for next time through
 	///
 
-	for (battery_t bat = 0; bat < 4; bat++)
+	for (int bat = 0; bat < 4; bat++)
 		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
 	xSemaphoreGive(battery_charging_mutex);
 	#endif
 
 	print("leaving battery charging");
+	return true;
 }

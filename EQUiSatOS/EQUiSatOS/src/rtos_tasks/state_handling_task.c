@@ -151,10 +151,19 @@ static void decide_next_state(sat_state_t current_state) {
 		///
 
 		int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
-		int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
-		int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
 
 		int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
+		
+		int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
+		int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
+		int low_power_entry_criteria = charging_data.curr_meta_charge_state == TWO_LI_DOWN
+										|| charging_data.curr_meta_charge_state == TWO_LF_DOWN
+										|| (charging_data.curr_meta_charge_state == ALL_GOOD &&
+											one_li_below_low_power)
+										|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
+											(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
+											&& charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV));
+		int low_power_exit_criteria = !low_power_entry_criteria;
 
 		// TODO: do we want some notion of time?
 		satellite_history_batch sat_history = cache_get_sat_event_history();
@@ -191,20 +200,20 @@ static void decide_next_state(sat_state_t current_state) {
 
 			case HELLO_WORLD:
 				// it's higher priority to go to low power
-				if (one_li_below_low_power)
+				if (low_power_entry_criteria)
 					set_sat_state(HELLO_WORLD_LOW_POWER);
 				else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
 					set_sat_state(IDLE_NO_FLASH);
 				break;
 
 			case HELLO_WORLD_LOW_POWER:
-				if (both_li_above_down)
+				if (low_power_exit_criteria)
 					set_sat_state(HELLO_WORLD);
 				break;
 
 			case IDLE_NO_FLASH:
 				// it's higher priority to go to low power
-				if (one_li_below_low_power)
+				if (low_power_entry_criteria)
 					set_sat_state(LOW_POWER);
 				else if (one_lf_above_flash)
 					set_sat_state(IDLE_FLASH);
@@ -212,14 +221,14 @@ static void decide_next_state(sat_state_t current_state) {
 
 			case IDLE_FLASH:
 				// it's higher priority to go to low power
-				if (one_li_below_low_power)
+				if (low_power_entry_criteria)
 					set_sat_state(LOW_POWER);
 				else if (!one_lf_above_flash)
 					set_sat_state(IDLE_NO_FLASH);
 				break;
 
 			case LOW_POWER:
-				if (both_li_above_down)
+				if (low_power_exit_criteria)
 					set_sat_state(IDLE_NO_FLASH);
 				break;
 
