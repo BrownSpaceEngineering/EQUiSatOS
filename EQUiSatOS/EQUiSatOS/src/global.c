@@ -65,7 +65,7 @@ void global_init(void) {
 	pin_init();
  	init_rtc();
 	USART_init();
-	radio_control_init();
+	radio_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();

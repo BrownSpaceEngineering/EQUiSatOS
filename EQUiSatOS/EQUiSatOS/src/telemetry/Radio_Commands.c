@@ -108,13 +108,13 @@ bool warm_reset(void){
 	sendbuffer[3] = ~0x1E;
 	sendbuffer[4] = '\0';
 	if (send_command(3)) {
-		if ((check_checksum(receivebuffer+1, 1, receivebuffer[2])) && (receivebuffer[1] != 0)) {
+		if ((check_checksum(receivebuffer+1, 1, receivebuffer[2])) && (receivebuffer[1] == 0)) {
 			return true;
 		}
 	} else {
 		//power cycle radio
 		setRadioPower(false);
-		delay_ms(1000);
+		delay_ms(WARM_RESET_REBOOT_TIME);
 		setRadioPower(true);
 		return false;
 	}

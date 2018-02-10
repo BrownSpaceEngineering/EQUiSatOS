@@ -16,114 +16,47 @@ enum radio_state {
 	TX_RX_MODE,
 	POWERED_OFF
 } cur_radio_mode = POWERED_OFF;
-#define POWER_ON_RADIO_MODE		TX_RX_MODE // TODO
+#define POWER_ON_RADIO_MODE		TX_RX_MODE
 
-void radio_control_init(void) {
-	radio_init();
-	radio_command_queue = xQueueCreateStatic(RADIO_CMD_QUEUE_LEN,
-											 sizeof(radio_command_t),
-											 _radio_command_queue_storage,
-											 &_radio_command_queue_d);
+// temporary version of radio temp; set periodically (right before radio transmit)
+uint16_t radio_temp_cached;
+
+uint16_t get_radio_temp_cached(void) {
+	return radio_temp_cached;
 }
 
-// function to push radio command on to queue to be processed when ready
-bool submit_radio_command(enum radio_command_type type, 
-	void *input_arg, void *rx_data_dest, bool *rx_data_ready, TickType_t full_wait_time_ms) {
+void read_radio_temp_mode(void) {
+	// power on radio initially
+	setRadioState(true, true);
 	
-	struct radio_command_t cmd = {
-		type, 
-		input_arg,
-		rx_data_dest,
-		rx_data_ready
-	};
+	// set command mode to allow sending commands
+	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS);
+	set_command_mode(true); // don't delay, we'll take care of it
+	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS);
+
+
 	
-	// note: cmd is copied so it's fine to use a local var
-	return xQueueSendToFront(radio_command_queue, &cmd, full_wait_time_ms / portTICK_PERIOD_MS) == pdTRUE;
-}
+	// TODO: extract some of this out so we can use RTOS delays
+	// TODO: always wait the same amount of time to get temperature
+	XDL_get_temperature(&radio_temp_cached);
 
-// performs the given radio command; returns whether the radio can accept more commands
-bool process_radio_command(radio_command_t *command) {
-	bool expecting_rx_data = false;
-	switch (command->type) {
-		// special commands
-		case POWER_OFF:
-			setRadioState(false, (bool) command->input_arg);
-			cur_radio_mode = POWERED_OFF;
-			return false;
-		// POWER_ON handled separately
-		
-		// COMMAND_MODE commands
-		case GET_TEMPERATURE:
-			expecting_rx_data = true;
-			XDL_get_temperature(command->rx_data_dest); // XDL_get_temperature(command->rx_data_dest, command->rx_data_ready) TODO
-			break;
-			
-		case COLD_RESET:
-			expecting_rx_data = true;
-			cold_reset();
-			break;
-			
-		case WARM_RESET:
-			expecting_rx_data = true;
-			warm_reset();
-			break;
-			
-		default:
-			return true; // do nothing on bad command
-	}
-
-	// if there is data to be received, busy(ish) loop until then
+	
+	
+	// TODO: may work:
 	// TODO: timeout!!
-	if (expecting_rx_data) {
-		while (!receiveDataReady) {
-			vTaskDelay(STATE_CHANGE_MONITOR_DELAY_TICKS);
-		}
-		if (command->rx_data_ready != NULL) 
-			*(command->rx_data_ready) = true;
-	}
-	return true;
-}
-
-// function to process radio commands for a specified time period before
-// returning radio to transmit state
-void process_radio_commands(TickType_t prev_transmit_time) {
-	static radio_command_t cur_command;
 	
-	// continue to try and process commands until we're close enough to the 
-	// time we need to transmit that we need to get prepared
-	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
-	TickType_t processing_deadline = prev_transmit_time +
-		(TRANSMIT_TASK_FREQ - MAX_CMD_MODE_RECOVERY_TIME_MS) / portTICK_PERIOD_MS;
-
-	while (xTaskGetTickCount() < processing_deadline) {
-		// try to receive command from queue, waiting the maximum time we can before the processing deadline
-		if (xQueueReceive(radio_command_queue, &cur_command, processing_deadline - xTaskGetTickCount())) {
-			// turn on radio if it's not currently on
-			setRadioState(true, true);
-			// will delay while confirming
-			cur_radio_mode = POWER_ON_RADIO_MODE;
-			
-			// activate command mode on the radio if we're not currently in it
-			if (/* requires_command_mode(cur_command) && */ cur_radio_mode != COMMAND_MODE && cur_radio_mode != RECIEVING_COMMAND) {
-				vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS);
-				set_command_mode(false); // don't delay, we'll take care of it
-				vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS);
-			}
-			
-			if (!process_radio_command(&cur_command)) {
-				// power off command issued TODO: how to respond? probably suspend this task?
-				// TODO
-			}
-		}
-		// keep trying if nothing received
-	}
+	// if there is data to be received, busy(ish) loop until then
+// 	if (expecting_rx_data) {
+// 		while (!receiveDataReady) {
+// 			vTaskDelay(STATE_CHANGE_MONITOR_DELAY_TICKS);
+// 		}
+// 		if (command->rx_data_ready != NULL)
+// 		*(command->rx_data_ready) = true;
+// 	}
 	
-	// warm reset the radio if necessary before moving to transmit state
-	// so it can transmit
-	if (cur_radio_mode != TX_RX_MODE) {
-		warm_reset();
-		vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
-	}
+	// warm reset to get back into transmit mode
+	warm_reset();
+	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 }
 
 /************************************************************************/
@@ -335,44 +268,60 @@ void transmit_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
 	vTaskDelay(TRANSMIT_TASK_FREQ_OFFSET);
-	TickType_t prev_transmit_time = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount();
 
 	init_task_state(TRANSMIT_TASK); // suspend or run on boot
 
-	// block initially so we don't go right into command-processing mode
-	vTaskDelayUntil( &prev_transmit_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS); 
-
 	for( ;; )
-	{
+	{	
+		/************************************************************************/
+		/* STAGE ILLUSTRATION:                                                  
+		  t				 t+x_1			   t+x_2	  t+x_3						t+TRANSMIT_TASK_FREQ
+		  |-set cmd mode-|-read radio temp-|-transmit-|-rx-|-sleep (power off)--|
+		  where:
+			x_1 represents the command mode time requirements
+			x_2 represents the above plus the maximum (timeout) time for reading radio temp
+			x_3 represents the above plus the RX window time
+			TRANSMIT_TASK_FREQ represents the precise, RTOS-ensured frequency of the cycle */
+		/************************************************************************/
+		
+		/* block for any leftover time (done first by convention with RTOS and on startup) */
+		vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+	
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);
-		
-		/************************************************************************/
-		/* STAGE ILLUSTRATION:                                                  */
-		/* t			  t+x_1				   t+x_2		t+TRANSMIT_TASK_FREQ*/
-		/* |-transmission-|--command handling--|--sleep---------|-transmission-|*/
-		/* or												(cut short) 		*/
-		/* |-transmission-|--command handling-------------------|-transmission-|*/
-		/* (the difference is that not all the commands got handled in #2)		*/
-		/************************************************************************/
 
-		// enter command handling stage;
-		// process any commands on the command queue for a maximum time period of 
-		// approximately TRANSMIT_TASK_FREQ (minus expectations of transmission time)
-		process_radio_commands(prev_transmit_time);
+		/* enter command mode and commence radio temp reading stage */
+		read_radio_temp_mode();
 		
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);
 		
-		// block for any leftover time
-		vTaskDelayUntil( &prev_transmit_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
-		
-		// report to watchdog (again)
-		report_task_running(TRANSMIT_TASK);
-		
-		// enter transmission stage;
-		// after processing any radio commands, try a transmission
+		/* enter transmission stage */
 		attempt_transmission();
+		
+		// report to watchdog (again)
+		report_task_running(TRANSMIT_TASK);
+
+		/* enable rx mode on radio and wait for any incoming transmissions */
+		
+		
+		// TODO: enable RX mode, set global state?
+		
+		
+		vTaskDelay(RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
+		
+		
+		// TODO: good place to transfer buffer if necessary
+		
+		
+		/* shut down and block for any leftover time in next loop */
+		
+		
+		// TODO: actually confirm??
+		
+		
+		setRadioState(false, true); 
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

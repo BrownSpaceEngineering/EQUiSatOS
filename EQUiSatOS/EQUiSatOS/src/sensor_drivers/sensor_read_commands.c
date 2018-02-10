@@ -642,9 +642,7 @@ void read_proc_temp_batch(proc_temp_batch* batch) {
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {	
-	set_command_mode(true);
-	XDL_get_temperature(batch); // TODO: truncation
-	warm_reset();
+	*batch = truncate_16t(get_radio_temp_cached());
 }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
