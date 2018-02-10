@@ -93,11 +93,11 @@ typedef enum
 
 typedef struct charging_data {
 	// the battery that's currently charging
-	battery_t bat_charging;
+	int bat_charging;
 
 	// the battery that's currently discharging
 	// NOTE: this is only ever a Lion
-	battery_t lion_discharging;
+	int lion_discharging;
 
 	// meta-charging state
 	meta_charge_state_t curr_meta_charge_state;

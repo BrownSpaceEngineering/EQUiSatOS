@@ -212,7 +212,10 @@ void init_charging_data()
 
 	// set all old voltage values to -1
 	for (battery_t bat = 0; bat < 4; bat++)
+	{
+		charging_data.bat_voltages[bat] = -1;
 		charging_data.old_bat_voltages[bat] = -1;
+	}
 
 	// initializing all values relevant to batteries and decomissioning
 	for (battery_t bat = 0; bat < 4; bat++)
@@ -485,11 +488,11 @@ void battery_logic()
 				charging_data.curr_charge_state = FILL_LI_B;
 				break;
 
-			case TWO_LI_DOWN:
+			case TWO_LF_DOWN:
 				charging_data.curr_charge_state = FILL_LI_C;
 				break;
 
-			case TWO_LF_DOWN:
+			case TWO_LI_DOWN:
 				charging_data.curr_charge_state = FILL_LI_D;
 				break;
 		}
