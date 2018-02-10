@@ -19,7 +19,7 @@
 /* STRUCTURES FOR SENDING COMMANDS TO RADIO                             */
 /************************************************************************/
 // timing constants
-#define MAX_CMD_MODE_RECOVERY_TIME_MS		10 + WARM_RESET_WAIT_AFTER_MS
+#define MAX_CMD_MODE_RECOVERY_TIME_MS		(100 + WARM_RESET_WAIT_AFTER_MS + WARM_RESET_REBOOT_TIME + MAX_RADIO_CMD_TIME)
 #define STATE_CHANGE_MONITOR_DELAY_TICKS	15
 
 // possible radio command types (other properties of request determined by these)

@@ -11,7 +11,7 @@
 uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 	WATCHDOG_TASK_FREQ + WATCHDOG_BUFFER,
 	STATE_HANDLING_TASK_FREQ + WATCHDOG_BUFFER,
-	ANTENNA_DEPLOY_TASK_FREQ + WATCHDOG_BUFFER,
+	ANTENNA_DEPLOY_TASK_LESS_FREQ + WATCHDOG_BUFFER, // TODO: this won't monitor very tight during ANTENNA_DEPLOY
 	BATTERY_CHARGING_TASK_FREQ + WATCHDOG_BUFFER,
 	TRANSMIT_TASK_FREQ + WATCHDOG_BUFFER,
 	FLASH_ACTIVATE_TASK_FREQ + WATCHDOG_BUFFER,
@@ -93,7 +93,6 @@ bool watchdog_as_function(void) {
 	} else {
 		// pet watchdog - pass this watchdog test, move onto next
 		pet_watchdog();
-		memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
 		print("Pet watchdog");
 		xSemaphoreGive(mutex);
 		return true;

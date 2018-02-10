@@ -361,6 +361,9 @@ void transmit_task(void *pvParameters)
 		// approximately TRANSMIT_TASK_FREQ (minus expectations of transmission time)
 		process_radio_commands(prev_transmit_time);
 		
+		// report to watchdog (again)
+		report_task_running(TRANSMIT_TASK);
+		
 		// block for any leftover time
 		vTaskDelayUntil( &prev_transmit_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
 		

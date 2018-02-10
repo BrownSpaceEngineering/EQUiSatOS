@@ -17,6 +17,8 @@
 #define TRANSMIT_TIME_MS(bytes)		((1000 * bytes) / RADIO_BAUD_BYTES)
 #define SET_CMD_MODE_WAIT_BEFORE_MS	200
 #define SET_CMD_MODE_WAIT_AFTER_MS	300
+#define MAX_RADIO_CMD_TIME			200 // 20 ms inner delay * 20
+#define WARM_RESET_REBOOT_TIME		1000
 #define WARM_RESET_WAIT_AFTER_MS	100 // TODO: necessary / what value?
 
 void set_command_mode(bool delay);
