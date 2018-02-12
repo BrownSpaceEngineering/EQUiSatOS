@@ -12,6 +12,7 @@
 #include "rtos_tasks/rtos_tasks.h"
 #include "main.h"
 #include "satellite_state_control.h"
+#include "testing_functions/rtos_system_test.h"
 
 void create_testing_tasks(void);
 

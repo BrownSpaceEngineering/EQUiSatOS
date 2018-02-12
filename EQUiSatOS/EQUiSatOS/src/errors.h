@@ -197,5 +197,6 @@ bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
+void print_sat_error(sat_error_t* data, int i);
 
 #endif /* ERRORS_H_ */

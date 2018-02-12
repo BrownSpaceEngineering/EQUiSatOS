@@ -19,35 +19,29 @@ void sensor_read_tests(void) {
 	
 	print("\n# IMU #\n");
 	read_accel_batch(three_buf);
-	print("accel: x: %d y: %d z: %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
+	print_accel_batch(three_buf);
 	read_gyro_batch(three_buf);
-	print("gyro: x: %d y: %d z: %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
+	print_gyro_batch(three_buf);
 	read_magnetometer_batch(three_buf);
-	print("mag: %d %d %d\n", (int16_t)((int8_t) three_buf[0]) << 8, (int16_t)((int8_t) three_buf[1]) << 8, (int16_t)((int8_t) three_buf[2]) << 8);
+	print_magnetometer_batch(three_buf);
 
 	print("\n# IR #\n");
 	read_ir_ambient_temps_batch(six_buf);
-	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf[0] << 8), (uint16_t)dataToTemp(six_buf[1] << 8), (uint16_t)dataToTemp(six_buf[2] << 8), (uint16_t)dataToTemp(six_buf[3] << 8), (uint16_t)dataToTemp(six_buf[4] << 8), (uint16_t)dataToTemp(six_buf[5] << 8));
+	print_ir_ambient_temps_batch(six_buf);
 	read_ir_object_temps_batch(six_buf_16t);
-	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(six_buf_16t[0]), (uint16_t)dataToTemp(six_buf_16t[1]), (uint16_t)dataToTemp(six_buf_16t[2]), (uint16_t)dataToTemp(six_buf_16t[3]), (uint16_t)dataToTemp(six_buf_16t[4]), (uint16_t)dataToTemp(six_buf_16t[5]));
+	print_ir_object_temps_batch(six_buf_16t);
 
 	print("\n# PDIODE #\n");
 	read_pdiode_batch(&six_buf);
-	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, (uint16_t)(six_buf[i])<<8);
-	}
+	print_pdiode_batch(&six_buf);
 
 	print("\n\n# LiON VOLTS #\n");
 	read_lion_volts_batch(two_buf);
-	print("lion volts: %d %d\n", (uint16_t)two_buf[0]<<8, (uint16_t)two_buf[1]<<8);
+	print_lion_volts_batch(two_buf);
 	
 	print("# ad7991_batbrd #\n");
 	read_ad7991_batbrd(four_buf, four_buf+2);	
 	print("L1_SNS: %d, L2_SNS %d, PANELREF %d, LREF %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
-	
-	print("# led current #\n");
-	_read_led_current_batch_unsafe(four_buf, false);
-	print("LED1SNS: %d, LED2SNS %d, LED3SNS %d, LED4SNS %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
 	
 	set_regulator_power(false);
 	print("# ad7991_ctrlbrd regs OFF#\n");
@@ -62,20 +56,19 @@ void sensor_read_tests(void) {
 
 	print("# LiON TEMPS #\n");
 	en_and_read_lion_temps_batch(two_buf);
-	print("lion temps: %d %d\n", (uint16_t)two_buf[0]<<8, (uint16_t)two_buf[1]<<8);
-
+	print_lion_temps_batch(two_buf);
 
 	print("\n# LiFePO VOLTS #\n");
 	read_lifepo_volts_batch(four_buf);
-	print("lifepo volts: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	print_lifepo_volts_batch(four_buf);
 
 	print("# LiFePO CURRENT #\n");
 	_read_lifepo_current_batch_unsafe(four_buf, false);
-	print("lifepo current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	print_lifepo_current_batch(four_buf);
 	
 	print("# LED CURRENT #\n");
 	_read_led_current_batch_unsafe(four_buf, false);
-	print("led current: %d %d %d %d\n", (uint16_t)four_buf[0]<<8, (uint16_t)four_buf[1]<<8, (uint16_t)four_buf[2]<<8, (uint16_t)four_buf[3]<<8);
+	print_led_current_batch(four_buf);
 	
 	
 }

@@ -8,17 +8,23 @@
 #include "testing_tasks.h"
 
 /* task constants */
+#define SYSTEM_TEST_TASK_FREQ		10000
+#define SYSTEM_TEST_TASK_STACK_SIZE	128 // TODO: probs not working
 #define TESTING_TASK_FREQ			1000
 #define TESTING_TASK_STACK_SIZE		512
 
 // task functions / handles
 TaskHandle_t suicide_test_handle;
+void system_test_task(void *pvParameters);
 void testing_task(void *pvParameters);
 void task_suicide_test(void *pvParameters);
 void task_stack_size_overflow_test(void *pvParameters);
 
 // task data
 #ifdef RUN_TESTING_TASKS
+	StackType_t system_test_task_stack[SYSTEM_TEST_TASK_STACK_SIZE];
+	StaticTask_t system_test_task_buffer;
+
 	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
 	StaticTask_t testing_task_buffer;
 #endif
@@ -26,6 +32,14 @@ void task_stack_size_overflow_test(void *pvParameters);
 void create_testing_tasks(void) 
 {
 	#ifdef RUN_TESTING_TASKS
+		xTaskCreateStatic(system_test_task,
+			"sys test task",
+			SYSTEM_TEST_TASK_STACK_SIZE,
+			NULL,
+			tskIDLE_PRIORITY,
+			system_test_task_stack,
+			&system_test_task_buffer);
+	
 		xTaskCreateStatic(testing_task,
 			"testing task",
 			TESTING_TASK_STACK_SIZE,
@@ -81,6 +95,21 @@ void testing_task(void *pvParameters)
 		// 	test_watchdog_reset_idle_data_task();
 		// 	test_watchdog_reset_flash_activate_task();
 		// 	test_watchdog_reset_low_power_data_task();
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+
+void system_test_task(void *pvParameters)
+{
+	// initialize xNextWakeTime once
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, SYSTEM_TEST_TASK_FREQ / portTICK_PERIOD_MS);
+		rtos_system_test();
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

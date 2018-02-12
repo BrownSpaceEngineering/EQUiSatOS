@@ -12,17 +12,6 @@
 #include "Sensor_Structs.h"
 
 
-// for packet header - TODO: Needed?
-// typedef struct current_data_t
-// {
-// 	
-// 	lion_volts_batch lion_volts_data;
-// 	lion_current_batch lion_current_data;
-// 	bat_charge_volts_batch bat_charge_volts_data;
-// 	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
-// 
-// } current_data_t;
-
 // for idle data package
 typedef struct idle_data_t
 {
