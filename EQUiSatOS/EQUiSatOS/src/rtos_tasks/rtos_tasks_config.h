@@ -194,7 +194,7 @@ typedef enum
 
 #define IDLE_DATA_TASK_FREQ						10000 // ms
 	#define IDLE_DATA_MAX_READ_TIME					1000 
-	#define IDLE_DATA_LOGS_PER_ORBIT				7 // == IDLE_DATA_PACKETS
+	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	
 #define LOW_POWER_DATA_TASK_FREQ				30000
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
@@ -208,13 +208,14 @@ typedef enum
 
 #define ATTITUDE_DATA_TASK_FREQ					20000
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
-	#define ATTITUDE_DATA_LOGS_PER_ORBIT			5 // == ATTITUDE_DATA_PACKETS
+	#define ATTITUDE_DATA_LOGS_PER_ORBIT			ATTITUDE_DATA_PACKETS // == 5
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
 #define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
+	#define FLASH_CMP_DATA_LOGS_PER_ORBIT			FLASH_CMP_DATA_PACKETS // == 6
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP

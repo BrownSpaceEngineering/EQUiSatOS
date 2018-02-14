@@ -128,7 +128,8 @@ void _read_led_temps_batch_unsafe(			led_temps_batch batch);
 void _read_lifepo_temps_batch_unsafe(		lifepo_bank_temps_batch batch);
 void _read_lifepo_current_batch_unsafe(		lifepo_current_batch batch, bool flashing_now);
 void _read_lifepo_volts_batch_unsafe(		lifepo_volts_batch batch);
-void _read_led_current_batch_unsafe(			led_current_batch batch, bool flashing_now);
+void _read_led_current_batch_unsafe(		led_current_batch batch, bool flashing_now);
+void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 
 /* utility */
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);

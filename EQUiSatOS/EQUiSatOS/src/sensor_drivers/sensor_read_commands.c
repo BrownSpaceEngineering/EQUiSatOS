@@ -573,6 +573,17 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 	}
 }
 
+void _read_gyro_batch_unsafe(gyro_batch gyr_batch) {
+	int16_t rs[3];
+	status_code_genare_t sc = MPU9250_read_gyro(rs);
+	
+	log_if_error(ELOC_IMU_GYRO, sc, false);
+	for (int i = 0; i < 3; i++) {
+		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
+		gyr_batch[i] = truncate_16t(rs[i]);
+	}
+}
+
 void read_gyro_batch(gyro_batch gyr_batch) {
 	int16_t rs[3];
 	status_code_genare_t sc;

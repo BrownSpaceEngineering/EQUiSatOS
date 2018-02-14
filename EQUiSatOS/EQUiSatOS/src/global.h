@@ -56,4 +56,11 @@ void print(const char *format, ...);
 	SemaphoreHandle_t print_mutex;
 #endif
 
+#if configUSE_TRACE_FACILITY == 1
+	// http://www.delorie.com/gnu/docs/gcc/gcc_44.html
+	#define trace_print(format, ...) vTracePrintF(global_trace_channel, format, ##__VA_ARGS__);
+#else
+	#define trace_print(...) ((void)0);
+#endif
+
 #endif /* GLOBAL_H_ */

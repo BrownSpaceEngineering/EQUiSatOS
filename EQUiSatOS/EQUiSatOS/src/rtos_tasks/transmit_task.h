@@ -12,7 +12,7 @@
 #include "data_handling/package_transmission.h"
 
 // transmission-related constants
-#define TIME_BTWN_MSGS_MS			100
+#define TIME_BTWN_MSGS_MS			100 // 2x EOT timeout for radio
 #define EXPECTED_TRANSMISSION_TIME	(3*(TRANSMIT_TIME_MS(MSG_SIZE) + TIME_BTWN_MSGS_MS))
 #define RX_READY_PERIOD_MS			2000
 
