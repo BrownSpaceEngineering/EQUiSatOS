@@ -1,6 +1,7 @@
 #include "ADC_Commands.h"
 
 enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
+	#ifndef XPLAINED
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
 
@@ -34,10 +35,15 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 	} else {
 		return adc_enable(adc_instance);
 	}
+	
+	#else 
+		return STATUS_OK;
+	#endif
 }
 
 //reads the current voltage from the ADC connection (with hardware averaging) into a 16 bit buffer
 enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
+	#ifndef XPLAINED
 	if (!adc_instance.hw) {
 		//You must configure the adc_instance and set it as a global variable.
 		return -1;
@@ -56,6 +62,10 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	} while (status == STATUS_BUSY);
 
 	return adc_disable(&adc_instance);
+	
+	#else
+		return STATUS_OK;
+	#endif
 }
 
 //Converts from 16bit ADC reading to mV

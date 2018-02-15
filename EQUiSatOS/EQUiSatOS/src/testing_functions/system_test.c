@@ -671,6 +671,7 @@ void CHG_test() {
 }
 
 void system_test(bool printFloats){		
+	#ifndef XPLAINED
 	print("=======================================\n");
 	print("=               SYSTEM Test           =\n");
 	print("=======================================\n");		
@@ -696,4 +697,5 @@ void system_test(bool printFloats){
 	LION_DISG_test();
 	
 	CHG_test();
+	#endif
 }
