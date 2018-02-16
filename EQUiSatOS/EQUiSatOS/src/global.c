@@ -90,8 +90,8 @@ void global_init_post_rtos(void) {
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	// TODO: we can't do this here because we haven't yet populated the error equistacks
 	// from MRAM and these errors here may be overwritten once we do
-	log_if_error(ELOC_AD7991_0, AD7991_init(AD7991_BATBRD), true);
-	log_if_error(ELOC_AD7991_1, AD7991_init(AD7991_CTRLBRD), true);
+	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
+	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
 }
 
 // use in debug mode (set in header file)
