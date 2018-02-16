@@ -7,6 +7,34 @@ void set_regulator_power(bool on) {
 	set_output(on, P_5V_EN);
 }
 
+static uint16_t tca_shifts(uint16_t batch, bool i1, bool i2, bool i3, bool i4, bool i5, bool i6) {
+	// zero out the places we're going to overwrite
+	// see order in Message Format spreadsheet
+	batch &= 0xF3F0;
+	// fill in the new values we want
+	batch |= i1;
+	batch |= (i2<<1);
+	batch |= (i3<<2);
+	batch |= (i4<<3);
+	batch |= (i5<<10);
+	batch |= (i6<<11);
+	
+	return batch;
+}
+
+void tca_shifts_test(void) {
+	uint16_t batch = 0;
+	assert(0 == tca_shifts(batch, 0, 0, 0, 0, 0, 0));
+	assert(0x000F == tca_shifts(batch, 1, 1, 1, 1, 0, 0));
+	assert(0x0C00 == tca_shifts(batch, 0, 0, 0, 0, 1, 1));
+	assert(0x0C0F == tca_shifts(batch, 1, 1, 1, 1, 1, 1));
+	
+	batch = ~0;
+	assert(0xF3F0 == tca_shifts(batch, 0, 0, 0, 0, 0, 0));
+	assert(0xFFF0 == tca_shifts(batch, 0, 0, 0, 0, 1, 1));
+	assert(0xFFFF == tca_shifts(batch, 1, 1, 1, 1, 1, 1));
+}
+
 void sensor_read_tests(void) {
 	uint16_t six_buf_16t[6];
 	uint8_t six_buf[6];

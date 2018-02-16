@@ -630,7 +630,17 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		sc = TCA9535_init(batch);	
+		sc = TCA9535_init(batch);
+		// zero out the places we're going to overwrite
+		// see order in Message Format spreadsheet
+		*batch &= 0xF3F0;
+		// fill in the new values we want
+		*batch |= get_input(P_L1_RUN_CHG);
+		*batch |= (get_input(P_L2_RUN_CHG)<<1);
+		*batch |= (get_input(P_LF_B1_RUNCHG)<<2);
+		*batch |= (get_input(P_LF_B2_RUNCHG)<<3);
+		*batch |= (get_input(P_L1_DISG)<<10);
+		*batch |= (get_input(P_L2_DISG)<<11);
 	} else {
 		log_error(ELOC_TCA, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(bat_charge_dig_sigs_batch));
