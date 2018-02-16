@@ -231,10 +231,11 @@ void attempt_transmission(void) {
 		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 		transmit_buf_wait(msg_buffer_3, MSG_SIZE);
 		vTaskDelay(TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		
+		xSemaphoreGive(critical_action_mutex);
 	} else {
 		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 	}
-	xSemaphoreGive(critical_action_mutex);
 
 	// NOTE: putting this here as opposed to after the confirmation
 	// means we will try to send the newest packet if encountering failures,
@@ -286,7 +287,12 @@ void transmit_task(void *pvParameters)
 		/************************************************************************/
 		
 		/* block for any leftover time (done first by convention with RTOS and on startup) */
-		vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		/* note this time changes with sat state */
+		if (get_sat_state() == LOW_POWER) {
+			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+		} else {
+			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		}
 	
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);

@@ -15,7 +15,15 @@
 #include "../global.h"
 
 // TODO: all of these
-#define IR_WAKE_DELAY					300
+/************************************************************************/
+/* CRITICAL HARDWARE TIMINGS                                            */
+/************************************************************************/
+#define EN_5V_POWER_UP_DELAY_MS		10  // note we hold a mutex for this time
+#define IR_WAKE_DELAY				300
+
+/************************************************************************/
+/* ERROR BOUNDS                                                         */
+/************************************************************************/
 #define B_IR_OBJ_LOW					0
 #define B_IR_OBJ_HIGH					~0
 #define B_IR_AMB_LOW					0
@@ -108,8 +116,6 @@ void read_lion_volts_batch(			lion_volts_batch batch);
 void read_ad7991_batbrd(			lion_current_batch batch1, panelref_lref_batch batch2);
 void en_and_read_lion_temps_batch(	lion_temps_batch batch);
 void read_lifepo_volts_batch(		lifepo_volts_batch batch);
-//void en_and_read_led_temps_batch(	led_temps_batch batch); TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
-//void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch); TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
 void read_ir_object_temps_batch(	ir_object_temps_batch batch);
 void read_proc_temp_batch(			proc_temp_batch* batch); // pointer to single value
 void read_pdiode_batch(				pdiode_batch* batch); // pointer to single value

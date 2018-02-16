@@ -41,10 +41,11 @@ void antenna_deploy_task(void *pvParameters) {
 				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
 				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
 				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
+				
+				xSemaphoreGive(critical_action_mutex);
 			} else {
 				log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 			}
-			xSemaphoreGive(critical_action_mutex);
 			num_tries++;
 		}
 	}

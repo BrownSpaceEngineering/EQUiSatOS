@@ -135,24 +135,30 @@ void flash_activate_task(void *pvParameters)
 						
 						actually_flashed = true;
 				
+						xSemaphoreGive(processor_adc_mutex);
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}	
 					// disable sensor regulators and free up mutexes
 					_set_5v_enable(false);
-					xSemaphoreGive(processor_adc_mutex);
+					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
 				}
-				xSemaphoreGive(i2c_irpow_mutex);
+				xSemaphoreGive(critical_action_mutex);
 			} else {
 				log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 			}
-			xSemaphoreGive(critical_action_mutex);
 			
 			// in case any mutex didn't get locked
 			if (!actually_flashed) {
 				continue;
+			}
+			
+			// update sat event history if we flashed and it wasn't noted
+			// TODO: every freaking time?
+			if (!cache_get_sat_event_history().first_flash) {
+				update_sat_event_history(0, 0, 0, 0, 0, 1, 0);
 			}
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);

@@ -276,6 +276,12 @@ void configure_state_from_reboot(void) {
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
 	}
 
+	// if we had to rewrite program memory due to corruption, log a low-pri error
+	if (cache_get_prog_mem_rewritten()) {
+		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
+		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
+	}
+
 	// add any errors we can from MRAM cache
 	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
 	populate_error_stacks(&priority_error_equistack, &normal_error_equistack);

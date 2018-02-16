@@ -106,7 +106,9 @@ enum error_locations {
 	ELOC_FLASH =						67, // both flash and flash_cmp (for now)
 	ELOC_LOW_POWER_DATA =				68,
 	ELOC_EQUISTACK_GET =				69,
-	ELOC_EQUISTACK_PUT =				70
+	ELOC_EQUISTACK_PUT =				70,
+	
+	ELOC_BOOTLOADER =					71
 
 };
 
@@ -164,7 +166,10 @@ enum error_codes {
 	ECODE_SPI_MUTEX_TIMEOUT =			44,
 	ECODE_BAT_CHARGING_MUTEX_TIMEOUT =  45,
 	ECODE_WATCHDOG_MUTEX_TIMEOUT =		46,
-	ECODE_EQUISTACK_MUTEX_TIMEOUT =		47
+	ECODE_EQUISTACK_MUTEX_TIMEOUT =		47,
+	
+	ECODE_REWROTE_PROG_MEM =			48
+	
 };
 
 /************************************************************************/

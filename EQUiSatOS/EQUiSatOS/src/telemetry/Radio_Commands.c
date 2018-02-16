@@ -185,16 +185,30 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 	#endif
 	
-	hardware_state_mutex_take();
+	// we don't care too much here if the mutex times out; we gotta transmit!
+	bool got_mutex = true;
+	if (!hardware_state_mutex_take()) {
+		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+		got_mutex = false;
+	}
+	
 	usart_send_buf(buf, size);
 	get_hw_states()->radio_transmitting = true;
-	hardware_state_mutex_give();
+	
+	if (got_mutex) hardware_state_mutex_give();
 
+	// delay during transmission
 	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);
 
-	hardware_state_mutex_take();
+	got_mutex = true;
+	if (!hardware_state_mutex_take()) {
+		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+		got_mutex = false;
+	}
+	
 	get_hw_states()->radio_transmitting = false;
-	hardware_state_mutex_give();
+	
+	if (got_mutex) hardware_state_mutex_give();
 	
 	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
 		xSemaphoreGive(print_mutex);

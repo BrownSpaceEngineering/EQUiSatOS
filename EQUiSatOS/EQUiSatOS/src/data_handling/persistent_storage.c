@@ -89,20 +89,30 @@ void read_state_from_storage(void) {
 			cached_state.sat_state = INITIAL; // signifies initial boot
 			cached_state.reboot_count = 0;
 			cached_state.sat_event_history;
+			cached_state.prog_mem_rewritten = false;
+			cached_state.radio_kill_duration = 0;
 		#else
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 			storage_read_bytes_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR);
 		#endif
+		
+		xSemaphoreGive(mram_spi_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
-	xSemaphoreGive(mram_spi_mutex);
 }
 
 void increment_reboot_count(void) {
 	cached_state.reboot_count++;
+	write_state_to_storage();
+}
+
+void update_radio_kill_duration(uint16_t radio_kill_duration) {
+	cached_state.radio_kill_duration = radio_kill_duration;
 	write_state_to_storage();
 }
 
@@ -133,6 +143,8 @@ void write_state_to_storage(void) {
 	uint32_t temp_secs_since_launch;
 	uint8_t temp_reboot_count, temp_sat_state;
 	satellite_history_batch temp_sat_event_history;
+	uint8_t temp_prog_mem_rewritten;
+	uint16_t temp_radio_kill_duration;
 
 	// set write time right before writing
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
@@ -144,6 +156,8 @@ void write_state_to_storage(void) {
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,2,		STORAGE_RADIO_KILL_DURATION_ADDR);
 		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
@@ -151,18 +165,23 @@ void write_state_to_storage(void) {
 		storage_read_bytes_unsafe(&temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
 		storage_read_bytes_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
 		storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_read_bytes_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
+		
+		xSemaphoreGive(mram_spi_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
-	xSemaphoreGive(mram_spi_mutex);
 
 	// log error if the stored data was not consistent with what was just written
 	// note we have the mutex so no one should be able to write to these
 	// while we were reading / are comparing them
-	if (temp_secs_since_launch != cached_state.secs_since_launch ||
-		temp_reboot_count != cached_state.reboot_count ||
-		temp_sat_state != cached_state.sat_state ||
-		!compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history)) {
+	if (temp_secs_since_launch != cached_state.secs_since_launch 
+		|| temp_reboot_count != cached_state.reboot_count 
+		|| temp_sat_state != cached_state.sat_state 
+		|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
+		|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
+		|| temp_radio_kill_duration != cached_state.radio_kill_duration) {
 
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
 
@@ -184,20 +203,23 @@ void update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
 								uint8_t lifepo_b2_charged,
-								uint8_t first_flash) {
+								uint8_t first_flash,
+								uint8_t prog_mem_rewritten) {
 
 	if (antenna_deployed)
-		cached_state.sat_event_history.antenna_deployed = antenna_deployed;
+		cached_state.sat_event_history.antenna_deployed = true;
 	if (lion_1_charged)
-		cached_state.sat_event_history.lion_1_charged = lion_1_charged;
+		cached_state.sat_event_history.lion_1_charged = true;
 	if (lion_2_charged)
-		cached_state.sat_event_history.lion_2_charged = lion_2_charged;
+		cached_state.sat_event_history.lion_2_charged = true;
 	if (lifepo_b1_charged)
-		cached_state.sat_event_history.lifepo_b1_charged = lifepo_b1_charged;
+		cached_state.sat_event_history.lifepo_b1_charged = true;
 	if (lifepo_b2_charged)
-		cached_state.sat_event_history.lifepo_b2_charged = lifepo_b2_charged;
+		cached_state.sat_event_history.lifepo_b2_charged = true;
 	if (first_flash)
-		cached_state.sat_event_history.first_flash = first_flash;
+		cached_state.sat_event_history.first_flash = true;
+	if (prog_mem_rewritten)
+		cached_state.sat_event_history.prog_mem_rewritten = true;
 
 	write_state_to_storage();
 }
@@ -292,6 +314,14 @@ satellite_history_batch cache_get_sat_event_history() {
 	return cached_state.sat_event_history;
 }
 
+bool cache_get_prog_mem_rewritten(void) {
+	return cached_state.prog_mem_rewritten;
+}
+
+uint16_t cache_get_radio_kill_duration(void) {
+	return cached_state.radio_kill_duration;
+}
+
 /************************************************************************/
 /* functions which require reading from MRAM (bypass cache)				*/
 /************************************************************************/
@@ -317,10 +347,10 @@ void populate_error_stacks(equistack* priority_errors, equistack* normal_errors)
 		for (int i = 0; i < num_stored_normal_errors; i++) {
 			equistack_Push(normal_errors, &(normal_error_buf[i]));
 		}
+		xSemaphoreGive(mram_spi_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
 	}
-	xSemaphoreGive(mram_spi_mutex);
 }
 
 /************************************************************************/
@@ -332,12 +362,15 @@ void write_custom_state(void) {
 	uint8_t reboot_count =						0;
 	sat_state_t sat_state =						INITIAL;
 	satellite_history_batch sat_event_history;
+	uint8_t prog_mem_rewritten =				false;
+	uint16_t radio_kill_duration =				0;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
 	sat_event_history.lifepo_b1_charged =		false;
 	sat_event_history.lifepo_b2_charged =		false;
 	sat_event_history.lion_1_charged =			false;
 	sat_event_history.lion_2_charged =			false;
+	sat_event_history.prog_mem_rewritten =		false;
 
 	#define NUM_PRIORITY_ERRS	0
 	#define NUM_NORMAL_ERRS		0
@@ -363,6 +396,8 @@ void write_custom_state(void) {
 	storage_write_bytes_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
 	storage_write_bytes_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 	storage_write_bytes_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &radio_kill_duration, 2,		STORAGE_RADIO_KILL_DURATION_ADDR);
 	// TODO: bootloader / program memory hashes
 
 	// write errors
@@ -380,16 +415,20 @@ void write_custom_state(void) {
 	uint8_t temp_reboot_count;
 	sat_state_t temp_sat_state;
 	satellite_history_batch temp_sat_event_history; // fits in one
+	uint8_t temp_prog_mem_rewritten;
+	uint16_t temp_radio_kill_duration;
 
 	uint8_t temp_num_priority_errs;
 	uint8_t temp_num_normal_errs;
 	sat_error_t temp_priority_errors[num_priority_errs];
 	sat_error_t temp_normal_errors[num_normal_errs];
 
-	storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR); // TODO: wrong size, how do we do this?
 	storage_read_bytes_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
 	storage_read_bytes_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 	storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
 	// TODO: bootloader / program memory hashes
 
 	storage_read_bytes_unsafe((uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
@@ -410,6 +449,8 @@ void write_custom_state(void) {
 	configASSERT(temp_reboot_count == reboot_count);
 	configASSERT(temp_sat_state == sat_state);
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
+	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
+	configASSERT(temp_radio_kill_duration == radio_kill_duration);
 
 	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs * sizeof(sat_error_t)) == 0);
 	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs  * sizeof(sat_error_t)) == 0);

@@ -38,6 +38,7 @@ typedef struct satellite_history_batch
 	bool lifepo_b1_charged : 1;
 	bool lifepo_b2_charged : 1;
 	bool first_flash : 1;
+	bool prog_mem_rewritten : 1;
 
 } satellite_history_batch;
 

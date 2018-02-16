@@ -18,6 +18,8 @@
 #define STORAGE_REBOOT_CNT_ADDR				0x0014
 #define STORAGE_SAT_STATE_ADDR				0x0015
 #define STORAGE_SAT_EVENT_HIST_ADDR			0x0016
+#define STORAGE_PROG_MEM_REWRITTEN_ADDR		0x1016 // TODO
+#define STORAGE_RADIO_KILL_DURATION_ADDR	0x1017 // TODO
 #define STORAGE_BOOTLOADER_HASH_ADDR		0x0017
 #define STORAGE_PROG_MEMORY_HASH_ADDR		0x0080
 #define STORAGE_PRIORITY_ERR_NUM_ADDR		0x0117
@@ -28,7 +30,7 @@
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
-#define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000) // ms
+#define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
 
 /************************************************************************/
@@ -50,6 +52,8 @@ struct persistent_data {
 	uint8_t reboot_count;
 	sat_state_t sat_state; // most recent known state
 	satellite_history_batch sat_event_history;
+	uint8_t prog_mem_rewritten; // actually a bool; only written by bootloader (one in sat event history follows that paradigm)
+	uint16_t radio_kill_duration;
 	
 } cached_state;
 
@@ -63,18 +67,22 @@ void init_persistent_storage(void);
 void read_state_from_storage(void);
 void write_state_to_storage(void);
 void increment_reboot_count(void);
+void update_radio_kill_duration(uint16_t radio_kill_duration);
 void update_sat_event_history(uint8_t antenna_deployed,
-									uint8_t lion_1_charged,
-									uint8_t lion_2_charged,
-									uint8_t lifepo_b1_charged,
-									uint8_t lifepo_b2_charged,
-									uint8_t first_flash);
+								uint8_t lion_1_charged,
+								uint8_t lion_2_charged,
+								uint8_t lifepo_b1_charged,
+								uint8_t lifepo_b2_charged,
+								uint8_t first_flash,
+								uint8_t prog_mem_rewritten);
 
 /* functions to get components of cached state */
 uint32_t					cache_get_secs_since_launch(void);
 uint8_t						cache_get_reboot_count(void);
 sat_state_t					cache_get_sat_state(void);
 satellite_history_batch		cache_get_sat_event_history(void);
+bool						cache_get_prog_mem_rewritten(void);
+uint16_t					cache_get_radio_kill_duration(void);
 
 /* functions which require reading from MRAM (bypass cache) */
 void populate_error_stacks(equistack* priority_errors, equistack* normal_errors);

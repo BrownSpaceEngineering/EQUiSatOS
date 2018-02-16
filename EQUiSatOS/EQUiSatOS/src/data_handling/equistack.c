@@ -48,9 +48,11 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 // Returns a pointer to the nth most recent element
 void* equistack_Get(equistack* S, int16_t n)
 {
+	bool got_mutex = true;
 	if (!xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
 		log_error(ELOC_EQUISTACK_GET, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		got_mutex = false;
 	}
 
 	// We want to ignore the bottom index which is currently staged and maybe
@@ -65,12 +67,12 @@ void* equistack_Get(equistack* S, int16_t n)
 			get_index += S->max_size;
 		}
 
-		xSemaphoreGive(S->mutex);
+		if (got_mutex) xSemaphoreGive(S->mutex);
 		return S->data + S->data_size * get_index;
 	}
 	else
 	{
-		xSemaphoreGive(S->mutex);
+		if (got_mutex) xSemaphoreGive(S->mutex);
 		return NULL;
 	}
 }
@@ -113,6 +115,7 @@ void* equistack_Stage(equistack* S)
 
 		staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
 		clear_existing_data(staged_pointer, S->data_size);
+		xSemaphoreGive(S->mutex);
 	} else {
 		// log error if mutex can't be obtained, and give pointer to previously staged 
 		// struct (the one currently at the top index; 
@@ -121,7 +124,6 @@ void* equistack_Stage(equistack* S)
 		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
 		staged_pointer = S->data + (S->data_size)*((S->top_index + 1) % S->max_size);
 	}
-	xSemaphoreGive(S->mutex);
 	return staged_pointer; // return pointer to staged data
 }
 

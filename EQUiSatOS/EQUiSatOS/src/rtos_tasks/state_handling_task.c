@@ -9,7 +9,7 @@
 void handle_antenna_deploy_task(void) {
 	if (!get_input(P_DET_RTN)) { // active LOW
 		// if the antenna has been deployed, suspend the task and note it occurred
-		update_sat_event_history(1, 0, 0, 0, 0, 0);
+		update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
 		set_task_state_safe(ANTENNA_DEPLOY_TASK, false); // we're the only task that can suspend a task explicitly
 		
 	} else if (get_sat_state() != INITIAL 

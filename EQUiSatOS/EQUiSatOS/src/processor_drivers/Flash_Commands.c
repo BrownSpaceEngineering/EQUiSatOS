@@ -65,6 +65,7 @@ void flash_disarm(void)
 		set_lifepo_charge_enable(); // set the lifepo's to be charging again
 
 		// makes sure the battery charging task won't step in and change anything
+		// TODO: this could be bad possibly, if the mutex timed out
 		xSemaphoreGive(battery_charging_mutex);
 	#endif
 }

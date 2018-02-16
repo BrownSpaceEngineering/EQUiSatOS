@@ -67,21 +67,22 @@ void print_panelref_lref_batch(panelref_lref_batch batch) {
 }
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	print("---Battery Charging Digital Signals---");
-	// TODO TODO TODO
-	print("L1_RUN_CHG: \t%d\n", (batch >> 0) & 0x1);
-	print("L1_CHGN: \t%d\n", (batch >> 1) & 0x1);
-	print("L1_FAULTN: \t%d\n", (batch >> 2) & 0x1);
-	print("L1_DISG: \t%d\n", (batch >> 3) & 0x1);
-	print("L2_RUN_CHG: \t%d\n", (batch >> 4) & 0x1);
-	print("L2_CHGN: \t%d\n", (batch >> 5) & 0x1);
-	print("L2_FAULTN: \t%d\n", (batch >> 6) & 0x1);
-	print("L2_DISG: \t%d\n", (batch >> 7) & 0x1);
-	print("LF_B1_CHGN: \t%d\n", (batch >> 8) & 0x1);
-	print("LF_B1_RUNCHG: \t%d\n", (batch >> 9) & 0x1);
-	print("LF_B1_FAULTN: \t%d\n", (batch >> 10) & 0x1);
-	print("LF_B2_CHGN: \t%d\n", (batch >> 11) & 0x1);
-	print("LF_B2_RUNCHG: \t%d\n", (batch >> 12) & 0x1);
-	print("LF_B2_FAULTN: \t%d\n", (batch >> 13) & 0x1);
+	print("L1_RUN_CHG:		%d\n", batch & 0x1);
+	print("L2_RUN_CHG:		%d\n", (batch >> 1) & 0x1);
+	print("LF_B1_RUN_CHG:	%d\n", (batch >> 2) & 0x1);
+	print("LF_B2_RUN_CHG:	%d\n", (batch >> 3) & 0x1);
+	print("LF_B2_CHGN:		%d\n", (batch >> 4) & 0x1);
+	print("LF_B2_FAULTN:	%d\n", (batch >> 5) & 0x1);
+	print("LF_B1_FAULTN:	%d\n", (batch >> 6) & 0x1);
+	print("LF_B1_CHGN:		%d\n", (batch >> 7) & 0x1);
+	print("L2_ST:			%d\n", (batch >> 8) & 0x1);
+	print("L1_ST:			%d\n", (batch >> 9) & 0x1);
+	print("L1_DISG:			%d\n", (batch >> 10) & 0x1);
+	print("L2_DISG:			%d\n", (batch >> 11) & 0x1);
+	print("L1_CHGN:			%d\n", (batch >> 12) & 0x1);
+	print("L1_FAULTN:		%d\n", (batch >> 13) & 0x1);
+	print("L2_CHGN:			%d\n", (batch >> 14) & 0x1);
+	print("L2_FAULTN:		%d\n", (batch >> 15) & 0x1);
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
 	print("radio temp: %d\n", (uint16_t)batch<<8);
@@ -124,8 +125,8 @@ void print_attitude_data(attitude_data_t* data, int i) {
 	print_magnetometer_batch(data->magnetometer_data[1]);
 }
 
-void print_flash_data(flash_data_t* data, int i) {
-	print_stack_type_header("Flash Data Packet", i, data->timestamp, data->transmitted);
+void print_flash_data(flash_data_t* data, int i_global) {
+	print_stack_type_header("Flash Data Packet", i_global, data->timestamp, data->transmitted);
 	print("---LED Temp Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_led_temps_batch(data->led_temps_data[i]);
@@ -199,7 +200,7 @@ void print_equistacks(void) {
 	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
 	print_equistack(&priority_error_equistack,		print_sat_error,		"Priority Error Stack");
 	print_equistack(&normal_error_equistack,		print_sat_error,		"Normal Error Stack");
-	print_equistack(&idle_readings_equistack,		print_idle_data,	"Idle Data Stack");
+	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
 	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
 	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
 	print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack");
