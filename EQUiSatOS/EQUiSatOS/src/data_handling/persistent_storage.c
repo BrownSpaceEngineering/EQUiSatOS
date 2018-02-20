@@ -90,14 +90,14 @@ void read_state_from_storage(void) {
 			cached_state.reboot_count = 0;
 			cached_state.sat_event_history;
 			cached_state.prog_mem_rewritten = false;
-			cached_state.radio_kill_duration = 0;
+			cached_state.radio_revive_timestamp = 0;
 		#else
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 			storage_read_bytes_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 			storage_read_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+			storage_read_bytes_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 		#endif
 		
 		xSemaphoreGive(mram_spi_mutex);
@@ -111,8 +111,8 @@ void increment_reboot_count(void) {
 	write_state_to_storage();
 }
 
-void update_radio_kill_duration(uint16_t radio_kill_duration) {
-	cached_state.radio_kill_duration = radio_kill_duration;
+void update_radio_revive_timestamp(uint16_t radio_revive_timestamp) {
+	cached_state.radio_revive_timestamp = radio_revive_timestamp;
 	write_state_to_storage();
 }
 
@@ -144,7 +144,7 @@ void write_state_to_storage(void) {
 	uint8_t temp_reboot_count, temp_sat_state;
 	satellite_history_batch temp_sat_event_history;
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_kill_duration;
+	uint16_t temp_radio_revive_timestamp;
 
 	// set write time right before writing
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
@@ -157,7 +157,7 @@ void write_state_to_storage(void) {
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_write_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+		storage_write_bytes_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
@@ -166,7 +166,7 @@ void write_state_to_storage(void) {
 		storage_read_bytes_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
 		storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_read_bytes_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
+		storage_read_bytes_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
@@ -181,7 +181,7 @@ void write_state_to_storage(void) {
 		|| temp_sat_state != cached_state.sat_state 
 		|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
 		|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
-		|| temp_radio_kill_duration != cached_state.radio_kill_duration) {
+		|| temp_radio_revive_timestamp != cached_state.radio_revive_timestamp) {
 
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
 
@@ -318,8 +318,8 @@ bool cache_get_prog_mem_rewritten(void) {
 	return cached_state.prog_mem_rewritten;
 }
 
-uint16_t cache_get_radio_kill_duration(void) {
-	return cached_state.radio_kill_duration;
+uint16_t cache_get_radio_revive_timestamp(void) {
+	return cached_state.radio_revive_timestamp;
 }
 
 /************************************************************************/
@@ -363,7 +363,7 @@ void write_custom_state(void) {
 	sat_state_t sat_state =						INITIAL;
 	satellite_history_batch sat_event_history;
 	uint8_t prog_mem_rewritten =				false;
-	uint16_t radio_kill_duration =				0;
+	uint16_t radio_revive_timestamp =				0;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
 	sat_event_history.lifepo_b1_charged =		false;
@@ -397,7 +397,7 @@ void write_custom_state(void) {
 	storage_write_bytes_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 	storage_write_bytes_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	storage_write_bytes_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &radio_kill_duration, 2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &radio_revive_timestamp, 4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 	// TODO: bootloader / program memory hashes
 
 	// write errors
@@ -416,7 +416,7 @@ void write_custom_state(void) {
 	sat_state_t temp_sat_state;
 	satellite_history_batch temp_sat_event_history; // fits in one
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_kill_duration;
+	uint16_t temp_radio_revive_timestamp;
 
 	uint8_t temp_num_priority_errs;
 	uint8_t temp_num_normal_errs;
@@ -428,7 +428,7 @@ void write_custom_state(void) {
 	storage_read_bytes_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 	storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	storage_read_bytes_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
+	storage_read_bytes_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 	// TODO: bootloader / program memory hashes
 
 	storage_read_bytes_unsafe((uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
@@ -450,7 +450,7 @@ void write_custom_state(void) {
 	configASSERT(temp_sat_state == sat_state);
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
 	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
-	configASSERT(temp_radio_kill_duration == radio_kill_duration);
+	configASSERT(temp_radio_revive_timestamp == radio_revive_timestamp);
 
 	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs * sizeof(sat_error_t)) == 0);
 	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs  * sizeof(sat_error_t)) == 0);

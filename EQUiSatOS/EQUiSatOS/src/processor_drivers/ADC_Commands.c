@@ -64,6 +64,8 @@ enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf) {
 	return adc_disable(&adc_instance);
 	
 	#else
+		uint16_t xplained_buf = ADC_RD_VAL_XPLAINED;
+		memcpy(buf, &xplained_buf, 2);
 		return STATUS_OK;
 	#endif
 }
