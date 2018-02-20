@@ -22,10 +22,8 @@
 #define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR	0x1017 // TODO
 #define STORAGE_BOOTLOADER_HASH_ADDR		0x0017
 #define STORAGE_PROG_MEMORY_HASH_ADDR		0x0080
-#define STORAGE_PRIORITY_ERR_NUM_ADDR		0x0117
-#define STORAGE_PRIORITY_LIST_ADDR			0x0118
-#define STORAGE_NORMAL_ERR_NUM_ADDR			0x0136
-#define STORAGE_NORMAL_LIST_ADDR			0x0137
+#define STORAGE_ERR_NUM_ADDR				0x0117
+#define STORAGE_ERR_LIST_ADDR				0x0118
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
@@ -85,7 +83,7 @@ bool						cache_get_prog_mem_rewritten(void);
 uint16_t					cache_get_radio_revive_timestamp(void);
 
 /* functions which require reading from MRAM (bypass cache) */
-void populate_error_stacks(equistack* priority_errors, equistack* normal_errors);
+void populate_error_stacks(equistack* error_stack);
 
 /* helper functions using cached state */
 uint32_t get_current_timestamp(void);

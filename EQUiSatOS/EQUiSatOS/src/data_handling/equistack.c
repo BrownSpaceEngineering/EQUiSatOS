@@ -45,7 +45,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 	return S;
 }
 
-// Returns a pointer to the nth most recent element
+// Returns a pointer to the nth most recent element (relative to the "top" of the equistack)
 void* equistack_Get(equistack* S, int16_t n)
 {
 	bool got_mutex = true;
@@ -75,6 +75,14 @@ void* equistack_Get(equistack* S, int16_t n)
 		if (got_mutex) xSemaphoreGive(S->mutex);
 		return NULL;
 	}
+}
+
+// Helper function to get elements relative to the bottom of the equistack 
+// (note the bottommost element (#0) will most likely to be overwritten soon)
+// Returns the nth element from the current bottom of the stack.
+// (i.e., if cur_size = 6, equistack_Get(S, 1) == equistack_Get_From_Bottom(S, 4))
+void* equistack_Get_From_Bottom(equistack* S, int16_t n) {
+	return equistack_Get(S, S->cur_size - 1 - n);
 }
 
 // Only meant to be used when the stack is first being created

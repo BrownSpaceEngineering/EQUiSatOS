@@ -198,8 +198,7 @@ void print_equistack(equistack* stack, void (*elm_print)(void*, int), char* head
 void print_equistacks(void) {
 	print("==============Equistack Dump==============\n");
 	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
-	print_equistack(&priority_error_equistack,		print_sat_error,		"Priority Error Stack");
-	print_equistack(&normal_error_equistack,		print_sat_error,		"Normal Error Stack");
+	print_equistack(&error_equistack,				print_sat_error,		"Priority Error Stack");
 	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
 	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
 	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
@@ -262,8 +261,7 @@ void rtos_system_test(void) {
 	print("ticks:	  %d\n", xTaskGetTickCount());
 	print("sat state: %s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  %d\n", cache_get_reboot_count());
-	print("num priority errs:  %d\n", priority_error_equistack.cur_size);
-	print("num normal errs:    %d\n", normal_error_equistack.cur_size);
+	print("num errors:  %d\n", error_equistack.cur_size);
 	print_task_states();
 	print_equistacks();
 	print("====================End=====================\n");

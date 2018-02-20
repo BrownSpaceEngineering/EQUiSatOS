@@ -325,27 +325,19 @@ uint16_t cache_get_radio_revive_timestamp(void) {
 /************************************************************************/
 /* functions which require reading from MRAM (bypass cache)				*/
 /************************************************************************/
-void populate_error_stacks(equistack* priority_errors, equistack* normal_errors) {
+void populate_error_stacks(equistack* error_stack) {
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
 		// read in errors from MRAM
-		uint8_t num_stored_priority_errors;
-		uint8_t num_stored_normal_errors;
-		sat_error_t priority_error_buf[PRIORITY_ERROR_STACK_MAX];
-		sat_error_t normal_error_buf[NORMAL_ERROR_STACK_MAX];
-		storage_read_bytes_unsafe(&num_stored_priority_errors,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe(&num_stored_normal_errors,	1, STORAGE_NORMAL_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) priority_error_buf,
-			PRIORITY_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) normal_error_buf,
-			NORMAL_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+		uint8_t num_stored_errors;
+		sat_error_t error_buf[ERROR_STACK_MAX];
+		storage_read_bytes_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
+		storage_read_bytes_unsafe((uint8_t*) error_buf,
+			ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
 		// read all errors that we have stored in MRAM in
-		for (int i = 0; i < num_stored_priority_errors; i++) {
-			equistack_Push(priority_errors, &(priority_error_buf[i]));
-		}
-		for (int i = 0; i < num_stored_normal_errors; i++) {
-			equistack_Push(normal_errors, &(normal_error_buf[i]));
+		for (int i = 0; i < num_stored_errors; i++) {
+			equistack_Push(error_stack, &(error_buf[i]));
 		}
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
@@ -372,16 +364,10 @@ void write_custom_state(void) {
 	sat_event_history.lion_2_charged =			false;
 	sat_event_history.prog_mem_rewritten =		false;
 
-	#define NUM_PRIORITY_ERRS	0
-	#define NUM_NORMAL_ERRS		0
-	const uint8_t num_priority_errs = NUM_PRIORITY_ERRS;
-	const uint8_t num_normal_errs = NUM_NORMAL_ERRS;
-	sat_error_t priority_errors[NUM_PRIORITY_ERRS];
-	sat_error_t normal_errors[NUM_NORMAL_ERRS];
-// 	sat_error_t priority_errors[NUM_PRIORITY_ERRS] = {
-// 		{10, 12, 13}
-// 	};
-// 	sat_error_t normal_errors[NUM_NORMAL_ERRS] = {
+	#define NUM_ERRS	0
+	const uint8_t num_errs = NUM_ERRS;
+	sat_error_t error_buf[NUM_ERRS];
+// 	sat_error_t error_buf[NUM_ERRS] = {
 // 		{10, 20, 40},
 // 		{11, 120, 247},
 // 		{1, 2, 3},
@@ -401,14 +387,10 @@ void write_custom_state(void) {
 	// TODO: bootloader / program memory hashes
 
 	// write errors
-	storage_write_bytes_unsafe((uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
-	if (num_priority_errs > 0)
-		storage_write_bytes_unsafe((uint8_t*) priority_errors,
-			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	if (num_normal_errs > 0)
-		storage_write_bytes_unsafe((uint8_t*) normal_errors,
-			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	storage_write_bytes_unsafe((uint8_t*) &num_errs,		1, STORAGE_ERR_NUM_ADDR);
+	if (num_errs > 0)
+		storage_write_bytes_unsafe((uint8_t*) error_buf,
+			num_errs * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
 	/*** read it right back to confirm validity ***/
 	uint32_t temp_secs_since_launch;
@@ -418,10 +400,8 @@ void write_custom_state(void) {
 	uint8_t temp_prog_mem_rewritten;
 	uint16_t temp_radio_revive_timestamp;
 
-	uint8_t temp_num_priority_errs;
-	uint8_t temp_num_normal_errs;
-	sat_error_t temp_priority_errors[num_priority_errs];
-	sat_error_t temp_normal_errors[num_normal_errs];
+	uint8_t temp_num_errs;
+	sat_error_t temp_error_buf[num_errs];
 
 	storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR); // TODO: wrong size, how do we do this?
 	storage_read_bytes_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
@@ -431,18 +411,11 @@ void write_custom_state(void) {
 	storage_read_bytes_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 	// TODO: bootloader / program memory hashes
 
-	storage_read_bytes_unsafe((uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
-
-	configASSERT(temp_num_priority_errs == num_priority_errs);
-	configASSERT(temp_num_normal_errs == num_normal_errs);
-
-	if (num_priority_errs > 0)
-		storage_read_bytes_unsafe((uint8_t*) temp_priority_errors,
-			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	if (num_normal_errs > 0)
-		storage_read_bytes_unsafe((uint8_t*) temp_normal_errors,
-			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	storage_read_bytes_unsafe((uint8_t*) &num_errs,	1, STORAGE_ERR_NUM_ADDR);
+	configASSERT(temp_num_errs == num_errs);
+	if (num_errs > 0)
+		storage_read_bytes_unsafe((uint8_t*) temp_error_buf,
+			num_errs * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
 	/*** CHECKS ***/
 	configASSERT(temp_secs_since_launch == secs_since_launch);
@@ -452,6 +425,5 @@ void write_custom_state(void) {
 	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
 	configASSERT(temp_radio_revive_timestamp == radio_revive_timestamp);
 
-	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs * sizeof(sat_error_t)) == 0);
-	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs  * sizeof(sat_error_t)) == 0);
+	configASSERT(memcmp(error_buf, temp_error_buf, num_errs * sizeof(sat_error_t)) == 0);
 }

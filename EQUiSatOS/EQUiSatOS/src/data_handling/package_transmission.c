@@ -212,50 +212,30 @@ void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t
 // make sure not to call this function (i.e. write_*_packet) more than once or it will
 // re-iterate over the errors!
 void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp) {
-	// when writing errors, treat the two error equistacks (their current size) as a single heap of
-	// errors, and iterate through that on each transmission
+	// when writing errors, iterate through the error equistack across transmissions, 
+	// so each subsequent transmission is farther down the stack (until it wraps around)
+	// NOTE: Because of RTOS, the size of the stack may change at any point here, but by the nature
+	// of Equistacks, it will only INCREASE, so we don't need to worry about it here (but we do anyways) 
 	static int error_index = 0;
 
 	for (int errors_written = 0; errors_written < count; errors_written++) {
 		configASSERT(error_index >= 0);
-		// i.e. this index is the index within the priority equistack if it's less than that stacks current
-		// size, and is the index within the normal equistack otherwise. If it becomes longer
-		// than the sum of their lengths, then it is reset to zero and we restart.
-		// NOTE: Because of RTOS, the size of the stacks may change at any point here, but by the nature
-		// of equistacks, it will only INCREASE, so we don't need to worry about it here
-		int priority_num = priority_error_equistack.cur_size;
-		int normal_num = normal_error_equistack.cur_size;
 
-		// if both stacks are empty, just write zeros
-		if (priority_num + normal_num == 0) {
+		// if stack is empty, just write zeros
+		// ALSO write zeros if error_index >= length of the stack.
+		// (note we have caught completely empty stacks above)
+		// Should NOT happen in general, but will be resolved below
+		// (both priority_num and normal_num should only ever GROW, not SHRINK)
+		// (although one test does do that, so we write null data in case)
+		if (error_index >= error_equistack.cur_size) {
 			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
-			continue;
-		}
-
-		if (error_index < priority_num) {
-			// 0 <= error_index < priority_num
-			// write priority errors while we're set to
-			sat_error_t* err = (sat_error_t*) equistack_Get(&priority_error_equistack, error_index);
-			write_error(buffer, buf_index, err, timestamp);
-
-		} else if (error_index - priority_num < normal_num) {
-			//    (index in normal_error_equistack)
-			// 0 <= error_index - priority_num < normal_num
-			// i.e. priority_num <= error_index < priority_num + normal_num
-			// write normal errors while we're set to ("start" index is when error_index == priority_num)
-			sat_error_t* err = (sat_error_t*) equistack_Get(&normal_error_equistack, error_index - priority_num);
-			write_error(buffer, buf_index, err, timestamp);
 		} else {
-			// ELSE error_index >= priority_num + normal_num;
-			// (note we have caught completely empty stacks above)
-			// Should NOT happen in general, but will be resolved below
-			// (both priority_num and normal_num should only ever GROW, not SHRINK)
-			// (although one test does do that, so we write null data in case)
-			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
+			sat_error_t* err = (sat_error_t*) equistack_Get(&error_equistack, error_index);
+			write_error(buffer, buf_index, err, timestamp);
 		}
 
-		// increment, wrapping around the CURRENT end of the combined list
-		error_index = (error_index + 1) % (priority_num + normal_num);
+		// increment, wrapping around the CURRENT end of the stack if necessary
+		error_index = (error_index + 1) % (error_equistack.cur_size);
 	}
 }
 

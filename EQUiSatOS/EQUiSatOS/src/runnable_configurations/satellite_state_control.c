@@ -284,7 +284,7 @@ void configure_state_from_reboot(void) {
 
 	// add any errors we can from MRAM cache
 	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
-	populate_error_stacks(&priority_error_equistack, &normal_error_equistack);
+	populate_error_stacks(&error_equistack);
 
 	// note we've rebooted
 	increment_reboot_count();
