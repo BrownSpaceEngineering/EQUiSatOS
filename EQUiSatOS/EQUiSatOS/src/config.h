@@ -56,6 +56,9 @@
 // 3 to print over both
 #define PRINT_DEBUG 1
 
+// define to print errors as the come in
+//#define PRINT_NEW_ERRORS
+
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */
 /****************************************************************************************/

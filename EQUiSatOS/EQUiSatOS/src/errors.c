@@ -64,7 +64,9 @@ void print_error(enum status_code code){
 // logs an error if the given atmel status code is one, and returns whether it was an error
 bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
-		//print_error(sc);
+		#ifdef PRINT_ERRORS
+			print_error(sc);
+		#endif
 		log_error(loc, atmel_to_equi_error(sc), priority);
 		return true;
 	}

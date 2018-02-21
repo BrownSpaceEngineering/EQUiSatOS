@@ -14,19 +14,22 @@
 #include "../processor_drivers/MRAM_Commands.h"
 
 /* addressing constants */
-#define STORAGE_SECS_SINCE_LAUNCH_ADDR		0x0010
-#define STORAGE_REBOOT_CNT_ADDR				0x0014
-#define STORAGE_SAT_STATE_ADDR				0x0015
-#define STORAGE_SAT_EVENT_HIST_ADDR			0x0016
-#define STORAGE_PROG_MEM_REWRITTEN_ADDR		0x1016 // TODO
-#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR	0x1017 // TODO
-#define STORAGE_BOOTLOADER_HASH_ADDR		0x0017
-#define STORAGE_PROG_MEMORY_HASH_ADDR		0x0080
-#define STORAGE_ERR_NUM_ADDR				0x0117
-#define STORAGE_ERR_LIST_ADDR				0x0118
+#define STORAGE_SECS_SINCE_LAUNCH_ADDR		20
+#define STORAGE_REBOOT_CNT_ADDR				30
+#define STORAGE_SAT_STATE_ADDR				34
+#define STORAGE_SAT_EVENT_HIST_ADDR			38
+#define STORAGE_PROG_MEM_REWRITTEN_ADDR		42
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR	46
+#define STORAGE_BOOTLOADER_HASH_ADDR		56
+#define STORAGE_PROG_MEMORY_HASH_ADDR		314
+#define STORAGE_ERR_NUM_ADDR				572
+#define STORAGE_ERR_LIST_ADDR				576
+
+/* config constants (you'll have to rewrite the whole MRAM if you change these!) */
+#define INTRA_FIELD_BUFFER					0  // between duplications of a single field; not used
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
-#define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
+#define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
