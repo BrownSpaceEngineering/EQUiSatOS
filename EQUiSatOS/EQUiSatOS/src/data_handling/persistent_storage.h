@@ -25,9 +25,6 @@
 #define STORAGE_ERR_NUM_ADDR				572
 #define STORAGE_ERR_LIST_ADDR				576
 
-/* config constants (you'll have to rewrite the whole MRAM if you change these!) */
-#define INTRA_FIELD_BUFFER					0  // between duplications of a single field; not used
-
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins

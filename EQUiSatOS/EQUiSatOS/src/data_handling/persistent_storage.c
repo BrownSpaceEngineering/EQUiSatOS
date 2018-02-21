@@ -50,14 +50,14 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 		true); // priority
 	bool success_mram1_data2 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data2, num_bytes, 
-		address + num_bytes + INTRA_FIELD_BUFFER), true); // priority
+		address + num_bytes), true); // priority
 
 	bool success_mram2_data1 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
 		true); // priority
 	bool success_mram2_data2 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram2_slave, mram1_data2, num_bytes, 
-		address + num_bytes + INTRA_FIELD_BUFFER), true); // priority
+		address + num_bytes), true); // priority
 		
 	// helpful constants
 	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
@@ -150,14 +150,14 @@ bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) 
 		true); // priority
 	bool success2 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, 
-		address + num_bytes + INTRA_FIELD_BUFFER), true); // priority	
+		address + num_bytes), true); // priority	
 	
 	bool success3 = !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
 		true); // priority
 	return success1 && success2 && success3 && !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, 
-		address + num_bytes + INTRA_FIELD_BUFFER), true); // priority
+		address + num_bytes), true); // priority
 }
 
 /* read state from storage into cache */

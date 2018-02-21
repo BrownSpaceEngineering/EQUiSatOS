@@ -38,6 +38,7 @@ MRAM.
 int test_mram(void)
 {
 	system_init();
+	flash_mem_init();
 
 	mram_initialize_master(&spi_master_instance, MRAM_SPI_BAUD); 
 	mram_initialize_slave(&slave, P_MRAM1_CS);
@@ -45,7 +46,7 @@ int test_mram(void)
 	static uint8_t enable = 0x06;
 	static uint8_t status[5] = {0x03, 0x00, 0x00, 0x00, 0x08};
 	
-	save_binary_into_flash(status, 6, 512); // this saves the array into flash...?
+	flash_mem_write_bytes(status, 6, 512); 
 	
 	spi_select_slave(&spi_master_instance, &slave, false);
 	spi_select_slave(&spi_master_instance, &slave, true);
