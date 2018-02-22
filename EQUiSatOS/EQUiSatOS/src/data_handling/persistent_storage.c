@@ -209,8 +209,8 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	return result;
 }
 
-// writes error stack data to mram
-bool storage_write_check_errors_unsafe(equistack* stack) {
+// writes error stack data to mram, and confirms it was written correctly if told to
+bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	uint8_t num_errors = stack->cur_size;
 	sat_error_t error_buf[num_errors];
 	
@@ -224,26 +224,27 @@ bool storage_write_check_errors_unsafe(equistack* stack) {
 	storage_write_field_unsafe(&num_errors,	1, STORAGE_ERR_NUM_ADDR);
 	storage_write_field_unsafe((uint8_t*) error_buf,
 		num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
-		
-	// check if stored # of errors matches
-	uint8_t temp_num_errors;
-	storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
-	if (temp_num_errors != num_errors) {
-		return false;
-	}
 	
-	// check if actual stored errors match
-	sat_error_t temp_error_buf[num_errors];
-	storage_read_field_unsafe((uint8_t*) temp_error_buf,
-		num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
-	if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
-		return false;
+	if (confirm) {
+		// check if stored # of errors matches
+		uint8_t temp_num_errors;
+		storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
+		if (temp_num_errors != num_errors) {
+			return false;
+		}
+	
+		// check if actual stored errors match
+		sat_error_t temp_error_buf[num_errors];
+		storage_read_field_unsafe((uint8_t*) temp_error_buf,
+			num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+		if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
+			return false;
+		}
 	}
 	return true;
 }
 
-/* must be called with cache mutex locked to be accurate, not throw errors, etc.
- (allows us not to need recursive mutexes when called in this file)
+/* writes cached state to MRAM
  NOTE: this does protect the SPI lines (takes that mutex) - it's NOT unsafe in that sense */
 void write_state_to_storage(void) {
 	cached_state.sat_state = get_sat_state();
@@ -276,7 +277,7 @@ void write_state_to_storage(void) {
 		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack);
+		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack, true);
 		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
@@ -318,6 +319,37 @@ void write_state_to_storage(void) {
 		temp_secs_since_launch < cached_state.secs_since_launch) {
 			last_data_write_ms = prev_last_data_write_ms;
 			cached_state.secs_since_launch = prev_cached_secs_since_launch;
+		}
+	}
+}
+
+/* Writes cached state to MRAM, but doesn't confirm it was correct. 
+   Can also be used from an ISR if from_isr is true */
+void write_state_to_storage_emergency(bool from_isr) {
+	bool got_mutex;
+	if (from_isr) {
+		got_mutex = xSemaphoreTakeFromISR(mram_spi_mutex, NULL);
+	} else {
+		got_mutex = xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS);
+	}
+	
+	if (got_mutex)
+	{
+		cached_state.secs_since_launch = get_current_timestamp();
+		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+		
+		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		storage_write_check_errors_unsafe(&error_equistack, false);
+
+		if (from_isr) {
+			xSemaphoreGiveFromISR(mram_spi_mutex, NULL);
+		} else {
+			xSemaphoreGive(mram_spi_mutex);
 		}
 	}
 }

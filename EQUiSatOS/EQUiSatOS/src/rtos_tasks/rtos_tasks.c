@@ -76,6 +76,12 @@ void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t 
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
 	configASSERT(false); // MIGHT hang here on stack overflow
+	// if this happens for real, log error, write persistent state, and reset processor
+	log_error(ELOC_RTOS, ECODE_STACK_OVERFLOW, true);
+	write_state_to_storage_emergency(false); // NOT from ISR; do this to minimize stack usage
+	#ifdef WATCHDOG_RESET_ACTIVE
+		system_reset();
+	#endif
 }
 
 /**

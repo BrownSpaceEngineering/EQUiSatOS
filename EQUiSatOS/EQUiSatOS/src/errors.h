@@ -109,7 +109,8 @@ enum error_locations {
 	ELOC_EQUISTACK_GET =				70,
 	ELOC_EQUISTACK_PUT =				71,
 	
-	ELOC_BOOTLOADER =					72
+	ELOC_BOOTLOADER =					72,
+	ELOC_RTOS =							73
 
 };
 
@@ -170,7 +171,8 @@ enum error_codes {
 	ECODE_EQUISTACK_MUTEX_TIMEOUT =		47,
 	ECODE_IRPOW_MUTEX_TIMEOUT =			48,
 	
-	ECODE_REWROTE_PROG_MEM =			49
+	ECODE_REWROTE_PROG_MEM =			49,
+	ECODE_STACK_OVERFLOW =				50
 	
 };
 
@@ -198,6 +200,7 @@ uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
 bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
+void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
 void print_sat_error(sat_error_t* data, int i);

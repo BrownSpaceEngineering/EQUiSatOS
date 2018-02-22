@@ -138,7 +138,7 @@ uint8_t atmel_to_equi_error(enum status_code sc) {
 
 /* Logs an error to the error stack, noting its timestamp */
 void log_error(uint8_t loc, uint8_t err, bool priority) {
-	//configASSERT(err <= 127); // only 7 bits	
+	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
 	full_error.timestamp = get_current_timestamp(); // time is now
@@ -148,7 +148,22 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	add_error_to_equistack(&error_equistack, &full_error); 
 }
 
+/* Logs an error to the error stack, noting its timestamp (ISR safe) */
+void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
+	configASSERT(err <= 127); // only 7 bits
+
+	sat_error_t full_error;
+	full_error.timestamp = get_current_timestamp(); // time is now
+	full_error.eloc = loc;
+	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
+
+	// in this case, just push it right onto the stack and ignore conventions...
+	// don't want to spend to much time on it (or write more ISR alternative functions :P)
+	equistack_Push_from_isr(&error_equistack, &full_error);
+}
+
 /* logs error stack error; seperate to avoid recursion */
+// TODO: probably not needed?
 void log_error_stack_error(uint8_t ecode) {
 	sat_error_t stack_error;
 	stack_error.timestamp = get_current_timestamp(); // time is now
@@ -214,8 +229,6 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	} else {
 		// otherwise, the stack is not formatted as it should be, so log an error
 		// (we do this manually to avoid a possible infinite recursion (it's meta))
-		log_error_stack_error(ECODE_INCONSISTENT_DATA);
-		
-		//configASSERT(false);
+		configASSERT(false);
 	}
 }

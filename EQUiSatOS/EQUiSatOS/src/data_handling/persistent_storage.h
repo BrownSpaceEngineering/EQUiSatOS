@@ -64,6 +64,7 @@ uint32_t last_data_write_ms;
 void init_persistent_storage(void);
 void read_state_from_storage(void);
 void write_state_to_storage(void);
+void write_state_to_storage_emergency(bool from_isr);
 void increment_reboot_count(void);
 void update_radio_revive_timestamp(uint16_t radio_revive_timestamp);
 void update_sat_event_history(uint8_t antenna_deployed,
