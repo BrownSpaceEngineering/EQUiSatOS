@@ -113,7 +113,7 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_typ
 	// special case for LOW_POWER mode;
 	// only transmit LOW_POWER packets unless the equistack is empty
 	// (it doesn't matter whether they're transmitted)
-	if (get_sat_state() == LOW_POWER) {
+	if (low_power_active()) {
 		equistack* low_power_equistack = get_msg_type_equistack(LOW_POWER_DATA);
 		// note: it would only be NULL if somehow a msg_data_type_t bit got corrupted
 		if (low_power_equistack != NULL && low_power_equistack->cur_size > 0) {
@@ -275,7 +275,7 @@ void transmit_task(void *pvParameters)
 		
 		/* block for any leftover time (done first by convention with RTOS and on startup) */
 		/* note this time changes with sat state */
-		if (get_sat_state() == LOW_POWER) {
+		if (low_power_active()) {
 			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 		} else {
 			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);

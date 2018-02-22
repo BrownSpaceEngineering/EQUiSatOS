@@ -101,8 +101,10 @@ typedef enum {
 /* **ONLY** can be used outside this task in the flash_activate_task (for speed purposes) */
 /************************************************************************/
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
-StaticSemaphore_t _i2c_irpow_mutex_d;
-SemaphoreHandle_t i2c_irpow_mutex;
+StaticSemaphore_t _i2c_mutex_d;
+SemaphoreHandle_t i2c_mutex;
+StaticSemaphore_t _irpow_mutex_d;
+SemaphoreHandle_t irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
 
@@ -141,6 +143,7 @@ void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
+void _enable_ir_pow_if_necessary(void);
 bool _set_5v_enable(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);

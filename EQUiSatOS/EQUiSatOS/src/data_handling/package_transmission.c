@@ -48,23 +48,46 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 
 	read_lion_volts_batch((uint8_t*) (cur_data_buf + buf_index));
 	buf_index += sizeof(lion_volts_batch);
+	
+	// for the next couple we need to make sure IR power is on,
+	// but only if we're in low power mode (otherwise it's always on)
+	bool got_mutex = false; // indicates whether timed out OR not gotten because low power wasn't active
+	if (low_power_active()) {
+		got_mutex = true;
+		if (!xSemaphoreTake(irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+			log_error(ELOC_RADIO, ECODE_IRPOW_MUTEX_TIMEOUT, true);
+			got_mutex = false;
+		}
+		// no matter whether we get the mutex, power IR power on so we can try to use it
+		// (it may get shut down but it's worth a try)
+		// TODO: the issue with this is that, if something has gone wrong, we'll be leaving
+		// the IR power on forever (might be watchdog reset...)
+		set_output(true, P_IR_PWR_CMD);
+		vTaskDelay(IR_WAKE_DELAY);
+	}
+	{
+		// we read all battery board inputs at once,
+		// but we write to two different message buffer locations, so we
+		// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
+		read_ad7991_batbrd((uint8_t*) (cur_data_buf + buf_index),
+		(uint8_t*) (cur_data_buf + buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
+		buf_index += sizeof(lion_current_batch);
 
-	// we read all battery board inputs at once,
-	// but we write to two different message buffer locations, so we
-	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
-	read_ad7991_batbrd((uint8_t*) (cur_data_buf + buf_index),
-	(uint8_t*) (cur_data_buf + buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
-	buf_index += sizeof(lion_current_batch);
+		en_and_read_lion_temps_batch((uint8_t*) (cur_data_buf + buf_index));
+		buf_index += sizeof(lion_temps_batch);
+		buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
 
-	en_and_read_lion_temps_batch((uint8_t*) (cur_data_buf + buf_index));
-	buf_index += sizeof(lion_temps_batch);
-	buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
-
-	// use temp buffer because writing 2 bytes of data to what's actually a 1-byte
-	// pointer results in a segfault :P
-	bat_charge_dig_sigs_batch dig_sigs;
-	read_bat_charge_dig_sigs_batch(&dig_sigs);
-	write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
+		// use temp buffer because writing 2 bytes of data to what's actually a 1-byte
+		// pointer results in a segfault :P
+		bat_charge_dig_sigs_batch dig_sigs;
+		read_bat_charge_dig_sigs_batch(&dig_sigs);
+		write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
+	}
+	if (got_mutex) { // might not have gotten if weren't in low power above
+		// only power off IR power if we DID get the mutex (to avoid shutting people down while reading)
+		set_output(false, P_IR_PWR_CMD);
+		xSemaphoreGive(irpow_mutex);
+	}
 
 	read_lifepo_volts_batch((uint8_t*) (cur_data_buf + buf_index));
 }

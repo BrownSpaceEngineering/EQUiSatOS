@@ -96,10 +96,10 @@ void state_handling_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(STATE_HANDLING_TASK);
 		
-		// handle antenna deploy task specifically
-		handle_antenna_deploy_task();
-		
 		#if OVERRIDE_STATE_HOLD_INIT != 1
+			// handle antenna deploy task specifically
+			handle_antenna_deploy_task();	
+	
 			decide_next_state(get_sat_state());
 		#endif
 	}
