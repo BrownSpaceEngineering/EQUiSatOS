@@ -448,7 +448,7 @@ bool set_sat_state_helper(sat_state_t state)
 }
 
 bool set_sat_state(sat_state_t state) {
-	#if OVERRIDE_STATE_HOLD != 1
+	#if OVERRIDE_STATE_HOLD_INIT != 1
 		bool valid = set_sat_state_helper(state);
 		if (!valid) {
 			configASSERT(false); // busy loop because this is bad

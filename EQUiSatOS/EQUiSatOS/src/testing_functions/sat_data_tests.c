@@ -45,11 +45,13 @@ void test_message_packaging(void) {
 	populate_equistacks();
 	
 	uint32_t current_timestamp = get_current_timestamp();
-	write_packet(msg_buffer, IDLE_DATA, current_timestamp);
-	write_packet(msg_buffer, ATTITUDE_DATA, current_timestamp);
-	write_packet(msg_buffer, FLASH_DATA, current_timestamp);
-	write_packet(msg_buffer, FLASH_CMP_DATA, current_timestamp);
-	write_packet(msg_buffer, LOW_POWER_DATA, current_timestamp);
+	uint8_t cur_data_buf[MSG_CUR_DATA_LEN];
+	read_current_data(cur_data_buf, current_timestamp);
+	write_packet(msg_buffer, IDLE_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, ATTITUDE_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, FLASH_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, FLASH_CMP_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, LOW_POWER_DATA, current_timestamp, cur_data_buf);
 }
 
 void stress_test_message_packaging(void) {
@@ -60,9 +62,11 @@ void stress_test_message_packaging(void) {
 	__equistack_Clear(&error_equistack);
 	
 	uint32_t current_timestamp = get_current_timestamp();
-	write_packet(msg_buffer, IDLE_DATA, current_timestamp);
-	write_packet(msg_buffer, ATTITUDE_DATA, current_timestamp);
-	write_packet(msg_buffer, FLASH_DATA, current_timestamp);
-	write_packet(msg_buffer, FLASH_CMP_DATA, current_timestamp);
-	write_packet(msg_buffer, LOW_POWER_DATA, current_timestamp);
+	uint8_t cur_data_buf[MSG_CUR_DATA_LEN];
+	read_current_data(cur_data_buf, current_timestamp);
+	write_packet(msg_buffer, IDLE_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, ATTITUDE_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, FLASH_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, FLASH_CMP_DATA, current_timestamp, cur_data_buf);
+	write_packet(msg_buffer, LOW_POWER_DATA, current_timestamp, cur_data_buf);
 }

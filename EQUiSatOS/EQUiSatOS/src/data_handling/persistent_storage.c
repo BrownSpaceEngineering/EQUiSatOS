@@ -239,6 +239,7 @@ bool storage_write_check_errors_unsafe(equistack* stack) {
 	if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
 		return false;
 	}
+	return true;
 }
 
 /* must be called with cache mutex locked to be accurate, not throw errors, etc.

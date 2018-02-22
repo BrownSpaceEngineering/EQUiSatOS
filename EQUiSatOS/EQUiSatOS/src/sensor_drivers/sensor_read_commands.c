@@ -613,7 +613,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		//sc = MPU9250_read_mag(rs);
-		status_code_genare_t sc = HMC5883L_readXYZ(rs);
+		sc = HMC5883L_readXYZ(rs);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
 		log_error(ELOC_IMU_MAG, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -621,7 +621,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 		return;
 	}
 
-	log_if_error(ELOC_IMU_MAG, sc, false); // TODO: managed to produce sc > 127
+	log_if_error(ELOC_IMU_MAG, sc, false);
 	for (int i = 0; i < 3; i++) {
 		batch[i] = truncate_16t(rs[i]);
 	}

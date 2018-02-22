@@ -94,7 +94,7 @@ void print_proc_temp_batch(proc_temp_batch batch) {
 /************************************************************************/
 /* Stack type element-printing methods                                  */
 /************************************************************************/
-void print_stack_type_header(char* header, int i, uint32_t timestamp, bool transmitted) {
+void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
 	print("%d: ---------%s---------\n", i, header);
 	print("timestamp: %d \t %s\n", timestamp, transmitted ? "TRANSMITTED" : "not transmitted");
 }
@@ -185,7 +185,7 @@ void print_sat_error(sat_error_t* err, int i) {
 /************************************************************************/
 
 // prints the given equistack using the given element-wise string building method
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), char* header) {
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header) {
 	print("==============%s==============\n", header);
 	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
 		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
@@ -206,7 +206,7 @@ void print_equistacks(void) {
 	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
 }
 
-char* get_sat_state_str(sat_state_t state) {
+const char* get_sat_state_str(sat_state_t state) {
 	switch (state) {
 		case HELLO_WORLD:			return "HELLO_WORLD          ";
 		case HELLO_WORLD_LOW_POWER: return "HELLO_WORLD_LOW_POWER";
@@ -220,7 +220,7 @@ char* get_sat_state_str(sat_state_t state) {
 	}
 }
 
-char* get_task_str(task_type_t task) {
+const char* get_task_str(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK:				return "WATCHDOG_TASK              ";
 		case STATE_HANDLING_TASK:		return "STATE_HANDLING_TASK        ";
@@ -236,7 +236,7 @@ char* get_task_str(task_type_t task) {
 	}
 }
 
-char* get_task_state_str(eTaskState state) {
+const char* get_task_state_str(eTaskState state) {
 	switch (state) {
 		case eRunning:		return "eRunning   ";
 		case eSuspended:	return "eSuspended ";

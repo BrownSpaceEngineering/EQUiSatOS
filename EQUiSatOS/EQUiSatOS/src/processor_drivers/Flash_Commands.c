@@ -46,6 +46,8 @@ bool flash_arm()
 		set_output(true, P_LED_CMD);
 		// should be followed by a delay of at least 2ms before calling flash_leds
 		return true;
+	#else
+		return true;
 	#endif
 }
 

@@ -32,14 +32,50 @@ void assert_transmission_constants(void) {
 	configASSERT(START_PARITY + MSG_PARITY_LENGTH <= MSG_BUFFER_SIZE - 1);
 }
 
+/* read actual sensors and write to the given current data buffer, which must be passed to
+   a call to write_packet to be copied into the main message buffer */
+void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
+	uint8_t buf_index = 0;
+
+	uint32_t secs_to_next_flash = get_time_of_next_flash() - timestamp;
+	if (secs_to_next_flash > 0xff) {
+		secs_to_next_flash = 0xff;
+	}
+	write_bytes_and_shift(cur_data_buf, &buf_index,	&secs_to_next_flash,	1);
+
+	uint8_t reboot_count = cache_get_reboot_count();
+	write_bytes_and_shift(cur_data_buf, &buf_index,	&reboot_count,			1);
+
+	read_lion_volts_batch((uint8_t*) (cur_data_buf + buf_index));
+	buf_index += sizeof(lion_volts_batch);
+
+	// we read all battery board inputs at once,
+	// but we write to two different message buffer locations, so we
+	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
+	read_ad7991_batbrd((uint8_t*) (cur_data_buf + buf_index),
+	(uint8_t*) (cur_data_buf + buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
+	buf_index += sizeof(lion_current_batch);
+
+	en_and_read_lion_temps_batch((uint8_t*) (cur_data_buf + buf_index));
+	buf_index += sizeof(lion_temps_batch);
+	buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
+
+	// use temp buffer because writing 2 bytes of data to what's actually a 1-byte
+	// pointer results in a segfault :P
+	bat_charge_dig_sigs_batch dig_sigs;
+	read_bat_charge_dig_sigs_batch(&dig_sigs);
+	write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
+
+	read_lifepo_volts_batch((uint8_t*) (cur_data_buf + buf_index));
+}
+
 // forward declarations
 void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uint8_t states, uint8_t data_len, uint8_t num_errors);
-void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp);
 void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg_type, int num_data);
 void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp);
 void write_parity(uint8_t* buffer, uint8_t* buf_index);
 
-void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp) {
+void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp, const uint8_t* cur_data_buf) {
 
 	uint8_t num_data, size_data, num_errors, padding_size;
 
@@ -105,9 +141,9 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	write_preamble(msg_buffer, &buf_index, current_timestamp, state_string, num_data * size_data, num_errors);
 	configASSERT(buf_index == START_CUR_DATA);
 
-	// read sensors and write current data to buffer; it's not dependent on state
-	write_current_data(msg_buffer, &buf_index, current_timestamp);
-	configASSERT(buf_index == START_DATA);
+	// copy current data buffer to this message buffer (it should've been written using a call to read_current_data)
+	memcpy(msg_buffer + buf_index, cur_data_buf, MSG_CUR_DATA_LEN);
+	buf_index = START_DATA;
 
 	write_data_section(msg_buffer, &buf_index, msg_type, num_data);
 	// note that the start of errors/padding is determined dynamically by buf_index
@@ -150,43 +186,6 @@ void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uin
 
 	// just in case we miss a \0... it should normally be written at the end of data
 	buffer[MSG_BUFFER_SIZE - 1] = '\0';
-}
-
-/* read actual sensors to write to message buffer - saves memory */
-void write_current_data(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp) {
-	*buf_index = START_CUR_DATA; // to be certain
-
-	uint32_t secs_to_next_flash = get_time_of_next_flash() - timestamp;
-	if (secs_to_next_flash > 0xff) {
-		secs_to_next_flash = 0xff;
-	}
-	write_bytes_and_shift(buffer, buf_index,	&secs_to_next_flash,	1);
-
-	uint8_t reboot_count = cache_get_reboot_count();
-	write_bytes_and_shift(buffer, buf_index,	&reboot_count,			1);
-
-	read_lion_volts_batch((uint8_t*) (buffer + *buf_index));
-	*buf_index += sizeof(lion_volts_batch);
-
-	// we read all battery board inputs at once,
-	// but we write to two different message buffer locations, so we
-	// shift past the lion currents and lion temp to the ad7991_ctrlbrd_batch location
-	read_ad7991_batbrd((uint8_t*) (buffer + *buf_index),
-		(uint8_t*) (buffer + *buf_index + sizeof(lion_current_batch) + sizeof(lion_temps_batch)));
-	*buf_index += sizeof(lion_current_batch);
-
-	en_and_read_lion_temps_batch((uint8_t*) (buffer + *buf_index));
-	*buf_index += sizeof(lion_temps_batch);
-	*buf_index += sizeof(panelref_lref_batch); // jump over what we wrote before
-
-	// use temp buffer because writing 2 bytes of data to what's actually a 1-byte 
-	// pointer results in a segfault :P
-	bat_charge_dig_sigs_batch dig_sigs;
-	read_bat_charge_dig_sigs_batch(&dig_sigs);
-	write_bytes_and_shift(buffer, buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
-
-	read_lifepo_volts_batch((uint8_t*) (buffer + *buf_index));
-	*buf_index += sizeof(lifepo_volts_batch);
 }
 
 void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {

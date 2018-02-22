@@ -18,7 +18,7 @@ void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
 	buffer[3] = address;			// lower byte
 }
 
-uint8_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate) {
+status_code_genare_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate) {
 	struct spi_config config_spi_master;
 	spi_get_config_defaults(&config_spi_master);
 	config_spi_master.mux_setting = SPI_SIGNAL_MUX_SETTING_E;
@@ -30,9 +30,10 @@ uint8_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t 
 	spi_init(spi_master_instance, MRAM_SPI_SERCOM, &config_spi_master);
 	enum status_code code = spi_set_baudrate(spi_master_instance, baudrate);
 	spi_enable(spi_master_instance);
+	return code;
 }
 
-uint8_t mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin) {
+void mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin) {
 	struct spi_slave_inst_config slave_dev_config;
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
 	slave_dev_config.ss_pin = ss_pin;
@@ -45,6 +46,7 @@ status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struc
 	// make sure to transceive data so we don't have RX data waiting (overflowed)
 	enum status_code code_1 = spi_transceive_buffer_wait(spi_master_instance, &enable, control_rx_temp, 1);
 	spi_select_slave(spi_master_instance, slave, false);
+	return code_1;
 }
 
 // returns true (1) if stat is a STATUS_CATEGORY_OK
