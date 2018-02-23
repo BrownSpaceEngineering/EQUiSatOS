@@ -163,14 +163,15 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 }
 
 /* logs error stack error; seperate to avoid recursion */
-// TODO: probably not needed?
-void log_error_stack_error(uint8_t ecode) {
-	sat_error_t stack_error;
-	stack_error.timestamp = get_current_timestamp(); // time is now
-	stack_error.eloc = ELOC_ERROR_STACK;
-	stack_error.ecode = 0b01111111 & ecode; // priority bit at MSB
-	equistack_Push(&error_equistack, &stack_error);
-}
+// TODO: won't be needed unless we decide to remove log_error_from_isr and then
+// make sure the stack follows the consistent format (see below)
+// void log_error_stack_error(uint8_t ecode) {
+// 	sat_error_t stack_error;
+// 	stack_error.timestamp = get_current_timestamp(); // time is now
+// 	stack_error.eloc = ELOC_ERROR_STACK;
+// 	stack_error.ecode = 0b01111111 & ecode; // priority bit at MSB
+// 	equistack_Push(&error_equistack, &stack_error);
+// }
 
 /* adds the given error to the given error equistack, in such a way 
    that only two errors will ever be stored during a "period of errors":
@@ -227,8 +228,9 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 		newest_same_error->timestamp = new_error->timestamp;
 		
 	} else {
-		// otherwise, the stack is not formatted as it should be, so log an error
-		// (we do this manually to avoid a possible infinite recursion (it's meta))
+		// otherwise, the stack is not formatted as it should be 
+		// (though this may be due to an emergency reboot) 
 		configASSERT(false);
+		//TODO: log_error_stack_error(ECODE_INCONSISTENT_DATA);
 	}
 }

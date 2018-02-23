@@ -255,6 +255,19 @@ void print_task_states(void) {
 	}
 }
 
+void print_latest_cur_data(void) {
+	uint8_t* cur_data_buf = _get_cur_data_buf();
+	print("---Most Recent Transmitted Current Data---");
+	print("secs to next flash: %d", cur_data_buf[0]);
+	print("reboot count: %d",		cur_data_buf[1]);
+	print_lion_volts_batch(			&(cur_data_buf[2]));
+	print_lion_current_batch(		&(cur_data_buf[4]));
+	print_lion_temps_batch(			&(cur_data_buf[6]));
+	print_panelref_lref_batch(		&(cur_data_buf[8]));
+	print_bat_charge_dig_sigs_batch(cur_data_buf[10]);
+	print_lifepo_volts_batch(		&(cur_data_buf[12]));
+}
+
 void rtos_system_test(void) {
 	print("==============RTOS System Test==============\n");
 	print("timestamp: %d\n", get_current_timestamp());
@@ -263,6 +276,7 @@ void rtos_system_test(void) {
 	print("reboot #:  %d\n", cache_get_reboot_count());
 	print("num errors:  %d\n", error_equistack.cur_size);
 	print_task_states();
+	print_latest_cur_data();
 	print_equistacks();
 	print("====================End=====================\n");
 }
