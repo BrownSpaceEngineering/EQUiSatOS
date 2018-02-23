@@ -618,3 +618,37 @@ void write_custom_state(void) {
 
 	configASSERT(memcmp(error_buf, temp_error_buf, num_errs * sizeof(sat_error_t)) == 0);
 }
+
+// writes the currently-loaded program memory (live) into the MRAM using a buffered copy
+// to use this:
+// 1) Make sure you've set up the PROG_MEM_START_ADDR using .text=<addr> in Linker Memory settings
+// 2) Set this function to run where you want it (your last change to the code), build it,
+//    and copy the size of that binary to PROG_MEM_SIZE (without making any other changes)
+// 3) Rebuild and run the code.
+void write_cur_prog_mem_to_mram(void) {
+	print("Started writing program memory to MRAM...");
+	uint8_t confirm_buf[PROG_MEM_COPY_BUF_SIZE];
+	
+	size_t num_copied = 0;
+	uint32_t flash_addr = PROG_MEM_START_ADDR;
+	uint32_t mram_addr = STORAGE_PROG_MEM_REWRITTEN_ADDR;
+
+	while (num_copied < PROG_MEM_SIZE) {
+		size_t buf_size = min(PROG_MEM_SIZE - num_copied, PROG_MEM_COPY_BUF_SIZE);
+		
+		// write this buffer section directly from the flash (program memory) address space into both MRAMs
+		mram_write_bytes(&spi_master_instance, &mram1_slave, (uint8_t*) flash_addr, buf_size, mram_addr);
+		mram_write_bytes(&spi_master_instance, &mram2_slave, (uint8_t*) flash_addr, buf_size, mram_addr);
+		
+		// checks to confirm it matches program memory
+		mram_read_bytes(&spi_master_instance, &mram1_slave, confirm_buf, buf_size, mram_addr);
+		configASSERT(memcmp((uint8_t*) flash_addr, confirm_buf, buf_size) == 0);
+		mram_write_bytes(&spi_master_instance, &mram2_slave, confirm_buf, buf_size, mram_addr);
+		configASSERT(memcmp((uint8_t*) flash_addr, confirm_buf, buf_size) == 0);
+		
+		num_copied += buf_size;
+		mram_addr += buf_size;
+		flash_addr += buf_size;
+	}
+	print("Done writing program memory to MRAM.");
+}

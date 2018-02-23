@@ -24,12 +24,17 @@
 #define STORAGE_PROG_MEMORY_HASH_ADDR		314
 #define STORAGE_ERR_NUM_ADDR				572
 #define STORAGE_ERR_LIST_ADDR				576
+#define STORAGE_PROG_MEMORY_ADDR			938
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
+// constants used when copying program memory live to MRAM
+#define PROG_MEM_START_ADDR					0x0		// use default 0x0 OR set with .text=<addr> in Linker Memory settings (latter doesn't appear to work)
+#define PROG_MEM_SIZE						80996	// find for latest build in "output"
+#define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
 
 /************************************************************************/
 /* STATE CACHE                                                          */
@@ -92,6 +97,8 @@ uint64_t get_current_timestamp_ms(void);
 uint16_t get_orbits_since_launch(void);
 bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
 
+/* maintenance helpers */
 void write_custom_state(void);
+void write_cur_prog_mem_to_mram(void);
 
 #endif

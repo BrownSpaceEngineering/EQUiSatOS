@@ -11,7 +11,7 @@ void run_tests(void) {
 	//actuallyFlashingFlashBurstTest(); // as the name implies, this does ACTUALLY FLASH THE SATELLITES BIG LEDS
 	//flatsat_run(); //calls flatsat init
 	//bat_testing_run();
-	test_equistack();
+	//test_equistack();
 	//assert_transmission_constants();
 	//pointer_typecast_test();
 
@@ -52,6 +52,7 @@ int main(void)
 	set_charging_states(true, true, true, true);
 	system_test(true);
 	run_tests();
+	//write_cur_prog_mem_to_mram();
 
-	run_rtos();
+	//run_rtos();
 }
