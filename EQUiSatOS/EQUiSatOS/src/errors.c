@@ -162,75 +162,74 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 	equistack_Push_from_isr(&error_equistack, &full_error);
 }
 
-/* logs error stack error; seperate to avoid recursion */
-// TODO: won't be needed unless we decide to remove log_error_from_isr and then
-// make sure the stack follows the consistent format (see below)
-// void log_error_stack_error(uint8_t ecode) {
-// 	sat_error_t stack_error;
-// 	stack_error.timestamp = get_current_timestamp(); // time is now
-// 	stack_error.eloc = ELOC_ERROR_STACK;
-// 	stack_error.ecode = 0b01111111 & ecode; // priority bit at MSB
-// 	equistack_Push(&error_equistack, &stack_error);
-// }
-
 /* adds the given error to the given error equistack, in such a way 
    that only two errors will ever be stored during a "period of errors":
    one to mark the start and one to mark the most recent occurrence */
 // TODO: code review!
 void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	
-	sat_error_t* newest_same_error = NULL;
-	int num_same_errors = 0;
-	for (int i = 0; i < stack->cur_size; i++) {
-		sat_error_t* err = (sat_error_t*) equistack_Get(stack, i);
-		
-		if (err != NULL &&
-			err->eloc == new_error->eloc &&
-			err->ecode == new_error->ecode) {
-			num_same_errors++;
-			
-			// find newest error for later use (there should only be a max of two)
-			// (use ">" to favor first (newest) one found)
-			if (newest_same_error == NULL ||
-				err->timestamp > newest_same_error->timestamp) { 
-				newest_same_error = err;
-			}
-		}
-	}	
-	
-	if (num_same_errors == 0 || num_same_errors == 1) {
-		// if there are no similar errors in the stack, or only one
-		// (indicating the (known) start of the period of this error),
-		// then we just add the new error to the stack
-		// (it will be either the known start or the known "most recent", respectively)
-		
-		// HOWEVER, we add an additional (unrelated) condition to this:
-		// If a normal error being added will overwrite a priority error, only do so if
-		// that priority error is past the "importance timeout" (too old to matter)
-		// If a priority error is being added, always add it
-		if (is_priority_error(*new_error)) {
-			equistack_Push(stack, new_error);
-
-		} else if (stack->cur_size == stack->max_size) {
-			// we need only check to determine whether to overwrite with a normal error
-			// when the stack is full, meaning we will overwrite
-			sat_error_t* to_overwrite = (sat_error_t*) equistack_Get_From_Bottom(stack, 0);
-			if (to_overwrite != NULL 
-				&& get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S) {
-				equistack_Push(stack, new_error);
-			}
-		}
-		
-	} else if(num_same_errors == 2) {
-		configASSERT(newest_same_error != NULL);
-		// if two errors already exist, we just update the timestamp of the newest one to
-		// match the error being added
-		newest_same_error->timestamp = new_error->timestamp;
-		
-	} else {
-		// otherwise, the stack is not formatted as it should be 
-		// (though this may be due to an emergency reboot) 
-		configASSERT(false);
-		//TODO: log_error_stack_error(ECODE_INCONSISTENT_DATA);
+	bool got_mutex = true;
+	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
+		// log error, but continue on because we're just reading
+		log_error(ELOC_ERROR_STACK, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		got_mutex = false;
 	}
+	{
+		sat_error_t* newest_same_error = NULL;
+		int num_same_errors = 0;
+		for (int i = 0; i < stack->cur_size; i++) {
+			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(stack, i);
+		
+			if (err != NULL &&
+				err->eloc == new_error->eloc &&
+				err->ecode == new_error->ecode) {
+				num_same_errors++;
+			
+				// find newest error for later use (there should only be a max of two)
+				// (use ">" to favor first (newest) one found)
+				if (newest_same_error == NULL ||
+					err->timestamp > newest_same_error->timestamp) { 
+					newest_same_error = err;
+				}
+			}
+		}
+	
+		if (num_same_errors == 0 || num_same_errors == 1) {
+			// if there are no similar errors in the stack, or only one
+			// (indicating the (known) start of the period of this error),
+			// then we just add the new error to the stack
+			// (it will be either the known start or the known "most recent", respectively)
+		
+			// HOWEVER, we add an additional (unrelated) condition to this:
+			// If a normal error being added will overwrite a priority error, only do so if
+			// that priority error is past the "importance timeout" (too old to matter)
+			// If a priority error is being added, always add it
+			if (is_priority_error(*new_error)) {
+				equistack_Push(stack, new_error);
+
+			} else if (stack->cur_size == stack->max_size) {
+				// we only need to check to determine whether to overwrite with a normal error
+				// when the stack is full. We'll only overwrite if we're overwriting a normal
+				// error or we're overwriting an OLD priority error.
+				sat_error_t* to_overwrite = (sat_error_t*) equistack_Get_From_Bottom_Unsafe(stack, 0);
+				if (to_overwrite != NULL
+					&& (!is_priority_error(*to_overwrite)  ||
+						get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S)) {
+					equistack_Push_Unsafe(stack, new_error);
+				}
+			}
+		
+		} else if(num_same_errors == 2) {
+			configASSERT(newest_same_error != NULL);
+			// if two errors already exist, we just update the timestamp of the newest one to
+			// match the error being added
+			newest_same_error->timestamp = new_error->timestamp;
+		
+		} else {
+			// otherwise, the stack is not formatted as it should be 
+			// (though this may be due to an emergency reboot) 
+			configASSERT(false);
+		}
+	}
+	if (got_mutex) xSemaphoreGive(stack->mutex);
 }

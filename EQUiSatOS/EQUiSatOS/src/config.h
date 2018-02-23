@@ -16,7 +16,7 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLIGHT
+#define XPLAINED
 
 /** 
  * flags to control dangerous / inconvenient functions of the satellite 

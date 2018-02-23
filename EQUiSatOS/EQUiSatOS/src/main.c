@@ -11,8 +11,9 @@ void run_tests(void) {
 	//actuallyFlashingFlashBurstTest(); // as the name implies, this does ACTUALLY FLASH THE SATELLITES BIG LEDS
 	//flatsat_run(); //calls flatsat init
 	//bat_testing_run();
-	//test_equistack();
+	test_equistack();
 	//assert_transmission_constants();
+	//pointer_typecast_test();
 
 	//system_test();
 }
@@ -36,6 +37,7 @@ void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2)
 	set_output(lion1, P_L1_RUN_CHG);
 
 	setup_pin(true, P_L2_RUN_CHG);
+	set_output(lion2, P_L2_RUN_CHG);
 
 	setup_pin(true, P_LF_B1_RUNCHG);
 	set_output(lifepo_b1, P_LF_B1_RUNCHG);

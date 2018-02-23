@@ -337,3 +337,42 @@ void mram_test(void) {
 	
 	return;
 }
+
+// pointer typecast test
+void write_uint16_memcpy(uint16_t* buf) {
+	uint16_t val = 0xabcd;
+	memcpy(buf, &val, 2);
+}
+
+void write_uint16_deref(uint16_t* buf) {
+	*buf = 0xabcd;
+}
+
+void write_uint8_buf_memcpy(uint8_t* buf) {
+	uint16_t val = 0xabcd;
+	memcpy(buf, &val, 2);
+}
+
+void write_uint8_buf_deref(uint8_t* buf) {
+	// little endian
+	buf[0] = 0xcd;
+	buf[1] = 0xab;
+}
+
+void pointer_typecast_test(void) {
+	uint8_t recieve_buf_1[2];
+	write_uint16_memcpy((uint16_t*) recieve_buf_1);
+	configASSERT(recieve_buf_1[0] == 0xcd && recieve_buf_1[1] == 0xab); // little endian
+	
+	uint8_t recieve_buf_2[2];
+	write_uint16_deref((uint16_t*) recieve_buf_2);
+	configASSERT(recieve_buf_1[0] == 0xcd && recieve_buf_1[1] == 0xab); // little endian
+	
+	uint16_t recieve_buf_3;
+	write_uint8_buf_memcpy((uint8_t*) &recieve_buf_3);
+	configASSERT((recieve_buf_3 & 0xff) == 0xcd && ((recieve_buf_3 >> 8) & 0xff) == 0xab); // little endian
+	
+	uint16_t recieve_buf_4;
+	write_uint8_buf_deref((uint8_t*) &recieve_buf_4);
+	configASSERT((recieve_buf_4 & 0xff) == 0xcd && ((recieve_buf_4 >> 8) & 0xff) == 0xab); // little endian
+}

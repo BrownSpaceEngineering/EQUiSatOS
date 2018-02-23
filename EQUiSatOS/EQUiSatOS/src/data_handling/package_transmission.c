@@ -268,7 +268,9 @@ void write_flash_cmp_data_packet(uint8_t* buffer, uint8_t* buf_index, flash_cmp_
 void write_low_power_data_packet(uint8_t* buffer, uint8_t* buf_index, low_power_data_t* low_power_data);
 
 /* writes the data section corresponding to msg_type, and returns the end of this (the start of the error section).
-   The packet equistack associated with msg_type should not be empty. */
+   The packet equistack associated with msg_type should not be empty. 
+   NOTE: this function's thread safety depends on the transmit task being higher priority 
+   than the data reading tasks (which it is) */
 void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg_type, int num_data) {
 	*buf_index = START_DATA; // to be certain
 

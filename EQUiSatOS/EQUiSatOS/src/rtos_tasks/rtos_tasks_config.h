@@ -63,11 +63,13 @@ enum {
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
 /********************************************************************************/
-#define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
-#define LOW_POWER_STACK_MAX				2
-#define ATTITUDE_STACK_MAX				10
-#define FLASH_STACK_MAX					10
-#define FLASH_CMP_STACK_MAX				10
+// we set these (mostly) to be the amount that needs to be transmitted for each data type,
+// plus one for the staged pointer
+#define IDLE_STACK_MAX					8 // == (IDLE_DATA_PACKETS + 1)
+#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1) // TODO: no reason not to do more
+#define ATTITUDE_STACK_MAX				6 // == (ATTITUDE_DATA_PACKETS + 1)
+#define FLASH_STACK_MAX					10 // TODO
+#define FLASH_CMP_STACK_MAX				7 // == (FLASH_CMP_DATA_PACKETS + 1)
 
 /************************************************************************/
 /* Enum for states that represent changes in which tasks are running	*/
@@ -204,7 +206,7 @@ typedef enum
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ		1000
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		10000
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;

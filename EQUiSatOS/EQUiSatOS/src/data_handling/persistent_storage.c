@@ -11,6 +11,13 @@
 StaticSemaphore_t _mram_spi_mutex_d;
 SemaphoreHandle_t mram_spi_mutex;
 
+// super simple mutex used to sync the two operations required
+// to modify the cached data responsible for computing get_current_timestamp()
+// (true if fields are being modified, false otherwise)
+// note: this only works because it's only being written by one thread at a time
+// (except in rare cases), and because read/stores are atomic in single-processor ARM
+bool cache_time_fields_minimutex;
+
 /* SPI master and slave handles */
 struct spi_module spi_master_instance;
 struct spi_slave_inst mram1_slave;
@@ -214,11 +221,20 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	uint8_t num_errors = stack->cur_size;
 	sat_error_t error_buf[num_errors];
 	
-	// populate buffer with current errors
-	for (int i = 0; i < num_errors; i++) {
-		sat_error_t* err = (sat_error_t*) equistack_Get(stack, i);
-		error_buf[i] = *err;
+	bool got_mutex = true;
+	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
+		// log error, but continue on because we're just reading
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		got_mutex = false;
 	}
+	{
+		// populate buffer with current errors (thread-safely)
+		for (int i = 0; i < num_errors; i++) {
+			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(stack, i);
+			error_buf[i] = *err;
+		}
+	}
+	if (got_mutex) xSemaphoreGive(stack->mutex);
 	
 	// write size and error data to storage
 	storage_write_field_unsafe(&num_errors,	1, STORAGE_ERR_NUM_ADDR);
@@ -263,9 +279,13 @@ void write_state_to_storage(void) {
 	// (keep track of the old timestamp value in case the write fails and we have to reset)
 	uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
+	
+	// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
+	cache_time_fields_minimutex = true;
 	cached_state.secs_since_launch = get_current_timestamp();
-	// TODO: major concurrency issues during this period right here!!!! (done in close proimity for now)
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+	cache_time_fields_minimutex = false;
+	
 	bool got_mutex = false;
 
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
@@ -295,8 +315,11 @@ void write_state_to_storage(void) {
 	
 	// skip the check if we didn't get the mutex, and reset last data write to old MRAM's
 	if (!got_mutex) {
+		// grab time field mutex
+		cache_time_fields_minimutex = true;
 		last_data_write_ms = prev_last_data_write_ms;
 		cached_state.secs_since_launch = prev_cached_secs_since_launch;
+		cache_time_fields_minimutex = false;
 		return;
 	}
 
@@ -317,8 +340,11 @@ void write_state_to_storage(void) {
 		// go off the old value in the MRAM
 		if (temp_secs_since_launch != cached_state.secs_since_launch &&
 		temp_secs_since_launch < cached_state.secs_since_launch) {
+			// grab time field mutex
+			cache_time_fields_minimutex = true;
 			last_data_write_ms = prev_last_data_write_ms;
 			cached_state.secs_since_launch = prev_cached_secs_since_launch;
+			cache_time_fields_minimutex = false;
 		}
 	}
 }
@@ -335,8 +361,10 @@ void write_state_to_storage_emergency(bool from_isr) {
 	
 	if (got_mutex)
 	{
+		cache_time_fields_minimutex = true;
 		cached_state.secs_since_launch = get_current_timestamp();
 		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+		cache_time_fields_minimutex = false;
 		
 		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
@@ -393,12 +421,14 @@ void update_sat_event_history(uint8_t antenna_deployed,
  * due to a watchdog reset). Segment since reboot is accurate to ms.
  */
 uint32_t get_current_timestamp(void) {
+	while (cache_time_fields_minimutex) {}; // wait on time field mutex
 	return ((xTaskGetTickCount() / portTICK_PERIOD_MS - last_data_write_ms) / 1000)
 		 + cache_get_secs_since_launch();
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
+	while (cache_time_fields_minimutex) {}; // wait on time field mutex
 	return (xTaskGetTickCount() / portTICK_PERIOD_MS) - last_data_write_ms
 			+ (1000 * cache_get_secs_since_launch());
 }
@@ -457,6 +487,8 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 /************************************************************************/
 
 uint32_t cache_get_secs_since_launch() {
+	// note: not necessary to take minimutex because people 
+	// don't have access to last_write_time_ms
 	return cached_state.secs_since_launch;
 }
 
