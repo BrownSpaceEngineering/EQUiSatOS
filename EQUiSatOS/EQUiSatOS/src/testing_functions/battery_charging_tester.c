@@ -70,6 +70,14 @@ void init_meta_test_charging_data(void)
 		charging_data.bat_voltages[bat] = LI_ABOVE_FULL;
 }
 
+void set_voltages(int li1_mv, int li2_mv, int lf1_mv, int lf2_mv)
+{
+	charging_data.bat_voltages[LI1] = li1_mv;
+	charging_data.bat_voltages[LI2] = li2_mv;
+	charging_data.bat_voltages[LFB1] = lf1_mv;
+	charging_data.bat_voltages[LFB2] = lf2_mv;
+}
+
 ///
 // between meta-states
 ///
@@ -569,6 +577,165 @@ void d_to_d(void)
 	assert(charging_data.curr_charge_state == FILL_LI_D);
 }
 
+void neither_full_li1_a(void)
+{
+	set_voltages(LI_ABOVE_FULL - 1, LI_ABOVE_FULL, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI1);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void neither_full_li2_a(void)
+{
+	set_voltages(LI_ABOVE_FULL, LI_BETWEEN_DOWN_AND_FULL, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI2);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void l1_full_a(void)
+{
+	set_voltages(LI_ABOVE_FULL, LI_BETWEEN_DOWN_AND_FULL + 2, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI2);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void l2_full_a(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL + 2, LI_ABOVE_FULL, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI1);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void fill_lf_lf1_a(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL + 2, LI_BETWEEN_DOWN_AND_FULL, 0, 1);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LFB1);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void fill_lf_lf2_a(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL, LI_BETWEEN_DOWN_AND_FULL + 2, 1, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LFB2);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void fill_li_li1_down_b(void)
+{
+	set_voltages(LI_ABOVE_FULL, LI_BELOW_DOWN, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI2);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void fill_li_li2_down_b(void)
+{
+	set_voltages(LI_BELOW_DOWN, LI_ABOVE_FULL, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI1);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void fill_lf_li2_down_lf1_b(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL, LI_ABOVE_FULL, 0, 10);
+	battery_logic();
+	
+	assert(charging_data.bat_charging == LFB1);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void fill_lf_li2_down_lf2_b(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL, LI_ABOVE_FULL, 100, 10);
+	battery_logic();
+	
+	assert(charging_data.bat_charging == LFB2);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void fill_lf_li2_down_lf1_down_b(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL, LI_ABOVE_FULL, 0, 20);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LFB2);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void fill_lf_li2_down_lf2_down_b(void)
+{
+	set_voltages(LI_BETWEEN_DOWN_AND_FULL, LI_ABOVE_FULL, 20, 20);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LFB1);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void li1_c(void)
+{
+	set_voltages(LI_BELOW_DOWN, LI_BELOW_DOWN + 2, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI1);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void li2_c(void)
+{
+	set_voltages(LI_BELOW_DOWN + 2, LI_BELOW_DOWN, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI2);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void li1_down_c(void)
+{
+	set_voltages(LI_ABOVE_FULL, LI_BELOW_DOWN, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI2);
+	assert(charging_data.lion_discharging == LI2);
+}
+
+void li2_down_c(void)
+{
+	set_voltages(LI_ABOVE_FULL, LI_BELOW_DOWN, 0, 0);
+	battery_logic();
+
+	assert(charging_data.bat_charging == LI1);
+	assert(charging_data.lion_discharging == LI1);
+}
+
+void d(void)
+{
+	// NOTE: it should be discharging both LI's here, but that won't be reflected in the lion_discharging
+	// variable
+	
+	set_voltages(0, 0, 0, 0);
+	battery_logic();
+	assert(charging_data.bat_charging == LI1);
+	battery_logic();
+	assert(charging_data.bat_charging == LI2);
+	battery_logic();
+	assert(charging_data.bat_charging == LI1);
+	battery_logic();
+	assert(charging_data.bat_charging == LI2);
+}
 
 void run_unit_tests(void)
 {
@@ -579,17 +746,17 @@ void run_unit_tests(void)
 	// batteries
 	///
 
-	a_to_b(); 
-	a_to_c(); 
+	a_to_b();
+	a_to_c();
 	a_to_d();
-	b_to_a(); 
-	b_to_c(); 
+	b_to_a();
+	b_to_c();
 	b_to_d();
-	c_to_a(); 
-	c_to_b(); 
+	c_to_a();
+	c_to_b();
 	c_to_d();
-	d_to_a(); 
-	d_to_b(); 
+	d_to_a();
+	d_to_b();
 	d_to_c();
 
 	///
@@ -638,6 +805,68 @@ void run_unit_tests(void)
 
 	c_to_c();
 	d_to_d();
+
+	///
+	// given a meta-state and a sub-state, decisions about the batteries that should
+	// be charging and discharging
+	///
+
+	// ALL_GOOD (A)
+	
+	d_to_a(); // transition
+	neither_full_li1_a();
+	neither_full_li2_a();
+	neither_full_to_l1_full_a(); // transition
+	simulated_curr_charging_filled_up = 0; // transition
+	l1_full_a();
+	l1_full_to_neither_full_a(); // transition
+	neither_full_to_l2_full_a(); // transition
+	simulated_curr_charging_filled_up = 0; // transition
+	l2_full_a();
+	l2_full_to_lf_a(); // transition
+	fill_lf_lf1_a();
+	fill_lf_lf2_a();
+
+	// ONE_LI_DOWN (B)
+
+	a_to_b(); // transition
+	charging_data.decommissioned[LI1] = 1;
+	charging_data.decommissioned[LI2] = 0;
+	simulated_curr_charging_filled_up = 0; // transition
+	fill_li_li1_down_b();
+	charging_data.decommissioned[LI1] = 0;
+	charging_data.decommissioned[LI2] = 1;
+	fill_li_li2_down_b();
+	li_to_lf_b(); // transition
+	charging_data.decommissioned[LI1] = 0;
+	charging_data.decommissioned[LI2] = 1;
+	charging_data.decommissioned[LFB1] = 0;
+	charging_data.decommissioned[LFB2] = 0;
+	fill_lf_li2_down_lf1_b();
+	fill_lf_li2_down_lf2_b();
+	charging_data.decommissioned[LFB1] = 1;
+	fill_lf_li2_down_lf1_down_b();
+	charging_data.decommissioned[LFB1] = 0;
+	charging_data.decommissioned[LFB2] = 1;
+	fill_lf_li2_down_lf2_down_b();
+
+	// TWO_LF_DOWN (C)
+
+	b_to_c(); // transition
+	charging_data.decommissioned[LI1] = 0;
+	charging_data.decommissioned[LI2] = 0;
+	li1_c();
+	li2_c();
+	charging_data.decommissioned[LI1] = 1;
+	li1_down_c();
+	charging_data.decommissioned[LI1] = 0;
+	charging_data.decommissioned[LI2] = 1;
+	li2_down_c();
+
+	// TWO_LI_DOWN (D)
+
+	c_to_d();
+	d();
 }
 
 void run_simulations(void)

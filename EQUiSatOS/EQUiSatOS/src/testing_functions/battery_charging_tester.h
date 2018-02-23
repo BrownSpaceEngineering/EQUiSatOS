@@ -21,17 +21,17 @@ void init_meta_test_charging_data(void);
 // batteries
 ///
 
-void a_to_b(void); 
-void a_to_c(void); 
+void a_to_b(void);
+void a_to_c(void);
 void a_to_d(void);
-void b_to_a(void); 
-void b_to_c(void); 
+void b_to_a(void);
+void b_to_c(void);
 void b_to_d(void);
-void c_to_a(void); 
-void c_to_b(void); 
+void c_to_a(void);
+void c_to_b(void);
 void c_to_d(void);
-void d_to_a(void); 
-void d_to_b(void); 
+void d_to_a(void);
+void d_to_b(void);
 void d_to_c(void);
 
 ///
@@ -80,5 +80,28 @@ void to_li_for_lf_full_b(void);
 
 void c_to_c(void);
 void d_to_d(void);
+
+///
+// checking decisions about batteries to charge and discharge, given a
+// meta-state and a sub-state
+///
+
+void neither_full_li1_a(void);
+void neither_full_li2_a(void);
+void l1_full_a(void);
+void l2_full_a(void);
+void fill_lf_lf1_a(void);
+void fill_lf_lf2_a(void);
+void fill_li_li1_down_b(void);
+void fill_li_li2_down_b(void);
+void fill_lf_li2_down_lf1_b(void);
+void fill_lf_li2_down_lf2_b(void);
+void fill_lf_li2_down_lf1_down_b(void);
+void fill_lf_li2_down_lf2_down_b(void);
+void li1_c(void);
+void li2_c(void);
+void li1_down_c(void);
+void li2_down_c(void);
+void d(void);
 
 #endif

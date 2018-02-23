@@ -15,9 +15,11 @@
 //  4. write simulator to sequentially run unit tests (later)
 //  5. iron out threshold values (later)
 
-// TODO: what to do when GPIO dies? -- complicate the mechanism for discharging1
+// TODO: what to do when GPIO dies? -- complicate the mechanism for discharging
 // TODO: won't discharge -- let's look at this more complexly
 // TODO: read through TODO's and make sure of everything!
+// TODO: update sat state history when LF's fill up
+// TODO: probably need to add something for LI's that aren't holding a charge
 int get_current_timestamp_wrapped(void)
 {
 	#ifdef BAT_TESTING
@@ -333,6 +335,7 @@ int battery_logic()
 		}
 	}
 
+	// TODO: does all of this do alright with reboot
 	// TODO: where else do we want to use PANEL_REF
 	for (int bat = 0; bat < 4; bat++)
 	{
@@ -727,6 +730,8 @@ int battery_logic()
 		if (charging_data.charging_parity)
 		{
 			charging_data.bat_charging = LI1;
+			// TODO: make sure we're in no way dependent on lion_discharging -- it'll be
+			// irelevant in this case
 			// will always discharge both LI
 		}
 		else
