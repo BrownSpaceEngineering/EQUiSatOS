@@ -12,7 +12,7 @@
 #include <global.h>
 
 void configure_pwm(int pwm_pin, int pwm_mux, int p_ant);
-bool set_pulse_width_fraction(int numerator, int denominator);
+void enable_pwm(int on_fraction);
 void disable_pwm(void);
 
 struct tcc_module tcc_instance;
