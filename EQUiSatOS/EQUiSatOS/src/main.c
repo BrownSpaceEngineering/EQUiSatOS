@@ -47,10 +47,9 @@ void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2)
 int main(void)
 {
 	global_init();
-	pwm_test();
-	/*set_charging_states(true, true, true, true);
+	set_charging_states(true, true, true, true);
 	system_test(true);
 	run_tests();
 
-	run_rtos();*/
+	run_rtos();
 }

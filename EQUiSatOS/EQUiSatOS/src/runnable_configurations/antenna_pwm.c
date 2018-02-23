@@ -21,7 +21,7 @@ static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
 }
 
 void pwm_test(void) {
-	try_pwm_deploy_basic(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
+	try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
 	//try_pwm_deploy_basic(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
 	//try_pwm_deploy_basic(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
 }
@@ -30,28 +30,30 @@ void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant) {
 	#ifdef ANTENNA_DEPLOY_ACTIVE
 		configure_pwm(pin, pin_mux, p_ant);
 	
-		//hardware_state_mutex_take();
+		hardware_state_mutex_take();
 		enable_pwm(current_on_cycle);
-		//get_hw_states()->antenna_deploying = true;
-		//hardware_state_mutex_give();
+		get_hw_states()->antenna_deploying = true;
+		hardware_state_mutex_give();
+		
+		// read current (both just in case) so we can shut it down if we need
+		lion_current_batch li;
+		panelref_lref_batch toss;
+		read_ad7991_batbrd(li, toss);
+		lifepo_current_batch lf;
+		read_lifepo_current_batch(lf, false);
 	
 		delay_ms(ms);
 		//vTaskDelay(ms);
 	
-		//hardware_state_mutex_take();
+		hardware_state_mutex_take();
 		disable_pwm();
 		bool can_cont = true;
 		if (p_ant == 1) {
-			lion_current_batch li;
-			panelref_lref_batch toss;
-			read_ad7991_batbrd(li, toss);
-			if (li[0] > PWM_MAX_CUR || li[1] > PWM_MAX_CUR) {
+			if ((li[0] << 8) > PWM_MAX_CUR || (li[1] << 8) > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		} else {
-			lifepo_current_batch lf;
-			//read_lifepo_current_batch(lf);
-			if (lf[0] > PWM_MAX_CUR || lf[1] > PWM_MAX_CUR) {
+			if ((lf[0] << 8) > PWM_MAX_CUR || (lf[1] << 8) > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		}
@@ -74,8 +76,8 @@ void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant) {
 				curren_pwm_pin = 1;
 			}
 		}
-		//get_hw_states()->antenna_deploying = false;
-		//hardware_state_mutex_give();
+		get_hw_states()->antenna_deploying = false;
+		hardware_state_mutex_give();
 	
 	#endif
 }

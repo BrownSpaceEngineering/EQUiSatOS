@@ -11,7 +11,7 @@
 
 #include <global.h>
 
-#define PWM_LENGTH_MS		1000
+#define PWM_LENGTH_MS		3000
 #define PWM_LION_MIN_V		4100
 #define PWM_LIFEPO_MIN_V	3300
 #define PWM_MAX_CUR			2500
