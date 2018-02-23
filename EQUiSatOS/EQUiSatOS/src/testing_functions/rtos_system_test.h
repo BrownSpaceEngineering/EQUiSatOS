@@ -27,7 +27,6 @@ void print_led_temps_batch(led_temps_batch batch);
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch);
 void print_lifepo_volts_batch(lifepo_volts_batch batch);
 void print_lifepo_current_batch(lifepo_current_batch batch);
-void print_led_current_batch(led_current_batch batch);
 void print_satellite_state_history_batch(satellite_history_batch batch);
 void print_panelref_lref_batch(panelref_lref_batch batch);
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch);
@@ -40,11 +39,11 @@ void print_flash_data(flash_data_t* data, int i);
 void print_flash_cmp_data(flash_cmp_data_t* data, int i);
 void print_low_power_data(low_power_data_t* data, int i);
 
-char* get_sat_state_str(sat_state_t state);
-char* get_task_str(task_type_t task);
-char* get_task_state_str(eTaskState state);
+const char* get_sat_state_str(sat_state_t state);
+const char* get_task_str(task_type_t task);
+const char* get_task_state_str(eTaskState state);
 void print_task_states(void);
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), char* header);
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header);
 void rtos_system_test(void);
 
 #endif /* RTOS_SYSTEM_TEST_H_ */

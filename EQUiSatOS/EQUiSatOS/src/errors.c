@@ -11,13 +11,9 @@ void log_error_stack_error(uint8_t ecode);
 void add_error_to_equistack(equistack* stack, sat_error_t* error);
 
 void init_errors(void) {
-	_priority_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_priority_error_equistack_mutex_d);
-	equistack_Init(&priority_error_equistack, &_priority_error_equistack_arr, sizeof(sat_error_t),
-		PRIORITY_ERROR_STACK_MAX, _priority_error_equistack_mutex);
-	
-	_normal_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_normal_error_equistack_mutex_d);
-	equistack_Init(&normal_error_equistack, &_normal_error_equistack_arr, sizeof(sat_error_t), 
-		NORMAL_ERROR_STACK_MAX, _normal_error_equistack_mutex);
+	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
+	equistack_Init(&error_equistack, &_error_equistack_arr, sizeof(sat_error_t),
+		ERROR_STACK_MAX, _error_equistack_mutex);
 }
 
 /*
@@ -68,7 +64,9 @@ void print_error(enum status_code code){
 // logs an error if the given atmel status code is one, and returns whether it was an error
 bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
-		//print_error(sc);
+		#ifdef PRINT_ERRORS
+			print_error(sc);
+		#endif
 		log_error(loc, atmel_to_equi_error(sc), priority);
 		return true;
 	}
@@ -140,28 +138,38 @@ uint8_t atmel_to_equi_error(enum status_code sc) {
 
 /* Logs an error to the error stack, noting its timestamp */
 void log_error(uint8_t loc, uint8_t err, bool priority) {
-	//configASSERT(err <= 127); // only 7 bits	
+	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
 	full_error.timestamp = get_current_timestamp(); // time is now
 	full_error.eloc = loc;
 	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
 	
-	if (priority) {
-		// memory will be copied so don't worry about scope issues with local var ptrs
-		add_error_to_equistack(&priority_error_equistack, &full_error);
-	} else {
-		add_error_to_equistack(&normal_error_equistack, &full_error); 
-	}
+	add_error_to_equistack(&error_equistack, &full_error); 
+}
+
+/* Logs an error to the error stack, noting its timestamp (ISR safe) */
+void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
+	configASSERT(err <= 127); // only 7 bits
+
+	sat_error_t full_error;
+	full_error.timestamp = get_current_timestamp(); // time is now
+	full_error.eloc = loc;
+	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
+
+	// in this case, just push it right onto the stack and ignore conventions...
+	// don't want to spend to much time on it (or write more ISR alternative functions :P)
+	equistack_Push_from_isr(&error_equistack, &full_error);
 }
 
 /* logs error stack error; seperate to avoid recursion */
+// TODO: probably not needed?
 void log_error_stack_error(uint8_t ecode) {
 	sat_error_t stack_error;
 	stack_error.timestamp = get_current_timestamp(); // time is now
 	stack_error.eloc = ELOC_ERROR_STACK;
 	stack_error.ecode = 0b01111111 & ecode; // priority bit at MSB
-	equistack_Push(&normal_error_equistack, &stack_error);
+	equistack_Push(&error_equistack, &stack_error);
 }
 
 /* adds the given error to the given error equistack, in such a way 
@@ -194,7 +202,23 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 		// (indicating the (known) start of the period of this error),
 		// then we just add the new error to the stack
 		// (it will be either the known start or the known "most recent", respectively)
-		equistack_Push(stack, new_error);
+		
+		// HOWEVER, we add an additional (unrelated) condition to this:
+		// If a normal error being added will overwrite a priority error, only do so if
+		// that priority error is past the "importance timeout" (too old to matter)
+		// If a priority error is being added, always add it
+		if (is_priority_error(*new_error)) {
+			equistack_Push(stack, new_error);
+
+		} else if (stack->cur_size == stack->max_size) {
+			// we need only check to determine whether to overwrite with a normal error
+			// when the stack is full, meaning we will overwrite
+			sat_error_t* to_overwrite = (sat_error_t*) equistack_Get_From_Bottom(stack, 0);
+			if (to_overwrite != NULL 
+				&& get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S) {
+				equistack_Push(stack, new_error);
+			}
+		}
 		
 	} else if(num_same_errors == 2) {
 		configASSERT(newest_same_error != NULL);
@@ -205,8 +229,6 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	} else {
 		// otherwise, the stack is not formatted as it should be, so log an error
 		// (we do this manually to avoid a possible infinite recursion (it's meta))
-		log_error_stack_error(ECODE_INCONSISTENT_DATA);
-		
-		//configASSERT(false);
+		configASSERT(false);
 	}
 }

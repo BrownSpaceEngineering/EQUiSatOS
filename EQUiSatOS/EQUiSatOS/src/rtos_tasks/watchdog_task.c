@@ -150,7 +150,6 @@ void check_out_task_unsafe(task_type_t task_ind) {
 
 // Writes state to storage if the watchdog is about to restart the satellite
 void watchdog_early_warning_callback(void) {
-	// TODO: is this all good from an interrupt???
-	log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
-	write_state_to_storage(); 
+	log_error_from_isr(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
+	write_state_to_storage_emergency(true); // from ISR
 }

@@ -45,7 +45,7 @@ equistack* equistack_Init(equistack* S, void* data, size_t data_size, uint16_t m
 	return S;
 }
 
-// Returns a pointer to the nth most recent element
+// Returns a pointer to the nth most recent element (relative to the "top" of the equistack)
 void* equistack_Get(equistack* S, int16_t n)
 {
 	bool got_mutex = true;
@@ -77,20 +77,31 @@ void* equistack_Get(equistack* S, int16_t n)
 	}
 }
 
+// Helper function to get elements relative to the bottom of the equistack 
+// (note the bottommost element (#0) will most likely to be overwritten soon)
+// Returns the nth element from the current bottom of the stack.
+// (i.e., if cur_size = 6, equistack_Get(S, 1) == equistack_Get_From_Bottom(S, 4))
+void* equistack_Get_From_Bottom(equistack* S, int16_t n) {
+	return equistack_Get(S, S->cur_size - 1 - n);
+}
+
 // Only meant to be used when the stack is first being created
 void* equistack_Initial_Stage(equistack* S)
 {
 	return S->data;
 }
 
-// Returns the next pointer and "finalizes" the previous one (staging)
-// Overwrites the bottom value if need be
-// NOTE: if fails to obtain mutex (timeout), returns previous pointer
-// (does not add onto stack)
-void* equistack_Stage(equistack* S)
-{
+// guts of equistack_Stage, with ISR option
+void* equistack_Stage_helper(equistack* S, bool from_isr) {
 	void *staged_pointer = NULL;
-	if (xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS))
+	bool got_mutex;
+	if (from_isr) {
+		xSemaphoreTakeFromISR(S->mutex, NULL);
+	} else {
+		xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	}
+	
+	if (got_mutex)
 	{
 		S->top_index = (S->top_index + 1) % S->max_size;
 
@@ -115,10 +126,17 @@ void* equistack_Stage(equistack* S)
 
 		staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
 		clear_existing_data(staged_pointer, S->data_size);
-		xSemaphoreGive(S->mutex);
-	} else {
-		// log error if mutex can't be obtained, and give pointer to previously staged 
-		// struct (the one currently at the top index; 
+		
+		if (from_isr) {
+			xSemaphoreGiveFromISR(S->mutex, NULL);
+		} else {
+			xSemaphoreGive(S->mutex);
+		}
+	} 
+	else
+	{
+		// log error if mutex can't be obtained, and give pointer to previously staged
+		// struct (the one currently at the top index;
 		// note that the above staged_pointer is using an incremented top_index)
 		// TODO: check
 		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
@@ -127,18 +145,52 @@ void* equistack_Stage(equistack* S)
 	return staged_pointer; // return pointer to staged data
 }
 
-// Has the same effect as equistack_Stage, but writes the provided
-// data (assumed to be the size of S->data_size) to the staged index
-// before incrementing the stack top. (for use with stacks using primitives)
-// (returns next pointer so can be used with equistack_Stage)
-void* equistack_Push(equistack* S, void* data) {
+// Returns the next pointer and "finalizes" the previous one (staging)
+// Overwrites the bottom value if need be
+// NOTE: if fails to obtain mutex (timeout), returns previous pointer
+// (does not add onto stack)
+void* equistack_Stage(equistack* S)
+{
+	return equistack_Stage_helper(S, false);
+}
+
+// ISR-safe version of equistack_Stage
+void* equistack_Stage_from_isr(equistack* S) 
+{
+	return equistack_Stage_helper(S, true);
+}
+
+// guts of equistack_Push, with ISR option
+void* equistack_Push_helper(equistack* S, void* data, bool from_isr) 
+{
 	void* staged_pointer = S->data; // if this is an initial stage, simply copy to start
 	if (S->top_index >= 0) {
 		// otherwise, grab the pointer to the staging area (data just past the top index)
 		staged_pointer = S->data + S->data_size*((S->top_index + 1) % S->max_size);
 	}
 	memcpy(staged_pointer, data, S->data_size); // copy data to that staging area
-	return equistack_Stage(S); // confirm ("finalize") the data at the staging area
+	
+	// confirm ("finalize") the data at the staging area
+	if (from_isr) {
+		return equistack_Stage_from_isr(S); 
+	} else {
+		return equistack_Stage(S);
+	}
+}
+
+// Has the same effect as equistack_Stage, but writes the provided
+// data (assumed to be the size of S->data_size) to the staged index
+// before incrementing the stack top. (for use with stacks using primitives)
+// (returns next pointer so can be used with equistack_Stage)
+void* equistack_Push(equistack* S, void* data) 
+{
+	return equistack_Push_helper(S, data, false);
+}
+
+// ISR-safe version of equistack_Push
+void* equistack_Push_from_isr(equistack* S, void* data) 
+{
+	return equistack_Push_helper(S, data, true);
 }
 
 void clear_existing_data(void* ptr, size_t slot_size)

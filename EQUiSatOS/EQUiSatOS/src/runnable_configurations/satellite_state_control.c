@@ -8,16 +8,22 @@
 #include "satellite_state_control.h"
 #include "../testing_functions/os_system_tests.h"
 
+/************************************************************************/
+/* State variables                                                      */
+/************************************************************************/
 // vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
 const uint16_t RADIO_STATES = 0b10110100;
+// vector of ir pow states (note that "off" doesn't enforce off, it's just not state-controlled)
+const uint16_t IRPOW_STATES = 0b10110111;
 
 /************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
 /************************************************************************/ 
 sat_state_t current_sat_state = INITIAL;
 
-// specific state for radio
+// specific state for radio, IR pow (set to OFF initally to ensure they'll be turned on)
 bool current_radio_state = false;
+bool current_irpow_state = false;
 
 /************************************************************************/
 /* task states                                                          */
@@ -42,6 +48,8 @@ SemaphoreHandle_t hardware_state_mutex;
 void configure_state_from_reboot(void);
 void assign_task_states(task_states states_to_set, const task_states states_setting);
 void set_single_task_state(enum task_state state, task_type_t task_id);
+void set_radio_by_sat_state(sat_state_t state);
+void set_irpow_by_sat_state(sat_state_t state);
 void startup_task(void* pvParameters);
 
 // starts RTOS scheduler
@@ -284,10 +292,14 @@ void configure_state_from_reboot(void) {
 
 	// add any errors we can from MRAM cache
 	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
-	populate_error_stacks(&priority_error_equistack, &normal_error_equistack);
+	populate_error_stacks(&error_equistack);
 
 	// note we've rebooted
 	increment_reboot_count();
+	
+	// initial hardware settings (last because they have delays)
+	set_radio_by_sat_state(current_sat_state);
+	set_irpow_by_sat_state(current_sat_state);
 }
 
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts
@@ -303,7 +315,7 @@ void init_task_state(task_type_t task_id) {
 }
 
 /************************************************************************/
-/* STATE SETTING METHODS                                                */
+/* STATE HELPERS		                                                */
 /************************************************************************/
 void set_all_task_states(task_states states, sat_state_t state);
 
@@ -347,6 +359,15 @@ bool check_task_state_consistency(void) {
 	return result;
 }
 
+/* Returns whether we're currently in a low power state */
+bool low_power_active(void) {
+	return current_sat_state == LOW_POWER || current_sat_state == HELLO_WORLD_LOW_POWER;
+}
+
+/************************************************************************/
+/* GLOBAL STATE SETTING                                                 */
+/************************************************************************/
+
 /* wrapper for setting radio power state */
 void set_radio_by_sat_state(sat_state_t state) {
 	bool new_state = RADIO_STATES & 1 << state;
@@ -361,6 +382,23 @@ void set_radio_by_sat_state(sat_state_t state) {
 		//TODO: //submit_radio_command(POWER_OFF, true /* (confirm) */, NULL, NULL, 2000);
 	}
 	current_radio_state = new_state;
+}
+
+/* wrapper for setting ir power state */
+void set_irpow_by_sat_state(sat_state_t state) {
+	bool new_state = RADIO_STATES & 1 << state;
+	if (new_state) {
+		// don't re-enable, because this entails waiting to confirm power on
+		if (current_irpow_state != new_state) {
+			set_output(true, P_IR_PWR_CMD);
+			vTaskDelay(IR_WAKE_DELAY);
+		}
+	} else {
+		// note: we should be in a high enough priority task when this changes 
+		// that nothing should be cut off that wouldn't be anyways by a state change
+		set_output(false, P_IR_PWR_CMD);
+	}
+	current_irpow_state = new_state;
 }
 
 /* Sets the current satellite state to the given state, if a transition from
@@ -386,6 +424,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to ANTENNA_DEPLOY");
 				set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
 				set_radio_by_sat_state(ANTENNA_DEPLOY);
+				set_irpow_by_sat_state(ANTENNA_DEPLOY);
 				return true;
 			}
 			return false;
@@ -395,6 +434,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to HELLO_WORLD");
 				set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
 				set_radio_by_sat_state(HELLO_WORLD);
+				set_irpow_by_sat_state(HELLO_WORLD);
 				return true;
 			}
 			return false;
@@ -404,6 +444,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
 				set_all_task_states(HELLO_WORLD_LOW_POWER_TASK_STATES, HELLO_WORLD_LOW_POWER);
 				set_radio_by_sat_state(HELLO_WORLD_LOW_POWER);
+				set_irpow_by_sat_state(HELLO_WORLD_LOW_POWER);
 				return true;
 			}
 
@@ -412,6 +453,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to IDLE_NO_FLASH");
 				set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
 				set_radio_by_sat_state(IDLE_NO_FLASH);
+				set_irpow_by_sat_state(IDLE_NO_FLASH);
 				return true;
 			}
 			return false;
@@ -421,6 +463,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to IDLE_FLASH");
 				set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
 				set_radio_by_sat_state(IDLE_FLASH);
+				set_irpow_by_sat_state(IDLE_FLASH);
 				return true;
 			}
 			return false;
@@ -430,6 +473,7 @@ bool set_sat_state_helper(sat_state_t state)
 				print("CHANGED STATE to LOW_POWER");
 				set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
 				set_radio_by_sat_state(LOW_POWER);
+				set_irpow_by_sat_state(LOW_POWER);
 				return true;
 			}
 			return false;
@@ -439,6 +483,7 @@ bool set_sat_state_helper(sat_state_t state)
 			print("CHANGED STATE to RIP");
 			set_all_task_states(RIP_TASK_STATES, RIP);
 			set_radio_by_sat_state(RIP);
+			set_irpow_by_sat_state(RIP);
 			return true;
 
 		default:
@@ -448,7 +493,7 @@ bool set_sat_state_helper(sat_state_t state)
 }
 
 bool set_sat_state(sat_state_t state) {
-	#if OVERRIDE_STATE_HOLD != 1
+	#if OVERRIDE_STATE_HOLD_INIT != 1
 		bool valid = set_sat_state_helper(state);
 		if (!valid) {
 			configASSERT(false); // busy loop because this is bad

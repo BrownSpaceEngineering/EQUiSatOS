@@ -4,7 +4,7 @@
 #include "runnable_configurations/antenna_pwm.h"
 #include "data_handling/package_transmission.h"
 
-static void run_tests(void) {
+void run_tests(void) {
 	//mram_test(); // make sure to not run init_persistent_storage() before this
 	//pwm_test();
 	//sensor_read_tests();

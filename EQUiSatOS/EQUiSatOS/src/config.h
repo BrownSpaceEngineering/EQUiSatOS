@@ -43,7 +43,7 @@
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
 #define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
-//#define OVERRIDE_INIT_TASK_STATES	((task_states){T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED})
+//#define OVERRIDE_INIT_TASK_STATES	((task_states){{T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED}})
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up testing tasks
@@ -55,6 +55,9 @@
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
 #define PRINT_DEBUG 1
+
+// define to print errors as the come in
+//#define PRINT_NEW_ERRORS
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

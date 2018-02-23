@@ -72,7 +72,8 @@
 // methods
 void assert_transmission_constants(void);
 
-void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp);
+void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp);
+void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp, const uint8_t* cur_data_buf);
 
 void write_bytes_and_shift(uint8_t *data, uint8_t* buf_index, void *input, size_t num_bytes);
 void write_value_and_shift(uint8_t *data, uint8_t* buf_index, char value, size_t num_bytes);
