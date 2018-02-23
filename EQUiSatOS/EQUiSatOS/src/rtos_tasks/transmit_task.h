@@ -28,5 +28,6 @@
 #define STATE_CHANGE_MONITOR_DELAY_TICKS	15
 
 uint16_t get_radio_temp_cached(void);
+uint8_t* _get_cur_data_buf(void);
 
 #endif /* TRANSMIT_TASK_H_ */

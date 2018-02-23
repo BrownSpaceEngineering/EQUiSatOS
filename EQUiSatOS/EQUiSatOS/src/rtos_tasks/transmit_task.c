@@ -76,6 +76,11 @@ msg_data_type_t slot_4_msg_type = DEFAULT_MSG_TYPE_SLOT_4;
 // highest priority packet for transmission
 msg_data_type_t msg_type_priority_list[NUM_MSG_TYPE]; // see transmit_task for initialization
 
+// for testing purposes, allow access to cur_data_buf
+uint8_t* _get_cur_data_buf(void) {
+	return cur_data_buf;
+}
+
 /*
 	Determines the next highest priority message type that is available to transmit, 
 	according to our priority list, relative to the starting_msg_type.
