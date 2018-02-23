@@ -130,6 +130,7 @@ void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch); //TODO: UNCOMMENT IF YO
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
 bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
 void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single 
+void read_lifepo_current_batch(		lifepo_current_batch batch, bool flashing_now);
 
 /* non-thread safe functions that should ONLY be called from FLASH TASK */
 void _read_led_temps_batch_unsafe(			led_temps_batch batch);

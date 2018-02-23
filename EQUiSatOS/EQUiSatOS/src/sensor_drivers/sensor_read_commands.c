@@ -406,6 +406,26 @@ void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, low_limit, high_limit, true);
 }
 
+void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
+	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+	{
+		_enable_ir_pow_if_necessary();
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+			_read_lifepo_current_batch_unsafe(batch, flashing_now);
+			
+			xSemaphoreGive(processor_adc_mutex);
+		} else {
+			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			memset(batch, 0, sizeof(lifepo_current_batch));
+		}
+		xSemaphoreGive(i2c_mutex);
+	} else {
+		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+		memset(batch, 0, sizeof(lifepo_current_batch));
+	}
+}
+
 
 void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
