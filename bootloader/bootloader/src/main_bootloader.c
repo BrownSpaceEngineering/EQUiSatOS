@@ -40,7 +40,7 @@
 #define BOOT_PIN_MASK                     (1U << (BOOT_LOAD_PIN & 0x1f))
 
 // TESTING
-#define RUN_TESTS
+//#define RUN_TESTS
 
 /************************************************************************/
 /* program memory copying parameters                                    */
@@ -96,18 +96,18 @@ static void configure_console(void) {
  */
 static void check_start_application(void)
 {
-	void (*application_code_entry)(void);
+	uint32_t app_start_address;
 
 	/* Load the Reset Handler address of the application */
 	// TODO: check this!!!!
-	application_code_entry = (void (*)(void))(unsigned *)(*(unsigned *)(APP_START_RESET_VEC_ADDRESS));
+	app_start_address = *(uint32_t *)(APP_START_ADDRESS + 4);
 
 	/**
 	 * Test reset vector of application @APP_START_ADDRESS+4
 	 * Stay in SAM-BA if *(APP_START+0x4) == 0xFFFFFFFF
 	 * Application erased condition
 	 */
-	if (*((uint32_t*) APP_START_RESET_VEC_ADDRESS) == 0xFFFFFFFF) {
+	if (app_start_address == 0xFFFFFFFF) {
 		/* Stay in bootloader */
 		return;
 	}
@@ -136,7 +136,7 @@ static void check_start_application(void)
 	SCB->VTOR = ((uint32_t) APP_START_ADDRESS & SCB_VTOR_TBLOFF_Msk);
 
 	/* Jump to user Reset Handler in the application */
-	application_code_entry();
+	asm("bx %0"::"r"(app_start_address));
 }
 
 
@@ -257,8 +257,8 @@ int main(void)
 
 	// read in batches of program memory from the MRAM, and compare each to its value
 	// currently in the flash program memory, and correct any section (batch-sized) if necessary
- 	int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
- 	set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
+ 	//int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
+ 	//set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
 	
 	// jump to start of program in memory
 	check_start_application();
