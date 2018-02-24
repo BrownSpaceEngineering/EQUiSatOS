@@ -81,7 +81,7 @@ void startup_task(void* pvParameters) {
 	#endif
 	
 	// utility function to write initial state to MRAM (ONCE before launch)
-	//write_custom_state();
+	write_custom_state();
 	
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */

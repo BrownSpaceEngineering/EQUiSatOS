@@ -57,7 +57,7 @@ enum {
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(512/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1536/sizeof(portSTACK_TYPE))
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/

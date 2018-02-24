@@ -16,7 +16,7 @@ SemaphoreHandle_t mram_spi_mutex;
 // (true if fields are being modified, false otherwise)
 // note: this only works because it's only being written by one thread at a time
 // (except in rare cases), and because read/stores are atomic in single-processor ARM
-bool cache_time_fields_minimutex;
+bool cache_time_fields_minimutex = false;
 
 /* SPI master and slave handles */
 struct spi_module spi_master_instance;
@@ -59,11 +59,11 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data2, num_bytes, 
 		address + num_bytes), true); // priority
 
-	bool success_mram2_data1 = !log_if_error(ELOC_MRAM1_READ,
-		mram_read_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
+	bool success_mram2_data1 = !log_if_error(ELOC_MRAM2_READ,
+		mram_read_bytes(&spi_master_instance, &mram2_slave, mram2_data1, num_bytes, address),
 		true); // priority
-	bool success_mram2_data2 = !log_if_error(ELOC_MRAM1_READ,
-		mram_read_bytes(&spi_master_instance, &mram2_slave, mram1_data2, num_bytes, 
+	bool success_mram2_data2 = !log_if_error(ELOC_MRAM2_READ,
+		mram_read_bytes(&spi_master_instance, &mram2_slave, mram2_data2, num_bytes, 
 		address + num_bytes), true); // priority
 		
 	// helpful constants
@@ -154,17 +154,17 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	bool success1 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
-		true); // priority
+			true); // priority
 	bool success2 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, 
-		address + num_bytes), true); // priority	
+			address + num_bytes), true); // priority	
 	
 	bool success3 = !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
-		true); // priority
+			true); // priority
 	return success1 && success2 && success3 && !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, 
-		address + num_bytes), true); // priority
+			address + num_bytes), true); // priority
 }
 
 /* read state from storage into cache */
@@ -190,7 +190,7 @@ void read_state_from_storage(void) {
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -213,6 +213,7 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	result = result && history1->lifepo_b2_charged == history2->lifepo_b2_charged;
 	result = result && history1->lion_1_charged == history2->lion_1_charged;
 	result = result && history1->lion_2_charged == history2->lion_2_charged;
+	result = result && history1->prog_mem_rewritten == history2->prog_mem_rewritten;
 	return result;
 }
 
@@ -238,8 +239,10 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	
 	// write size and error data to storage
 	storage_write_field_unsafe(&num_errors,	1, STORAGE_ERR_NUM_ADDR);
-	storage_write_field_unsafe((uint8_t*) error_buf,
-		num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+	if (num_errors > 0) {
+		storage_write_field_unsafe((uint8_t*) error_buf,
+			num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+	}
 	
 	if (confirm) {
 		// check if stored # of errors matches
@@ -249,12 +252,14 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 			return false;
 		}
 	
-		// check if actual stored errors match
-		sat_error_t temp_error_buf[num_errors];
-		storage_read_field_unsafe((uint8_t*) temp_error_buf,
-			num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
-		if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
-			return false;
+		// check if actual stored errors match (if necessary)
+		if (num_errors > 0) {
+			sat_error_t temp_error_buf[num_errors];
+			storage_read_field_unsafe((uint8_t*) temp_error_buf,
+				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
+				return false;
+			}
 		}
 	}
 	return true;
@@ -272,7 +277,7 @@ void write_state_to_storage(void) {
 	uint8_t temp_reboot_count, temp_sat_state;
 	satellite_history_batch temp_sat_event_history;
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_revive_timestamp;
+	uint32_t temp_radio_revive_timestamp;
 	bool errors_write_confirmed = false;
 
 	// set write time right before writing
@@ -281,8 +286,9 @@ void write_state_to_storage(void) {
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
 	
 	// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
+	uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
 	cache_time_fields_minimutex = true;
-	cached_state.secs_since_launch = get_current_timestamp();
+	cached_state.secs_since_launch = cur_timestamp;
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 	cache_time_fields_minimutex = false;
 	
@@ -310,7 +316,7 @@ void write_state_to_storage(void) {
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 	
 	// skip the check if we didn't get the mutex, and reset last data write to old MRAM's
@@ -339,7 +345,7 @@ void write_state_to_storage(void) {
 		// in particular, if it was the secs_since_launch that was inconsistent,
 		// go off the old value in the MRAM
 		if (temp_secs_since_launch != cached_state.secs_since_launch &&
-		temp_secs_since_launch < cached_state.secs_since_launch) {
+		temp_secs_since_launch < cached_state.secs_since_launch) { // TODO: why the greater than condition??
 			// grab time field mutex
 			cache_time_fields_minimutex = true;
 			last_data_write_ms = prev_last_data_write_ms;
@@ -361,8 +367,9 @@ void write_state_to_storage_emergency(bool from_isr) {
 	
 	if (got_mutex)
 	{
+		uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
 		cache_time_fields_minimutex = true;
-		cached_state.secs_since_launch = get_current_timestamp();
+		cached_state.secs_since_launch = cur_timestamp;
 		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 		cache_time_fields_minimutex = false;
 		
@@ -523,16 +530,26 @@ void populate_error_stacks(equistack* error_stack) {
 		uint8_t num_stored_errors;
 		sat_error_t error_buf[ERROR_STACK_MAX];
 		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
-		storage_read_field_unsafe((uint8_t*) error_buf,
-			ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+		
+		// make sure number of errors is in a reasonable bound (note we're using a uint)
+		if (num_stored_errors <= ERROR_STACK_MAX) {
+			// special case; we can't read in 0 bytes (invalid arg)
+			if (num_stored_errors > 0) {
+				storage_read_field_unsafe((uint8_t*) error_buf,
+					num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
-		// read all errors that we have stored in MRAM in
-		for (int i = 0; i < num_stored_errors; i++) {
-			equistack_Push(error_stack, &(error_buf[i]));
+				// read all errors that we have stored in MRAM in
+				for (int i = 0; i < num_stored_errors; i++) {
+					equistack_Push(error_stack, &(error_buf[i]));
+				}
+			}
+		} else {
+			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, false);
 		}
+		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -602,7 +619,7 @@ void write_custom_state(void) {
 	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 	// TODO: bootloader / program memory hashes
 
-	storage_read_field_unsafe((uint8_t*) &num_errs,	1, STORAGE_ERR_NUM_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_num_errs,	1, STORAGE_ERR_NUM_ADDR);
 	configASSERT(temp_num_errs == num_errs);
 	if (num_errs > 0)
 		storage_read_field_unsafe((uint8_t*) temp_error_buf,

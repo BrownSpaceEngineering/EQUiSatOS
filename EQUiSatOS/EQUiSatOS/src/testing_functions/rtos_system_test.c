@@ -95,7 +95,7 @@ void print_proc_temp_batch(proc_temp_batch batch) {
 /* Stack type element-printing methods                                  */
 /************************************************************************/
 void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
-	print("%d: ---------%s---------\n", i, header);
+	print("%2d: ---------%s---------\n", i, header);
 	print("timestamp: %d \t %s\n", timestamp, transmitted ? "TRANSMITTED" : "not transmitted");
 }
 
@@ -250,8 +250,8 @@ const char* get_task_state_str(eTaskState state) {
 void print_task_states(void) {
 	print("---Task States---");
 	for (int i = 0; i < NUM_TASKS; i++) {
-		eTaskState task_state = eTaskGetState(task_handles[i]);
-		print("%s: %s", get_task_str(i), get_task_state_str(task_state));
+		eTaskState task_state = eTaskGetState(*(task_handles[i]));
+		print("%s: %s\n", get_task_str(i), get_task_state_str(task_state));
 	}
 }
 
@@ -270,11 +270,11 @@ void print_latest_cur_data(void) {
 
 void rtos_system_test(void) {
 	print("==============RTOS System Test==============\n");
-	print("timestamp: %d\n", get_current_timestamp());
-	print("ticks:	  %d\n", xTaskGetTickCount());
-	print("sat state: %s\n", get_sat_state_str(get_sat_state()));
-	print("reboot #:  %d\n", cache_get_reboot_count());
-	print("num errors:  %d\n", error_equistack.cur_size);
+	print("timestamp: \t%d\n", get_current_timestamp());
+	print("ticks:	  \t%d\n", xTaskGetTickCount());
+	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
+	print("reboot #:  \t%d\n", cache_get_reboot_count());
+	print("num errors:\t%d\n", error_equistack.cur_size);
 	print_task_states();
 	print_latest_cur_data();
 	print_equistacks();

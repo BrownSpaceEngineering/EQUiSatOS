@@ -168,6 +168,10 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 // TODO: code review!
 void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	
+	// Note: taking the mutex around this logic both ensures the equistack
+	// is in a consistent state, and ensures that the mutex grabs in
+	// the "safe" equistack functions don't result in infinite recursion 
+	// by logging an error if they can't get a mutex
 	bool got_mutex = true;
 	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
@@ -205,7 +209,7 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 			// that priority error is past the "importance timeout" (too old to matter)
 			// If a priority error is being added, always add it
 			if (is_priority_error(*new_error)) {
-				equistack_Push(stack, new_error);
+				equistack_Push_Unsafe(stack, new_error);
 
 			} else if (stack->cur_size == stack->max_size) {
 				// we only need to check to determine whether to overwrite with a normal error
