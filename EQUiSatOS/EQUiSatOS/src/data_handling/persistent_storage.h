@@ -32,8 +32,8 @@
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
 // constants used when copying program memory live to MRAM
-#define PROG_MEM_START_ADDR					0x0		// use default 0x0 OR set with .text=<addr> in Linker Memory settings (latter doesn't appear to work)
-#define PROG_MEM_SIZE						80996	// find for latest build in "output"
+#define PROG_MEM_START_ADDR					0x6000	// use default 0x0 OR set with .text=<addr> in Linker Memory settings
+#define PROG_MEM_SIZE						81240	// find for latest build in "output"
 #define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
 
 /************************************************************************/

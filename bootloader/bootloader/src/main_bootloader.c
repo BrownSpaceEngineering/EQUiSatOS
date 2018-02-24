@@ -39,6 +39,9 @@
 #define BOOT_LOAD_PIN                     PIN_PA15
 #define BOOT_PIN_MASK                     (1U << (BOOT_LOAD_PIN & 0x1f))
 
+// TESTING
+#define RUN_TESTS
+
 /************************************************************************/
 /* program memory copying parameters                                    */
 /************************************************************************/ 
@@ -53,12 +56,16 @@
 // (use powers of two and you'll be fine)
 #define MRAM_READ_BUFFER_SIZE				5120
 
-// DEBUGGING
-//#define RUN_TESTS
+// mram compare buffers
+// note: these are big buffers, so we make sure to stored them in the BSS 
+// rather than the stack (otherwise we stack overflow)
+uint8_t buffer_mram1[MRAM_READ_BUFFER_SIZE];
+uint8_t buffer_mram2[MRAM_READ_BUFFER_SIZE];
 
 #ifdef RUN_TESTS
 void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* slave);
 void flash_mem_test(void);
+void corrupt_prog_mem(void);
 #endif
 
 static void check_start_application(void);
@@ -149,11 +156,6 @@ static void check_start_application(void)
 	Returns whether it matches.
 */
 bool check_prog_mem_integrity(uint32_t flash_addr, uint8_t* mram_buffer, size_t buf_size) {
-	// read data at flash_addr into buffer and compare with MRAM buffer
-	//uint8_t flash_buffer[buf_size];
-	//nvm_read_buffer(flash_addr, flash_buffer, buf_size);
-	//return memcmp(flash_buffer, mram_buffer, buf_size) == 0;
-	
 	// simply compare program memory at address with mram_buffer
 	return memcmp((uint8_t*) flash_addr, mram_buffer, buf_size) == 0;
 }
@@ -163,18 +165,13 @@ bool check_prog_mem_integrity(uint32_t flash_addr, uint8_t* mram_buffer, size_t 
 	in the actual flash, and corrects any buffers that don't match.
 	Returns whether any were corrected
 */
-bool check_and_fix_prog_mem(struct spi_module* spi_master_instance, 
+int check_and_fix_prog_mem(struct spi_module* spi_master_instance, 
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
-	
-	// note: these are big buffers, so we make sure to stored them on the stack rather than
-	// in BSS where they'll be part of the bootloader
-	uint8_t buffer_mram1[MRAM_READ_BUFFER_SIZE];
-	uint8_t buffer_mram2[MRAM_READ_BUFFER_SIZE];
 	
 	int num_copied = 0;
 	uint32_t mram_addr = MRAM_APP_ADDRESS;
 	uint32_t flash_addr = (uint32_t) APP_START_ADDRESS;
-	bool correction_made = false;
+	int corrections_made = 0;
 
 	while (num_copied < PROG_MEM_SIZE) {
 		size_t buf_size = min(PROG_MEM_SIZE - num_copied, MRAM_READ_BUFFER_SIZE);
@@ -198,7 +195,7 @@ bool check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 				// (if it's an MRAM failure, it's likely to be a line either pulled HIGH (all 0xff) or LOW (all 0x00))
 				
 				flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
-				correction_made = true;
+				corrections_made++;
 			}
 			// otherwise, if one did match, we're probably okay, because it's unlikely an MRAM and the actual program memory
 			// would be corrupted in the same way
@@ -211,7 +208,7 @@ bool check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 			if (!check_prog_mem_integrity(flash_addr, buffer_mram1, buf_size)) {
 				// if comparison failed, copy the buffer from mram to the flash memory
 				flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
-				correction_made = true;
+				corrections_made++;
 			}
 		}
 		
@@ -219,7 +216,7 @@ bool check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 		mram_addr += buf_size;
 		flash_addr += buf_size;
 	}
-	return correction_made;
+	return corrections_made;
 }
 
 /*
@@ -255,12 +252,13 @@ int main(void)
 		//mram_test(&spi_master_instance, &slave1);
 		//mram_test(&spi_master_instance, &slave2);
 		//flash_mem_test();
+		corrupt_prog_mem();
 	#endif
 
 	// read in batches of program memory from the MRAM, and compare each to its value
 	// currently in the flash program memory, and correct any section (batch-sized) if necessary
-	bool any_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
-	set_prog_memory_rewritten(any_rewritten, &spi_master_instance, &slave1, &slave2);
+ 	int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
+ 	set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
 	
 	// jump to start of program in memory
 	check_start_application();
@@ -271,7 +269,7 @@ int main(void)
 #ifdef RUN_TESTS
 
 void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* slave) {
-	#define MRAM_TEST_ADDRESS 0x202
+	#define MRAM_TEST_ADDRESS 0x057
 	#define MRAM_NUM_BYTES	1024
 	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0xa5, 0xfc, 0xff, 0x42};
 	uint8_t example_output_array_before[MRAM_NUM_BYTES];// = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -294,6 +292,40 @@ void flash_mem_test(void) {
 	flash_mem_write_bytes(example_array, FLASH_NUM_BYTES, FLASH_TEST_ADDRESS);
 	nvm_read_buffer(FLASH_TEST_ADDRESS, example_out_array, FLASH_NUM_BYTES);
 	return;
+}
+
+// sets num bytes starting at start to random values
+void set_random_bytes(uint8_t* start, size_t num) {
+	for (size_t i = 0; i < num; i++) {
+		start[i] = rand();
+	}
+}
+
+void corrupt_prog_mem(void) {
+	#define NUM_RAND_SEQS			3
+	#define RAND_SEQ_LEN			1
+	#define INSERT_POINT_STEP_AVG	(PROG_MEM_SIZE / NUM_RAND_SEQS)
+	
+	uint32_t insert_ptr = (uint32_t) APP_START_ADDRESS;
+	while (true) {
+		// randomly shift sequence insertion pointer
+		// (between 0x and 2x increase relative to INSERT_POINT_STEP_AVG)
+		uint32_t rand_step = ((rand() % 200) * INSERT_POINT_STEP_AVG) / 100;
+		insert_ptr += rand_step;
+		
+		// correct the random to change to be aligned with flash page (we have to)
+		insert_ptr -= insert_ptr % NVMCTRL_PAGE_SIZE;
+		
+		// make sure not overflowing
+		if (insert_ptr > (uint32_t) (APP_START_ADDRESS + PROG_MEM_SIZE)) {
+			break;
+		}
+		
+		// generate and write random bytes
+		uint8_t seq_buf[RAND_SEQ_LEN];
+		set_random_bytes(seq_buf, RAND_SEQ_LEN);
+		flash_mem_write_bytes(seq_buf, RAND_SEQ_LEN, insert_ptr);
+	}
 }
 
 #endif

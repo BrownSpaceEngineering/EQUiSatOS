@@ -8,6 +8,7 @@ Toolchain -> Linker -> Memory Settings: add a FLASH segment as `.text=<app_start
 - This ensures all the addresses in the code are correctly offset when put in the new address space
 - It will also make the program start at that address (0x3000, for example).
 - MAKE SURE TO REBUILD or the ELF won't have the offset properly configured
+Check "Override Vector Table Offset Register" and enter your `<app_start_address>`
 
 ### In the bootloader project
 *In the code:*
