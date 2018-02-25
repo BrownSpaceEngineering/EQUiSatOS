@@ -16,5 +16,6 @@ void simpleADCTest(void);
 void flashBurstTest(void);
 void actuallyFlashingFlashBurstTest(void);
 void mram_test();
+void flashTest(void);
 
 #endif /* SCRATCH_TESTING_H_ */

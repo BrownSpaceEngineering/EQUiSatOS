@@ -27,10 +27,7 @@ void SERCOM3_Handler(void)
 	if (SERCOM3->USART.INTFLAG.bit.RXC){		
 		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;		
 		receiveIndex++;
-	}
-	if (waitingForData && receiveIndex == expectedReceiveDataLen) {
-		receiveDataReady = true;
-	}
+	}	
 }
 
 void clear_USART_rx_buffer(void) {

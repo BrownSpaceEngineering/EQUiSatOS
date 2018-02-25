@@ -31,16 +31,19 @@ void read_radio_temp_mode(void) {
 	
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS);
-	set_command_mode(true); // don't delay, we'll take care of it
+	set_command_mode(false); // don't delay, we'll take care of it
 	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS);
 
-
-	
-	// TODO: extract some of this out so we can use RTOS delays
-	// TODO: always wait the same amount of time to get temperature
-	XDL_get_temperature(&radio_temp_cached);
-
-	
+	clear_USART_rx_buffer();
+	XDL_prepare_get_temp();
+	usart_send_string(sendbuffer);
+	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
+	if (check_checksum(receivebuffer+1, 3, receivebuffer[4])) {
+		radio_temp_cached = (receivebuffer[2] << 8) | receivebuffer[3];
+	} else {
+		//Wait longer?
+		//log error
+	}
 	
 	// TODO: may work:
 	// TODO: timeout!!
@@ -56,6 +59,14 @@ void read_radio_temp_mode(void) {
 	
 	// warm reset to get back into transmit mode
 	warm_reset();
+	usart_send_string(sendbuffer);
+	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+	if (!check_checksum(receivebuffer+1, 1, receivebuffer[2]) && (receivebuffer[1] == 0)) {
+		//power cycle radio
+		setRadioPower(false);
+		vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+		setRadioPower(true);
+	}
 	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 }
 
@@ -310,13 +321,20 @@ void transmit_task(void *pvParameters)
 		report_task_running(TRANSMIT_TASK);
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
-		
-		
-		// TODO: enable RX mode, set global state?
-		
-		
+		clear_USART_rx_buffer();
+		setTXEnable(false);
 		vTaskDelay(RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
-		
+				
+		switch (check_rx_received()) {
+			//TODO: act on commands
+			case CMD_ECHO:
+				break;
+			case CMD_FLASH:
+				break;
+			case CMD_KILL:
+				break;	
+		}
+		// TODO: enable RX mode, set global state?
 		
 		// TODO: good place to transfer buffer if necessary
 		
