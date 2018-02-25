@@ -49,8 +49,9 @@ static void pin_init(void) {
 	// initial writes
 	set_output(false, P_LF_B1_OUTEN);
 	set_output(false, P_LF_B2_OUTEN);
-	set_output(false, P_L1_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);
+	set_output(false, P_LF_B1_RUNCHG);
+	set_output(false, P_LF_B2_RUNCHG);
+	set_output(true, P_LED_CMD);
 	
 }
 
