@@ -337,3 +337,17 @@ void mram_test(void) {
 	
 	return;
 }
+
+void flashTest(void) {
+	set_output(true, P_LED_CMD);
+	for (int i = 0; i < 3; i++) {
+		set_output(true, P_LF_B1_OUTEN);
+		set_output(true, P_LF_B2_OUTEN);
+		set_output(false, P_LED_CMD);
+		delay_ms(100);
+		set_output(true, P_LED_CMD);
+		set_output(false, P_LF_B1_OUTEN);
+		set_output(false, P_LF_B2_OUTEN);		
+		delay_ms(1000);
+	}
+}
