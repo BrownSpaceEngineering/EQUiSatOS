@@ -29,7 +29,8 @@ void run_tests(void) {
 //		- OVERRIDE_STATE_HOLD_INIT to define whether to NOT change states automatically
 //  - (make sure RTOS is started)
 void run_rtos_tests(void) {
-	vTaskDelay(2000); // don't be a CPU hog
+	//vTaskDelay(2000); // don't be a CPU hog
+	print("%d\n", xTaskGetTickCount());
 }
 
 void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
@@ -49,10 +50,9 @@ void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2)
 int main(void)
 {
 	global_init();
-	set_charging_states(true, true, true, true);
+	//set_charging_states(true, true, true, true);
 	//system_test(true);
-	run_tests();
-	//write_cur_prog_mem_to_mram();
+	//run_tests();
 
 	run_rtos();
 }

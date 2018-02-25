@@ -269,14 +269,14 @@ void print_latest_cur_data(void) {
 }
 
 void rtos_system_test(void) {
-	print("\n\n==============RTOS System Test==============\n");
-	print("timestamp: \t%d\n", get_current_timestamp());
-	print("ticks:	  \t%d\n", xTaskGetTickCount());
-	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
-	print("reboot #:  \t%d\n", cache_get_reboot_count());
-	print("num errors:\t%d\n", error_equistack.cur_size);
-	print_task_states();
-	print_latest_cur_data();
-	print_equistacks();
-	print("====================End=====================\n\n");
+// 	print("==============RTOS System Test==============\n");
+// 	print("timestamp: %d\n", get_current_timestamp());
+// 	print("ticks:	  %d\n", xTaskGetTickCount());
+// 	print("sat state: %s\n", get_sat_state_str(get_sat_state()));
+// 	print("reboot #:  %d\n", cache_get_reboot_count());
+// 	print("num priority errs:  %d\n", priority_error_equistack.cur_size);
+// 	print("num normal errs:    %d\n", normal_error_equistack.cur_size);
+// 	print_task_states();
+// 	print_equistacks();
+// 	print("====================End=====================\n");
 }

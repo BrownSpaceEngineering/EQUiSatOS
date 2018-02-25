@@ -193,7 +193,7 @@ void init_charging_data()
 	// TODO: check for edge cases where something is dependent on the initial value
 	// of these state variables
 
-	print("initializing charging data -- start\n");
+	//print("initializing charging data -- start\n");
 
 	charging_data.bat_charging = -1;
 	charging_data.lion_discharging = -1;
@@ -229,12 +229,12 @@ void init_charging_data()
 	}
 
 	charging_data.charging_parity = 0;
-	print("initializing charging data - complete");
+	//print("initializing charging data - complete");
 }
 
 void battery_charging_task(void *pvParameters)
 {
-	print("starting battery charging");
+	//print("starting battery charging");
 
 	// delay to offset task relative to others, then start
 	vTaskDelay(BATTERY_CHARGING_TASK_FREQ_OFFSET);
@@ -272,7 +272,7 @@ void battery_charging_task(void *pvParameters)
 
 int battery_logic()
 {
-	print("entering battery logic");
+	//print("entering battery logic");
 
 	///
 	// phase prologue: updating relevant data in the charging data struct
