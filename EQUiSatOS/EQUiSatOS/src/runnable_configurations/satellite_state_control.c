@@ -80,8 +80,10 @@ void startup_task(void* pvParameters) {
 		rtos_started = true;
 	#endif
 	
+	print("RTOS starting... ");
+	
 	// utility function to write initial state to MRAM (ONCE before launch)
-	write_custom_state();
+	//write_custom_state();
 	
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
@@ -226,7 +228,9 @@ void startup_task(void* pvParameters) {
 		&low_power_data_task_buffer);
 
 	xTaskResumeAll();
-
+	
+	print("initialization complete.\n");
+	
 	// delete this task after it's done booting
 	vTaskDelete(NULL);
 }

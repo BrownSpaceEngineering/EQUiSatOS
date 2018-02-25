@@ -24,7 +24,10 @@
 #define STORAGE_PROG_MEMORY_HASH_ADDR		314
 #define STORAGE_ERR_NUM_ADDR				572
 #define STORAGE_ERR_LIST_ADDR				576
-#define STORAGE_PROG_MEMORY_ADDR			938
+#define STORAGE_PROG_MEMORY_ADDR			1058
+
+// maximum size of a single MRAM "field," used for global buffers
+#define STORAGE_MAX_FIELD_SIZE				240 // error list
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size

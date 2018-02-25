@@ -8,10 +8,10 @@
 #include "testing_tasks.h"
 
 /* task constants */
-#define SYSTEM_TEST_TASK_FREQ		10000
-#define SYSTEM_TEST_TASK_STACK_SIZE	512
+#define SYSTEM_TEST_TASK_FREQ		20000
+#define SYSTEM_TEST_TASK_STACK_SIZE	(1020/sizeof(portSTACK_TYPE))
 #define TESTING_TASK_FREQ			1000
-#define TESTING_TASK_STACK_SIZE		512
+#define TESTING_TASK_STACK_SIZE		(1536/sizeof(portSTACK_TYPE))
 
 // task functions / handles
 TaskHandle_t suicide_test_handle;

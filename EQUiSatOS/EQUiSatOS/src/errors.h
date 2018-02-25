@@ -188,6 +188,7 @@ typedef struct {
 	uint8_t eloc;
 	uint8_t ecode; // top bit is priority of error
 } sat_error_t;
+#define SAT_ERROR_T_SIZE		6
 
 equistack error_equistack; // of sat_error_t
 

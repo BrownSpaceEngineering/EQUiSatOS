@@ -46,9 +46,9 @@ void init_persistent_storage(void) {
 // returns whether accurate data should be expected in data (whether error checks worked out)
 bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	// data is used as mram1_data1
-	uint8_t mram1_data2[num_bytes];
-	uint8_t mram2_data1[num_bytes];
-	uint8_t mram2_data2[num_bytes];
+	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
+	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
+	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
 	// TODO: ^^^^^ can we find a way to use just two of these 
 	
 	// read both duplicates from MRAM1
@@ -219,8 +219,11 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 
 // writes error stack data to mram, and confirms it was written correctly if told to
 bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
+	// (move these (big) buffers off stack)
+	static sat_error_t error_buf[ERROR_STACK_MAX]; 
+	static sat_error_t temp_error_buf[ERROR_STACK_MAX];
+	
 	uint8_t num_errors = stack->cur_size;
-	sat_error_t error_buf[num_errors];
 	
 	bool got_mutex = true;
 	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
@@ -254,7 +257,6 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	
 		// check if actual stored errors match (if necessary)
 		if (num_errors > 0) {
-			sat_error_t temp_error_buf[num_errors];
 			storage_read_field_unsafe((uint8_t*) temp_error_buf,
 				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
@@ -524,11 +526,13 @@ uint16_t cache_get_radio_revive_timestamp(void) {
 /* functions which require reading from MRAM (bypass cache)				*/
 /************************************************************************/
 void populate_error_stacks(equistack* error_stack) {
+	// take big buffers off stack
+	static sat_error_t error_buf[ERROR_STACK_MAX];
+	
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
 		// read in errors from MRAM
 		uint8_t num_stored_errors;
-		sat_error_t error_buf[ERROR_STACK_MAX];
 		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
 		
 		// make sure number of errors is in a reasonable bound (note we're using a uint)
