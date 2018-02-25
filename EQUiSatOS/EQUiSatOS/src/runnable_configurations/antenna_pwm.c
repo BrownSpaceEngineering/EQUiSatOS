@@ -49,11 +49,11 @@ void try_pwm_deploy(int pin, int pin_mux, int ms, int p_ant) {
 		disable_pwm();
 		bool can_cont = true;
 		if (p_ant == 1) {
-			if ((li[0] << 8) > PWM_MAX_CUR || (li[1] << 8) > PWM_MAX_CUR) {
+			if (((uint16_t)li[0] << 8) > PWM_MAX_CUR || ((uint16_t)li[1] << 8) > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		} else {
-			if ((lf[0] << 8) > PWM_MAX_CUR || (lf[1] << 8) > PWM_MAX_CUR) {
+			if (((uint16_t)(lf[0] + lf[1]) << 8) > PWM_MAX_CUR || ((uint16_t)(lf[2] + lf[3]) << 8) > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		}
