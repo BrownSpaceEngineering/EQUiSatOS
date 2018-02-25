@@ -47,8 +47,9 @@
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
-//#define RUN_RTOS_SYSTEM_TEST
-//#define RUN_TESTING_TASKS
+#define RUN_RTOS_SYSTEM_TEST
+//#define RUN_TESTING_TASK
+//#define RUN_TASK_STACK_TESTS
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission

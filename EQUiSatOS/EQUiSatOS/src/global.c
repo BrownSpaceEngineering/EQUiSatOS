@@ -100,8 +100,9 @@ void global_init_post_rtos(void) {
 void print(const char *format, ...)
 {
 	#if PRINT_DEBUG > 0 // if debug mode
+		bool got_mutex = false;
 		if (rtos_started) {
-			xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+			got_mutex = xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 		}
 		
 		va_list arg;
@@ -120,7 +121,7 @@ void print(const char *format, ...)
 		#endif
 	
 		if (rtos_started) {
-			xSemaphoreGive(print_mutex);
+			if (got_mutex) xSemaphoreGive(print_mutex);
 		}
 	#endif
 }

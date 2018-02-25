@@ -55,12 +55,13 @@ void print_led_current_batch(led_current_batch batch) {
 }
 void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("---Satellite History Batch---\n");
-	print("antenna deployed: \t%d\n", batch.antenna_deployed);
-	print("lion 1 charged: \t%d\n", batch.lion_1_charged);
-	print("lion 2 charged: \t%d\n", batch.lion_2_charged);
-	print("lifepo b1 charged: \t%d\n", batch.lifepo_b1_charged);
-	print("lifepo b2 charged: \t%d\n", batch.lifepo_b2_charged);
-	print("first flash: \t%d\n", batch.lifepo_b2_charged);
+	print("antenna deployed:   %d\n", batch.antenna_deployed);
+	print("lion 1 charged:     %d\n", batch.lion_1_charged);
+	print("lion 2 charged:     %d\n", batch.lion_2_charged);
+	print("lifepo b1 charged:  %d\n", batch.lifepo_b1_charged);
+	print("lifepo b2 charged:  %d\n", batch.lifepo_b2_charged);
+	print("first flash:        %d\n", batch.lifepo_b2_charged);
+	print("prog_mem_rewritten: %d\n", batch.prog_mem_rewritten);
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d L_REF: %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
@@ -119,10 +120,10 @@ void print_attitude_data(attitude_data_t* data, int i) {
 	print("accel batches (500ms apart):\n");
 	print_accel_batch(data->accelerometer_data[0]);
 	print_accel_batch(data->accelerometer_data[1]);
-	print_gyro_batch(data->gyro_data);
 	print("magnetometer batches (500ms apart):\n");
 	print_magnetometer_batch(data->magnetometer_data[0]);
 	print_magnetometer_batch(data->magnetometer_data[1]);
+	print_gyro_batch(data->gyro_data);
 }
 
 void print_flash_data(flash_data_t* data, int i_global) {
@@ -268,6 +269,32 @@ void print_latest_cur_data(void) {
 	print_lifepo_volts_batch(		&(cur_data_buf[12]));
 }
 
+// given task id and stack_size in words, prints usage
+void print_task_stack_usage(task_type_t task, uint32_t stack_size) {
+	uint16_t space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
+	uint16_t space_available = stack_size * sizeof(portSTACK_TYPE);
+	print("%s: %4d / %4d (%3d%%)\n",
+		get_task_str(task),
+		space_available - space_left,
+		space_available,
+		(100 * (space_available - space_left)) / space_available);
+}
+
+void print_task_stack_usages(void) {
+	print("\n\n========RTOS Task Stack High Water Marks=======\n");
+	print_task_stack_usage(WATCHDOG_TASK, TASK_WATCHDOG_STACK_SIZE);
+	print_task_stack_usage(STATE_HANDLING_TASK, TASK_STATE_HANDLING_STACK_SIZE);
+	print_task_stack_usage(ANTENNA_DEPLOY_TASK, TASK_ANTENNA_DEPLOY_STACK_SIZE);
+	print_task_stack_usage(BATTERY_CHARGING_TASK, TASK_BATTERY_CHARGING_STACK_SIZE);
+	print_task_stack_usage(TRANSMIT_TASK, TASK_TRANSMIT_STACK_SIZE);
+	print_task_stack_usage(FLASH_ACTIVATE_TASK, TASK_FLASH_ACTIVATE_STACK_SIZE);
+	print_task_stack_usage(IDLE_DATA_TASK, TASK_IDLE_DATA_RD_STACK_SIZE);
+	print_task_stack_usage(LOW_POWER_DATA_TASK, TASK_LOW_POWER_DATA_RD_STACK_SIZE);
+	print_task_stack_usage(ATTITUDE_DATA_TASK, TASK_ATTITUDE_DATA_RD_STACK_SIZE);
+	print_task_stack_usage(PERSISTENT_DATA_BACKUP_TASK, TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE);
+	print("\n");
+}
+
 void rtos_system_test(void) {
 	print("\n\n==============RTOS System Test==============\n");
 	print("timestamp: \t%d\n", get_current_timestamp());
@@ -278,5 +305,6 @@ void rtos_system_test(void) {
 	print_task_states();
 	print_latest_cur_data();
 	print_equistacks();
+	print_task_stack_usages();
 	print("====================End=====================\n\n");
 }

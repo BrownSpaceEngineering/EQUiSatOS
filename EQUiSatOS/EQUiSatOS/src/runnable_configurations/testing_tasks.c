@@ -9,14 +9,20 @@
 
 /* task constants */
 #define SYSTEM_TEST_TASK_FREQ		20000
-#define SYSTEM_TEST_TASK_STACK_SIZE	(1020/sizeof(portSTACK_TYPE))
+#define SYSTEM_TEST_TASK_STACK_SIZE	(1024/sizeof(portSTACK_TYPE))
+#define SYSTEM_TEST_TASK_PRIORITY	tskIDLE_PRIORITY
 #define TESTING_TASK_FREQ			1000
-#define TESTING_TASK_STACK_SIZE		(1536/sizeof(portSTACK_TYPE))
+#define TESTING_TASK_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+#define TESTING_TASK_PRIORITY		STATE_HANDLING_PRIORITY, //tskIDLE_PRIORITY, // may change with different tests
+#define STACK_TEST_TASK_FREQ		5000
+#define STACK_TEST_TASK_STACK_SIZE	(768/sizeof(portSTACK_TYPE))
+#define STACK_TEST_TASK_PRIORITY	tskIDLE_PRIORITY
 
 // task functions / handles
 TaskHandle_t suicide_test_handle;
 void system_test_task(void *pvParameters);
 void testing_task(void *pvParameters);
+void stack_test_task(void *pvParameters);
 void task_suicide_test(void *pvParameters);
 void task_stack_size_overflow_test(void *pvParameters);
 
@@ -29,6 +35,10 @@ void task_stack_size_overflow_test(void *pvParameters);
 	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
 	StaticTask_t testing_task_buffer;
 #endif
+#ifdef RUN_TASK_STACK_TESTS
+	StackType_t stack_test_task_stack[STACK_TEST_TASK_STACK_SIZE];
+	StaticTask_t stack_test_task_buffer;
+#endif
 
 void create_testing_tasks(void) 
 {
@@ -37,19 +47,30 @@ void create_testing_tasks(void)
 			"sys test task",
 			SYSTEM_TEST_TASK_STACK_SIZE,
 			NULL,
-			tskIDLE_PRIORITY,
+			SYSTEM_TEST_TASK_PRIORITY,
 			system_test_task_stack,
 			&system_test_task_buffer);
 	#endif
 
-	#ifdef RUN_TESTING_TASKS	
+	#ifdef RUN_TESTING_TASK
 		xTaskCreateStatic(testing_task,
 			"testing task",
 			TESTING_TASK_STACK_SIZE,
 			NULL,
-			STATE_HANDLING_PRIORITY, //tskIDLE_PRIORITY, // may change with different tests
+			TESTING_TASK_PRIORITY,
 			testing_task_stack,
 			&testing_task_buffer);
+	#endif
+	
+	#ifdef RUN_TASK_STACK_TESTS
+		xTaskCreateStatic(stack_test_task,
+			"stack test task",
+			STACK_TEST_TASK_STACK_SIZE,
+			NULL,
+			STACK_TEST_TASK_PRIORITY,
+			stack_test_task_stack,
+			&stack_test_task_buffer);
+	#endif
 	
 	// 	xTaskCreate(task_suicide_test,
 	// 	 	"task suicide testing",
@@ -57,13 +78,12 @@ void create_testing_tasks(void)
 	// 	 	NULL,
 	// 	 	DATA_READ_PRIORITY,
 	// 		suicide_test_handle);
-	// 	
+	//
 	// 	xTaskCreate(task_stack_size_overflow_test,
 	// 	 	"task stack size purpose test",
 	// 	 	320/sizeof(portSTACK_TYPE), // 10 bytes of stack space
 	// 	 	NULL,
 	// 	 	tskIDLE_PRIORITY);
-	#endif
 }
 
 void testing_task(void *pvParameters) 
@@ -113,6 +133,19 @@ void system_test_task(void *pvParameters)
 	{
 		vTaskDelayUntil( &xNextWakeTime, SYSTEM_TEST_TASK_FREQ / portTICK_PERIOD_MS);
 		rtos_system_test();
+	}
+	// delete this task if it ever breaks out
+	vTaskDelete( NULL );
+}
+
+void stack_test_task(void *pvParameters) {
+	// initialize xNextWakeTime once
+	TickType_t xNextWakeTime = xTaskGetTickCount();
+	
+	for ( ;; )
+	{
+		vTaskDelayUntil( &xNextWakeTime, STACK_TEST_TASK_FREQ / portTICK_PERIOD_MS);
+		print_task_stack_usages();
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

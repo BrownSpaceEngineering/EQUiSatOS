@@ -337,15 +337,16 @@ const char* get_msg_type_str(msg_data_type_t msg_type) {
 		case FLASH_CMP_DATA:	return "FLASH_CMP_DATA";
 		case LOW_POWER_DATA:	return "LOW_POWER_DATA";
 		case NUM_MSG_TYPE:
-		default:				return "INVALID TYPE  ";
+		default:				return "[invalid]     ";
 	}
 }
 
 void debug_print_msg_types(void) {
-	const char* msg = "\nSent messages: %s %s %s\n";
+	const char* msg = "\nSent messages: %s %s %s %s\n";
 	const char* type1 = get_msg_type_str(slot_1_msg_type);
 	const char* type2 = get_msg_type_str(slot_2_msg_type);
 	const char* type3 = get_msg_type_str(slot_3_msg_type);
+	const char* type4 = get_msg_type_str(slot_4_msg_type);
 	
-	print(msg, type1, type2, type3);
+	print(msg, type1, type2, type3, type4);
 }

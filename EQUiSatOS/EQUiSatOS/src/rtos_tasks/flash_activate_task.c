@@ -20,11 +20,11 @@ uint32_t prev_wake_time_s = 0; // global so we can reference it outside the task
    and then divide the corresponding values to calculate the final comparison struct */
 struct flash_burst_data_sums
 {
-	uint16_t led_temps_data_sums			[4];
-	uint16_t lifepo_bank_temps_data_sums	[2];
-	uint16_t led_current_data_sums			[4];
-	uint16_t lifepo_current_data_sums		[4];
-	uint16_t lifepo_volts_data_sums			[4];
+	uint16_t led_temps_data_sums			[4]; // uint16_t led_temps_batch
+	uint16_t lifepo_bank_temps_data_sums	[2]; // uint16_t lifepo_bank_temps_batch
+	uint16_t led_current_data_sums			[4]; // uint16_t led_current_data_batch
+	uint16_t lifepo_current_data_sums		[4]; // uint16_t lifepo_current_data_batch
+	uint16_t lifepo_volts_data_sums			[4]; // uint16_t lifepo_volts_data_batch
 };
 
 void sum_piecewise_uint8(uint16_t* arr, uint8_t* to_add, int len);
@@ -77,6 +77,9 @@ void flash_activate_task(void *pvParameters)
 		
 		// read a single magnetometer batch before flash
 		read_magnetometer_batch(current_cmp_struct->mag_before_data);
+
+		// clear out our average sums struct
+		memset(&current_sums_struct, 0, sizeof(struct flash_burst_data_sums));
 		
 		// actually flash leds
 		for (int i = 0; i < NUM_FLASHES; i++) {
@@ -176,19 +179,19 @@ void flash_activate_task(void *pvParameters)
 		
 		// using the sums, compute and populate the flash compare struct corresponding to this burst
 		average_piecewise_uint8(current_cmp_struct->led_temps_avg_data, current_sums_struct.led_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->lifepo_bank_temps_avg_data, current_sums_struct.lifepo_bank_temps_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 2);
+			NUM_FLASHES * BATCH_READS_DURING, 2);
 		average_piecewise_uint8(current_cmp_struct->lifepo_current_avg_data, current_sums_struct.lifepo_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->lifepo_volts_avg_data, current_sums_struct.lifepo_volts_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->led_current_avg_data, current_sums_struct.led_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
-			
+			NUM_FLASHES * BATCH_READS_DURING, 4);
+	
 		// store cmp data in flash equistack, but distribute over orbit
 		if (passed_orbit_fraction(&prev_orbit_fraction, FLASH_CMP_DATA_LOGS_PER_ORBIT)) {
-			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_readings_equistack);
+			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_cmp_readings_equistack);
 		}
 	}
 	// delete this task if it ever breaks out
@@ -208,7 +211,7 @@ void average_piecewise_uint8(uint8_t* results, uint16_t* sums, uint16_t size, in
 {
 	for (int i = 0; i < len; i++)
 	{
-		results[i] = sums[i] / size;
+		results[i] = (uint8_t) (sums[i] / size);
 	}
 }
 
@@ -241,7 +244,6 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 
 	gyro_batch* gyro = &burst_struct->gyro_data[*data_arrays_tail];
 	_read_gyro_batch_unsafe(*gyro);
-	if (add_to_sum) sum_piecewise_uint8(sums_struct->led_current_data_sums, *gyro, 4);
 	
 	(*data_arrays_tail)++;
 }

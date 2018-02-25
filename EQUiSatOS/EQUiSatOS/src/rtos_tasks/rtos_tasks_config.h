@@ -30,16 +30,16 @@ enum {
 #define TASK_INIT_STACK_SIZE						(1536/sizeof(portSTACK_TYPE))
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
+#define TASK_BATTERY_CHARGING_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_BATTERY_CHARGING_PRIORITY				(ACTION_PRIORITY)
 
-#define TASK_STATE_HANDLING_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
+#define TASK_STATE_HANDLING_STACK_SIZE				(512/sizeof(portSTACK_TYPE))
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(512/sizeof(portSTACK_TYPE)) // TODO: More
+#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
-#define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE)) 
+#define TASK_WATCHDOG_STACK_SIZE					(512/sizeof(portSTACK_TYPE))
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
 #define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) 
@@ -57,7 +57,7 @@ enum {
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(768/sizeof(portSTACK_TYPE)) // 1024
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/
@@ -178,12 +178,16 @@ typedef enum
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	150	// high-freq
 
 /* action frequency periods in MS (some that actually have data collection are below) */
+#ifndef TESTING_SPEEDUP
 #define STATE_HANDLING_TASK_FREQ				60000	// ms
+#endif
 
 #define WATCHDOG_TASK_FREQ						1500
 														
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
+	#ifndef TESTING_SPEEDUP
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+	#endif
 	
 #ifndef TESTING_SPEEDUP
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
@@ -230,6 +234,8 @@ typedef enum
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
+	#define STATE_HANDLING_TASK_FREQ		30000
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ	30000
 	#define IDLE_DATA_TASK_FREQ				2500
 	#define ATTITUDE_DATA_TASK_FREQ			5000
 	#define FLASH_ACTIVATE_TASK_FREQ		15000

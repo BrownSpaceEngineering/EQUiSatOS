@@ -44,6 +44,8 @@ const char* get_task_str(task_type_t task);
 const char* get_task_state_str(eTaskState state);
 void print_task_states(void);
 void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header);
+void print_task_stack_usage(task_type_t task, uint32_t stack_size);
+void print_task_stack_usages(void);
 void rtos_system_test(void);
 
 #endif /* RTOS_SYSTEM_TEST_H_ */
