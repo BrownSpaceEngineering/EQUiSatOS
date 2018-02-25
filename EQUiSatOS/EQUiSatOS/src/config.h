@@ -43,11 +43,12 @@
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
 #define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
-//#define OVERRIDE_INIT_TASK_STATES	((task_states){T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED})
+//#define OVERRIDE_INIT_TASK_STATES	((task_states){{T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED}})
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
-// whether to start up testing tasks
-#define RUN_TESTING_TASKS
+// whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
+//#define RUN_RTOS_SYSTEM_TEST
+//#define RUN_TESTING_TASKS
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission
@@ -55,6 +56,9 @@
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
 #define PRINT_DEBUG 1
+
+// define to print errors as the come in
+//#define PRINT_NEW_ERRORS
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */
@@ -97,6 +101,8 @@
 	#define	IR_RBF		MLX90614_RBFPANEL_V1
 	#define IR_ACCESS	MLX90614_ACCESSPANEL_V4_6
 	#define IR_TOP1		MLX90614_TOPPANEL_V4_1
+	
+	#define ADC_RD_VAL_XPLAINED		0x0300
 #endif
 
 #if configUSE_TRACE_FACILITY == 1

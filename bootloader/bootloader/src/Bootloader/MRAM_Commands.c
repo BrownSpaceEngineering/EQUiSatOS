@@ -11,14 +11,14 @@
 uint8_t control_temp[NUM_CONTROL_BYTES];
 uint8_t control_rx_temp[NUM_CONTROL_BYTES];
 
-void copy_control_data(uint8_t *buffer, uint16_t address, uint8_t command){
+void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
 	buffer[0] = command;
 	buffer[1] = address >> 16;		// upper byte (only 3 bits are actually decoded)
 	buffer[2] = address >> 8;		// middle byte
 	buffer[3] = address;			// lower byte
 }
 
-uint8_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate){
+status_code_genare_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t baudrate) {
 	struct spi_config config_spi_master;
 	spi_get_config_defaults(&config_spi_master);
 	config_spi_master.mux_setting = SPI_SIGNAL_MUX_SETTING_E;
@@ -30,21 +30,23 @@ uint8_t mram_initialize_master(struct spi_module *spi_master_instance, uint32_t 
 	spi_init(spi_master_instance, MRAM_SPI_SERCOM, &config_spi_master);
 	enum status_code code = spi_set_baudrate(spi_master_instance, baudrate);
 	spi_enable(spi_master_instance);
+	return code;
 }
 
-uint8_t mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin) {
+void mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin) {
 	struct spi_slave_inst_config slave_dev_config;
 	spi_slave_inst_get_config_defaults(&slave_dev_config);
 	slave_dev_config.ss_pin = ss_pin;
 	spi_attach_slave(slave, &slave_dev_config);
 }
 
-status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave){
+status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave) {
 	uint8_t enable = ENABLE_COMMAND;
 	spi_select_slave(spi_master_instance, slave, true);
 	// make sure to transceive data so we don't have RX data waiting (overflowed)
 	enum status_code code_1 = spi_transceive_buffer_wait(spi_master_instance, &enable, control_rx_temp, 1);
 	spi_select_slave(spi_master_instance, slave, false);
+	return code_1;
 }
 
 // returns true (1) if stat is a STATUS_CATEGORY_OK
@@ -53,7 +55,7 @@ uint8_t status_ok(status_code_genare_t stat) {
 }
 
 // returns a status code, and will fail partway through if the write fails
-status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address) {
+status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint32_t address) {
 	uint8_t data_rx_temp[num_bytes];	
 	
 	// make sure write access is enabled
@@ -78,7 +80,7 @@ status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, st
  	return s;
 }
 
-status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint16_t address) {
+status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *data, int num_bytes, uint32_t address) {
 	uint8_t data_tx_temp[num_bytes];
 	memset(data_tx_temp, 0, num_bytes); // don't send random bytes when transceiving
 	

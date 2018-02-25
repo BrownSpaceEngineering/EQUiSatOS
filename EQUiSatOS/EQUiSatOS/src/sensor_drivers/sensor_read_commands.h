@@ -101,8 +101,10 @@ typedef enum {
 /* **ONLY** can be used outside this task in the flash_activate_task (for speed purposes) */
 /************************************************************************/
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
-StaticSemaphore_t _i2c_irpow_mutex_d;
-SemaphoreHandle_t i2c_irpow_mutex;
+StaticSemaphore_t _i2c_mutex_d;
+SemaphoreHandle_t i2c_mutex;
+StaticSemaphore_t _irpow_mutex_d;
+SemaphoreHandle_t irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
 
@@ -127,7 +129,7 @@ void read_radio_temp_batch(			radio_temp_batch* batch);			// pointer to single v
 void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch); //TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
 bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
-void read_imu_temp_batch(			imu_temp_batch* batch);				// pointer to single 
+void read_lifepo_current_batch(		lifepo_current_batch batch, bool flashing_now);
 
 /* non-thread safe functions that should ONLY be called from FLASH TASK */
 void _read_led_temps_batch_unsafe(			led_temps_batch batch);
@@ -141,6 +143,7 @@ void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
+void _enable_ir_pow_if_necessary(void);
 bool _set_5v_enable(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);

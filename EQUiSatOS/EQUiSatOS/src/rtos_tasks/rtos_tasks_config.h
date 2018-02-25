@@ -19,10 +19,8 @@
 // lowest priority is at the top
 enum {
 	DATA_READ_PRIORITY = 1, // above tskIDLE_PRIORITY
-	TRANSMIT_PRIORITY,
-	BATTERY_CHARGING_PRIORITY,
-	SECONDARY_ACTION_PRIORITY,
-	PRIMARY_ACTION_PRIORITY,
+	ACTION_PRIORITY,
+	FLASH_PRIORITY,
 	STATE_HANDLING_PRIORITY
 };
 
@@ -33,22 +31,22 @@ enum {
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(1024/sizeof(portSTACK_TYPE))
-#define TASK_BATTERY_CHARGING_PRIORITY				(BATTERY_CHARGING_PRIORITY)
+#define TASK_BATTERY_CHARGING_PRIORITY				(ACTION_PRIORITY)
 
 #define TASK_STATE_HANDLING_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(512/sizeof(portSTACK_TYPE)) // TODO: More
-#define TASK_ANTENNA_DEPLOY_PRIORITY				(SECONDARY_ACTION_PRIORITY)
+#define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
 #define TASK_WATCHDOG_STACK_SIZE					(768/sizeof(portSTACK_TYPE)) 
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(768/sizeof(portSTACK_TYPE)) 
-#define TASK_FLASH_ACTIVATE_PRIORITY				(PRIMARY_ACTION_PRIORITY)
+#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) 
+#define TASK_FLASH_ACTIVATE_PRIORITY				(FLASH_PRIORITY)
 
 #define TASK_TRANSMIT_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
-#define TASK_TRANSMIT_PRIORITY						(TRANSMIT_PRIORITY)
+#define TASK_TRANSMIT_PRIORITY						(ACTION_PRIORITY)
 
 #define TASK_IDLE_DATA_RD_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
 #define TASK_IDLE_DATA_RD_PRIORITY					(DATA_READ_PRIORITY)
@@ -59,17 +57,19 @@ enum {
 #define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(512/sizeof(portSTACK_TYPE))
+#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
 
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
 /********************************************************************************/
-#define IDLE_STACK_MAX					2 // one stored (available for transmission), one staged (TODO: Isn't the staged one stored anyways?)
-#define LOW_POWER_STACK_MAX				2
-#define ATTITUDE_STACK_MAX				10
-#define FLASH_STACK_MAX					10
-#define FLASH_CMP_STACK_MAX				10
+// we set these (mostly) to be the amount that needs to be transmitted for each data type,
+// plus one for the staged pointer
+#define IDLE_STACK_MAX					8 // == (IDLE_DATA_PACKETS + 1)
+#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1) // TODO: no reason not to do more
+#define ATTITUDE_STACK_MAX				6 // == (ATTITUDE_DATA_PACKETS + 1)
+#define FLASH_STACK_MAX					10 // TODO
+#define FLASH_CMP_STACK_MAX				7 // == (FLASH_CMP_DATA_PACKETS + 1)
 
 /************************************************************************/
 /* Enum for states that represent changes in which tasks are running	*/
@@ -100,7 +100,7 @@ typedef enum
  *		- Add an add_*_batch_if_ready function						    *
  * NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*
  ************************************************************************/
-typedef enum
+typedef enum // TODO: needed?
 {
 	LION_VOLTS_DATA,
 	LION_CURRENT_DATA,
@@ -185,7 +185,9 @@ typedef enum
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
 	
+#ifndef TESTING_SPEEDUP
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
+#endif
 
 #define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit
 	#define TRANSMIT_TASK_LESS_FREQ					30000 // 30 secs; half as fast in low power
@@ -193,26 +195,34 @@ typedef enum
 	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
 	#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
 
+#ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						10000 // ms
+#endif
 	#define IDLE_DATA_MAX_READ_TIME					1000 
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	
+#ifndef TESTING_SPEEDUP
 #define LOW_POWER_DATA_TASK_FREQ				30000
+#endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ		1000
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		10000
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;
  * all sensors are being read at the same frequency, unlike below.
  */
 
+#ifndef TESTING_SPEEDUP
 #define ATTITUDE_DATA_TASK_FREQ					20000
+#endif
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			ATTITUDE_DATA_PACKETS // == 5
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
+#ifndef TESTING_SPEEDUP
 #define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
+#endif
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read

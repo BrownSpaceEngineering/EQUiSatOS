@@ -9,15 +9,17 @@
 
 // high-level TODO's:
 //  0. read through and do eye test
-//  1. unit tests
-//  2. how do charging states interface with global states
+//  1. unit tests (done)
+//  2. how do charging states interface with global states (done)
 //  3. add last couple strikes features
 //  4. write simulator to sequentially run unit tests (later)
 //  5. iron out threshold values (later)
 
-// TODO: how do we interface with global state?
+// TODO: what to do when GPIO dies? -- complicate the mechanism for discharging
+// TODO: won't discharge -- let's look at this more complexly
 // TODO: read through TODO's and make sure of everything!
-// TODO: do we need two tiers of error?
+// TODO: update sat state history when LF's fill up
+// TODO: probably need to add something for LI's that aren't holding a charge
 int get_current_timestamp_wrapped(void)
 {
 	#ifdef BAT_TESTING
@@ -156,13 +158,14 @@ int is_lion(battery_t bat)
 	return (bat == LI1 || bat == LI2);
 }
 
-// NOTE: it's important that batteries don't get doubly decomissioned in a single
-// loop of the battery logic
 void decommission(battery_t bat)
 {
-	charging_data.decommissioned[bat] = 1;
-	charging_data.decommissioned_timestamp[bat] = get_current_timestamp_wrapped();
-	charging_data.decommissioned_count[bat]++;
+	if (!charging_data.decommissioned[bat])
+	{
+		charging_data.decommissioned[bat] = 1;
+		charging_data.decommissioned_timestamp[bat] = get_current_timestamp_wrapped();
+		charging_data.decommissioned_count[bat]++;
+	}
 }
 
 int time_for_recomission(battery_t bat)
@@ -253,10 +256,13 @@ void battery_charging_task(void *pvParameters)
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
 		#ifdef BAT_CHARGING_ACTIVE
-		bool completed;
-		do {
-			completed = battery_logic();
-		} while (!completed);
+		if (!battery_logic())
+		{
+			if (!battery_logic())
+			{
+				battery_logic();
+			}
+		}
 		#endif
 	}
 
@@ -264,7 +270,7 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-bool battery_logic()
+int battery_logic()
 {
 	print("entering battery logic");
 
@@ -292,7 +298,6 @@ bool battery_logic()
 	charging_data.bat_voltages[LFB1] = Max(lf1_mv, lf2_mv);
 	charging_data.bat_voltages[LFB2] = Max(lf3_mv, lf4_mv);
 
-	// *TODO: how to simulate this?
 	// conditional so everything goes smoothly on the first time through
 	int curr_charging_filled_up = false;
 	if (charging_data.bat_charging != -1)
@@ -301,7 +306,7 @@ bool battery_logic()
 		// threshold?
 		curr_charging_filled_up = !get_chg_pin_val_w_conversion(charging_data.bat_charging) &&
 															charging_data.bat_charging > LI_FULL_SANITY_MV &&
-															(get_panel_ref_val() <= 8000); // TODO: how's this conditional?
+															(get_panel_ref_val() >= PANEL_REF_SUN_MV);
 
 		if (curr_charging_filled_up)
 		{
@@ -330,6 +335,7 @@ bool battery_logic()
 		}
 	}
 
+	// TODO: does all of this do alright with reboot
 	// TODO: where else do we want to use PANEL_REF
 	for (int bat = 0; bat < 4; bat++)
 	{
@@ -486,7 +492,6 @@ bool battery_logic()
 				charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 				break;
 
-			// TODO: global state makes no sense here
 			case ONE_LI_DOWN:
 				charging_data.curr_charge_state = FILL_LI_B;
 				break;
@@ -725,12 +730,14 @@ bool battery_logic()
 		if (charging_data.charging_parity)
 		{
 			charging_data.bat_charging = LI1;
-			charging_data.lion_discharging = LI2;
+			// TODO: make sure we're in no way dependent on lion_discharging -- it'll be
+			// irelevant in this case
+			// will always discharge both LI
 		}
 		else
 		{
 			charging_data.bat_charging = LI2;
-			charging_data.lion_discharging = LI1;
+			// will always discharge both LI
 		}
 
 		charging_data.charging_parity = !charging_data.charging_parity;
@@ -762,64 +769,76 @@ bool battery_logic()
 	//  set the other lion to not discharge
 	///
 
-	// TODO: check with special attention here
-	// NOTE: very important to set the discharging pin to true before setting the other to false
-	int discharge_pin = get_run_dischg_pin(charging_data.lion_discharging);
-	int discharge_success = 0;
-	for (int i = 0; !discharge_success && i < MAX_TIMES_TRY_PIN; i++)
-	{
-		// NOTE: discharge pins are active low
-		set_output(false, discharge_pin);
-		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-
-		int contributing_to_output = get_st_val(charging_data.lion_discharging);
-		discharge_success = contributing_to_output;
-	}
-
-	print("set bat to discharge: %d", charging_data.lion_discharging);
-
-	// TODO: really difficult edge case -- it might be the case that we're working
-	// with a battery that's already been decommissioned
-	if (!discharge_success)
-	{
-		print("discharging failed, decomissioning bat: %d", charging_data.lion_discharging);
-		decommission(charging_data.lion_discharging);
-
-		// TODO: check with special attention here
-		for (int bat = 0; bat < 4; bat++)
-			charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
-
-		// we're going to just restart the battery charging logic
-		if (got_mutex) xSemaphoreGive(battery_charging_mutex);
-		print("restarting battery logic");
-		return false;
-	}
-
-	// set the lion that should not be discharging to not discharge
-	int not_discharge_pin = get_run_dischg_pin(lion_not_discharging);
-	int stop_discharge_success = 0;
-	for (int i = 0; !stop_discharge_success && i < MAX_TIMES_TRY_PIN; i++)
-	{
-		// NOTE: discharge pins are active low
-		set_output(true, not_discharge_pin);
-		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-
-		int contributing_to_output = get_st_val(lion_not_discharging);
-		stop_discharge_success = !contributing_to_output;
-	}
-
-	print("set bat to not discharge: %d", lion_not_discharging);
-
-	// variable prevents a possible double count of whether or not a battery has
-	// been decomissioned
+	// TODO: make sure the flow is clean with already_decommissioned
 	int already_decomissioned = -1;
-	if (!stop_discharge_success)
+
+	if (charging_data.curr_meta_charge_state != TWO_LI_DOWN)
 	{
-		// TODO: do we need immediate action here?
-		// TODO: do we want to try more here?
-		print("setting to not discharge failed, decomissioning bat: %d", lion_not_discharging);
-		decommission(lion_not_discharging);
-		already_decomissioned = lion_not_discharging;
+		// TODO: check with special attention here
+		// NOTE: very important to set the discharging pin to true before setting the other to false
+		int discharge_pin = get_run_dischg_pin(charging_data.lion_discharging);
+		int discharge_success = 0;
+		for (int i = 0; !discharge_success && i < MAX_TIMES_TRY_PIN; i++)
+		{
+			// NOTE: discharge pins are active low
+			set_output(false, discharge_pin);
+			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+
+			int contributing_to_output = get_st_val(charging_data.lion_discharging);
+			discharge_success = contributing_to_output;
+		}
+
+		print("set bat to discharge: %d", charging_data.lion_discharging);
+
+		// TODO*: really difficult edge case -- it might be the case that we're working
+		// with a battery that's already been decommissioned
+		if (!discharge_success)
+		{
+			print("discharging failed, decomissioning bat: %d", charging_data.lion_discharging);
+
+			// NOTE: will be alright even if already decomissioned
+			decommission(charging_data.lion_discharging);
+
+			// TODO: check with special attention here
+			for (battery_t bat = 0; bat < 4; bat++)
+				charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
+
+			// we're going to just restart the battery charging logic
+			if (got_mutex) xSemaphoreGive(battery_charging_mutex);
+			print("restarting battery logic");
+			return false;
+		}
+
+		// set the lion that should not be discharging to not discharge
+		int not_discharge_pin = get_run_dischg_pin(lion_not_discharging);
+		int stop_discharge_success = 0;
+		for (int i = 0; !stop_discharge_success && i < MAX_TIMES_TRY_PIN; i++)
+		{
+			// NOTE: discharge pins are active low
+			set_output(true, not_discharge_pin);
+			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+
+			int contributing_to_output = get_st_val(lion_not_discharging);
+			stop_discharge_success = !contributing_to_output;
+		}
+
+		print("set bat to not discharge: %d", lion_not_discharging);
+
+		// variable prevents a possible double count of whether or not a battery has
+		// been decomissioned
+		if (!stop_discharge_success)
+		{
+			// TODO: do we need immediate action here?
+			print("setting to not discharge failed, decomissioning bat: %d", lion_not_discharging);
+			decommission(lion_not_discharging);
+			already_decomissioned = lion_not_discharging;
+		}
+	}
+	else
+	{
+		// just setting both to discharge
+		set_output(false, get_run_dischg_pin(LI1));
+		set_output(false, get_run_dischg_pin(LI2));
 	}
 
 	///
@@ -835,8 +854,8 @@ bool battery_logic()
 
 		int charge_success = 0;
 
-		// TODO: should we only go through this if it's a change from their current
-		// status
+		// TODO: Should we only go through this if it's a change from their current
+		// status?
 		for (int j = 0; !charge_success && j < MAX_TIMES_TRY_PIN; j++)
 		{
 			set_output(should_be_charging, charge_pin);

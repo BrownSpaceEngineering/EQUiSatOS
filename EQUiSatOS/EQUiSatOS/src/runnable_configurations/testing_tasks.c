@@ -8,10 +8,10 @@
 #include "testing_tasks.h"
 
 /* task constants */
-#define SYSTEM_TEST_TASK_FREQ		10000
-#define SYSTEM_TEST_TASK_STACK_SIZE	128 // TODO: probs not working
+#define SYSTEM_TEST_TASK_FREQ		20000
+#define SYSTEM_TEST_TASK_STACK_SIZE	(1020/sizeof(portSTACK_TYPE))
 #define TESTING_TASK_FREQ			1000
-#define TESTING_TASK_STACK_SIZE		512
+#define TESTING_TASK_STACK_SIZE		(1536/sizeof(portSTACK_TYPE))
 
 // task functions / handles
 TaskHandle_t suicide_test_handle;
@@ -21,17 +21,18 @@ void task_suicide_test(void *pvParameters);
 void task_stack_size_overflow_test(void *pvParameters);
 
 // task data
-#ifdef RUN_TESTING_TASKS
+#ifdef RUN_RTOS_SYSTEM_TEST
 	StackType_t system_test_task_stack[SYSTEM_TEST_TASK_STACK_SIZE];
 	StaticTask_t system_test_task_buffer;
-
+#endif
+#ifdef RUN_TESTING_TASKS
 	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
 	StaticTask_t testing_task_buffer;
 #endif
 
 void create_testing_tasks(void) 
 {
-	#ifdef RUN_TESTING_TASKS
+	#ifdef RUN_RTOS_SYSTEM_TEST
 		xTaskCreateStatic(system_test_task,
 			"sys test task",
 			SYSTEM_TEST_TASK_STACK_SIZE,
@@ -39,7 +40,9 @@ void create_testing_tasks(void)
 			tskIDLE_PRIORITY,
 			system_test_task_stack,
 			&system_test_task_buffer);
-	
+	#endif
+
+	#ifdef RUN_TESTING_TASKS	
 		xTaskCreateStatic(testing_task,
 			"testing task",
 			TESTING_TASK_STACK_SIZE,

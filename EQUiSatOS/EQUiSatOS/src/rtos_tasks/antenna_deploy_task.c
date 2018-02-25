@@ -35,18 +35,35 @@ void antenna_deploy_task(void *pvParameters) {
 		// report to watchdog
 		report_task_running(ANTENNA_DEPLOY_TASK);
 		
-		if (true /* TODO: LiON is sufficiently charged*/) {
-			if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
-			{
-				try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
-				try_pwm_deploy(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
-				try_pwm_deploy(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
-				
-				xSemaphoreGive(critical_action_mutex);
-			} else {
-				log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+		int current_pwm_pin = get_current_pwm_pin();
+		if (current_pwm_pin == 1) {
+			uint16_t li1, li2;
+			read_lion_volts_precise(&li1, &li2);
+			if (li1 > PWM_LION_MIN_V || li2 > PWM_LION_MIN_V
+					/* TODO: doesn't take into account which battery is discharging */) {
+				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
+					try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
+					
+					xSemaphoreGive(critical_action_mutex);
+				} else {
+					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+				}
+				num_tries++;
 			}
-			num_tries++;
+		} else {
+			uint16_t lf1, lf2, lf3, lf4;
+			read_lf_volts_precise(&lf1, &lf2, &lf3, &lf4);
+			if (lf1 + lf2 > PWM_LIFEPO_MIN_V) {
+				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
+					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;
+					int mux = current_pwm_pin == 2 ? P_ANT_DRV2_MUX : P_ANT_DRV3_MUX;
+					try_pwm_deploy(pin, mux, PWM_LENGTH_MS, current_pwm_pin);
+					
+					xSemaphoreGive(critical_action_mutex);
+				} else {
+					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+				}
+			}
 		}
 	}
 	

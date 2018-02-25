@@ -38,17 +38,13 @@ void configure_pwm(int pwm_pin, int pwm_mux, int p_ant) {
 	#endif
 }
 
-bool set_pulse_width_fraction(int numerator, int denominator) {
+// on_fraction will specify the duty cycle of on_fraction / PWM_PERIOD
+void enable_pwm(int on_fraction) {
 	#ifdef ANTENNA_DEPLOY_ACTIVE
-		if (numerator > denominator) {
-			return false;
-		} else {
-			int toSet = (PWM_PERIOD * numerator) / denominator;
-			tcc_set_compare_value(&tcc_instance, channel, toSet);
-			return true;
+		if (on_fraction < PWM_PERIOD) {
+			tcc_set_compare_value(&tcc_instance, channel, on_fraction);
 		}
 	#endif
-	return false;
 }
 
 void disable_pwm(void) {

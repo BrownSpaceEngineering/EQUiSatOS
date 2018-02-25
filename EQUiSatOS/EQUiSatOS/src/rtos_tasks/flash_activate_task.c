@@ -91,8 +91,9 @@ void flash_activate_task(void *pvParameters)
 			bool actually_flashed = false;
 			if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
 			{
-				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+				if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
+					_enable_ir_pow_if_necessary();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable(true);
@@ -104,7 +105,7 @@ void flash_activate_task(void *pvParameters)
 							// error would've been logged
 							_set_5v_enable(false);
 							xSemaphoreGive(processor_adc_mutex);
-							xSemaphoreGive(i2c_irpow_mutex);
+							xSemaphoreGive(i2c_mutex);
 							xSemaphoreGive(critical_action_mutex);
 							continue;
 						}
@@ -141,7 +142,7 @@ void flash_activate_task(void *pvParameters)
 					}	
 					// disable sensor regulators and free up mutexes
 					_set_5v_enable(false);
-					xSemaphoreGive(i2c_irpow_mutex);
+					xSemaphoreGive(i2c_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
 				}

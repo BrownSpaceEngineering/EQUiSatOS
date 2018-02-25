@@ -4,7 +4,7 @@
 #include "runnable_configurations/antenna_pwm.h"
 #include "data_handling/package_transmission.h"
 
-static void run_tests(void) {
+void run_tests(void) {
 	//mram_test(); // make sure to not run init_persistent_storage() before this
 	//pwm_test();
 	//sensor_read_tests();
@@ -13,6 +13,7 @@ static void run_tests(void) {
 	//bat_testing_run();
 	//test_equistack();
 	//assert_transmission_constants();
+	//pointer_typecast_test();
 
 	//system_test();
 }
@@ -36,6 +37,7 @@ void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2)
 	set_output(lion1, P_L1_RUN_CHG);
 
 	setup_pin(true, P_L2_RUN_CHG);
+	set_output(lion2, P_L2_RUN_CHG);
 
 	setup_pin(true, P_LF_B1_RUNCHG);
 	set_output(lifepo_b1, P_LF_B1_RUNCHG);
@@ -48,8 +50,9 @@ int main(void)
 {
 	global_init();
 	set_charging_states(true, true, true, true);
-	system_test(true);
+	//system_test(true);
 	run_tests();
+	//write_cur_prog_mem_to_mram();
 
 	run_rtos();
 }

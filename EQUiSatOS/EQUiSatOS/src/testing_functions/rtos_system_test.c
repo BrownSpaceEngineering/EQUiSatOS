@@ -54,7 +54,7 @@ void print_led_current_batch(led_current_batch batch) {
 	print("led current: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
 }
 void print_satellite_state_history_batch(satellite_history_batch batch) {
-	print("---Satellite History Batch---");
+	print("---Satellite History Batch---\n");
 	print("antenna deployed: \t%d\n", batch.antenna_deployed);
 	print("lion 1 charged: \t%d\n", batch.lion_1_charged);
 	print("lion 2 charged: \t%d\n", batch.lion_2_charged);
@@ -66,23 +66,23 @@ void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d L_REF: %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
 }
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
-	print("---Battery Charging Digital Signals---");
-	print("L1_RUN_CHG:		%d\n", batch & 0x1);
-	print("L2_RUN_CHG:		%d\n", (batch >> 1) & 0x1);
-	print("LF_B1_RUN_CHG:	%d\n", (batch >> 2) & 0x1);
-	print("LF_B2_RUN_CHG:	%d\n", (batch >> 3) & 0x1);
-	print("LF_B2_CHGN:		%d\n", (batch >> 4) & 0x1);
-	print("LF_B2_FAULTN:	%d\n", (batch >> 5) & 0x1);
-	print("LF_B1_FAULTN:	%d\n", (batch >> 6) & 0x1);
-	print("LF_B1_CHGN:		%d\n", (batch >> 7) & 0x1);
-	print("L2_ST:			%d\n", (batch >> 8) & 0x1);
-	print("L1_ST:			%d\n", (batch >> 9) & 0x1);
-	print("L1_DISG:			%d\n", (batch >> 10) & 0x1);
-	print("L2_DISG:			%d\n", (batch >> 11) & 0x1);
-	print("L1_CHGN:			%d\n", (batch >> 12) & 0x1);
-	print("L1_FAULTN:		%d\n", (batch >> 13) & 0x1);
-	print("L2_CHGN:			%d\n", (batch >> 14) & 0x1);
-	print("L2_FAULTN:		%d\n", (batch >> 15) & 0x1);
+	print("---Battery Charging Digital Signals---\n");
+	print("L1_RUN_CHG:     %d\n", batch & 0x1);
+	print("L2_RUN_CHG:     %d\n", (batch >> 1) & 0x1);
+	print("LF_B1_RUN_CHG:  %d\n", (batch >> 2) & 0x1);
+	print("LF_B2_RUN_CHG:  %d\n", (batch >> 3) & 0x1);
+	print("LF_B2_CHGN:     %d\n", (batch >> 4) & 0x1);
+	print("LF_B2_FAULTN:   %d\n", (batch >> 5) & 0x1);
+	print("LF_B1_FAULTN:   %d\n", (batch >> 6) & 0x1);
+	print("LF_B1_CHGN:     %d\n", (batch >> 7) & 0x1);
+	print("L2_ST:          %d\n", (batch >> 8) & 0x1);
+	print("L1_ST:          %d\n", (batch >> 9) & 0x1);
+	print("L1_DISG:        %d\n", (batch >> 10) & 0x1);
+	print("L2_DISG:        %d\n", (batch >> 11) & 0x1);
+	print("L1_CHGN:        %d\n", (batch >> 12) & 0x1);
+	print("L1_FAULTN:      %d\n", (batch >> 13) & 0x1);
+	print("L2_CHGN:        %d\n", (batch >> 14) & 0x1);
+	print("L2_FAULTN:      %d\n", (batch >> 15) & 0x1);
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
 	print("radio temp: %d\n", (uint16_t)batch<<8);
@@ -94,8 +94,8 @@ void print_proc_temp_batch(proc_temp_batch batch) {
 /************************************************************************/
 /* Stack type element-printing methods                                  */
 /************************************************************************/
-void print_stack_type_header(char* header, int i, uint32_t timestamp, bool transmitted) {
-	print("%d: ---------%s---------\n", i, header);
+void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
+	print("%2d: ---------%s---------\n", i, header);
 	print("timestamp: %d \t %s\n", timestamp, transmitted ? "TRANSMITTED" : "not transmitted");
 }
 
@@ -176,7 +176,7 @@ void print_low_power_data(low_power_data_t* data, int i) {
 }
 
 void print_sat_error(sat_error_t* err, int i) {
-	print("%d: error (%s): loc=%3d code=%3d @ %d\n", i, 
+	print("%2d: error (%s): loc=%3d code=%3d @ %d\n", i, 
 		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode, err->timestamp);
 }
 
@@ -185,8 +185,8 @@ void print_sat_error(sat_error_t* err, int i) {
 /************************************************************************/
 
 // prints the given equistack using the given element-wise string building method
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), char* header) {
-	print("==============%s==============\n", header);
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header) {
+	print("\n==============%s==============\n", header);
 	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
 		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
 	print("data:\n");
@@ -196,10 +196,9 @@ void print_equistack(equistack* stack, void (*elm_print)(void*, int), char* head
 }
 
 void print_equistacks(void) {
-	print("==============Equistack Dump==============\n");
+	print("\n==============Equistack Dump==============\n");
 	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
-	print_equistack(&priority_error_equistack,		print_sat_error,		"Priority Error Stack");
-	print_equistack(&normal_error_equistack,		print_sat_error,		"Normal Error Stack");
+	print_equistack(&error_equistack,				print_sat_error,		"Priority Error Stack");
 	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
 	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
 	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
@@ -207,7 +206,7 @@ void print_equistacks(void) {
 	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
 }
 
-char* get_sat_state_str(sat_state_t state) {
+const char* get_sat_state_str(sat_state_t state) {
 	switch (state) {
 		case HELLO_WORLD:			return "HELLO_WORLD          ";
 		case HELLO_WORLD_LOW_POWER: return "HELLO_WORLD_LOW_POWER";
@@ -221,7 +220,7 @@ char* get_sat_state_str(sat_state_t state) {
 	}
 }
 
-char* get_task_str(task_type_t task) {
+const char* get_task_str(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK:				return "WATCHDOG_TASK              ";
 		case STATE_HANDLING_TASK:		return "STATE_HANDLING_TASK        ";
@@ -237,7 +236,7 @@ char* get_task_str(task_type_t task) {
 	}
 }
 
-char* get_task_state_str(eTaskState state) {
+const char* get_task_state_str(eTaskState state) {
 	switch (state) {
 		case eRunning:		return "eRunning   ";
 		case eSuspended:	return "eSuspended ";
@@ -249,22 +248,35 @@ char* get_task_state_str(eTaskState state) {
 }
 
 void print_task_states(void) {
-	print("---Task States---");
+	print("\n\n===========Task States===========\n");
 	for (int i = 0; i < NUM_TASKS; i++) {
-		eTaskState task_state = eTaskGetState(task_handles[i]);
-		print("%s: %s", get_task_str(i), get_task_state_str(task_state));
+		eTaskState task_state = eTaskGetState(*(task_handles[i]));
+		print("%s: %s\n", get_task_str(i), get_task_state_str(task_state));
 	}
 }
 
+void print_latest_cur_data(void) {
+	uint8_t* cur_data_buf = _get_cur_data_buf();
+	print("\n\n========Most Recent Transmitted Current Data========\n");
+	print("secs to next flash: %d\n", cur_data_buf[0]);
+	print("reboot count: %d\n",		cur_data_buf[1]);
+	print_lion_volts_batch(			&(cur_data_buf[2]));
+	print_lion_current_batch(		&(cur_data_buf[4]));
+	print_lion_temps_batch(			&(cur_data_buf[6]));
+	print_panelref_lref_batch(		&(cur_data_buf[8]));
+	print_bat_charge_dig_sigs_batch(cur_data_buf[10]);
+	print_lifepo_volts_batch(		&(cur_data_buf[12]));
+}
+
 void rtos_system_test(void) {
-	print("==============RTOS System Test==============\n");
-	print("timestamp: %d\n", get_current_timestamp());
-	print("ticks:	  %d\n", xTaskGetTickCount());
-	print("sat state: %s\n", get_sat_state_str(get_sat_state()));
-	print("reboot #:  %d\n", cache_get_reboot_count());
-	print("num priority errs:  %d\n", priority_error_equistack.cur_size);
-	print("num normal errs:    %d\n", normal_error_equistack.cur_size);
+	print("\n\n==============RTOS System Test==============\n");
+	print("timestamp: \t%d\n", get_current_timestamp());
+	print("ticks:	  \t%d\n", xTaskGetTickCount());
+	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
+	print("reboot #:  \t%d\n", cache_get_reboot_count());
+	print("num errors:\t%d\n", error_equistack.cur_size);
 	print_task_states();
+	print_latest_cur_data();
 	print_equistacks();
-	print("====================End=====================\n");
+	print("====================End=====================\n\n");
 }

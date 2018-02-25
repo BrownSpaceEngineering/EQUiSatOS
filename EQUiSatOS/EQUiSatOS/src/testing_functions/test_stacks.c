@@ -465,7 +465,7 @@ static void multi_create(void)
 		print("|");
 	}
 	
-	return;
+ 	return;
 }
 
 void test_equistack(void) {

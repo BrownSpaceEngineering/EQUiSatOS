@@ -14,24 +14,30 @@
 #include "../processor_drivers/MRAM_Commands.h"
 
 /* addressing constants */
-#define STORAGE_SECS_SINCE_LAUNCH_ADDR		0x0010
-#define STORAGE_REBOOT_CNT_ADDR				0x0014
-#define STORAGE_SAT_STATE_ADDR				0x0015
-#define STORAGE_SAT_EVENT_HIST_ADDR			0x0016
-#define STORAGE_PROG_MEM_REWRITTEN_ADDR		0x1016 // TODO
-#define STORAGE_RADIO_KILL_DURATION_ADDR	0x1017 // TODO
-#define STORAGE_BOOTLOADER_HASH_ADDR		0x0017
-#define STORAGE_PROG_MEMORY_HASH_ADDR		0x0080
-#define STORAGE_PRIORITY_ERR_NUM_ADDR		0x0117
-#define STORAGE_PRIORITY_LIST_ADDR			0x0118
-#define STORAGE_NORMAL_ERR_NUM_ADDR			0x0136
-#define STORAGE_NORMAL_LIST_ADDR			0x0137
+#define STORAGE_SECS_SINCE_LAUNCH_ADDR		20
+#define STORAGE_REBOOT_CNT_ADDR				30
+#define STORAGE_SAT_STATE_ADDR				34
+#define STORAGE_SAT_EVENT_HIST_ADDR			38
+#define STORAGE_PROG_MEM_REWRITTEN_ADDR		42
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR	46
+#define STORAGE_BOOTLOADER_HASH_ADDR		56
+#define STORAGE_PROG_MEMORY_HASH_ADDR		314
+#define STORAGE_ERR_NUM_ADDR				572
+#define STORAGE_ERR_LIST_ADDR				576
+#define STORAGE_PROG_MEMORY_ADDR			1058
+
+// maximum size of a single MRAM "field," used for global buffers
+#define STORAGE_MAX_FIELD_SIZE				240 // error list
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
-#define MAX_STORED_ERRORS					PRIORITY_ERROR_STACK_MAX + NORMAL_ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
+#define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
+// constants used when copying program memory live to MRAM
+#define PROG_MEM_START_ADDR					0x6000	// use default 0x0 OR set with .text=<addr> in Linker Memory settings
+#define PROG_MEM_SIZE						81240	// find for latest build in "output"
+#define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
 
 /************************************************************************/
 /* STATE CACHE                                                          */
@@ -53,7 +59,7 @@ struct persistent_data {
 	sat_state_t sat_state; // most recent known state
 	satellite_history_batch sat_event_history;
 	uint8_t prog_mem_rewritten; // actually a bool; only written by bootloader (one in sat event history follows that paradigm)
-	uint16_t radio_kill_duration;
+	uint16_t radio_revive_timestamp;
 	
 } cached_state;
 
@@ -66,8 +72,9 @@ uint32_t last_data_write_ms;
 void init_persistent_storage(void);
 void read_state_from_storage(void);
 void write_state_to_storage(void);
+void write_state_to_storage_emergency(bool from_isr);
 void increment_reboot_count(void);
-void update_radio_kill_duration(uint16_t radio_kill_duration);
+void update_radio_revive_timestamp(uint16_t radio_revive_timestamp);
 void update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
@@ -82,10 +89,10 @@ uint8_t						cache_get_reboot_count(void);
 sat_state_t					cache_get_sat_state(void);
 satellite_history_batch		cache_get_sat_event_history(void);
 bool						cache_get_prog_mem_rewritten(void);
-uint16_t					cache_get_radio_kill_duration(void);
+uint16_t					cache_get_radio_revive_timestamp(void);
 
 /* functions which require reading from MRAM (bypass cache) */
-void populate_error_stacks(equistack* priority_errors, equistack* normal_errors);
+void populate_error_stacks(equistack* error_stack);
 
 /* helper functions using cached state */
 uint32_t get_current_timestamp(void);
@@ -93,6 +100,8 @@ uint64_t get_current_timestamp_ms(void);
 uint16_t get_orbits_since_launch(void);
 bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
 
+/* maintenance helpers */
 void write_custom_state(void);
+void write_cur_prog_mem_to_mram(void);
 
 #endif

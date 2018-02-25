@@ -11,6 +11,13 @@
 StaticSemaphore_t _mram_spi_mutex_d;
 SemaphoreHandle_t mram_spi_mutex;
 
+// super simple mutex used to sync the two operations required
+// to modify the cached data responsible for computing get_current_timestamp()
+// (true if fields are being modified, false otherwise)
+// note: this only works because it's only being written by one thread at a time
+// (except in rare cases), and because read/stores are atomic in single-processor ARM
+bool cache_time_fields_minimutex = false;
+
 /* SPI master and slave handles */
 struct spi_module spi_master_instance;
 struct spi_slave_inst mram1_slave;
@@ -34,49 +41,130 @@ void init_persistent_storage(void) {
 	mram_initialize_slave(&mram2_slave, P_MRAM2_CS);
 }
 
-// wrapper for reading from MRAM; error checking
-bool storage_read_bytes_unsafe(uint8_t *data, int num_bytes, uint16_t address) {
-	uint8_t data_1[num_bytes];
-	bool success1 = !log_if_error(ELOC_MRAM1_READ,
-		mram_read_bytes(&spi_master_instance, &mram1_slave, data_1, num_bytes, address),
+// wrapper for reading a field from MRAM
+// handles RAIDing, error checking and correction, and field duplication
+// returns whether accurate data should be expected in data (whether error checks worked out)
+bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
+	// data is used as mram1_data1
+	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
+	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
+	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
+	// TODO: ^^^^^ can we find a way to use just two of these 
+	
+	// read both duplicates from MRAM1
+	bool success_mram1_data1 = !log_if_error(ELOC_MRAM1_READ,
+		mram_read_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
 		true); // priority
+	bool success_mram1_data2 = !log_if_error(ELOC_MRAM1_READ,
+		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data2, num_bytes, 
+		address + num_bytes), true); // priority
 
-	bool success2 = !log_if_error(ELOC_MRAM2_READ,
-		mram_read_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
+	bool success_mram2_data1 = !log_if_error(ELOC_MRAM2_READ,
+		mram_read_bytes(&spi_master_instance, &mram2_slave, mram2_data1, num_bytes, address),
 		true); // priority
+	bool success_mram2_data2 = !log_if_error(ELOC_MRAM2_READ,
+		mram_read_bytes(&spi_master_instance, &mram2_slave, mram2_data2, num_bytes, 
+		address + num_bytes), true); // priority
+		
+	// helpful constants
+	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
+	bool success_mram2 = success_mram2_data1 && success_mram2_data2;
+	bool mram1_data_matches = memcmp(data,		  mram1_data2, num_bytes) == 0;
+	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
+	
+	// TODO: incorporate status codes BECAUE THEY'LL LIKELY MATCH IF ALL 0xff's!!!!
 
-	// if both failed, we're quite screwed
-	// (note errors would've been logged)
-	if (!success1 && !success2) {
-		return false;
+	/* if only one of the two sets of data matches, return the other one (but log error) 
+	   (also require that the status codes from that MRAM were okay, because 0xff's from
+	   a bad MRAM or SPI driver would match!) */
+	if (mram1_data_matches && !mram2_data_matches && success_mram1) {
+		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
+		return success_mram1;
 	}
-	// if ONLY one MRAM failed (XOR), take the other one's data
-	else if (success1 ^ success2) {
-		if (success1) { // implies not success2
-			// if #2 was the one that failed, use the data from
-			// #1 (otherwise the data from #2 would already be there)
-			memcpy(data, data_1, num_bytes);
-		}
-		return true; // things are theoretically okay
-
-	} else {
-		// if everything went okay, check that the data matches
-		if (memcmp(data_1, data, num_bytes) != 0) {
-			// if it fails, for now just take the data from #2 (in data now)
+	if (!mram1_data_matches && mram2_data_matches && success_mram2) {
+		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
+		// need to copy over (which data # shouldn't matter)
+		memcpy(data, mram2_data1, num_bytes);
+		return success_mram2;
+	}
+	
+	/* if neither set of data matches, check for a cross-match and use it if available 
+	 (also require that status codes are good for reason above) */
+	/*
+	1_1 _ 2_1
+	    X  
+	1_2 _ 2_2
+	*/
+	if (!mram1_data_matches && !mram2_data_matches) {
+		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
+		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
+		
+		if (memcmp(data, mram2_data1, num_bytes) == 0 
+			&& success_mram1_data1 && success_mram2_data1) {
+			// return data in data
 			return true;
 		}
-		return true;
+		else if (memcmp(data, mram2_data2, num_bytes) == 0
+			&& success_mram1_data1 && success_mram2_data2) {
+			// return data in data
+			return true;
+		}
+		else if (memcmp(mram1_data2, mram2_data1, num_bytes) == 0
+			&& success_mram1_data2 && success_mram2_data1) {
+			memcpy(data, mram1_data2, num_bytes);
+			return true;
+		}
+		else if (memcmp(mram1_data2, mram2_data2, num_bytes) == 0
+			&& success_mram1_data2 && success_mram2_data2) {
+			memcpy(data, mram1_data2, num_bytes);
+			return true;
+		} else {
+			// we could try and compare data without caring about status codes, 
+			// but this case is so unlikely and hard to recover from we determined
+			// it's not worth it 
+			return false;
+		}
+	}
+	
+	/* if both sets of data match, do an additional comparison between them to determine our confidence */
+	if (mram1_data_matches && mram2_data_matches) {
+		bool mrams_match = memcmp(data, mram2_data1, num_bytes) == 0;
+		if (mrams_match) {
+			// return data in data
+			return true;
+		} else {
+			log_error(ELOC_MRAM_READ, ECODE_INCONSISTENT_DATA, true);
+			// if they aren't matched, check status codes and take the one most likely to be right
+			// based on those
+			if (success_mram1_data2) {
+				memcpy(data, mram1_data2, num_bytes);
+			} else if (success_mram2_data1) {
+				memcpy(data, mram1_data2, num_bytes);
+			} else if (success_mram2_data1) {
+				memcpy(data, mram1_data2, num_bytes);
+			}
+			// otherwise, we'll take the data in data (mram1_data1) no matter what... 
+			return false;
+		}
 	}
 }
 
-// wrapper for writing to MRAM; error checking
-bool storage_write_bytes_unsafe(uint8_t *data, int num_bytes, uint16_t address) {
+// wrapper for writing a field to MRAM
+// handles RAIDing, error checking, and field duplication
+bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	bool success1 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
-		true); // priority
-	return success1 && !log_if_error(ELOC_MRAM2_WRITE,
+			true); // priority
+	bool success2 = !log_if_error(ELOC_MRAM1_WRITE,
+		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, 
+			address + num_bytes), true); // priority	
+	
+	bool success3 = !log_if_error(ELOC_MRAM2_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, address),
-		true); // priority
+			true); // priority
+	return success1 && success2 && success3 && !log_if_error(ELOC_MRAM2_WRITE,
+		mram_write_bytes(&spi_master_instance, &mram2_slave, data, num_bytes, 
+			address + num_bytes), true); // priority
 }
 
 /* read state from storage into cache */
@@ -90,19 +178,19 @@ void read_state_from_storage(void) {
 			cached_state.reboot_count = 0;
 			cached_state.sat_event_history;
 			cached_state.prog_mem_rewritten = false;
-			cached_state.radio_kill_duration = 0;
+			cached_state.radio_revive_timestamp = 0;
 		#else
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-			storage_read_bytes_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-			storage_read_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+			storage_read_field_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 		#endif
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -111,8 +199,8 @@ void increment_reboot_count(void) {
 	write_state_to_storage();
 }
 
-void update_radio_kill_duration(uint16_t radio_kill_duration) {
-	cached_state.radio_kill_duration = radio_kill_duration;
+void update_radio_revive_timestamp(uint16_t radio_revive_timestamp) {
+	cached_state.radio_revive_timestamp = radio_revive_timestamp;
 	write_state_to_storage();
 }
 
@@ -125,16 +213,63 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	result = result && history1->lifepo_b2_charged == history2->lifepo_b2_charged;
 	result = result && history1->lion_1_charged == history2->lion_1_charged;
 	result = result && history1->lion_2_charged == history2->lion_2_charged;
+	result = result && history1->prog_mem_rewritten == history2->prog_mem_rewritten;
 	return result;
 }
 
-/* must be called with cache mutex locked to be accurate, not throw errors, etc.
- (allows us not to need recursive mutexes when called in this file)
+// writes error stack data to mram, and confirms it was written correctly if told to
+bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
+	// (move these (big) buffers off stack)
+	static sat_error_t error_buf[ERROR_STACK_MAX]; 
+	static sat_error_t temp_error_buf[ERROR_STACK_MAX];
+	
+	uint8_t num_errors = stack->cur_size;
+	
+	bool got_mutex = true;
+	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
+		// log error, but continue on because we're just reading
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		got_mutex = false;
+	}
+	{
+		// populate buffer with current errors (thread-safely)
+		for (int i = 0; i < num_errors; i++) {
+			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(stack, i);
+			error_buf[i] = *err;
+		}
+	}
+	if (got_mutex) xSemaphoreGive(stack->mutex);
+	
+	// write size and error data to storage
+	storage_write_field_unsafe(&num_errors,	1, STORAGE_ERR_NUM_ADDR);
+	if (num_errors > 0) {
+		storage_write_field_unsafe((uint8_t*) error_buf,
+			num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+	}
+	
+	if (confirm) {
+		// check if stored # of errors matches
+		uint8_t temp_num_errors;
+		storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
+		if (temp_num_errors != num_errors) {
+			return false;
+		}
+	
+		// check if actual stored errors match (if necessary)
+		if (num_errors > 0) {
+			storage_read_field_unsafe((uint8_t*) temp_error_buf,
+				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/* writes cached state to MRAM
  NOTE: this does protect the SPI lines (takes that mutex) - it's NOT unsafe in that sense */
 void write_state_to_storage(void) {
-	// keep track of the old timestamp value in case the write fails and we have to reset
-	uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
-	cached_state.secs_since_launch = get_current_timestamp();
 	cached_state.sat_state = get_sat_state();
 	// reboot count is only incremented on startup and is written through cache
 	// sat_event_history is written through when changed
@@ -144,33 +279,56 @@ void write_state_to_storage(void) {
 	uint8_t temp_reboot_count, temp_sat_state;
 	satellite_history_batch temp_sat_event_history;
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_kill_duration;
+	uint32_t temp_radio_revive_timestamp;
+	bool errors_write_confirmed = false;
 
 	// set write time right before writing
+	// (keep track of the old timestamp value in case the write fails and we have to reset)
+	uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
+	
+	// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
+	uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
+	cache_time_fields_minimutex = true;
+	cached_state.secs_since_launch = cur_timestamp;
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+	cache_time_fields_minimutex = false;
+	
+	bool got_mutex = false;
 
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_bytes_unsafe((uint8_t*) &cached_state.radio_kill_duration,2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+		got_mutex = true;
+		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack, true);
 		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
-		storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_read_bytes_unsafe(&temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_read_bytes_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_read_bytes_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
+		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_read_field_unsafe(&temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_read_field_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
+		storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_read_field_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+	}
+	
+	// skip the check if we didn't get the mutex, and reset last data write to old MRAM's
+	if (!got_mutex) {
+		// grab time field mutex
+		cache_time_fields_minimutex = true;
+		last_data_write_ms = prev_last_data_write_ms;
+		cached_state.secs_since_launch = prev_cached_secs_since_launch;
+		cache_time_fields_minimutex = false;
+		return;
 	}
 
 	// log error if the stored data was not consistent with what was just written
@@ -181,16 +339,54 @@ void write_state_to_storage(void) {
 		|| temp_sat_state != cached_state.sat_state 
 		|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
 		|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
-		|| temp_radio_kill_duration != cached_state.radio_kill_duration) {
+		|| temp_radio_revive_timestamp != cached_state.radio_revive_timestamp
+		|| !errors_write_confirmed) {
 
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
 
 		// in particular, if it was the secs_since_launch that was inconsistent,
 		// go off the old value in the MRAM
 		if (temp_secs_since_launch != cached_state.secs_since_launch &&
-		temp_secs_since_launch < cached_state.secs_since_launch) {
+		temp_secs_since_launch < cached_state.secs_since_launch) { // TODO: why the greater than condition??
+			// grab time field mutex
+			cache_time_fields_minimutex = true;
 			last_data_write_ms = prev_last_data_write_ms;
 			cached_state.secs_since_launch = prev_cached_secs_since_launch;
+			cache_time_fields_minimutex = false;
+		}
+	}
+}
+
+/* Writes cached state to MRAM, but doesn't confirm it was correct. 
+   Can also be used from an ISR if from_isr is true */
+void write_state_to_storage_emergency(bool from_isr) {
+	bool got_mutex;
+	if (from_isr) {
+		got_mutex = xSemaphoreTakeFromISR(mram_spi_mutex, NULL);
+	} else {
+		got_mutex = xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS);
+	}
+	
+	if (got_mutex)
+	{
+		uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
+		cache_time_fields_minimutex = true;
+		cached_state.secs_since_launch = cur_timestamp;
+		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+		cache_time_fields_minimutex = false;
+		
+		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		storage_write_check_errors_unsafe(&error_equistack, false);
+
+		if (from_isr) {
+			xSemaphoreGiveFromISR(mram_spi_mutex, NULL);
+		} else {
+			xSemaphoreGive(mram_spi_mutex);
 		}
 	}
 }
@@ -234,12 +430,14 @@ void update_sat_event_history(uint8_t antenna_deployed,
  * due to a watchdog reset). Segment since reboot is accurate to ms.
  */
 uint32_t get_current_timestamp(void) {
+	while (cache_time_fields_minimutex) {}; // wait on time field mutex
 	return ((xTaskGetTickCount() / portTICK_PERIOD_MS - last_data_write_ms) / 1000)
 		 + cache_get_secs_since_launch();
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
+	while (cache_time_fields_minimutex) {}; // wait on time field mutex
 	return (xTaskGetTickCount() / portTICK_PERIOD_MS) - last_data_write_ms
 			+ (1000 * cache_get_secs_since_launch());
 }
@@ -298,6 +496,8 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 /************************************************************************/
 
 uint32_t cache_get_secs_since_launch() {
+	// note: not necessary to take minimutex because people 
+	// don't have access to last_write_time_ms
 	return cached_state.secs_since_launch;
 }
 
@@ -318,43 +518,47 @@ bool cache_get_prog_mem_rewritten(void) {
 	return cached_state.prog_mem_rewritten;
 }
 
-uint16_t cache_get_radio_kill_duration(void) {
-	return cached_state.radio_kill_duration;
+uint16_t cache_get_radio_revive_timestamp(void) {
+	return cached_state.radio_revive_timestamp;
 }
 
 /************************************************************************/
 /* functions which require reading from MRAM (bypass cache)				*/
 /************************************************************************/
-void populate_error_stacks(equistack* priority_errors, equistack* normal_errors) {
+void populate_error_stacks(equistack* error_stack) {
+	// take big buffers off stack
+	static sat_error_t error_buf[ERROR_STACK_MAX];
+	
 	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
 		// read in errors from MRAM
-		uint8_t num_stored_priority_errors;
-		uint8_t num_stored_normal_errors;
-		sat_error_t priority_error_buf[PRIORITY_ERROR_STACK_MAX];
-		sat_error_t normal_error_buf[NORMAL_ERROR_STACK_MAX];
-		storage_read_bytes_unsafe(&num_stored_priority_errors,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe(&num_stored_normal_errors,	1, STORAGE_NORMAL_ERR_NUM_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) priority_error_buf,
-			PRIORITY_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-		storage_read_bytes_unsafe((uint8_t*) normal_error_buf,
-			NORMAL_ERROR_STACK_MAX * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+		uint8_t num_stored_errors;
+		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
+		
+		// make sure number of errors is in a reasonable bound (note we're using a uint)
+		if (num_stored_errors <= ERROR_STACK_MAX) {
+			// special case; we can't read in 0 bytes (invalid arg)
+			if (num_stored_errors > 0) {
+				storage_read_field_unsafe((uint8_t*) error_buf,
+					num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
-		// read all errors that we have stored in MRAM in
-		for (int i = 0; i < num_stored_priority_errors; i++) {
-			equistack_Push(priority_errors, &(priority_error_buf[i]));
+				// read all errors that we have stored in MRAM in
+				for (int i = 0; i < num_stored_errors; i++) {
+					equistack_Push(error_stack, &(error_buf[i]));
+				}
+			}
+		} else {
+			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, false);
 		}
-		for (int i = 0; i < num_stored_normal_errors; i++) {
-			equistack_Push(normal_errors, &(normal_error_buf[i]));
-		}
+		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, false);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 }
 
 /************************************************************************/
-/* Utilities for setting MRAM; used to write initial state              */
+/* Utility for setting MRAM; used to write initial state				*/
 /************************************************************************/
 void write_custom_state(void) {
 	/*** CONFIG ***/
@@ -363,7 +567,7 @@ void write_custom_state(void) {
 	sat_state_t sat_state =						INITIAL;
 	satellite_history_batch sat_event_history;
 	uint8_t prog_mem_rewritten =				false;
-	uint16_t radio_kill_duration =				0;
+	uint16_t radio_revive_timestamp =				0;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
 	sat_event_history.lifepo_b1_charged =		false;
@@ -372,16 +576,10 @@ void write_custom_state(void) {
 	sat_event_history.lion_2_charged =			false;
 	sat_event_history.prog_mem_rewritten =		false;
 
-	#define NUM_PRIORITY_ERRS	0
-	#define NUM_NORMAL_ERRS		0
-	const uint8_t num_priority_errs = NUM_PRIORITY_ERRS;
-	const uint8_t num_normal_errs = NUM_NORMAL_ERRS;
-	sat_error_t priority_errors[NUM_PRIORITY_ERRS];
-	sat_error_t normal_errors[NUM_NORMAL_ERRS];
-// 	sat_error_t priority_errors[NUM_PRIORITY_ERRS] = {
-// 		{10, 12, 13}
-// 	};
-// 	sat_error_t normal_errors[NUM_NORMAL_ERRS] = {
+	#define NUM_ERRS	0
+	const uint8_t num_errs = NUM_ERRS;
+	sat_error_t error_buf[NUM_ERRS];
+// 	sat_error_t error_buf[NUM_ERRS] = {
 // 		{10, 20, 40},
 // 		{11, 120, 247},
 // 		{1, 2, 3},
@@ -392,23 +590,19 @@ void write_custom_state(void) {
 	// set write time right before writing
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 
-	storage_write_bytes_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &radio_kill_duration, 2,		STORAGE_RADIO_KILL_DURATION_ADDR);
+	storage_write_field_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_write_field_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_write_field_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_write_field_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_write_field_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_write_field_unsafe((uint8_t*) &radio_revive_timestamp, 4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 	// TODO: bootloader / program memory hashes
 
 	// write errors
-	storage_write_bytes_unsafe((uint8_t*) &num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_write_bytes_unsafe((uint8_t*) &num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
-	if (num_priority_errs > 0)
-		storage_write_bytes_unsafe((uint8_t*) priority_errors,
-			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	if (num_normal_errs > 0)
-		storage_write_bytes_unsafe((uint8_t*) normal_errors,
-			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	storage_write_field_unsafe((uint8_t*) &num_errs,		1, STORAGE_ERR_NUM_ADDR);
+	if (num_errs > 0)
+		storage_write_field_unsafe((uint8_t*) error_buf,
+			num_errs * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
 	/*** read it right back to confirm validity ***/
 	uint32_t temp_secs_since_launch;
@@ -416,33 +610,24 @@ void write_custom_state(void) {
 	sat_state_t temp_sat_state;
 	satellite_history_batch temp_sat_event_history; // fits in one
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_kill_duration;
+	uint16_t temp_radio_revive_timestamp;
 
-	uint8_t temp_num_priority_errs;
-	uint8_t temp_num_normal_errs;
-	sat_error_t temp_priority_errors[num_priority_errs];
-	sat_error_t temp_normal_errors[num_normal_errs];
+	uint8_t temp_num_errs;
+	sat_error_t temp_error_buf[num_errs];
 
-	storage_read_bytes_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR); // TODO: wrong size, how do we do this?
-	storage_read_bytes_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_radio_kill_duration,	2,		STORAGE_RADIO_KILL_DURATION_ADDR); // TODO: wrong size, how do we do this?
+	storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR); // TODO: wrong size, how do we do this?
+	storage_read_field_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
 	// TODO: bootloader / program memory hashes
 
-	storage_read_bytes_unsafe((uint8_t*) &temp_num_priority_errs,	1, STORAGE_PRIORITY_ERR_NUM_ADDR);
-	storage_read_bytes_unsafe((uint8_t*) &temp_num_normal_errs,		1, STORAGE_NORMAL_ERR_NUM_ADDR);
-
-	configASSERT(temp_num_priority_errs == num_priority_errs);
-	configASSERT(temp_num_normal_errs == num_normal_errs);
-
-	if (num_priority_errs > 0)
-		storage_read_bytes_unsafe((uint8_t*) temp_priority_errors,
-			num_priority_errs * sizeof(sat_error_t), STORAGE_PRIORITY_LIST_ADDR);
-	if (num_normal_errs > 0)
-		storage_read_bytes_unsafe((uint8_t*) temp_normal_errors,
-			num_normal_errs * sizeof(sat_error_t), STORAGE_NORMAL_LIST_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_num_errs,	1, STORAGE_ERR_NUM_ADDR);
+	configASSERT(temp_num_errs == num_errs);
+	if (num_errs > 0)
+		storage_read_field_unsafe((uint8_t*) temp_error_buf,
+			num_errs * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
 	/*** CHECKS ***/
 	configASSERT(temp_secs_since_launch == secs_since_launch);
@@ -450,8 +635,41 @@ void write_custom_state(void) {
 	configASSERT(temp_sat_state == sat_state);
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
 	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
-	configASSERT(temp_radio_kill_duration == radio_kill_duration);
+	configASSERT(temp_radio_revive_timestamp == radio_revive_timestamp);
 
-	configASSERT(memcmp(priority_errors, temp_priority_errors, num_priority_errs * sizeof(sat_error_t)) == 0);
-	configASSERT(memcmp(normal_errors, temp_normal_errors, num_normal_errs  * sizeof(sat_error_t)) == 0);
+	configASSERT(memcmp(error_buf, temp_error_buf, num_errs * sizeof(sat_error_t)) == 0);
+}
+
+// writes the currently-loaded program memory (live) into the MRAM using a buffered copy
+// to use this:
+// 1) Make sure you've set up the PROG_MEM_START_ADDR using .text=<addr> in Linker Memory settings
+// 2) Set this function to run where you want it (your last change to the code), build it,
+//    and copy the size of that binary to PROG_MEM_SIZE (without making any other changes)
+// 3) Rebuild and run the code.
+void write_cur_prog_mem_to_mram(void) {
+	print("Started writing program memory to MRAM...");
+	uint8_t confirm_buf[PROG_MEM_COPY_BUF_SIZE];
+	
+	size_t num_copied = 0;
+	uint32_t flash_addr = PROG_MEM_START_ADDR;
+	uint32_t mram_addr = STORAGE_PROG_MEM_REWRITTEN_ADDR;
+
+	while (num_copied < PROG_MEM_SIZE) {
+		size_t buf_size = min(PROG_MEM_SIZE - num_copied, PROG_MEM_COPY_BUF_SIZE);
+		
+		// write this buffer section directly from the flash (program memory) address space into both MRAMs
+		mram_write_bytes(&spi_master_instance, &mram1_slave, (uint8_t*) flash_addr, buf_size, mram_addr);
+		mram_write_bytes(&spi_master_instance, &mram2_slave, (uint8_t*) flash_addr, buf_size, mram_addr);
+		
+		// checks to confirm it matches program memory
+		mram_read_bytes(&spi_master_instance, &mram1_slave, confirm_buf, buf_size, mram_addr);
+		configASSERT(memcmp((uint8_t*) flash_addr, confirm_buf, buf_size) == 0);
+		mram_write_bytes(&spi_master_instance, &mram2_slave, confirm_buf, buf_size, mram_addr);
+		configASSERT(memcmp((uint8_t*) flash_addr, confirm_buf, buf_size) == 0);
+		
+		num_copied += buf_size;
+		mram_addr += buf_size;
+		flash_addr += buf_size;
+	}
+	print("Done writing program memory to MRAM.");
 }

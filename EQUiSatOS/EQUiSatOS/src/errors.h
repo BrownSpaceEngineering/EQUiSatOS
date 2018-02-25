@@ -90,25 +90,27 @@ enum error_locations {
 	ELOC_CACHED_PERSISTENT_STATE = 		52,
 	ELOC_MRAM1_READ = 					53,
 	ELOC_MRAM2_READ = 					54,
-	ELOC_MRAM1_WRITE = 					55,
-	ELOC_MRAM2_WRITE = 					56,
-	ELOC_5V_REF = 						57,
-	ELOC_STATE_HANDLING = 				58,
-	ELOC_BAT_CHARGING =					59,
-	ELOC_ANTENNA_DEPLOY	=				60,
-	ELOC_ERROR_STACK =					61,
-	ELOC_WATCHDOG =						62,
-	ELOC_PROC_TEMP =					63,
-	ELOC_VERIFY_REGS =					64,
+	ELOC_MRAM_READ =					55,
+	ELOC_MRAM1_WRITE = 					56,
+	ELOC_MRAM2_WRITE = 					57,
+	ELOC_5V_REF = 						58,
+	ELOC_STATE_HANDLING = 				59,
+	ELOC_BAT_CHARGING =					60,
+	ELOC_ANTENNA_DEPLOY	=				61,
+	ELOC_ERROR_STACK =					62,
+	ELOC_WATCHDOG =						63,
+	ELOC_PROC_TEMP =					64,
+	ELOC_VERIFY_REGS =					65,
 
-	ELOC_IDLE_DATA =					65,
-	ELOC_ATTITUDE_DATA =				66,
-	ELOC_FLASH =						67, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				68,
-	ELOC_EQUISTACK_GET =				69,
-	ELOC_EQUISTACK_PUT =				70,
+	ELOC_IDLE_DATA =					66,
+	ELOC_ATTITUDE_DATA =				67,
+	ELOC_FLASH =						68, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				69,
+	ELOC_EQUISTACK_GET =				70,
+	ELOC_EQUISTACK_PUT =				71,
 	
-	ELOC_BOOTLOADER =					71
+	ELOC_BOOTLOADER =					72,
+	ELOC_RTOS =							73
 
 };
 
@@ -146,60 +148,61 @@ enum error_codes {
 	/**** CUSTOM ****/
 	ECODE_READING_HIGH = 				27,
 	ECODE_READING_LOW = 				28,
-	ECODE_SIGNAL_LOST = 				29,
+	ECODE_OUT_OF_BOUNDS =				29,
+	ECODE_SIGNAL_LOST = 				30,
 
-	ECODE_CONFIRM_TIMEOUT = 			30,
-	ECODE_INCONSISTENT_DATA = 			31,
-	ECODE_UNEXPECTED_CASE = 			32,
-	ECODE_ENTER_RIP = 					33,
-	ECODE_UNCERTAIN_RIP = 				34,
-	ECODE_WATCHDOG_EARLY_WARNING =		35,
-	ECODE_WATCHDOG_RESET =				36,
-	ECODE_WATCHDOG_DID_KICK =			37,
-	ECODE_EXCESSIVE_SUSPENSION =		38,
+	ECODE_CONFIRM_TIMEOUT = 			31,
+	ECODE_INCONSISTENT_DATA = 			32,
+	ECODE_UNEXPECTED_CASE = 			33,
+	ECODE_ENTER_RIP = 					34,
+	ECODE_UNCERTAIN_RIP = 				35,
+	ECODE_WATCHDOG_EARLY_WARNING =		36,
+	ECODE_WATCHDOG_RESET =				37,
+	ECODE_WATCHDOG_DID_KICK =			38,
+	ECODE_EXCESSIVE_SUSPENSION =		39,
 
-	ECODE_CRIT_ACTION_MUTEX_TIMEOUT =	39,
-	ECODE_I2C_MUTEX_TIMEOUT =			40,
-	ECODE_PROC_ADC_MUTEX_TIMEOUT =		41,
-	ECODE_HW_STATE_MUTEX_TIMEOUT =		42,
-	ECODE_USART_MUTEX_TIMEOUT =			43,
-	ECODE_SPI_MUTEX_TIMEOUT =			44,
-	ECODE_BAT_CHARGING_MUTEX_TIMEOUT =  45,
-	ECODE_WATCHDOG_MUTEX_TIMEOUT =		46,
-	ECODE_EQUISTACK_MUTEX_TIMEOUT =		47,
+	ECODE_CRIT_ACTION_MUTEX_TIMEOUT =	40,
+	ECODE_I2C_MUTEX_TIMEOUT =			41,
+	ECODE_PROC_ADC_MUTEX_TIMEOUT =		42,
+	ECODE_HW_STATE_MUTEX_TIMEOUT =		43,
+	ECODE_USART_MUTEX_TIMEOUT =			44,
+	ECODE_SPI_MUTEX_TIMEOUT =			45,
+	ECODE_BAT_CHARGING_MUTEX_TIMEOUT =  46,
+	ECODE_WATCHDOG_MUTEX_TIMEOUT =		47,
+	ECODE_EQUISTACK_MUTEX_TIMEOUT =		48,
+	ECODE_IRPOW_MUTEX_TIMEOUT =			49,
 	
-	ECODE_REWROTE_PROG_MEM =			48
+	ECODE_REWROTE_PROG_MEM =			50,
+	ECODE_STACK_OVERFLOW =				51
 	
 };
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */
 /************************************************************************/
-#define PRIORITY_ERROR_STACK_MAX		30
-#define NORMAL_ERROR_STACK_MAX			20
+#define ERROR_STACK_MAX		50
+#define PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S		86400 // 1 day
 
 typedef struct {
 	uint32_t timestamp;
 	uint8_t eloc;
 	uint8_t ecode; // top bit is priority of error
 } sat_error_t;
+#define SAT_ERROR_T_SIZE		6
 
-equistack priority_error_equistack; // of sat_error_t
-equistack normal_error_equistack; // of sat_error_t
+equistack error_equistack; // of sat_error_t
 
 // static data used inside error equistack
-sat_error_t _priority_error_equistack_arr[PRIORITY_ERROR_STACK_MAX];
-StaticSemaphore_t _priority_error_equistack_mutex_d;
-SemaphoreHandle_t _priority_error_equistack_mutex;
-sat_error_t _normal_error_equistack_arr[NORMAL_ERROR_STACK_MAX];
-StaticSemaphore_t _normal_error_equistack_mutex_d;
-SemaphoreHandle_t _normal_error_equistack_mutex;
+sat_error_t _error_equistack_arr[ERROR_STACK_MAX];
+StaticSemaphore_t _error_equistack_mutex_d;
+SemaphoreHandle_t _error_equistack_mutex;
 
 void init_errors(void);
 uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
 bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
 void log_error(uint8_t loc, uint8_t err, bool priority);
+void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
 void print_sat_error(sat_error_t* data, int i);
