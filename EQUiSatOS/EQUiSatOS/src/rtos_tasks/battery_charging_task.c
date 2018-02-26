@@ -21,6 +21,8 @@
 // TODO: update sat state history when LF's fill up
 // TODO: probably need to add something for LI's that aren't holding a charge
 // TODO: make sure that batteries being recommissioned have a chance
+// TODO: make sure that everything is okay after coming back from boot
+
 int get_current_timestamp_wrapped(void)
 {
 	#ifdef BAT_TESTING
