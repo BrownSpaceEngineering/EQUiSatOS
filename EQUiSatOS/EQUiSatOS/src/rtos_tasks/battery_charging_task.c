@@ -756,11 +756,11 @@ int battery_logic()
 
 	#ifndef BAT_TESTING
 	bool got_mutex = true;
-	if (!xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(critical_action_mutex, (TickType_t) CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 		// if for some reason we can't get the bat charging mutex (it times out),
 		// ignore it and move on (the only things this mutex prevents is flashing while
 		// lifepos are charging, which is less worrisome than not running charging logic)
-		log_error(ELOC_BAT_CHARGING, ECODE_BAT_CHARGING_MUTEX_TIMEOUT, true);
+		log_error(ELOC_BAT_CHARGING, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 		got_mutex = false;
 	}
 
@@ -804,7 +804,7 @@ int battery_logic()
 				charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
 			// we're going to just restart the battery charging logic
-			if (got_mutex) xSemaphoreGive(battery_charging_mutex);
+			if (got_mutex) xSemaphoreGive(critical_action_mutex);
 			print("restarting battery logic");
 			return false;
 		}
@@ -889,7 +889,7 @@ int battery_logic()
 	for (int bat = 0; bat < 4; bat++)
 		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
-	if (got_mutex) xSemaphoreGive(battery_charging_mutex);
+	if (got_mutex) xSemaphoreGive(critical_action_mutex);
 	#endif
 
 	print("leaving battery charging");

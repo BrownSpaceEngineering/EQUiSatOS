@@ -30,24 +30,14 @@ void set_lifepo_charge_enable(void)
 }
 
 // returns true if now active (false if couldn't acquire battery mutex)
-bool flash_arm()
+void flash_arm(void)
 {
 	#ifdef FLASH_ACTIVE
-		// TODO: go over the logic around the use of a mutex here
-
-		// makes sure the battery charging task won't step in and change anything
-		if (!xSemaphoreTake(battery_charging_mutex, BAT_MUTEX_WAIT_TIME_TICKS)) {
-			log_error(ELOC_FLASH, ECODE_BAT_CHARGING_MUTEX_TIMEOUT, true);
-			return false;
-		}
-
-		set_lifepo_charge_disable(); // make sure lifepo's aren't charging
+		// make sure lifepo's aren't charging (we should have the critical action mutex so this doesn't violate charging)
+		set_lifepo_charge_disable(); 
+		
 		set_lifepo_output_enable(true);
 		set_output(true, P_LED_CMD);
-		// should be followed by a delay of at least 2ms before calling flash_leds
-		return true;
-	#else
-		return true;
 	#endif
 }
 
@@ -64,10 +54,8 @@ void flash_disarm(void)
 {
 	#ifdef FLASH_ACTIVE
 		set_lifepo_output_enable(false);
-		set_lifepo_charge_enable(); // set the lifepo's to be charging again
-
-		// makes sure the battery charging task won't step in and change anything
-		// TODO: this could be bad possibly, if the mutex timed out
-		xSemaphoreGive(battery_charging_mutex);
+		
+		// set the lifepo's to be charging again (we have the critical action mutex)
+		set_lifepo_charge_enable(); 
 	#endif
 }

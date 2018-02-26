@@ -66,9 +66,9 @@ enum {
 // we set these (mostly) to be the amount that needs to be transmitted for each data type,
 // plus one for the staged pointer
 #define IDLE_STACK_MAX					8 // == (IDLE_DATA_PACKETS + 1)
-#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1) // TODO: no reason not to do more
+#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1) 
 #define ATTITUDE_STACK_MAX				6 // == (ATTITUDE_DATA_PACKETS + 1)
-#define FLASH_STACK_MAX					10 // TODO
+#define FLASH_STACK_MAX					4 // such that we transmit all we store every minute
 #define FLASH_CMP_STACK_MAX				7 // == (FLASH_CMP_DATA_PACKETS + 1)
 
 /************************************************************************/

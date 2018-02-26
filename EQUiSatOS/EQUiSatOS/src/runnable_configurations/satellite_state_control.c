@@ -101,7 +101,6 @@ void startup_task(void* pvParameters) {
 	pre_init_rtos_tasks();
 
 	// Initialize misc. state mutexes
-	battery_charging_mutex = xSemaphoreCreateMutexStatic(&_battery_charging_mutex_d);
 	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
 	critical_action_mutex = xSemaphoreCreateMutexStatic(&_critical_action_mutex_d);
 
@@ -276,8 +275,8 @@ void configure_state_from_reboot(void) {
 	}
 	#endif
 
-	// get state of antenna deploy task and apply
-	if (cache_get_sat_event_history().antenna_deployed) { 
+	// get state of antenna deploy task (and double-check with pin input) and apply
+	if (cache_get_sat_event_history().antenna_deployed && !get_input(P_DET_RTN)) { // active LOW // TODO: are we sure we want to check pin? Consider current antenna deploy
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;

@@ -14,7 +14,9 @@
 #define BATCH_READS_DURING		5 // = 100ms / FLASH_DATA_READ_FREQ
 #define BATCH_READS_AFTER		1
 
-uint32_t prev_wake_time_s = 0; // global so we can reference it outside the task function
+// globals for use in external-facing functions
+uint32_t prev_wake_time_s = 0; 
+bool waiting_between_flashes = false;
 
 /* because we need to average the burst values, we keep a struct of the sums (which needs to be larger data types),
    and then divide the corresponding values to calculate the final comparison struct */
@@ -46,6 +48,17 @@ uint32_t get_time_of_next_flash(void) {
 	return (uint32_t) -1;
 }
 
+// function that can be called from another task to trigger an immediate flash,
+// if we're not already in one (this is mainly done in the radio task)
+// Returns whether a flash was triggered (whether we weren't already flashing)
+bool flash_now(void) {
+	if (waiting_between_flashes) {
+		xTaskAbortDelay(*task_handles[FLASH_ACTIVATE_TASK]);
+		return true;
+	}
+	return false;
+}
+
 void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
@@ -69,7 +82,11 @@ void flash_activate_task(void *pvParameters)
 	
 	for ( ;; )
 	{	
+		// note that we're in the long wait between flashes so that the flash_now 
+		// command won't release the task from one of the other vTaskDelays
+		waiting_between_flashes = true;
 		vTaskDelayUntil( &prev_wake_time, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
+		waiting_between_flashes = false;
 		prev_wake_time_s = get_current_timestamp();
 		
 		// report to watchdog
@@ -103,15 +120,7 @@ void flash_activate_task(void *pvParameters)
 				
 						// enable lifepo output (before first data read to give a time buffer before flashing),
 						// and make sure the flash enable pin is high
-						// If we can't, halt flash (this may happen due to a mutex timeout; very very unlikely)
-						if (!flash_arm()) {
-							// error would've been logged
-							_set_5v_enable(false);
-							xSemaphoreGive(processor_adc_mutex);
-							xSemaphoreGive(i2c_mutex);
-							xSemaphoreGive(critical_action_mutex);
-							continue;
-						}
+						flash_arm();
 
 					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 			
