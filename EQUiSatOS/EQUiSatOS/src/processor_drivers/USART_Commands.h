@@ -18,8 +18,6 @@
 #define LEN_RECEIVEBUFFER 16
 #define LEN_SENDBUFFER 16
 
-#define PRINT_MUTEX_WAIT_TIME_TICKS				((TickType_t) 200 / portTICK_PERIOD_MS)
-
 uint8_t receiveIndex;
 char receivebuffer[LEN_RECEIVEBUFFER];
 uint8_t sendbuffer[LEN_SENDBUFFER];

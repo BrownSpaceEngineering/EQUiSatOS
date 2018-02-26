@@ -13,7 +13,7 @@
 #define SYSTEM_TEST_TASK_PRIORITY	tskIDLE_PRIORITY
 #define TESTING_TASK_FREQ			1000
 #define TESTING_TASK_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
-#define TESTING_TASK_PRIORITY		STATE_HANDLING_PRIORITY, //tskIDLE_PRIORITY, // may change with different tests
+#define TESTING_TASK_PRIORITY		STATE_HANDLING_PRIORITY //tskIDLE_PRIORITY, // may change with different tests
 #define STACK_TEST_TASK_FREQ		5000
 #define STACK_TEST_TASK_STACK_SIZE	(768/sizeof(portSTACK_TYPE))
 #define STACK_TEST_TASK_PRIORITY	tskIDLE_PRIORITY
@@ -31,7 +31,7 @@ void task_stack_size_overflow_test(void *pvParameters);
 	StackType_t system_test_task_stack[SYSTEM_TEST_TASK_STACK_SIZE];
 	StaticTask_t system_test_task_buffer;
 #endif
-#ifdef RUN_TESTING_TASKS
+#ifdef RUN_TESTING_TASK
 	StackType_t testing_task_stack[TESTING_TASK_STACK_SIZE];
 	StaticTask_t testing_task_buffer;
 #endif
@@ -101,6 +101,7 @@ void testing_task(void *pvParameters)
 		/************************************************************************/
 		/* MISC                                                                 */
 		/************************************************************************/
+		print_sample_transmissions();
 		//test_message_packaging();
 		//stress_test_message_packaging();
 		vTaskDelay(2000);

@@ -49,9 +49,9 @@ typedef enum {	CMD_NONE = 0,
 				CMD_ECHO = 1,
 				CMD_KILL = 2,
 				CMD_FLASH = 3
-				} cmd_type_t;
+				} rx_cmd_type_t;
 
-cmd_type_t check_rx_received(void);
+rx_cmd_type_t check_rx_received(void);
 bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index);
 
 #endif /* RADIO_COMMANDS_H_ */

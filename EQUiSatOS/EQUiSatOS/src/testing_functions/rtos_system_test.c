@@ -181,32 +181,10 @@ void print_sat_error(sat_error_t* err, int i) {
 		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode, err->timestamp);
 }
 
+
 /************************************************************************/
-/* System test                                                          */
+/* String conversion funcs                                              */
 /************************************************************************/
-
-// prints the given equistack using the given element-wise string building method
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header) {
-	print("\n==============%s==============\n", header);
-	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
-		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
-	print("data:\n");
-	for (int i = 0; i < stack->cur_size; i++) {
-		(*elm_print)(equistack_Get(stack, i), i);
-	}
-}
-
-void print_equistacks(void) {
-	print("\n==============Equistack Dump==============\n");
-	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
-	print_equistack(&error_equistack,				print_sat_error,		"Priority Error Stack");
-	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
-	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
-	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
-	print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack");
-	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
-}
-
 const char* get_sat_state_str(sat_state_t state) {
 	switch (state) {
 		case HELLO_WORLD:			return "HELLO_WORLD          ";
@@ -248,6 +226,44 @@ const char* get_task_state_str(eTaskState state) {
 	}
 }
 
+const char* get_msg_type_str(msg_data_type_t msg_type) {
+	switch (msg_type) {
+		case IDLE_DATA:			return "IDLE_DATA     ";
+		case ATTITUDE_DATA:		return "ATTITUDE_DATA ";
+		case FLASH_DATA:		return "FLASH_DATA    ";
+		case FLASH_CMP_DATA:	return "FLASH_CMP_DATA";
+		case LOW_POWER_DATA:	return "LOW_POWER_DATA";
+		case NUM_MSG_TYPE:
+		default:				return "[invalid]     ";
+	}
+}
+
+/************************************************************************/
+/* System test                                                          */
+/************************************************************************/
+
+// prints the given equistack using the given element-wise string building method
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header) {
+	print("\n==============%s==============\n", header);
+	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
+		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
+	print("data:\n");
+	for (int i = 0; i < stack->cur_size; i++) {
+		(*elm_print)(equistack_Get(stack, i), i);
+	}
+}
+
+void print_equistacks(void) {
+	print("\n==============Equistack Dump==============\n");
+	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
+	print_equistack(&error_equistack,				print_sat_error,		"Error Stack");
+	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
+	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
+	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
+	print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack");
+	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
+}
+
 void print_task_states(void) {
 	print("\n\n===========Task States===========\n");
 	for (int i = 0; i < NUM_TASKS; i++) {
@@ -256,9 +272,8 @@ void print_task_states(void) {
 	}
 }
 
-void print_latest_cur_data(void) {
-	uint8_t* cur_data_buf = _get_cur_data_buf();
-	print("\n\n========Most Recent Transmitted Current Data========\n");
+void print_cur_data_buf(uint8_t* cur_data_buf) {
+	print("\n\n============Current Data============\n");
 	print("secs to next flash: %d\n", cur_data_buf[0]);
 	print("reboot count: %d\n",		cur_data_buf[1]);
 	print_lion_volts_batch(			&(cur_data_buf[2]));
@@ -303,7 +318,7 @@ void rtos_system_test(void) {
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
 	print("num errors:\t%d\n", error_equistack.cur_size);
 	print_task_states();
-	print_latest_cur_data();
+	print_cur_data_buf(_get_cur_data_buf());
 	print_equistacks();
 	print_task_stack_usages();
 	print("====================End=====================\n\n");

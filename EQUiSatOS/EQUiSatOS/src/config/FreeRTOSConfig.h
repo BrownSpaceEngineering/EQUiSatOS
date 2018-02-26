@@ -32,7 +32,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configUSE_MUTEXES                       1
 #define configQUEUE_REGISTRY_SIZE               0
 #define configCHECK_FOR_STACK_OVERFLOW          2 // TODO: may want to disable / reduce on sat (slowish; see here: https://www.freertos.org/Stacks-and-stack-overflow-checking.html)
-#define configUSE_RECURSIVE_MUTEXES             0 
+#define configUSE_RECURSIVE_MUTEXES             1 // TODO: only used in debug print, disable for main
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_COUNTING_SEMAPHORES           1
 #define configUSE_QUEUE_SETS                    0

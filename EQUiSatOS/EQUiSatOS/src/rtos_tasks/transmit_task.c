@@ -71,6 +71,54 @@ void read_radio_temp_mode(void) {
 }
 
 /************************************************************************/
+/* UPLINK FUNCTIONS                                                     */
+/************************************************************************/
+// queue internals (put here because #includes)
+StaticQueue_t _rx_command_queue_d;
+uint8_t _rx_command_queue_storage[RX_CMD_QUEUE_LEN * sizeof(rx_cmd_type_t)];
+
+void radio_control_init(void) {
+	radio_init();
+	rx_command_queue = xQueueCreateStatic(RX_CMD_QUEUE_LEN,
+		sizeof(rx_cmd_type_t),
+		_rx_command_queue_storage,
+		&_rx_command_queue_d);
+}
+
+// listens for RX and handles uplink commands for up to RX_READY_PERIOD_MS
+void handle_uplinks(void) {
+	clear_USART_rx_buffer();
+	
+	// TODO: enable RX mode, set global state?
+	
+	
+	// continue to try and process commands until we're close enough to the
+	// time we need to exit RX mode that we need to get prepared
+	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
+	TickType_t processing_deadline = xTaskGetTickCount() + RX_READY_PERIOD_MS;
+
+	rx_cmd_type_t rx_command;
+
+	while (xTaskGetTickCount() < processing_deadline) {
+		// try to receive command from queue, waiting the maximum time we can before the processing deadline
+		if (xQueueReceive(rx_command_queue, &rx_command, processing_deadline - xTaskGetTickCount())) {
+			switch (rx_command) {
+				//TODO: act on commands
+				case CMD_ECHO:
+					break;
+				case CMD_FLASH:
+					break;
+				case CMD_KILL:
+					break;
+				case CMD_NONE:
+					break;
+			}
+		}
+		// keep trying if nothing received
+	}
+}
+
+/************************************************************************/
 /* DATA TRANSMISSION FUNCTIONS                                          */
 /************************************************************************/
 // define buffers here to keep them LOCAL
@@ -313,20 +361,9 @@ void transmit_task(void *pvParameters)
 		report_task_running(TRANSMIT_TASK);
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
-		clear_USART_rx_buffer();
+		
 		setTXEnable(false);
-		vTaskDelay(RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
-				
-		switch (check_rx_received()) {
-			//TODO: act on commands
-			case CMD_ECHO:
-				break;
-			case CMD_FLASH:
-				break;
-			case CMD_KILL:
-				break;	
-		}
-		// TODO: enable RX mode, set global state?
+		handle_uplinks();
 		
 		// TODO: good place to transfer buffer if necessary
 		
@@ -346,19 +383,6 @@ void transmit_task(void *pvParameters)
 /************************************************************************/
 /* UTILITY                                                              */
 /************************************************************************/
-
-const char* get_msg_type_str(msg_data_type_t msg_type) {
-	switch (msg_type) {
-		case IDLE_DATA:			return "IDLE_DATA     ";
-		case ATTITUDE_DATA:		return "ATTITUDE_DATA ";
-		case FLASH_DATA:		return "FLASH_DATA    ";
-		case FLASH_CMP_DATA:	return "FLASH_CMP_DATA";
-		case LOW_POWER_DATA:	return "LOW_POWER_DATA";
-		case NUM_MSG_TYPE:
-		default:				return "[invalid]     ";
-	}
-}
-
 void debug_print_msg_types(void) {
 	const char* msg = "\nSent messages: %s %s %s %s\n";
 	const char* type1 = get_msg_type_str(slot_1_msg_type);

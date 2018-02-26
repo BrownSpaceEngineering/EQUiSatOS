@@ -350,6 +350,7 @@ void flashTest(void) {
 		set_output(false, P_LF_B2_OUTEN);		
 		delay_ms(1000);
 	}
+}
 
 // pointer typecast test
 void write_uint16_memcpy(uint16_t* buf) {
@@ -388,5 +389,4 @@ void pointer_typecast_test(void) {
 	uint16_t recieve_buf_4;
 	write_uint8_buf_deref((uint8_t*) &recieve_buf_4);
 	configASSERT((recieve_buf_4 & 0xff) == 0xcd && ((recieve_buf_4 >> 8) & 0xff) == 0xab); // little endian
->>>>>>> 0105e440201059402baf1dc7572ffc3e173055be
 }

@@ -30,6 +30,12 @@
 #define TEMP_RESPONSE_TIME_MS				300
 #define STATE_CHANGE_MONITOR_DELAY_TICKS	15
 
+// queue on which to receive rx_cmd_type_t's from UART interrupt to be processed
+#define RX_CMD_QUEUE_LEN			15 // if anyone tries to add more, they'll get an error
+// queue handle
+QueueHandle_t rx_command_queue;
+
+void radio_control_init(void);
 uint16_t get_radio_temp_cached(void);
 uint8_t* _get_cur_data_buf(void);
 

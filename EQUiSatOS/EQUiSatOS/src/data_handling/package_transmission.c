@@ -146,6 +146,9 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	};
 
 	/* write sections of message */
+	
+	// clear buffer
+	memset(msg_buffer, 0, MSG_BUFFER_SIZE);
 
 	// configure state string
 	uint8_t state_string = 0;
@@ -206,9 +209,6 @@ void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uin
 	write_bytes_and_shift(buffer, buf_index,	&states,			sizeof(states)); // 1 byte state string
 	write_bytes_and_shift(buffer, buf_index,	&data_len,			sizeof(data_len)); // 1 byte data packet size
 	write_bytes_and_shift(buffer, buf_index,	&num_errors,		sizeof(num_errors)); // 1 byte number of errors
-
-	// just in case we miss a \0... it should normally be written at the end of data
-	buffer[MSG_BUFFER_SIZE - 1] = '\0';
 }
 
 void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
