@@ -20,19 +20,20 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
+#define LI_FULL_MV                      4190
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 			4050
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
 
 #define LF_FULL_MAX_MV             			3500
+#define LF_FULL_SANITY_MV               3000
 #define LF_FLASH_AVG_MV            			3250
 
 // thresholds for error checking and the strikes system
 #define MIGHT_BE_FULL                   4000
 #define MAX_TIME_WITHOUT_FULL_MS        6000
-#define MAX_VOLTAGE_DROP_MV             300
-#define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
+#define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 
@@ -107,11 +108,12 @@ typedef struct charging_data {
 	// charging state
 	charge_state_t curr_charge_state;
 
-	// the last time each lion was full
-	int li_full_timestamp[2];
+	// TODO: make sure that this does well on a reboot
+	// the timestamp when the LI was last full
+	int li_last_full_or_recommissioned_timestamp[2];
 
 	// the last time each lion was low voltage
-	int li_low_voltage_timestamp[2];
+	int li_entered_low_voltage_timestamp[2];
 
 	// whether or not the satellite state has already been set
 	int already_set_sat_state;
@@ -132,6 +134,10 @@ typedef struct charging_data {
 	int decommissioned_count[4];
 
 	int charging_parity;
+
+	// TODO: make sure this does well on a reboots
+	// the time at which the current battery that's charging started charging
+	int curr_bat_charging_started_charging_timestamp;
 } charging_data_t;
 
 // NOTE: these are initialized elsewhere -- should they maybe not be?
