@@ -21,8 +21,19 @@
 #define WARM_RESET_REBOOT_TIME		1000
 #define WARM_RESET_WAIT_AFTER_MS	100 // TODO: necessary / what value?
 
+#define LEN_GROUND_CALLSIGN			4
+extern char ground_callsign_buf[LEN_GROUND_CALLSIGN];
+#define LEN_ECHOBUF					4
+extern char echo_buf[LEN_ECHOBUF];
+#define LEN_KILLBUF					4
+extern char kill_buf[LEN_KILLBUF];
+#define LEN_FLASHBUF				5
+extern char flash_buf[LEN_FLASHBUF];
+
+bool check_checksum(char* data, int dataLen, uint8_t actualChecksum);
+
 void set_command_mode(bool delay);
-bool XDL_get_temperature(uint16_t* radioTemp);
+bool XDL_prepare_get_temp();
 bool warm_reset(void);
 void cold_reset(void);
 
@@ -34,4 +45,14 @@ void setRXEnable(bool enable);
 void set3V6Power(bool on);
 void setRadioPower(bool on);
 
+typedef enum {	CMD_NONE = 0,
+				CMD_ECHO = 1,
+				CMD_KILL = 2,
+				CMD_FLASH = 3
+				} cmd_type_t;
+
+cmd_type_t check_rx_received(void);
+bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index);
+
 #endif /* RADIO_COMMANDS_H_ */
+

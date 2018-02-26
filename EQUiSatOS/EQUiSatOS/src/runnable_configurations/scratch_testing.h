@@ -15,6 +15,7 @@ void rsTest(void);
 void simpleADCTest(void);
 void flashBurstTest(void);
 void actuallyFlashingFlashBurstTest(void);
+void flashTest(void);
 void mram_test(void);
 void pointer_typecast_test(void);
 

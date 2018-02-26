@@ -29,7 +29,6 @@ typedef uint16_t pdiode_batch;				// single value; 2 bits per reading
 typedef uint8_t accelerometer_batch			[3];
 typedef uint8_t gyro_batch					[3];
 typedef uint8_t magnetometer_batch			[3];
-typedef uint8_t imu_temp_batch;				// single value
 typedef struct satellite_history_batch
 {
 	bool antenna_deployed : 1;
