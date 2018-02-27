@@ -325,6 +325,7 @@ int battery_logic()
 	/////
 
 	#ifndef BAT_TESTING
+	#ifndef WITHOUT_DECOMMISION
 	for (int bat = 0; bat < 4; bat++)
 	{
 		if (charging_data.decommissioned[bat])
@@ -403,6 +404,7 @@ int battery_logic()
 			}
 		}
 	}
+	#endif
 	#endif
 
 	// drawing metadata about the state of the batteries
@@ -796,8 +798,10 @@ int battery_logic()
 		{
 			print("discharging failed, decomissioning bat: %d", charging_data.lion_discharging);
 
+			#ifndef WITHOUT_DECOMMISION
 			// NOTE: will be alright even if already decomissioned
 			decommission(charging_data.lion_discharging);
+			#endif
 
 			// TODO: check with special attention here
 			for (battery_t bat = 0; bat < 4; bat++)
@@ -830,7 +834,11 @@ int battery_logic()
 		{
 			// TODO: do we need immediate action here?
 			print("setting to not discharge failed, decomissioning bat: %d", lion_not_discharging);
+
+			#ifndef WITHOUT_DECOMMISION
 			decommission(lion_not_discharging);
+			#endif
+
 			already_decomissioned = lion_not_discharging;
 		}
 	}
@@ -876,9 +884,11 @@ int battery_logic()
 		{
 			print("changing charge pin failed, decomissioning bat %d if it hasn't been decomissioned already", bat_type);
 
+			#ifndef WITHOUT_DECOMMISION
 			// TODO: do we need immediate action here?
 			if (charging_data.bat_charging != already_decomissioned)
 				decommission(charging_data.bat_charging);
+			#endif
 		}
 	}
 
