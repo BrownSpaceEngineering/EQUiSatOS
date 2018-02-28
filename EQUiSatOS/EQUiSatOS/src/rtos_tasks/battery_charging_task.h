@@ -13,8 +13,7 @@
 #include "rtos_tasks.h"
 #include "testing_functions/battery_charging_simulated_data.h"
 
-// TODO: figure out these thresholds fully
-// TODO: deal with scaling
+// TODO: figure out these thresholds fully and deal with scaling
 
 //#define BAT_TESTING
 
@@ -134,10 +133,6 @@ typedef struct charging_data {
 	int decommissioned_count[4];
 
 	int charging_parity;
-
-	// TODO: make sure this does well on a reboots
-	// the time at which the current battery that's charging started charging
-	int bat_charging_not_decreasing_timestamp;
 } charging_data_t;
 
 // NOTE: these are initialized elsewhere -- should they maybe not be?
