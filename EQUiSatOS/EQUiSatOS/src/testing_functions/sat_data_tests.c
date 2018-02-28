@@ -22,9 +22,9 @@ char get_hex(uint8_t nibble) {
 
 void print_buf_hex(uint8_t* buf, size_t len) {
 	for (int i = 0; i < len; i++) {
-		char char1 = get_hex(buf[i] & 0xf);
-		char char2 = get_hex(buf[i] >> 4);
-		print("%c%c", char1, char2);
+		char lsb_nibble = get_hex(buf[i] & 0xf);
+		char msg_nibble = get_hex(buf[i] >> 4);
+		print("%c%c", msg_nibble, lsb_nibble);
 	}
 }
 
