@@ -26,7 +26,7 @@
 #define MSG_DATA_AND_ERRORS_LEN		194 // sum of possible data, error, and padding sections (make sure up to date)
 #define MSG_PARITY_LENGTH			32
 #define MSG_SIZE					255
-#define MSG_BUFFER_SIZE				(MSG_SIZE + 1) // = sum of all sections (largest) + 1 for null terminator
+#define MSG_BUFFER_SIZE				MSG_SIZE // = sum of all sections (largest)
 
 // start points for sections
 #define START_PREAMBLE				0

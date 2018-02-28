@@ -3,11 +3,7 @@
 #include <stdbool.h>
 
 #include <spi.h>
-#include <usart.h>
-#include <stdio_serial.h>
 #include <delay.h>
-
-#include "conf_uart_serial.h"
 
 #include "Bootloader/MRAM_Commands.h"
 #include "Bootloader/flash_memory.h"
@@ -69,26 +65,6 @@ void corrupt_prog_mem(void);
 #endif
 
 static void check_start_application(void);
-
-static struct usart_module cdc_uart_module;
-
-/**
- *  Configure UART console.
- */
-static void configure_console(void) {
-    struct usart_config usart_conf;
-
-    usart_get_config_defaults(&usart_conf);
-    usart_conf.mux_setting = CONF_STDIO_MUX_SETTING;
-    usart_conf.pinmux_pad0 = CONF_STDIO_PINMUX_PAD0;
-    usart_conf.pinmux_pad1 = CONF_STDIO_PINMUX_PAD1;
-    usart_conf.pinmux_pad2 = CONF_STDIO_PINMUX_PAD2;
-    usart_conf.pinmux_pad3 = CONF_STDIO_PINMUX_PAD3;
-    usart_conf.baudrate    = CONF_STDIO_BAUDRATE;
-
-    stdio_serial_init(&cdc_uart_module, CONF_STDIO_USART_MODULE, &usart_conf);
-    usart_enable(&cdc_uart_module);
-}
 
 /**
  * \brief Check the application startup condition
@@ -201,7 +177,6 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 			// would be corrupted in the same way
 			// (note that the case that both matched is handled outside here (below))
 
-			// TODO: more decision making with hashes?
 		} else {
 			// compare this current batch to the actual data stored in the program memory,
 			// to determine whether it must be rewritten

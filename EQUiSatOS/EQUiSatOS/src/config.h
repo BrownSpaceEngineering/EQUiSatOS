@@ -37,7 +37,7 @@
 #define TESTING_SPEEDUP
 
 // use this flag to disable reed-solomon tables (frees up memory)
-//#define USE_REED_SOLOMON
+#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
@@ -48,7 +48,8 @@
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define RUN_RTOS_SYSTEM_TEST
-//#define RUN_TESTING_TASKS
+#define RUN_TESTING_TASK
+//#define RUN_TASK_STACK_TESTS
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission

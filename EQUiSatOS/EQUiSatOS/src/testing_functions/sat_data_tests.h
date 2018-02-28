@@ -16,5 +16,6 @@ void populate_equistacks(void);
 void clear_equistacks(void);
 void test_message_packaging(void);
 void stress_test_message_packaging(void);
+void print_sample_transmissions(void);
 
 #endif /* MESSAGE_PACKAGING_TESTS_H_ */

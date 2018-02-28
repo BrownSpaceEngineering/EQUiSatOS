@@ -173,8 +173,8 @@ enum error_codes {
 	ECODE_IRPOW_MUTEX_TIMEOUT =			49,
 	
 	ECODE_REWROTE_PROG_MEM =			50,
-	ECODE_STACK_OVERFLOW =				51
-	
+	ECODE_STACK_OVERFLOW =				51,
+	ECODE_DET_ALREADY_HIGH =			52
 };
 
 /************************************************************************/

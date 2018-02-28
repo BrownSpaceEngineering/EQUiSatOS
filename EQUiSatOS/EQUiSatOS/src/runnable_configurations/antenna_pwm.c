@@ -22,8 +22,8 @@ static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
 
 void pwm_test(void) {
 	try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
-	//try_pwm_deploy_basic(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
-	//try_pwm_deploy_basic(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
+	try_pwm_deploy_basic(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
+	try_pwm_deploy_basic(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
 }
 
 void try_pwm_deploy(uint8_t pin, uint8_t pin_mux, int ms, uint8_t p_ant) {
@@ -47,24 +47,30 @@ void try_pwm_deploy(uint8_t pin, uint8_t pin_mux, int ms, uint8_t p_ant) {
 	
 		hardware_state_mutex_take();
 		disable_pwm();
+		get_hw_states()->antenna_deploying = false;
+		hardware_state_mutex_give();
+		
 		bool can_cont = true;
 		if (p_ant == 1) {
-			if (((uint16_t)li[0] << 8) > PWM_MAX_CUR || ((uint16_t)li[1] << 8) > PWM_MAX_CUR) {
-				print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", ((uint16_t)li[0] << 8), ((uint16_t)li[1] << 8));
+			uint16_t li1 = (uint16_t)li[0] << 8;
+			uint16_t li2 = (uint16_t)li[1] << 8;
+			print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
+			if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		} else {
-			if (((uint16_t)(lf[0] + lf[1]) << 8) > PWM_MAX_CUR || ((uint16_t)(lf[2] + lf[3]) << 8) > PWM_MAX_CUR) {
-				print("PWM was on LiFePO4\nCurrent on bank 1: %d\nCurrent on bank 2: %d\n", 
-					((uint16_t)(lf[0] + lf[1]) << 8), ((uint16_t)(lf[2] + lf[3]) << 8));
+			uint16_t bank1 = (uint16_t)(lf[0] + lf[1]) << 8;
+			uint16_t bank2 = (uint16_t)(lf[2] + lf[3]) << 8;
+			print("PWM was on LiFePO4\nCurrent on bank 1: %d\nCurrent on bank 2: %d\n", bank1, bank2);
+			if (bank1 > PWM_MAX_CUR || bank2 > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		}
 		if (can_cont) {
 			// increment for next call
 			current_on_cycle++;
-			// it shouldn't be on always (16 /16 == 1), so if it's at 16 switch to the next pin
-			if (current_on_cycle >= PWM_PERIOD) {
+			// it shouldn't be on too much, so if it's at 14 switch to the next pin
+			if (current_on_cycle >= (PWM_PERIOD - 2)) {
 				current_on_cycle = PWM_PERIOD / 2;
 				curren_pwm_pin++;
 				// now if the pin is past 3, set it back to 1
@@ -80,9 +86,6 @@ void try_pwm_deploy(uint8_t pin, uint8_t pin_mux, int ms, uint8_t p_ant) {
 				curren_pwm_pin = 1;
 			}
 		}
-		get_hw_states()->antenna_deploying = false;
-		hardware_state_mutex_give();
-	
 	#endif
 }
 

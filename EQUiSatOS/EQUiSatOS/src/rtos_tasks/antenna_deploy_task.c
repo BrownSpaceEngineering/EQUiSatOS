@@ -35,6 +35,10 @@ void antenna_deploy_task(void *pvParameters) {
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 		}
 		
+		if (num_tries == 0 && get_input(P_DET_RTN)) {
+			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
+		}
+		
 		int current_pwm_pin = get_current_pwm_pin();
 		if (current_pwm_pin == 1) {
 			uint16_t li1, li2;

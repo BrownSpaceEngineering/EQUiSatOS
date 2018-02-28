@@ -49,8 +49,9 @@ static void pin_init(void) {
 	// initial writes
 	set_output(false, P_LF_B1_OUTEN);
 	set_output(false, P_LF_B2_OUTEN);
-	set_output(false, P_L1_RUN_CHG);
-	set_output(false, P_L2_RUN_CHG);
+	set_output(false, P_LF_B1_RUNCHG);
+	set_output(false, P_LF_B2_RUNCHG);
+	set_output(true, P_LED_CMD);
 	
 }
 
@@ -65,7 +66,7 @@ void global_init(void) {
 	pin_init();
  	init_rtc();
 	USART_init();
-	radio_init();
+	radio_control_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
 	MPU9250_init();
@@ -73,14 +74,14 @@ void global_init(void) {
 	delay_init();
 	
 	#if PRINT_DEBUG != 0
-		print_mutex = xSemaphoreCreateMutexStatic(&_print_mutex_d);
+		print_mutex = xSemaphoreCreateRecursiveMutexStatic(&_print_mutex_d);
 	#endif
 	
 	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();
-	#ifndef TESTING_SPEEDUP
+	#ifdef USE_REED_SOLOMON
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
 	#endif
 }
@@ -94,14 +95,26 @@ void global_init_post_rtos(void) {
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
 }
 
+// call this function to take the print mutex (suppress other task's printing)
+// in order to print without being disturbed, and then CALL IT AGAIN to deactivate 
+// and allow other tasks to print again
+void suppress_other_prints(bool on) {
+	if (on) {
+		xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+	} else {
+		xSemaphoreGiveRecursive(print_mutex);
+	}
+}
+
 // use in debug mode (set in header file)
 // input: format string and arbitrary number of args to be passed to sprintf
 // call to sprintf stores result in char *debug_buf
 void print(const char *format, ...)
 {
 	#if PRINT_DEBUG > 0 // if debug mode
+		bool got_mutex = false;
 		if (rtos_started) {
-			xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+			got_mutex = xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 		}
 		
 		va_list arg;
@@ -120,7 +133,7 @@ void print(const char *format, ...)
 		#endif
 	
 		if (rtos_started) {
-			xSemaphoreGive(print_mutex);
+			if (got_mutex) xSemaphoreGiveRecursive(print_mutex);
 		}
 	#endif
 }

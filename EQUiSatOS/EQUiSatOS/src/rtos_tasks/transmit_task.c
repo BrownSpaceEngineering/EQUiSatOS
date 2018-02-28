@@ -31,16 +31,19 @@ void read_radio_temp_mode(void) {
 	
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS);
-	set_command_mode(true); // don't delay, we'll take care of it
+	set_command_mode(false); // don't delay, we'll take care of it
 	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS);
 
-
-	
-	// TODO: extract some of this out so we can use RTOS delays
-	// TODO: always wait the same amount of time to get temperature
-	XDL_get_temperature(&radio_temp_cached);
-
-	
+	clear_USART_rx_buffer();
+	XDL_prepare_get_temp();
+	usart_send_string(sendbuffer);
+	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
+	if (check_checksum(receivebuffer+1, 3, receivebuffer[4])) {
+		radio_temp_cached = (receivebuffer[2] << 8) | receivebuffer[3];
+	} else {
+		//Wait longer?
+		//log error
+	}
 	
 	// TODO: may work:
 	// TODO: timeout!!
@@ -56,7 +59,63 @@ void read_radio_temp_mode(void) {
 	
 	// warm reset to get back into transmit mode
 	warm_reset();
+	usart_send_string(sendbuffer);
+	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+	if (!check_checksum(receivebuffer+1, 1, receivebuffer[2]) && (receivebuffer[1] == 0)) {
+		//power cycle radio
+		setRadioPower(false);
+		vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+		setRadioPower(true);
+	}
 	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+}
+
+/************************************************************************/
+/* UPLINK FUNCTIONS                                                     */
+/************************************************************************/
+// queue internals (put here because #includes)
+StaticQueue_t _rx_command_queue_d;
+uint8_t _rx_command_queue_storage[RX_CMD_QUEUE_LEN * sizeof(rx_cmd_type_t)];
+
+void radio_control_init(void) {
+	radio_init();
+	rx_command_queue = xQueueCreateStatic(RX_CMD_QUEUE_LEN,
+		sizeof(rx_cmd_type_t),
+		_rx_command_queue_storage,
+		&_rx_command_queue_d);
+}
+
+// listens for RX and handles uplink commands for up to RX_READY_PERIOD_MS
+void handle_uplinks(void) {
+	clear_USART_rx_buffer();
+	
+	// TODO: enable RX mode, set global state?
+	
+	
+	// continue to try and process commands until we're close enough to the
+	// time we need to exit RX mode that we need to get prepared
+	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
+	TickType_t processing_deadline = xTaskGetTickCount() + RX_READY_PERIOD_MS;
+
+	rx_cmd_type_t rx_command;
+
+	while (xTaskGetTickCount() < processing_deadline) {
+		// try to receive command from queue, waiting the maximum time we can before the processing deadline
+		if (xQueueReceive(rx_command_queue, &rx_command, processing_deadline - xTaskGetTickCount())) {
+			switch (rx_command) {
+				//TODO: act on commands
+				case CMD_ECHO:
+					break;
+				case CMD_FLASH:
+					break;
+				case CMD_KILL:
+					break;
+				case CMD_NONE:
+					break;
+			}
+		}
+		// keep trying if nothing received
+	}
 }
 
 /************************************************************************/
@@ -303,12 +362,8 @@ void transmit_task(void *pvParameters)
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
 		
-		
-		// TODO: enable RX mode, set global state?
-		
-		
-		vTaskDelay(RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
-		
+		setTXEnable(false);
+		handle_uplinks();
 		
 		// TODO: good place to transfer buffer if necessary
 		
@@ -328,24 +383,12 @@ void transmit_task(void *pvParameters)
 /************************************************************************/
 /* UTILITY                                                              */
 /************************************************************************/
-
-const char* get_msg_type_str(msg_data_type_t msg_type) {
-	switch (msg_type) {
-		case IDLE_DATA:			return "IDLE_DATA     ";
-		case ATTITUDE_DATA:		return "ATTITUDE_DATA ";
-		case FLASH_DATA:		return "FLASH_DATA    ";
-		case FLASH_CMP_DATA:	return "FLASH_CMP_DATA";
-		case LOW_POWER_DATA:	return "LOW_POWER_DATA";
-		case NUM_MSG_TYPE:
-		default:				return "INVALID TYPE  ";
-	}
-}
-
 void debug_print_msg_types(void) {
-	const char* msg = "\nSent messages: %s %s %s\n";
+	const char* msg = "\nSent messages: %s %s %s %s\n";
 	const char* type1 = get_msg_type_str(slot_1_msg_type);
 	const char* type2 = get_msg_type_str(slot_2_msg_type);
 	const char* type3 = get_msg_type_str(slot_3_msg_type);
+	const char* type4 = get_msg_type_str(slot_4_msg_type);
 	
-	print(msg, type1, type2, type3);
+	print(msg, type1, type2, type3, type4);
 }

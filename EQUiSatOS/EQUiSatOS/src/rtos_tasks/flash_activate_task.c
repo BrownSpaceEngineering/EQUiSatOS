@@ -14,17 +14,19 @@
 #define BATCH_READS_DURING		5 // = 100ms / FLASH_DATA_READ_FREQ
 #define BATCH_READS_AFTER		1
 
-uint32_t prev_wake_time_s = 0; // global so we can reference it outside the task function
+// globals for use in external-facing functions
+uint32_t prev_wake_time_s = 0; 
+bool waiting_between_flashes = false;
 
 /* because we need to average the burst values, we keep a struct of the sums (which needs to be larger data types),
    and then divide the corresponding values to calculate the final comparison struct */
 struct flash_burst_data_sums
 {
-	uint16_t led_temps_data_sums			[4];
-	uint16_t lifepo_bank_temps_data_sums	[2];
-	uint16_t led_current_data_sums			[4];
-	uint16_t lifepo_current_data_sums		[4];
-	uint16_t lifepo_volts_data_sums			[4];
+	uint16_t led_temps_data_sums			[4]; // uint16_t led_temps_batch
+	uint16_t lifepo_bank_temps_data_sums	[2]; // uint16_t lifepo_bank_temps_batch
+	uint16_t led_current_data_sums			[4]; // uint16_t led_current_data_batch
+	uint16_t lifepo_current_data_sums		[4]; // uint16_t lifepo_current_data_batch
+	uint16_t lifepo_volts_data_sums			[4]; // uint16_t lifepo_volts_data_batch
 };
 
 void sum_piecewise_uint8(uint16_t* arr, uint8_t* to_add, int len);
@@ -44,6 +46,17 @@ uint32_t get_time_of_next_flash(void) {
 		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	// TODO: what if RTOS goes to something higher priority?
 	}
 	return (uint32_t) -1;
+}
+
+// function that can be called from another task to trigger an immediate flash,
+// if we're not already in one (this is mainly done in the radio task)
+// Returns whether a flash was triggered (whether we weren't already flashing)
+bool flash_now(void) {
+	if (waiting_between_flashes) {
+		xTaskAbortDelay(*task_handles[FLASH_ACTIVATE_TASK]);
+		return true;
+	}
+	return false;
 }
 
 void flash_activate_task(void *pvParameters)
@@ -69,7 +82,11 @@ void flash_activate_task(void *pvParameters)
 	
 	for ( ;; )
 	{	
+		// note that we're in the long wait between flashes so that the flash_now 
+		// command won't release the task from one of the other vTaskDelays
+		waiting_between_flashes = true;
 		vTaskDelayUntil( &prev_wake_time, FLASH_ACTIVATE_TASK_FREQ / portTICK_PERIOD_MS);
+		waiting_between_flashes = false;
 		prev_wake_time_s = get_current_timestamp();
 		
 		// report to watchdog
@@ -77,6 +94,9 @@ void flash_activate_task(void *pvParameters)
 		
 		// read a single magnetometer batch before flash
 		read_magnetometer_batch(current_cmp_struct->mag_before_data);
+
+		// clear out our average sums struct
+		memset(&current_sums_struct, 0, sizeof(struct flash_burst_data_sums));
 		
 		// actually flash leds
 		for (int i = 0; i < NUM_FLASHES; i++) {
@@ -100,15 +120,7 @@ void flash_activate_task(void *pvParameters)
 				
 						// enable lifepo output (before first data read to give a time buffer before flashing),
 						// and make sure the flash enable pin is high
-						// If we can't, halt flash (this may happen due to a mutex timeout; very very unlikely)
-						if (!flash_arm()) {
-							// error would've been logged
-							_set_5v_enable(false);
-							xSemaphoreGive(processor_adc_mutex);
-							xSemaphoreGive(i2c_mutex);
-							xSemaphoreGive(critical_action_mutex);
-							continue;
-						}
+						flash_arm();
 
 					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 			
@@ -176,19 +188,19 @@ void flash_activate_task(void *pvParameters)
 		
 		// using the sums, compute and populate the flash compare struct corresponding to this burst
 		average_piecewise_uint8(current_cmp_struct->led_temps_avg_data, current_sums_struct.led_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->lifepo_bank_temps_avg_data, current_sums_struct.lifepo_bank_temps_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 2);
+			NUM_FLASHES * BATCH_READS_DURING, 2);
 		average_piecewise_uint8(current_cmp_struct->lifepo_current_avg_data, current_sums_struct.lifepo_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->lifepo_volts_avg_data, current_sums_struct.lifepo_volts_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
+			NUM_FLASHES * BATCH_READS_DURING, 4);
 		average_piecewise_uint8(current_cmp_struct->led_current_avg_data, current_sums_struct.led_current_data_sums,
-			NUM_FLASHES*FLASH_DATA_ARR_LEN, 4);
-			
+			NUM_FLASHES * BATCH_READS_DURING, 4);
+	
 		// store cmp data in flash equistack, but distribute over orbit
 		if (passed_orbit_fraction(&prev_orbit_fraction, FLASH_CMP_DATA_LOGS_PER_ORBIT)) {
-			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_readings_equistack);
+			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_cmp_readings_equistack);
 		}
 	}
 	// delete this task if it ever breaks out
@@ -208,7 +220,7 @@ void average_piecewise_uint8(uint8_t* results, uint16_t* sums, uint16_t size, in
 {
 	for (int i = 0; i < len; i++)
 	{
-		results[i] = sums[i] / size;
+		results[i] = (uint8_t) (sums[i] / size);
 	}
 }
 
@@ -241,7 +253,6 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 
 	gyro_batch* gyro = &burst_struct->gyro_data[*data_arrays_tail];
 	_read_gyro_batch_unsafe(*gyro);
-	if (add_to_sum) sum_piecewise_uint8(sums_struct->led_current_data_sums, *gyro, 4);
 	
 	(*data_arrays_tail)++;
 }

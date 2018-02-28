@@ -5,23 +5,6 @@
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
 #define ANTENNA_DEPLOY_MAX_TRIES	25
 
-/* controls antenna deploy task state based on whether the antenna was deployed */
-void handle_antenna_deploy_task(void) {
-	if (!get_input(P_DET_RTN)) { // active LOW
-		// if the antenna has been deployed, suspend the task and note it occurred
-		update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, false); // we're the only task that can suspend a task explicitly
-		
-	} else if (get_sat_state() != INITIAL 
-			&& get_sat_state() != ANTENNA_DEPLOY
-			&& get_sat_state() != LOW_POWER
-			&& get_sat_state() != HELLO_WORLD_LOW_POWER) {
-		// alternatively, if it is not deployed, start the task again to deploy it
-		// (ignoring any sat states where it MUST be running or suspended)
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, true);
-	}
-}
-
 // returns the current state if no change required
 sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_state)
 {
@@ -97,9 +80,6 @@ void state_handling_task(void *pvParameters)
 		report_task_running(STATE_HANDLING_TASK);
 		
 		#if OVERRIDE_STATE_HOLD_INIT != 1
-			// handle antenna deploy task specifically
-			handle_antenna_deploy_task();	
-	
 			decide_next_state(get_sat_state());
 		#endif
 	}
@@ -187,14 +167,15 @@ static void decide_next_state(sat_state_t current_state) {
 				// if the antenna is open kill the task because the antenna has been deployed
 				// or kill it if it's run more than 5 times because it's a lost cause
 				} else if (sat_history.antenna_deployed
-					|| (!get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once (TODO)
+					|| (get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once
 					|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
 					// switch state to hello world, then determine whether we should keep trying
 					// (we WON'T be suspended on state change)
 					set_sat_state(HELLO_WORLD);
 
 					// suspend antenna deploy task if necessary
-					handle_antenna_deploy_task();
+					update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+					set_task_state_safe(ANTENNA_DEPLOY_TASK, false); // we're the only task that can suspend a task explicitly
 				}
 				break;
 

@@ -325,6 +325,7 @@ int battery_logic()
 	/////
 
 	#ifndef BAT_TESTING
+	#ifndef WITHOUT_DECOMMISION
 	for (int bat = 0; bat < 4; bat++)
 	{
 		if (charging_data.decommissioned[bat])
@@ -403,6 +404,7 @@ int battery_logic()
 			}
 		}
 	}
+	#endif
 	#endif
 
 	// drawing metadata about the state of the batteries
@@ -756,11 +758,11 @@ int battery_logic()
 
 	#ifndef BAT_TESTING
 	bool got_mutex = true;
-	if (!xSemaphoreTake(battery_charging_mutex, (TickType_t) BAT_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(critical_action_mutex, (TickType_t) CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 		// if for some reason we can't get the bat charging mutex (it times out),
 		// ignore it and move on (the only things this mutex prevents is flashing while
 		// lifepos are charging, which is less worrisome than not running charging logic)
-		log_error(ELOC_BAT_CHARGING, ECODE_BAT_CHARGING_MUTEX_TIMEOUT, true);
+		log_error(ELOC_BAT_CHARGING, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 		got_mutex = false;
 	}
 
@@ -796,15 +798,17 @@ int battery_logic()
 		{
 			print("discharging failed, decomissioning bat: %d", charging_data.lion_discharging);
 
+			#ifndef WITHOUT_DECOMMISION
 			// NOTE: will be alright even if already decomissioned
 			decommission(charging_data.lion_discharging);
+			#endif
 
 			// TODO: check with special attention here
 			for (battery_t bat = 0; bat < 4; bat++)
 				charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
 			// we're going to just restart the battery charging logic
-			if (got_mutex) xSemaphoreGive(battery_charging_mutex);
+			if (got_mutex) xSemaphoreGive(critical_action_mutex);
 			print("restarting battery logic");
 			return false;
 		}
@@ -830,7 +834,11 @@ int battery_logic()
 		{
 			// TODO: do we need immediate action here?
 			print("setting to not discharge failed, decomissioning bat: %d", lion_not_discharging);
+
+			#ifndef WITHOUT_DECOMMISION
 			decommission(lion_not_discharging);
+			#endif
+
 			already_decomissioned = lion_not_discharging;
 		}
 	}
@@ -876,9 +884,11 @@ int battery_logic()
 		{
 			print("changing charge pin failed, decomissioning bat %d if it hasn't been decomissioned already", bat_type);
 
+			#ifndef WITHOUT_DECOMMISION
 			// TODO: do we need immediate action here?
 			if (charging_data.bat_charging != already_decomissioned)
 				decommission(charging_data.bat_charging);
+			#endif
 		}
 	}
 
@@ -889,7 +899,7 @@ int battery_logic()
 	for (int bat = 0; bat < 4; bat++)
 		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
-	if (got_mutex) xSemaphoreGive(battery_charging_mutex);
+	if (got_mutex) xSemaphoreGive(critical_action_mutex);
 	#endif
 
 	print("leaving battery charging");

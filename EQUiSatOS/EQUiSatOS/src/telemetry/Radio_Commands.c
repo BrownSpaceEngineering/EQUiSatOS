@@ -1,4 +1,9 @@
-	#include "Radio_Commands.h"
+#include "Radio_Commands.h"
+
+char ground_callsign_buf[] = {'K', '1', 'A', 'D'};
+char echo_buf[] = {'E', 'C', 'H', 'O'};
+char kill_buf[] = {'K', 'I', 'L', 'L'};
+char flash_buf[] = {'F', 'L', 'A', 'S', 'H'};
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -30,7 +35,45 @@ void set_command_mode(bool delay) {
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_AFTER_MS);
 }
 
-bool send_command(int numBytesReceiving) {
+bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index) {
+	for (int i = 0; i < len; i++) {
+		if (rx_buf_index == (LEN_SENDBUFFER - 1) || buf[i] != sendbuffer[rx_buf_index]) {
+			return false;
+		}
+		i++;
+		rx_buf_index++;
+	}
+	return true;
+}
+
+rx_cmd_type_t check_rx_received(void) {
+	//checking for callsign
+	for (int i = 0; i < (LEN_RECEIVEBUFFER - LEN_GROUND_CALLSIGN); i++) {
+		bool callsign_valid = true;
+		for (int j = 0; j < LEN_GROUND_CALLSIGN; j++) {
+			if (receivebuffer[i+j] != ground_callsign_buf[j]) {
+				callsign_valid = false;
+				break;
+			}
+		}
+		if (callsign_valid) {
+			uint8_t rxbuf_cmd_start_index = i+4;
+			if (check_if_rx_matches(echo_buf, LEN_ECHOBUF, rxbuf_cmd_start_index)) {
+				//ECHO
+				return CMD_ECHO;
+			} else if (check_if_rx_matches(kill_buf, LEN_KILLBUF, rxbuf_cmd_start_index)) {
+				//KILL
+				return CMD_KILL;
+			} else if (check_if_rx_matches(flash_buf, LEN_FLASHBUF, rxbuf_cmd_start_index)) {
+				//FLASH
+				return CMD_FLASH;
+			}
+		}
+	}
+	return CMD_NONE;
+}
+
+/*bool send_command(int numBytesReceiving) {
 	clear_USART_rx_buffer();
 	waitingForData = true;
 	receiveDataReady = false;
@@ -42,7 +85,7 @@ bool send_command(int numBytesReceiving) {
 		i++;
 	}
 	return receiveDataReady;
-}
+}*/
 
 void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
@@ -107,7 +150,7 @@ bool warm_reset(void){
 	sendbuffer[2] = 0x01; //warm
 	sendbuffer[3] = ~0x1E;
 	sendbuffer[4] = '\0';
-	if (send_command(3)) {
+	/*if (send_command(3)) {
 		if ((check_checksum(receivebuffer+1, 1, receivebuffer[2])) && (receivebuffer[1] == 0)) {
 			return true;
 		}
@@ -117,7 +160,7 @@ bool warm_reset(void){
 		delay_ms(WARM_RESET_REBOOT_TIME);
 		setRadioPower(true);
 		return false;
-	}
+	}*/
 }
 
 /*void set_modulation_format(void){
@@ -149,29 +192,23 @@ int response_check(char arr[]){
 }
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
-bool XDL_get_temperature(uint16_t* radioTemp) {
+bool XDL_prepare_get_temp() {
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x50;
 	sendbuffer[2] = ~0x50;
 	sendbuffer[3] = '\0';
-	bool toReturn = false;
-	if (send_command(5)) {
-		if (toReturn = check_checksum(receivebuffer+1, 3, receivebuffer[4])) {
-			*radioTemp = (receivebuffer[2] << 8) | receivebuffer[3];
-		} else {
-			//TODO: maybe wait a little longer? or reset radio?
-			//TODO: Log error: couldn't get temp from radio
-		}
-	}
-	return toReturn;
 }
 
+/*Controls TX buffer between proc TX and radio.*/
 void setTXEnable(bool enable) {
-	set_output(enable, P_TX_EN);
+	//Invert because active low to open
+	set_output(~enable, P_TX_EN);
 }
 
+/*Controls TX buffer between proc TX and radio.*/
 void setRXEnable(bool enable) {
-	set_output(enable, P_RX_EN);
+	//Invert because active low to open
+	set_output(~enable, P_RX_EN);
 }
 
 /************************************************************************/
@@ -182,7 +219,8 @@ void setRXEnable(bool enable) {
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		xSemaphoreTake(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+		// take this for a shorter time than normal to not mess up RTOS much
+		xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
 	#endif
 	
 	// we don't care too much here if the mutex times out; we gotta transmit!
@@ -192,7 +230,11 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		got_mutex = false;
 	}
 	
+	// suspend the scheduler to maek sure the whole buf is sent atomically
+	// (so the radio gets the full buf at once and doesn't cut out in the middle)
+	vTaskSuspendAll();
 	usart_send_buf(buf, size);
+	xTaskResumeAll();
 	get_hw_states()->radio_transmitting = true;
 	
 	if (got_mutex) hardware_state_mutex_give();
@@ -211,7 +253,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	if (got_mutex) hardware_state_mutex_give();
 	
 	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		xSemaphoreGive(print_mutex);
+		xSemaphoreGiveRecursive(print_mutex);
 	#endif
 	
 }
