@@ -178,7 +178,7 @@ void print_low_power_data(low_power_data_t* data, int i) {
 
 void print_sat_error(sat_error_t* err, int i) {
 	print("%2d: error (%s): loc=%3d code=%3d @ %d\n", i, 
-		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode, err->timestamp);
+		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode & 0b01111111, err->timestamp);
 }
 
 
