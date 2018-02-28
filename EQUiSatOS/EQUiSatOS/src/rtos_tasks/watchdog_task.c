@@ -71,11 +71,12 @@ bool watchdog_as_function(void) {
 	// and wait for the next call of the task
 	if (curr_time < prev_time) {
 		task_pet_watchdog(got_mutex);
+		if (got_mutex) xSemaphoreGive(mutex);
 		return true;
 	}
 	prev_time = curr_time;
 	
-	for (int i = 0; i < NUM_TASKS; i++) {
+	for (task_type_t i = 0; i < NUM_TASKS; i++) {
 		if (!check_ins[i]) {
 			if (running_times[i]) {
 				watch_block = true;
