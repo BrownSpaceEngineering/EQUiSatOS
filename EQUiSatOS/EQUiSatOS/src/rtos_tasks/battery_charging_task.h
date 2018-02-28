@@ -137,7 +137,7 @@ typedef struct charging_data {
 
 	// TODO: make sure this does well on a reboots
 	// the time at which the current battery that's charging started charging
-	int curr_bat_charging_started_charging_timestamp;
+	int bat_charging_not_decreasing_timestamp;
 } charging_data_t;
 
 // NOTE: these are initialized elsewhere -- should they maybe not be?

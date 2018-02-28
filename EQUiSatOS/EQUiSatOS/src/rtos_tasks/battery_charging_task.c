@@ -22,6 +22,8 @@
 // TODO: probably need to add something for LI's that aren't holding a charge
 // TODO: make sure that batteries being recommissioned have a chance
 // TODO: make sure that everything is okay after coming back from boot
+// TODO: make sure that everywhere an array is being indexed, the right thing is happening
+// TODO: get errors in order
 
 int get_current_timestamp_wrapped(void)
 {
@@ -171,6 +173,16 @@ void decommission(battery_t bat)
 	}
 }
 
+void undecommission(battery_t bat)
+{
+	if (charging_data.decommissioned[bat])
+	{
+		charging_data.decommissioned[bat] = 0;
+		charging_data.decommissioned_count[bat]--;
+	}
+}
+
+// TODO: redo this
 int time_for_recomission(battery_t bat)
 {
 	int scale_factor = 1;
@@ -188,10 +200,13 @@ void check_for_recomission(battery_t bat)
 	{
 		charging_data.decommissioned[bat] = 0;
 
-		// we also need to do various things to make sure that the battery won't be
-		// immediately decommissioned again
-		charging_data.li_entered_low_voltage_timestamp[bat] = -1;
-		charging_data.li_last_full_or_recommissioned_timestamp[bat] = get_current_timestamp_wrapped();
+		if (is_lion(bat))
+		{
+			// we also need to do various things to make sure that the battery won't be
+			// immediately decommissioned again
+			charging_data.li_entered_low_voltage_timestamp[bat] = -1;
+			charging_data.li_last_full_or_recommissioned_timestamp[bat] = get_current_timestamp_wrapped();
+		}
 	}
 }
 
@@ -214,16 +229,14 @@ void init_charging_data()
 	// we want to initially be in FILL_LI_NEITHER_FULL_A
 	charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 
-
 	// TODO: these timestamps are going to be something else on a reboot
+	// NOTE: it's crucial that this is done well
 	// set all battery timestamps to -1
 	charging_data.li_last_full_or_recommissioned_timestamp[0] = 0;
-	charging_data.li_last_full_or_recommissioned_timestamp[1] = 0;
-
-	charging_data.curr_bat_charging_charged_started_or_was_full_timestamp = 0;
-
+	charging_data.li_last_full_or_recommissioned_timestamp[1] = 0
 	charging_data.li_entered_low_voltage_timestamp[0] = -1;
 	charging_data.li_entered_low_voltage_timestamp[1] = -1;
+	charging_data.bat_charging_not_decreasing_timestamp = 0;
 
 	charging_data.already_set_sat_state = false;
 
@@ -295,6 +308,9 @@ int battery_logic()
 	sat_state_t sat_state = get_sat_state_wrapped();
 
 	#ifndef BAT_TESTING
+	for (int bat = 0; bat < 4; bat++)
+		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
+
 	read_lion_volts_precise(
 		(uint16_t *) &(charging_data.bat_voltages[LI1]),
 		(uint16_t *) &(charging_data.bat_voltages[LI2]));
@@ -318,7 +334,7 @@ int battery_logic()
 		curr_charging_filled_up = (!get_chg_pin_val_w_conversion(charging_data.bat_charging) &&
 															 charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
 															 (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
-															charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
+															 charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		if (curr_charging_filled_up)
 				charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging]
@@ -358,7 +374,7 @@ int battery_logic()
 				// we have the expectation that both LI's will become full
 				// the charging loop will get stuck otherwise
 				if ((get_current_timestamp_wrapped() - charging_data.li_last_full_or_recommissioned_timestamp[bat])
-						  > MAX_TIME_WITHOUT_FULL_MS)
+						 > MAX_TIME_WITHOUT_FULL_MS)
 				{
 					print("decomissioning battery: %d because of long time without full\n", bat);
 					decommission(bat);
@@ -394,17 +410,17 @@ int battery_logic()
 			}
 
 			// making sure that if the same battery has been charging for some
-			// amount of time the voltage isn't always decreasing or staying the same
+			// amount of time the voltage isn't always decreasing
 			// this should be alright the first time through
 			if (charging_data.bat_charging != -1)
 			{
 				int curr_voltage = charging_data.bat_voltages[charging_data.bat_charging];
-				if (curr_voltage > charging_data.old_bat_voltages[charging_data.bat_charging] ||
+				if (curr_voltage >= charging_data.old_bat_voltages[charging_data.bat_charging] ||
 					  curr_voltage > charging_data.bat_is_lion(bat) ? LI_FULL_SANITY_MV : LF_FULL_SANITY_MV)
 				{
-					curr_bat_charging_charged_started_or_was_full_timestamp = get_current_timestamp_wrapped();
+					bat_charging_not_decreasing_timestamp = get_current_timestamp_wrapped();
 				}
-				else if (get_current_timestamp_wrapped() - curr_bat_charging_started_or_charged_timestamp
+				else if (get_current_timestamp_wrapped() - bat_charging_not_decreasing_timestamp
 									> MAX_TIME_WITHOUT_CHARGE_MS)
 				{
 					print("decommissioning battery: %d because of long time without charge or full\n", bat);
@@ -591,7 +607,7 @@ int battery_logic()
 
 	// NOTE: the other two meta states only have one charge state within them!!
 
-	// TODO: do we want a more complex system here?
+	// TODO: settle this
 	if (!charging_data.already_set_sat_state &&
 			(charging_data.curr_charge_state == FILL_LF_A ||
 			 charging_data.curr_charge_state == FILL_LF_B ||
@@ -613,8 +629,10 @@ int battery_logic()
 	// therefore, in accordance with the charging state, the batteries with lower
 	// voltages will be charged, and those with higher voltages will be discharged
 
-	// keeping track of the battery currently charging
+	// keeping track of the battery currently charging and the LI currently
+	// discharging
 	int old_bat_charging = charging_data.bat_charging;
+	int old_li_discharging = charging_data.lion_discharging;
 
 	if (charging_data.curr_meta_charge_state == ALL_GOOD)
 	{
@@ -737,13 +755,21 @@ int battery_logic()
 		if (charging_data.charging_parity)
 		{
 			charging_data.bat_charging = LI1;
+			charging_data.lion_discharging = LI2;
+
+			// TODO: do we want to implement the following (listed below)?
 			// TODO: make sure we're in no way dependent on lion_discharging -- it'll be
 			// irelevant in this case
+			// NOTE: can't set to -1 here because that indicates in many places that
+			// it's the first time through the charging loop
 			// will always discharge both LI
 		}
 		else
 		{
 			charging_data.bat_charging = LI2;
+			charging_data.lion_discharging = LI1;
+
+			// comments and TODO same as above
 			// will always discharge both LI
 		}
 
@@ -753,15 +779,15 @@ int battery_logic()
 	print("decided on battery charging: %d\n", charging_data.bat_charging);
 	print("decided on li discharging: %d\n", charging_data.lion_discharging);
 
-	// in all cases, we also need to make changes with respect to lion that isn't
-	// discharging
+	// we also need to make changes with respect to lion that isn't discharging
 	battery_t lion_not_discharging = (charging_data.lion_discharging == LI1) ? LI2 : LI1;
 
-	// if we changed the battery we're charging, we need to reset the timestamp
-	// to make sure a battery is holding a charge
-	// this should also take care of the first loop edge case
+	// if we changed the battery we're charging, we need to reset our timestamp
+	// to keep track of the health of the charging battery
+	// this should also take care of the edge case of the first time through
+	// battery logic
 	if (bat_charging != old_bat_charging)
-		curr_bat_charging_charged_started_or_was_full_timestamp = get_current_timestamp_wrapped();
+		bat_charging_not_decreasing_timestamp = get_current_timestamp_wrapped();
 
 	/////
 	// phase 3: apply the decisions we've made about which batteries to charge!
@@ -782,76 +808,40 @@ int battery_logic()
 	//  set the other lion to not discharge
 	///
 
-	// TODO: make sure the flow is clean with already_decommissioned
-	int already_decomissioned = -1;
+	// q's
+	// 1. do we need to do things multiple times?
+	// 3. is it alright that we only take action when something changes?
+	// 2. what are the conditions for errors?
+	// 4. what to do about two LI down?
 
-	if (charging_data.curr_meta_charge_state != TWO_LI_DOWN)
+	// TODO: where to add delays
+	if (lion_discharging != old_li_discharging)
 	{
-		// TODO: check with special attention here
-		// NOTE: very important to set the discharging pin to true before setting the other to false
+		// NOTE: very important to set the discharging pin to active before setting
+		// the other to false
 		int discharge_pin = get_run_dischg_pin(charging_data.lion_discharging);
-		int discharge_success = 0;
-		for (int i = 0; !discharge_success && i < MAX_TIMES_TRY_PIN; i++)
-		{
-			// NOTE: discharge pins are active low
-			set_output(false, discharge_pin);
-			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 
-			int contributing_to_output = get_st_val(charging_data.lion_discharging);
-			discharge_success = contributing_to_output;
-		}
+		// NOTE: discharge pins are active low
+		set_output(false, discharge_pin);
 
-		print("set bat to discharge: %d\n", charging_data.lion_discharging);
+		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+		// TODO: when to send an error here? -- if ST is not
 
-		// TODO*: really difficult edge case -- it might be the case that we're working
-		// with a battery that's already been decommissioned
-		if (!discharge_success)
-		{
-			print("discharging failed, decomissioning bat: %d\n", charging_data.lion_discharging);
+		// we're going to decommission here and undecommission if the satellite doesn't
+		// reboot
+		decommission(charging_data.lion_discharging);
+		// TODO: force a write to MRAM
+		// TODO worried about false negatives?
 
-			// NOTE: will be alright even if already decomissioned
-			decommission(charging_data.lion_discharging);
+		int not_discharge_pin  = get_run_chg_pin(charging_data.lion_not_discharging);
 
-			// TODO: check with special attention here
-			for (battery_t bat = 0; bat < 4; bat++)
-				charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
+		// NOTE: discharge pins are active low
+		set_output(true, discharge_pin);
 
-			// we're going to just restart the battery charging logic
-			if (got_mutex) xSemaphoreGive(battery_charging_mutex);
-			print("restarting battery logic\n");
-			return false;
-		}
+		undecommission(charging_data.lion_discharging);
 
-		// set the lion that should not be discharging to not discharge
-		int not_discharge_pin = get_run_dischg_pin(lion_not_discharging);
-		int stop_discharge_success = 0;
-		for (int i = 0; !stop_discharge_success && i < MAX_TIMES_TRY_PIN; i++)
-		{
-			// NOTE: discharge pins are active low
-			set_output(true, not_discharge_pin);
-			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-
-			int contributing_to_output = get_st_val(lion_not_discharging);
-			stop_discharge_success = !contributing_to_output;
-		}
-
-		print("set bat to not discharge: %d\n", lion_not_discharging);
-
-		// variable prevents a possible double count of whether or not a battery has
-		// been decomissioned
-		if (!stop_discharge_success)
-		{
-			// TODO: do we need immediate action here?
-			print("setting to not discharge failed, decomissioning bat: %d\n", lion_not_discharging);
-			decommission(lion_not_discharging);
-			already_decomissioned = lion_not_discharging;
-		}
-	}
-	else
-	{
-		// just setting both to discharge
-		set_output(false, get_run_dischg_pin(LI1));
-		set_output(false, get_run_dischg_pin(LI2));
+		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+		// TODO: when to send an error here?
 	}
 
 	///
@@ -859,48 +849,50 @@ int battery_logic()
 	//  set the others to not charge
 	///
 
-	// looping through each of the batteries
-	for (int bat_type = 0; bat_type < 4; bat_type++)
+	// TODO: get the charging right on the first time through
+	// if we made a change in the battery that was charging
+	if (bat_charging != old_bat_charging)
 	{
-		int charge_pin = get_run_chg_pin(bat_type);
-		int should_be_charging = (charging_data.bat_charging == bat_type); // see the enum in .h
+		// setting the bat_charging to charge
+		int chg_pin = get_run_chg_pin(bat_charging);
+		set_output(true, chg_pin);
+		print("set bat %d to charge\n", bat_charging);
 
-		int charge_success = 0;
-
-		// TODO: Should we only go through this if it's a change from their current
-		// status?
-		for (int j = 0; !charge_success && j < MAX_TIMES_TRY_PIN; j++)
+		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+		if (get_fault_pin_val_w_conversion(bat_charging))
 		{
-			set_output(should_be_charging, charge_pin);
-			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-
-			// TODO: don't really agree with the error check here
-			int charge_running = get_chg_pin_val_w_conversion(bat_type);
-
-			// TODO: check this boolean here
-			charge_success = (charge_running == should_be_charging) ||
-											 (get_panel_ref_val() <= 8000) || // we aren't in the sun
-											 (charging_data.bat_voltages[charging_data.bat_charging] >= MIGHT_BE_FULL); // could be full
+			print("fault pin active for bat %d -- decommmissioning\n", bat_charging);
+			decommission(bat_charging);
 		}
 
-		print("set bat: %d to charge status: %d\n", bat_type, should_be_charging);
-
-		if (!charge_success)
+		int new_charge_running = get_chg_pin_val_w_conversion(bat_charging);
+		if (new_charge_running)
 		{
-			print("changing charge pin failed, decomissioning bat %d if it hasn't been decomissioned already\n", bat_type);
+			// TODO: log error
+		}
 
-			// TODO: do we need immediate action here?
-			if (charging_data.bat_charging != already_decomissioned)
-				decommission(charging_data.bat_charging);
+		// TODO: will this do alright in the initial case?
+		if (old_bat_charging != -1)
+		{
+			// setting old_bat_charging to not charge
+			int chg_pin = get_run_chg_pin(old_bat_charging);
+			set_output(false, chg_pin);
+			print("set bat %d to no longer charge\n", bat_charging);
+
+			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+			if (get_fault_pin_val_w_conversion(old_bat_charging))
+			{
+				print("fault pin active for bat %d -- decommmissioning\n", old_bat_charging);
+				decommission(old_bat_charging);
+			}
+
+			old_charge_running = get_chg_pin_val_w_conversion(old_bat_charging);
+			if (old_charge_running)
+			{
+				// TODO: log error
+			}
 		}
 	}
-
-	///
-	// phase epilogue: getting everything ready for next time through
-	///
-
-	for (int bat = 0; bat < 4; bat++)
-		charging_data.old_bat_voltages[bat] = charging_data.bat_voltages[bat];
 
 	if (got_mutex) xSemaphoreGive(battery_charging_mutex);
 	#endif
