@@ -193,7 +193,9 @@ typedef enum
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
 #endif
 
-#define TRANSMIT_TASK_FREQ						15000	// 15 secs; how often to transmit
+#ifndef TESTING_SPEEDUP
+#define TRANSMIT_TASK_FREQ						20000	// 20 secs; how often to transmit
+#endif
 	#define TRANSMIT_TASK_LESS_FREQ					30000 // 30 secs; half as fast in low power
 	#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
 	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
@@ -234,6 +236,7 @@ typedef enum
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
+	#define TRANSMIT_TASK_FREQ				10000
 	#define STATE_HANDLING_TASK_FREQ		30000
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ	30000
 	#define IDLE_DATA_TASK_FREQ				2500

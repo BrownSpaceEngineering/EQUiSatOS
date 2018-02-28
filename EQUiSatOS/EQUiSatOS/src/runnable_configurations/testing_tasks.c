@@ -102,9 +102,10 @@ void testing_task(void *pvParameters)
 		/* MISC                                                                 */
 		/************************************************************************/
 		print_sample_transmissions();
+		vTaskDelay(TRANSMIT_TASK_FREQ);
+		
 		//test_message_packaging();
 		//stress_test_message_packaging();
-		vTaskDelay(2000);
 		//configASSERT(check_task_state_consistency());
 		
 		/************************************************************************/
