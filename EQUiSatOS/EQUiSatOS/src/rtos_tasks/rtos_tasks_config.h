@@ -183,7 +183,7 @@ typedef enum
 #define WATCHDOG_TASK_FREQ						1500
 														
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
-	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			1000	// 15 minutes; don't do it often if it seems to not be working
 	
 #ifndef TESTING_SPEEDUP
 #define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic

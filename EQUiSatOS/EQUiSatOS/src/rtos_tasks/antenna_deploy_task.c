@@ -25,15 +25,15 @@ void antenna_deploy_task(void *pvParameters) {
 
 	for( ;; )
 	{		
+		// report to watchdog
+		report_task_running(ANTENNA_DEPLOY_TASK);
+		
 		// only try quickly in ANTENNA_DEPLOY state, otherwise try more periodically
 		if (get_sat_state() == ANTENNA_DEPLOY) {
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_FREQ / portTICK_PERIOD_MS);
 		} else {
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 		}
-		
-		// report to watchdog
-		report_task_running(ANTENNA_DEPLOY_TASK);
 		
 		int current_pwm_pin = get_current_pwm_pin();
 		if (current_pwm_pin == 1) {
@@ -49,6 +49,8 @@ void antenna_deploy_task(void *pvParameters) {
 					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 				}
 				num_tries++;
+			} else {
+				vTaskDelay(1800000);
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
@@ -63,6 +65,9 @@ void antenna_deploy_task(void *pvParameters) {
 				} else {
 					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 				}
+				num_tries++;
+			} else {
+				vTaskDelay(3600000);
 			}
 		}
 	}

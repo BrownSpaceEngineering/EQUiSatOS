@@ -11,7 +11,7 @@
 #include <global.h>
 
 typedef uint8_t lion_volts_batch			[2];
-typedef uint8_t lion_current_batch			[2];
+typedef int8_t lion_current_batch			[2];
 typedef uint8_t panelref_lref_batch			[2];
 typedef uint8_t lion_temps_batch			[2];
 typedef uint8_t led_temps_batch				[4];
@@ -21,14 +21,14 @@ typedef uint8_t led_current_batch			[4];
 typedef uint8_t lifepo_bank_temps_batch		[2];
 typedef uint8_t ir_ambient_temps_batch		[6];
 typedef uint8_t radio_temp_batch;			// single value
-typedef uint8_t proc_temp_batch;			// single value
+typedef int8_t proc_temp_batch;				// single value
 typedef uint16_t ad7991_ctrlbrd_batch		[4];
 typedef uint16_t bat_charge_dig_sigs_batch;	// single value
 typedef uint16_t ir_object_temps_batch		[6];
 typedef uint16_t pdiode_batch;				// single value; 2 bits per reading
-typedef uint8_t accelerometer_batch			[3];
-typedef uint8_t gyro_batch					[3];
-typedef uint8_t magnetometer_batch			[3];
+typedef int8_t accelerometer_batch			[3];
+typedef int8_t gyro_batch					[3];
+typedef int8_t magnetometer_batch			[3];
 typedef struct satellite_history_batch
 {
 	bool antenna_deployed : 1;

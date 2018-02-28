@@ -3,7 +3,7 @@
 #define MIN_TIME_IN_INITIAL_S		(30*60)
 #define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
-#define ANTENNA_DEPLOY_MAX_TRIES	5
+#define ANTENNA_DEPLOY_MAX_TRIES	25
 
 /* controls antenna deploy task state based on whether the antenna was deployed */
 void handle_antenna_deploy_task(void) {

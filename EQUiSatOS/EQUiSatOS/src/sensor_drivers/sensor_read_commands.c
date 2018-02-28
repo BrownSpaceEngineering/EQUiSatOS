@@ -60,11 +60,15 @@ void init_sensor_read_commands(void) {
 
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
-static inline uint8_t truncate_16t(uint16_t src) {
+static inline uint8_t truncate_u16t(uint16_t src) {
 	return src >> 8;
 }
 
-static void log_if_out_of_bounds(uint16_t reading, uint low, uint high, uint8_t eloc, bool priority) {
+static inline int8_t truncate_16t(int16_t src) {
+	return src >> 8;
+}
+
+static void log_if_out_of_bounds(int reading, int low, int high, int eloc, bool priority) {
 	if (reading <= low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
 	} else if (reading >= high) {
@@ -89,7 +93,7 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 	sc = read_adc_mV(adc_instance, &read);
 	log_if_error(eloc, sc, priority);
 	log_if_out_of_bounds(read, low_bound, high_bound, eloc, priority);
-	*dest = truncate_16t(read);
+	*dest = truncate_u16t(read);
 }
 
 bool _set_5v_enable(bool on) {
@@ -201,7 +205,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 			status_code_genare_t sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
 			log_if_error(IR_ELOCS[i], sc, false);
 			log_if_out_of_bounds(amb, B_IR_AMB_LOW, B_IR_AMB_HIGH, IR_ELOCS[i], false);
-			batch[i] = truncate_16t(amb);
+			batch[i] = truncate_u16t(amb);
 		}
 
 		xSemaphoreGive(i2c_mutex);
@@ -218,8 +222,8 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 
 	// locks and releases processor_adc_mutex
 	read_lion_volts_precise(&val_1_precise, &val_2_precise);
-	batch[0] = truncate_16t(val_1_precise);
-	batch[1] = truncate_16t(val_2_precise);
+	batch[0] = truncate_u16t(val_1_precise);
+	batch[1] = truncate_u16t(val_2_precise);
 }
 
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
@@ -227,6 +231,8 @@ void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	{
 		commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
 		commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+		*val_1 = *val_1 * 25 / 10;
+		*val_2 = *val_2 * 25 / 10;
 
 		xSemaphoreGive(processor_adc_mutex);
 	} else {
@@ -278,17 +284,17 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	}
 
 	// results[0] = L2_SNS
-	batch1[1] = truncate_16t(results[0]);
+	batch1[1] = truncate_u16t(results[0]);
 	log_if_out_of_bounds(results[0], low_limit, high_limit, ELOC_AD7991_BBRD_L2_SNS, true);
 	// results[1] = L1_SNS
-	batch1[0] = truncate_16t(results[1]);
+	batch1[0] = truncate_u16t(results[1]);
 	log_if_out_of_bounds(results[1], low_limit, high_limit, ELOC_AD7991_BBRD_L1_SNS, true);
 
 	// results[2] = L_REF
-	batch2[1] = truncate_16t(results[2]);
+	batch2[1] = truncate_u16t(results[2]);
 	log_if_out_of_bounds(results[2], B_LREF_LOW, B_LREF_HIGH, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[3] = PANELREF
-	batch2[0] = truncate_16t(results[3]);
+	batch2[0] = truncate_u16t(results[3]);
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_BBRD_L2_SNS, true);
 }
 
@@ -430,10 +436,10 @@ void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* va
 	commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
 	commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
 
-	// 	b1 *= 1950;
-	// 	b3 *= 1950;
-	// 	b0 = (batch[0]*3870) - batch[1];
-	// 	b2 = (batch[2]*3870) - batch[3];
+	*val_2 = *val_2 * 195 / 100;
+	*val_4 = *val_4 * 195 / 100;
+	*val_1 = (*val_1 * 387 / 100) - *val_2;
+	*val_3 = (*val_3 * 387 / 100) - *val_4;
 }
 
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
@@ -459,10 +465,10 @@ void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 
 	read_lf_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
-	batch[0] = truncate_16t(val_1_precise);
-	batch[1] = truncate_16t(val_2_precise);
-	batch[2] = truncate_16t(val_3_precise);
-	batch[3] = truncate_16t(val_4_precise);
+	batch[0] = truncate_u16t(val_1_precise);
+	batch[1] = truncate_u16t(val_2_precise);
+	batch[2] = truncate_u16t(val_3_precise);
+	batch[3] = truncate_u16t(val_4_precise);
 }
 
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
@@ -606,7 +612,7 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 
 	log_if_error(ELOC_IMU_ACC, sc, false);
 	for (int i = 0; i < 3; i++) {
-		accel_batch[i] = truncate_16t(rs[i]);
+		accel_batch[i] = truncate_u16t(rs[i]);
 	}
 }
 
@@ -617,7 +623,7 @@ void _read_gyro_batch_unsafe(gyro_batch gyr_batch) {
 	log_if_error(ELOC_IMU_GYRO, sc, false);
 	for (int i = 0; i < 3; i++) {
 		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
-		gyr_batch[i] = truncate_16t(rs[i]);
+		gyr_batch[i] = truncate_u16t(rs[i]);
 	}
 }
 
@@ -638,7 +644,7 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 	log_if_error(ELOC_IMU_GYRO, sc, false);
 	for (int i = 0; i < 3; i++) {
 		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
-		gyr_batch[i] = truncate_16t(rs[i]);
+		gyr_batch[i] = truncate_u16t(rs[i]);
 	}
 }
 
@@ -659,7 +665,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 
 	log_if_error(ELOC_IMU_MAG, sc, false);
 	for (int i = 0; i < 3; i++) {
-		batch[i] = truncate_16t(rs[i]);
+		batch[i] = truncate_u16t(rs[i]);
 	}
 }
 
@@ -691,11 +697,11 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 void read_proc_temp_batch(proc_temp_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		_enable_ir_pow_if_necessary();
-		uint16_t buf;
+		int16_t buf;
 		enum status_code sc = MPU9250_read_temp(&buf);
 		log_if_error(ELOC_PROC_TEMP, sc, false);
 		log_if_out_of_bounds(buf, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, ELOC_PROC_TEMP, false);
-		*batch = truncate_16t(buf);
+		*batch = truncate_u16t(buf);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_PROC_TEMP, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -704,7 +710,7 @@ void read_proc_temp_batch(proc_temp_batch* batch) {
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {
-	*batch = truncate_16t(get_radio_temp_cached());
+	*batch = truncate_u16t(get_radio_temp_cached());
 }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
