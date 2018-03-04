@@ -255,7 +255,7 @@ void init_charging_data()
 
 	charging_data.should_move_to_antenna_deploy = false;
 
-	// set all old voltage values to -1
+	// set all new and old voltage values to -1
 	for (battery_t bat = 0; bat < 4; bat++)
 	{
 		charging_data.bat_voltages[bat] = -1;
@@ -271,6 +271,7 @@ void init_charging_data()
 	}
 
 	charging_data.charging_parity = 0;
+	persistent_charging_data.li_caused_reboot = -1;
 	print("initializing charging data - complete\n");
 }
 
@@ -894,15 +895,17 @@ int battery_logic()
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
 		// TODO: suspend the scheduler
+
 		// we're going to decommission here and undecommission if the satellite doesn't
 		// reboot
-		log_error(get_error_loc(charging_data.lion_discharging), ECODE_BAT_NOT_DISCHARGING_RESTART, 1);
 		decommission(charging_data.lion_discharging);
 
 		// TODO: force a write to the MRAM
 
 		set_li_to_discharge(lion_not_discharging, 0);
 		undecommission(charging_data.lion_discharging);
+
+		// TODO: force another write to the MRAM
 
 		// TODO: resume the scheduler
 	}
