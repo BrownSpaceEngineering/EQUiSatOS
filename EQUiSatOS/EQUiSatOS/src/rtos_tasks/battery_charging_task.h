@@ -94,7 +94,8 @@ typedef enum
 	FILL_LI_D
 } charge_state_t;
 
-typedef struct charging_data {
+typedef struct charging_data
+{
 	// the battery that's currently charging
 	int bat_charging;
 
@@ -140,6 +141,10 @@ typedef struct charging_data {
 	int charging_parity;
 } charging_data_t;
 
+typedef struct persistent_charging_data {
+	int8_t li_caused_reboot;
+} persistent_charging_data_t;
+
 // NOTE: these are initialized elsewhere -- should they maybe not be?
 // anyone doing something during which the battery state should not
 // be changed needs to honor this mutex
@@ -148,8 +153,10 @@ SemaphoreHandle_t battery_charging_mutex;
 
 // although it somewhat breaks abstraction to have the main parameter to
 // battery logic be a global variable, this is necessary for some of the
-// helper functions that use as
+// helper functions
 charging_data_t charging_data;
+
+charging_data_t persistent_charging_data;
 
 int get_error_loc(battery_t bat);
 int get_current_timestamp_wrapped(void);
