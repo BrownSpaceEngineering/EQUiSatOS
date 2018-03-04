@@ -13,27 +13,27 @@
 #include "rtos_tasks.h"
 #include "testing_functions/battery_charging_simulated_data.h"
 
-// TODO: figure out these thresholds fully
-// TODO: deal with scaling
+// TODO: figure out these thresholds fully and deal with scaling
 
 // #define BAT_TESTING
 #define WITHOUT_DECOMMISION
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
+#define LI_FULL_MV                      4190
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 			4050
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
 
 #define LF_FULL_MAX_MV             			3500
+#define LF_FULL_SANITY_MV               3000
 #define LF_FLASH_AVG_MV            			3250
 
 // thresholds for error checking and the strikes system
 #define MIGHT_BE_FULL                   4000
 #define MAX_TIME_WITHOUT_FULL_MS        6000
-#define MAX_VOLTAGE_DROP_MV             300
-#define MAX_VOLTAGE_DROP_W_CHARGE_MV		200
+#define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 
@@ -57,7 +57,7 @@ typedef enum
 	LI1 = 0,
 	LI2,
 	LFB1,
-	LFB2
+	LFB2,
 } battery_t;
 
 typedef enum
@@ -108,14 +108,19 @@ typedef struct charging_data {
 	// charging state
 	charge_state_t curr_charge_state;
 
-	// the last time each lion was full
-	int li_full_timestamp[2];
+	// TODO: make sure that this does well on a reboot
+	// the timestamp when the LI was last full
+	int li_last_full_or_recommissioned_timestamp[2];
 
 	// the last time each lion was low voltage
-	int li_low_voltage_timestamp[2];
+	int li_entered_low_voltage_timestamp[2];
 
-	// whether or not the satellite state has already been set
-	int already_set_sat_state;
+	// whether or not it's safe to move to antenna deploy at the moment
+	int should_move_to_antenna_deploy;
+
+	// whether or not the satellite state has already been set witht the state of each of
+	// the batteries
+	int already_set_sat_state[4];
 
 	// voltage data
 	int bat_voltages[4];
@@ -146,6 +151,7 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions that use as
 charging_data_t charging_data;
 
+int get_error_loc(battery_t bat);
 int get_current_timestamp_wrapped(void);
 sat_state_t get_sat_state_wrapped(void);
 int get_fault_pin_val_w_conversion(battery_t bat);
@@ -156,8 +162,11 @@ int get_st_val(battery_t bat);
 int get_panel_ref_val(void);
 int is_lion(battery_t bat);
 void init_charging_data(void);
+void set_li_to_discharge(int bat, int discharge);
+void set_bat_to_charge(int bat, int charge);
 int battery_logic(void);
 void decommission(battery_t bat);
+void undecommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);
 

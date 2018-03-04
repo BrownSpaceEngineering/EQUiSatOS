@@ -78,7 +78,7 @@ void state_handling_task(void *pvParameters)
 
 		// report to watchdog
 		report_task_running(STATE_HANDLING_TASK);
-		
+
 		#if OVERRIDE_STATE_HOLD_INIT != 1
 			decide_next_state(get_sat_state());
 		#endif
@@ -89,7 +89,7 @@ void state_handling_task(void *pvParameters)
 }
 
 static void decide_next_state(sat_state_t current_state) {
-	
+
 	// if the current state is RIP we don't want to do anything
 	if (current_state != RIP)
 	{
@@ -133,7 +133,7 @@ static void decide_next_state(sat_state_t current_state) {
 		int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
 
 		int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
-		
+
 		int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
 		int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
 		int low_power_entry_criteria = charging_data.curr_meta_charge_state == TWO_LI_DOWN
@@ -151,10 +151,8 @@ static void decide_next_state(sat_state_t current_state) {
 		switch (current_state)
 		{
 			case INITIAL:
-				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S 
-					&& both_li_above_down 
-					&& sat_history.lion_1_charged  // TODO: Don't actually consider entire sat_history; we want to only consider last 30mins
-					&& sat_history.lion_2_charged) { // ""
+				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S
+					&& charging_data.should_move_to_antenna_deploy) { // ""
 					set_sat_state(ANTENNA_DEPLOY);
 				}
 				break;
@@ -163,7 +161,7 @@ static void decide_next_state(sat_state_t current_state) {
 				// if we should go to low power, do so
 				if (one_li_below_down) {
 					set_sat_state(HELLO_WORLD_LOW_POWER);
-							
+
 				// if the antenna is open kill the task because the antenna has been deployed
 				// or kill it if it's run more than 5 times because it's a lost cause
 				} else if (sat_history.antenna_deployed
