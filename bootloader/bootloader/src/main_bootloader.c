@@ -3,39 +3,18 @@
 #include <stdbool.h>
 
 #include <spi.h>
-#include <delay.h>
 
 #include "Bootloader/MRAM_Commands.h"
 #include "Bootloader/flash_memory.h"
 
-#define SAM_BA_BOTH_INTERFACES      0
-#define SAM_BA_UART_ONLY            1
-#define SAM_BA_USBCDC_ONLY          2
-
-#ifndef SAM_BA_INTERFACE
-#define SAM_BA_INTERFACE    SAM_BA_BOTH_INTERFACES
-#endif
-
-
 // start address of program memory (reset handler/main execution point)
 // (this is in the flash memory (program memory) address space)
 // NOTE: must be a multiple of NVMCTRL_PAGE_SIZE
-#if SAM_BA_INTERFACE == SAM_BA_USBCDC_ONLY  ||  SAM_BA_INTERFACE == SAM_BA_UART_ONLY
-#define APP_START_ADDRESS                 ((uint8_t *) 0x00003000)
-#elif SAM_BA_INTERFACE == SAM_BA_BOTH_INTERFACES
 #define APP_START_ADDRESS                 ((uint8_t *) 0x00006000)
-#endif
-
 #define APP_START_RESET_VEC_ADDRESS (APP_START_ADDRESS+(uint32_t)0x04)
 
-#define NVM_SW_CALIB_DFLL48M_COARSE_VAL   58
-#define NVM_SW_CALIB_DFLL48M_FINE_VAL     64
-
-//My defines
-#define BOOT_LOAD_PIN                     PIN_PA15
-#define BOOT_PIN_MASK                     (1U << (BOOT_LOAD_PIN & 0x1f))
-
 // TESTING
+//#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 /************************************************************************/
@@ -64,44 +43,27 @@ void flash_mem_test(void);
 void corrupt_prog_mem(void);
 #endif
 
-static void check_start_application(void);
+static void start_application(void);
 
 /**
  * \brief Check the application startup condition
  *
  */
-static void check_start_application(void)
+static void start_application(void)
 {
 	uint32_t app_start_address;
 
 	/* Load the Reset Handler address of the application */
-	// TODO: check this!!!!
 	app_start_address = *(uint32_t *)(APP_START_ADDRESS + 4);
 
 	/**
 	 * Test reset vector of application @APP_START_ADDRESS+4
+	 * (check if application was erased)
 	 * Stay in SAM-BA if *(APP_START+0x4) == 0xFFFFFFFF
-	 * Application erased condition
 	 */
 	if (app_start_address == 0xFFFFFFFF) {
 		/* Stay in bootloader */
-		return;
-	}
-
-	volatile PortGroup *boot_port = (volatile PortGroup *)(&(PORT->Group[BOOT_LOAD_PIN / 32]));
-	volatile bool boot_en;
-
-	/* Enable the input mode in Boot GPIO Pin */
-	boot_port->DIRCLR.reg = BOOT_PIN_MASK;
-	boot_port->PINCFG[BOOT_LOAD_PIN & 0x1F].reg = PORT_PINCFG_INEN | PORT_PINCFG_PULLEN;
-	boot_port->OUTSET.reg = BOOT_PIN_MASK;
-	/* Read the BOOT_LOAD_PIN status */
-	boot_en = (boot_port->IN.reg) & BOOT_PIN_MASK;
-
-	/* Check the bootloader enable condition */
-	if (!boot_en) {
-		/* Stay in bootloader */
-		// TODO: do something more drastic (try to rewrite whole program memory?)
+		// TODO: What to do??????? Try MRAM again?
 		return;
 	}
 
@@ -114,17 +76,6 @@ static void check_start_application(void)
 	/* Jump to user Reset Handler in the application */
 	asm("bx %0"::"r"(app_start_address));
 }
-
-
-
-#ifdef DEBUG_ENABLE
-#	define DEBUG_PIN_HIGH 	port_pin_set_output_level(BOOT_LED, 1)
-#	define DEBUG_PIN_LOW 	port_pin_set_output_level(BOOT_LED, 0)
-#else
-#	define DEBUG_PIN_HIGH 	do{}while(0)
-#	define DEBUG_PIN_LOW 	do{}while(0)
-#endif
-
 
 /*
 	Checks whether the program memory located at flash_addr in the flash memory
@@ -230,16 +181,21 @@ int main(void)
 		corrupt_prog_mem();
 	#endif
 
-	// read in batches of program memory from the MRAM, and compare each to its value
-	// currently in the flash program memory, and correct any section (batch-sized) if necessary
- 	int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
- 	set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
+	#ifndef DISABLE_REWRITE_FROM_MRAM
+		// read in batches of program memory from the MRAM, and compare each to its value
+		// currently in the flash program memory, and correct any section (batch-sized) if necessary
+ 		int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
+ 		set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
+	#else 
+		// note we didn't rewrite for consistency
+		set_prog_memory_rewritten(false, &spi_master_instance, &slave1, &slave2);
+	#endif
 
 	// reset SPI module to avoid conflicts when OS uses it
 	mram_reset(&spi_master_instance);
 
 	// jump to start of program in memory
-	check_start_application();
+	start_application();
 
 	return 0;
 }
