@@ -42,7 +42,7 @@
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-#define PROG_MEM_SIZE						80996
+#define PROG_MEM_SIZE						124196
 // address at which binary is stored in mram
 #define MRAM_APP_ADDRESS					1058
 // address at which prog mem rewritten boolean is stored in mram
@@ -232,8 +232,11 @@ int main(void)
 
 	// read in batches of program memory from the MRAM, and compare each to its value
 	// currently in the flash program memory, and correct any section (batch-sized) if necessary
- 	//int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
- 	//set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
+ 	int num_bufs_rewritten = check_and_fix_prog_mem(&spi_master_instance, &slave1, &slave2);
+ 	set_prog_memory_rewritten(num_bufs_rewritten > 0, &spi_master_instance, &slave1, &slave2);
+
+	// reset SPI module to avoid conflicts when OS uses it
+	mram_reset(&spi_master_instance);
 
 	// jump to start of program in memory
 	check_start_application();

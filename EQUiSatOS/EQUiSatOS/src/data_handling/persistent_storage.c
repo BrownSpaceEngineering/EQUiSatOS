@@ -652,7 +652,7 @@ void write_cur_prog_mem_to_mram(void) {
 	
 	size_t num_copied = 0;
 	uint32_t flash_addr = PROG_MEM_START_ADDR;
-	uint32_t mram_addr = STORAGE_PROG_MEM_REWRITTEN_ADDR;
+	uint32_t mram_addr = STORAGE_PROG_MEMORY_ADDR;
 
 	while (num_copied < PROG_MEM_SIZE) {
 		size_t buf_size = min(PROG_MEM_SIZE - num_copied, PROG_MEM_COPY_BUF_SIZE);

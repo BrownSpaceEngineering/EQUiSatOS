@@ -40,6 +40,12 @@ status_code_genare_t mram_initialize_master(struct spi_module *spi_master_instan
 void mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin);
 
 /************************************************************************/
+/* Reset the MRAM SPI interface and its slaves.							*/
+/* Used in bootloader to reset SPI module before booting to the OS      */
+/************************************************************************/
+void mram_reset(struct spi_module *spi_master_instance);
+
+/************************************************************************/
 /* Given master, slave number of bytes and initial address, the content */
 /* will be read to data (note only address bits 0-18 (inclusive!) are used*/
 /************************************************************************/

@@ -36,7 +36,7 @@
 
 // constants used when copying program memory live to MRAM
 #define PROG_MEM_START_ADDR					0x6000	// use default 0x0 OR set with .text=<addr> in Linker Memory settings
-#define PROG_MEM_SIZE						81240	// find for latest build in "output"
+#define PROG_MEM_SIZE						124196	// find for latest build in "output"
 #define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
 
 /************************************************************************/
