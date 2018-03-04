@@ -108,10 +108,14 @@ enum error_locations {
 	ELOC_LOW_POWER_DATA =				69,
 	ELOC_EQUISTACK_GET =				70,
 	ELOC_EQUISTACK_PUT =				71,
-	
-	ELOC_BOOTLOADER =					72,
-	ELOC_RTOS =							73
 
+	ELOC_BOOTLOADER =					72,
+	ELOC_RTOS =							73,
+
+	ELOC_BAT_L1 =           74,
+	ELOC_BAT_L2 =           75,
+	ELOC_BAT_LFB1 =         76,
+	ELOC_BAT_LFB2 =         77
 };
 
 /******************** PROBLEM CODES ********************/
@@ -171,10 +175,19 @@ enum error_codes {
 	ECODE_WATCHDOG_MUTEX_TIMEOUT =		47,
 	ECODE_EQUISTACK_MUTEX_TIMEOUT =		48,
 	ECODE_IRPOW_MUTEX_TIMEOUT =			49,
-	
+
 	ECODE_REWROTE_PROG_MEM =			50,
-	ECODE_STACK_OVERFLOW =				51
-	
+	ECODE_STACK_OVERFLOW =				51,
+
+	ECODE_BAT_NOT_DISCHARGING =         52,
+	ECODE_BAT_NOT_NOT_DISCHARGING =     53,
+	ECODE_BAT_NOT_CHARGING =         54,
+	ECODE_BAT_NOT_NOT_CHARGING =     55,
+	ECODE_BAT_NOT_DISCHARGING_RESTART = 56,
+	ECODE_BAT_FAULT =                   57,
+	ECODE_NOT_FULL_FOR_WHILE =          58,
+	ECODE_LOW_VOLTAGE_FOR_WHILE =       59,
+	ECODE_RECOMMISSION =                60
 };
 
 /************************************************************************/

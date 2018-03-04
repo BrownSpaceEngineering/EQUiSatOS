@@ -56,7 +56,7 @@ typedef enum
 	LI1 = 0,
 	LI2,
 	LFB1,
-	LFB2
+	LFB2,
 } battery_t;
 
 typedef enum
@@ -114,8 +114,12 @@ typedef struct charging_data {
 	// the last time each lion was low voltage
 	int li_entered_low_voltage_timestamp[2];
 
-	// whether or not the satellite state has already been set
-	int already_set_sat_state;
+	// whether or not it's safe to move to antenna deploy at the moment
+	int should_move_to_antenna_deploy;
+
+	// whether or not the satellite state has already been set witht the state of each of
+	// the batteries
+	int already_set_sat_state[4];
 
 	// voltage data
 	int bat_voltages[4];
@@ -146,6 +150,7 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions that use as
 charging_data_t charging_data;
 
+int get_error_loc(battery_t bat);
 int get_current_timestamp_wrapped(void);
 sat_state_t get_sat_state_wrapped(void);
 int get_fault_pin_val_w_conversion(battery_t bat);
@@ -156,8 +161,11 @@ int get_st_val(battery_t bat);
 int get_panel_ref_val(void);
 int is_lion(battery_t bat);
 void init_charging_data(void);
+void set_li_to_discharge(int bat, int discharge);
+void set_bat_to_charge(int bat, int charge);
 int battery_logic(void);
 void decommission(battery_t bat);
+void undecommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);
 

@@ -7,14 +7,19 @@
 
 #include "battery_charging_task.h"
 
-// TODO: update sat state history when LF's fill up
 // TODO: make sure that everything is okay after coming back from boot
-// TODO: get errors in order
 
 // To check (TODO):
-//   - make sure that everywhere an array is being indexed, the right thing is happening
+//   - make sure that everywhere an array is being indexed, the right thing is
+//     happening (i.e. we never try to use the index -1)
 //   - check for edge cases where something is dependent on the initial value of these state variables
+//     (especially the li_discharging and the bat_charging variables)
 //   - initialization of timestamps after reboot
+//   - look out for battery_t variables being set to -1
+//   - make sure the flow isn't in any way dependent on the individual values of the variable for the
+//     discharging LI
+//   - check all pins
+//   - error priorities
 
 int get_current_timestamp_wrapped(void)
 {
@@ -38,6 +43,29 @@ sat_state_t get_sat_state_wrapped(void)
 	#endif
 }
 
+int get_error_loc(battery_t bat)
+{
+	switch (bat)
+	{
+		case LI1:
+			return ELOC_BAT_L1;
+
+		case LI2:
+			return ELOC_BAT_L2;
+
+		case LFB1:
+			return ELOC_BAT_LFB1;
+
+		case LFB2:
+			return ELOC_BAT_LFB2;
+
+		default:
+			configASSERT(false);
+			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
+			return ELOC_BAT_CHARGING;
+	}
+}
+
 int get_run_chg_pin(battery_t bat)
 {
 	switch (bat)
@@ -55,6 +83,7 @@ int get_run_chg_pin(battery_t bat)
 			return P_LF_B2_RUNCHG;
 
 		default:
+			configASSERT(false);
 			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
 			return P_L1_RUN_CHG;
 	}
@@ -88,6 +117,7 @@ int get_chg_pin_val_w_conversion(battery_t bat)
 			break;
 
 		default:
+			configASSERT(false);
 			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
 			chg_position = 12;
 			break;
@@ -122,6 +152,7 @@ int get_fault_pin_val_w_conversion(battery_t bat)
 			break;
 
 		default:
+			configASSERT(false);
 			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, true);
 			fault_position = 13;
 			break;
@@ -175,7 +206,7 @@ void undecommission(battery_t bat)
 
 int time_for_recomission(battery_t bat)
 {
-	int decomissioned_count = charging_data.decommissioned_count[bat];
+	int decommissioned_count = charging_data.decommissioned_count[bat];
 	return Min(decommissioned_count * INITIAL_RECOMISSION_TIME_S, MAX_RECOMISSION_TIME_S);
 }
 
@@ -219,7 +250,10 @@ void init_charging_data()
 	charging_data.li_entered_low_voltage_timestamp[0] = -1;
 	charging_data.li_entered_low_voltage_timestamp[1] = -1;
 
-	charging_data.already_set_sat_state = false;
+	for (battery_t bat = 0; bat < 4; bat++)
+		charging_data.already_set_sat_state[bat] = 0;
+
+	charging_data.should_move_to_antenna_deploy = false;
 
 	// set all old voltage values to -1
 	for (battery_t bat = 0; bat < 4; bat++)
@@ -238,6 +272,42 @@ void init_charging_data()
 
 	charging_data.charging_parity = 0;
 	print("initializing charging data - complete\n");
+}
+
+void set_li_to_discharge(int bat, int discharge)
+{
+	int discharge_pin = get_run_dischg_pin(bat);
+
+	// NOTE: discharge pins are active low
+	set_output(!discharge, discharge_pin);
+
+	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+	int discharging_contributing_to_output = get_st_val(bat);
+	if (discharging_contributing_to_output != discharge)
+	{
+		log_error(get_error_loc(bat), discharge ? ECODE_BAT_NOT_DISCHARGING : ECODE_BAT_NOT_NOT_DISCHARGING, true);
+	}
+}
+
+void set_bat_to_charge(int bat, int charge)
+{
+	int chg_pin = get_run_chg_pin(bat);
+	set_output(charge, chg_pin);
+	print("set bat %d to charge\n", bat);
+
+	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+	if (get_fault_pin_val_w_conversion(bat))
+	{
+		print("fault pin active for bat %d -- decommmissioning\n", bat);
+		log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
+		decommission(bat);
+	}
+
+	int new_charge_running = get_chg_pin_val_w_conversion(bat);
+	if (new_charge_running != charge)
+	{
+		log_error(get_error_loc(bat), charge ? ECODE_BAT_NOT_CHARGING : ECODE_BAT_NOT_NOT_CHARGING, false);
+	}
 }
 
 void battery_charging_task(void *pvParameters)
@@ -315,7 +385,7 @@ int battery_logic()
 		curr_charging_filled_up = (!get_chg_pin_val_w_conversion(charging_data.bat_charging) &&
 															 charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
 															 (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
-															 charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
+															 charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
 
 		if (curr_charging_filled_up)
 				charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging]
@@ -341,7 +411,11 @@ int battery_logic()
 		{
 			print("checking whether to recomission battery: %d\n", bat);
 			check_for_recomission(bat);
-			print("decided: %d\n", bat);
+			int recommissioned = !charging_data.decommissioned[bat];
+
+			print("decided: %d\n", recommissioned);
+			if (recommissioned)
+				log_error(get_error_loc(bat), ECODE_RECOMMISSION, 0);
 		}
 	}
 
@@ -357,6 +431,7 @@ int battery_logic()
 					 > MAX_TIME_WITHOUT_FULL_MS)
 			{
 				print("decomissioning battery: %d because of long time without full\n", bat);
+				log_error(get_error_loc(bat), ECODE_NOT_FULL_FOR_WHILE, 1);
 				decommission(bat);
 				continue;
 			}
@@ -376,6 +451,7 @@ int battery_logic()
 					// next time -- this is done in the decommission function that will also take
 					// care of other things like this
 					print("decomissioning battery: %d because of long time at low voltage\n", bat);
+					log_error(get_error_loc(bat), ECODE_LOW_VOLTAGE_FOR_WHILE, 1);
 					decommission(bat);
 					continue;
 				}
@@ -411,6 +487,56 @@ int battery_logic()
 											 charging_data.bat_voltages[LFB2] > LF_FULL_MAX_MV) ||
 											(num_lf_down == 1 &&
 											 charging_data.bat_voltages[good_lf] > LF_FULL_MAX_MV);
+
+  // updating externally facing variables
+	if (num_li_down == 0)
+	{
+		if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
+			charging_data.should_move_to_antenna_deploy = 1;
+	}
+	else if (num_li_down == 1)
+	{
+		if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
+			charging_data.should_move_to_antenna_deploy = 1;
+	}
+	else
+	{
+		charging_data.should_move_to_antenna_deploy = 1;
+	}
+
+	for (battery_t bat = 0; bat < 4; bat++)
+	{
+		if (!charging_data.already_set_sat_state[bat])
+		{
+			int threshold = is_lion(bat) ? LI_FULL_SANITY_MV : LF_FULL_SANITY_MV;
+			if (charging_data.bat_voltages[bat] > threshold)
+			{
+				switch (bat)
+				{
+					case LI1:
+						update_sat_event_history(false, true, false, false, false, false, false);
+						break;
+
+					case LI2:
+						update_sat_event_history(false, false, true, false, false, false, false);
+						break;
+
+					case LFB1:
+						update_sat_event_history(false, false, false, true, false, false, false);
+						break;
+
+					case LFB2:
+						update_sat_event_history(false, false, false, false, true, false, false);
+						break;
+
+					default:
+						configASSERT(false);
+						log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, 1);
+						break;
+				}
+			}
+		}
+	}
 
 	/////
 	// phase 1: determine whether we want to make a change to the charge state
@@ -530,6 +656,7 @@ int battery_logic()
 
 					default:
 						// trying to get past -Wswitch
+						configASSERT(false);
 						log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, 1);
 						break;
 				}
@@ -557,6 +684,7 @@ int battery_logic()
 
 				default:
 					// trying to get past -Wswitch
+					configASSERT(false);
 					log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, 1);
 					break;
 			}
@@ -564,31 +692,6 @@ int battery_logic()
 	}
 
 	// NOTE: the other two meta states only have one charge state within them!!
-
-	if (!charging_data.already_set_sat_state)
-	{
-		if (num_li_down == 0)
-		{
-			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
-			{
-				update_sat_event_history(false, true, true, false, false, false, false);
-				charging_data.already_set_sat_state = true;
-			}
-		}
-		else if (num_li_down == 1)
-		{
-			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
-			{
-				update_sat_event_history(false, true, true, false, false, false, false);
-				charging_data.already_set_sat_state = true;
-			}
-		}
-		else
-		{
-			update_sat_event_history(false, true, true, false, false, false, false);
-			charging_data.already_set_sat_state = true;
-		}
-	}
 
 	print("decided on charge state: %d\n", charging_data.curr_charge_state);
 
@@ -663,6 +766,7 @@ int battery_logic()
 
 			default:
 				// trying to get past -Wswitch
+				configASSERT(false);
 				log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, 1);
 				break;
 		}
@@ -697,6 +801,7 @@ int battery_logic()
 
 			default:
 				// trying to get past -Wswitch
+				configASSERT(false);
 				log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE, 1);
 				break;
 		}
@@ -728,22 +833,12 @@ int battery_logic()
 		if (charging_data.charging_parity)
 		{
 			charging_data.bat_charging = LI1;
-			charging_data.lion_discharging = LI2;
-
-			// TODO: do we want to implement the following (listed below)?
-			// TODO: make sure we're in no way dependent on lion_discharging -- it'll be
-			// irelevant in this case
-			// NOTE: can't set to -1 here because that indicates in many places that
-			// it's the first time through the charging loop
-			// will always discharge both LI
+			charging_data.lion_discharging = -1;
 		}
 		else
 		{
 			charging_data.bat_charging = LI2;
-			charging_data.lion_discharging = LI1;
-
-			// comments same as above
-			// will always discharge both LI
+			charging_data.lion_discharging = -1;
 		}
 
 		charging_data.charging_parity = !charging_data.charging_parity;
@@ -751,9 +846,6 @@ int battery_logic()
 
 	print("decided on battery charging: %d\n", charging_data.bat_charging);
 	print("decided on li discharging: %d\n", charging_data.lion_discharging);
-
-	// we also need to make changes with respect to lion that isn't discharging
-	battery_t lion_not_discharging = (charging_data.lion_discharging == LI1) ? LI2 : LI1;
 
 	/////
 	// phase 3: apply the decisions we've made about which batteries to charge!
@@ -774,40 +866,32 @@ int battery_logic()
 	//  set the other lion to not discharge
 	///
 
-	if (lion_discharging != old_li_discharging)
+	if (charging_data.curr_meta_charge_state == TWO_LI_DOWN)
 	{
+		set_li_to_discharge(LI1, 1);
+		set_li_to_discharge(LI2, 1);
+	}
+	else if (charging_data.lion_discharging != old_li_discharging)
+	{
+		// we also need to make changes with respect to lion that isn't discharging
+		battery_t lion_not_discharging = (charging_data.lion_discharging == LI1) ? LI2 : LI1;
+
 		// NOTE: very important to set the discharging pin to active before setting
 		// the other to inactive
-		int discharge_pin = get_run_dischg_pin(charging_data.lion_discharging);
+		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// NOTE: discharge pins are active low
-		set_output(false, discharge_pin);
-
-		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-		int discharging_contributing_to_output = get_st_val(lion_discharging);
-		if (!discharging_contributing_to_output)
-		{
-			// TODO: log an error
-		}
-
-		// TODO: suspend and resume the scheduler
+		// TODO: suspend the scheduler
 		// we're going to decommission here and undecommission if the satellite doesn't
 		// reboot
+		log_error(get_error_loc(charging_data.lion_discharging), ECODE_BAT_NOT_DISCHARGING_RESTART, 1);
 		decommission(charging_data.lion_discharging);
 
-		// TODO: force a write to MRAM
+		// TODO: force a write to the MRAM
 
-		// NOTE: discharge pins are active low
-		int not_discharge_pin  = get_run_chg_pin(charging_data.lion_not_discharging);
-		set_output(true, not_discharge_pin);
-
-		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+		set_li_to_discharge(lion_not_discharging, 0);
 		undecommission(charging_data.lion_discharging);
-		int not_discharging_contributing_to_output = get_st_val(lion_not_discharging);
-		if (not_discharging_contributing_to_output)
-		{
-			// TODO: log an error
-		}
+
+		// TODO: resume the scheduler
 	}
 
 	///
@@ -815,49 +899,21 @@ int battery_logic()
 	//  set the others to not charge
 	///
 
-	// TODO: get the charging right on the first time through
-	// if we made a change in the battery that was charging
-	if (bat_charging != old_bat_charging)
+	if (old_bat_charging == -1)
 	{
-		// setting the bat_charging to charge
-		int chg_pin = get_run_chg_pin(bat_charging);
-		set_output(true, chg_pin);
-		print("set bat %d to charge\n", bat_charging);
-
-		vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-		if (get_fault_pin_val_w_conversion(bat_charging))
+		for (int i = 0; i < 4; i++)
 		{
-			print("fault pin active for bat %d -- decommmissioning\n", bat_charging);
-			decommission(bat_charging);
+			set_bat_to_charge(i, i == charging_data.bat_charging);
 		}
+	}
+	else if (charging_data.bat_charging != old_bat_charging)
+	{
+		set_bat_to_charge(charging_data.bat_charging, 1);
 
-		int new_charge_running = get_chg_pin_val_w_conversion(bat_charging);
-		if (new_charge_running)
-		{
-			// TODO: log error
-		}
+		// TODO: did we want to add a strike condition here for a bad CHGN value?
+		// (should ask Tyler)
 
-		// TODO: will this do alright in the initial case?
-		if (old_bat_charging != -1)
-		{
-			// setting old_bat_charging to not charge
-			int chg_pin = get_run_chg_pin(old_bat_charging);
-			set_output(false, chg_pin);
-			print("set bat %d to no longer charge\n", bat_charging);
-
-			vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-			if (get_fault_pin_val_w_conversion(old_bat_charging))
-			{
-				print("fault pin active for bat %d -- decommmissioning\n", old_bat_charging);
-				decommission(old_bat_charging);
-			}
-
-			old_charge_running = get_chg_pin_val_w_conversion(old_bat_charging);
-			if (old_charge_running)
-			{
-				// TODO: log error
-			}
-		}
+		set_bat_to_charge(old_bat_charging, 0);
 	}
 
 	if (got_mutex) xSemaphoreGive(battery_charging_mutex);

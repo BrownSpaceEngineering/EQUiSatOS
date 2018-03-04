@@ -36,6 +36,7 @@
 //    logic will converge to a good state (it will be a challenge to run this simulation
 //    really well)
 
+// TODO: add to this
 void test_init(void)
 {
 	init_charging_data();
@@ -43,10 +44,10 @@ void test_init(void)
 	assert(charging_data.lion_discharging == -1);
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
 	assert(charging_data.curr_charge_state == FILL_LI_NEITHER_FULL_A);
-	assert(charging_data.li_full_timestamp[0] == -1);
-	assert(charging_data.li_full_timestamp[1] == -1);
-	assert(charging_data.li_low_voltage_timestamp[0] == -1);
-	assert(charging_data.li_low_voltage_timestamp[1] == -1);
+	assert(charging_data.li_last_full_or_recommissioned_timestamp[0] == -1);
+	assert(charging_data.li_last_full_or_recommissioned_timestamp[1] == -1);
+	assert(charging_data.li_entered_low_voltage_timestamp[0] == -1);
+	assert(charging_data.li_entered_low_voltage_timestamp[1] == -1);
 	assert(charging_data.already_set_sat_state == 0);
 
 	for (int i = 0; i < 4; i++)

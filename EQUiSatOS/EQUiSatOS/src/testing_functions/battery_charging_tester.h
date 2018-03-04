@@ -11,6 +11,7 @@
 #include "rtos_tasks/rtos_tasks.h"
 #include "battery_charging_simulated_data.h"
 
+void set_voltages(int li1_mv, int li2_mv, int lf1_mv, int lf2_mv);
 void run_battery_charging_tests(void);
 
 void test_init(void);
