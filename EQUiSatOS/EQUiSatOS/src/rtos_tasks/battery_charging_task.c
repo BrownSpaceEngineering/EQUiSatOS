@@ -304,9 +304,20 @@ void set_bat_to_charge(int bat, int charge)
 	}
 
 	int new_charge_running = get_chg_pin_val_w_conversion(bat);
-	if (new_charge_running != charge)
+	if (charge)
 	{
-		log_error(get_error_loc(bat), charge ? ECODE_BAT_NOT_CHARGING : ECODE_BAT_NOT_NOT_CHARGING, false);
+		if (!new_charge_running &&
+		    get_panel_ref_val() > 8000 &&
+				charging_data.bat_voltages[bat] >= MIGHT_BE_FULL)
+		{
+			print("not charging for bat %d -- decommissioning\n", bat);
+			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
+			decommission(bat);
+		}
+	}
+	else if (new_charge_running)
+	{
+		log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, false);
 	}
 }
 
@@ -911,10 +922,6 @@ int battery_logic()
 	else if (charging_data.bat_charging != old_bat_charging)
 	{
 		set_bat_to_charge(charging_data.bat_charging, 1);
-
-		// TODO: did we want to add a strike condition here for a bad CHGN value?
-		// (should ask Tyler)
-
 		set_bat_to_charge(old_bat_charging, 0);
 	}
 
