@@ -37,6 +37,29 @@ void init_persistent_storage(void) {
 	mram_initialize_slave(&mram2_slave, P_MRAM2_CS);
 }
 
+// Returns the length of the longest subsequence of the same byte in data,
+// stopping at size "length." Returns 1 if no character matches the first,
+// and 0 if len was 0.
+size_t longest_same_seq_len(uint8_t* data, size_t len) {
+	uint8_t same_byte = data[0];
+	size_t longest_seq_len = 0;
+	size_t cur_seq_len = 0;
+	// always look at the first byte as an easy way of returning 0 by default
+	for (size_t i = 0; i < len; i++) {
+		if (data[i] == same_byte) {
+			cur_seq_len++;
+		} else {
+			same_byte = data[i];
+			cur_seq_len = 1;
+		}
+		
+		if (cur_seq_len > longest_seq_len) {
+			longest_seq_len = cur_seq_len;
+		}
+	}
+	return longest_seq_len;
+}
+
 // wrapper for reading a field from MRAM
 // handles RAIDing, error checking and correction, and field duplication
 // returns whether accurate data should be expected in data (whether error checks worked out)
@@ -68,16 +91,60 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	bool mram1_data_matches = memcmp(data,		  mram1_data2, num_bytes) == 0;
 	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
 	
-	// TODO: incorporate status codes BECAUE THEY'LL LIKELY MATCH IF ALL 0xff's!!!!
+	/* if both sets of data match, do an additional comparison between them to determine our confidence */
+	if (mram1_data_matches && mram2_data_matches) {
+		bool mrams_match = memcmp(data, mram2_data1, num_bytes) == 0;
+		if (mrams_match) {
+			// return data in data
+			return true;
+		} else {
+			log_error(ELOC_MRAM_READ, ECODE_INCONSISTENT_DATA, true);
+			// if one has failed, definitely take the other one
+			if (!success_mram2) {
+				// return data in data
+				return false;
+			}
+			if (!success_mram1) {
+				memcpy(data, mram2_data1, num_bytes);
+				return false;
+			}
+			
+			// if both are okay but still didn't match, take the one with the shortest sequence of shared bytes
+			// (if one has failed, it's likely all 0xFF's or 0x00's and therefore "matches")
+			// note that if the data is 1 byte long this essentially defaults to mram1
+			size_t mram1_same_seq_len = longest_same_seq_len(data,		num_bytes);
+			size_t mram2_same_seq_len = longest_same_seq_len(mram2_data1, num_bytes);
+			
+			// do some additional error logging of long same sequences
+			if (num_bytes > 2 && mram1_same_seq_len == num_bytes) {
+				log_error(ELOC_MRAM1_READ, ECODE_ALL_SAME_VAL, true);
+			}
+			if (num_bytes > 2 && mram2_same_seq_len == num_bytes) {
+				log_error(ELOC_MRAM2_READ, ECODE_ALL_SAME_VAL, true);
+			}
+			
+			if (mram1_same_seq_len < mram2_same_seq_len) { // mram1 has a shorter stream
+				// return data in data
+				return false;
+			} else {
+				memcpy(data, mram2_data2, num_bytes);
+				return false;
+			}
+		}
+	}
 
 	/* if only one of the two sets of data matches, return the other one (but log error) 
-	   (also require that the status codes from that MRAM were okay, because 0xff's from
-	   a bad MRAM or SPI driver would match!) */
-	if (mram1_data_matches && !mram2_data_matches && success_mram1) {
+	   (we could that the status codes from that MRAM were okay, because 0xff's from
+	   a bad MRAM or SPI driver would match, but that would not be detected by the status
+	   codes from the driver in most cases, so it's more likely that MRAM2 failed
+	   and MRAM1 happened to have an insignificant bad status code (the only code that
+	   can really occur with the SPI driver that might mean something is an overflow--
+	   and the MRAM's wouldn't likely match if only one of them overflowed)) */
+	if (mram1_data_matches && !mram2_data_matches) {
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		return success_mram1;
 	}
-	if (!mram1_data_matches && mram2_data_matches && success_mram2) {
+	if (!mram1_data_matches && mram2_data_matches) {
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
 		memcpy(data, mram2_data1, num_bytes);
@@ -115,31 +182,10 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 			memcpy(data, mram1_data2, num_bytes);
 			return true;
 		} else {
+			log_error(ELOC_MRAM1_READ, ECODE_BAD_DATA, true); // just really bad 
 			// we could try and compare data without caring about status codes, 
 			// but this case is so unlikely and hard to recover from we determined
 			// it's not worth it 
-			return false;
-		}
-	}
-	
-	/* if both sets of data match, do an additional comparison between them to determine our confidence */
-	if (mram1_data_matches && mram2_data_matches) {
-		bool mrams_match = memcmp(data, mram2_data1, num_bytes) == 0;
-		if (mrams_match) {
-			// return data in data
-			return true;
-		} else {
-			log_error(ELOC_MRAM_READ, ECODE_INCONSISTENT_DATA, true);
-			// if they aren't matched, check status codes and take the one most likely to be right
-			// based on those
-			if (success_mram1_data2) {
-				memcpy(data, mram1_data2, num_bytes);
-			} else if (success_mram2_data1) {
-				memcpy(data, mram1_data2, num_bytes);
-			} else if (success_mram2_data1) {
-				memcpy(data, mram1_data2, num_bytes);
-			}
-			// otherwise, we'll take the data in data (mram1_data1) no matter what... 
 			return false;
 		}
 	}
@@ -175,7 +221,7 @@ void read_state_from_storage(void) {
 			memset(cached_state.sat_event_history, 0, sizeof(satellite_history_batch))
 			cached_state.prog_mem_rewritten = false;
 			cached_state.radio_revive_timestamp = 0;
-			cached_state.persistent_charging_data.li_caused_reboot = false;
+			cached_state.persistent_charging_data.li_caused_reboot = -1;
 		#else
 			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 			storage_read_field_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
@@ -553,21 +599,31 @@ void populate_error_stacks(equistack* error_stack) {
 		// read in errors from MRAM
 		uint8_t num_stored_errors;
 		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
-		
 		// make sure number of errors is in a reasonable bound (note we're using a uint)
-		if (num_stored_errors <= ERROR_STACK_MAX) {
-			// special case; we can't read in 0 bytes (invalid arg)
-			if (num_stored_errors > 0) {
-				storage_read_field_unsafe((uint8_t*) error_buf,
-					num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+		// it may be a larger issue if this is wrong, but read in errors anyway (we 
+		// wouldn't want to miss anything - but we'll add this error at the end so we 
+		// see that this happened)
+		bool error_num_too_long = false;
+		if (num_stored_errors >= ERROR_STACK_MAX) {
+			error_num_too_long = true;
+			num_stored_errors = ERROR_STACK_MAX;
+		}
+		
+		// special case; we can't read in 0 bytes (invalid arg)
+		if (num_stored_errors > 0) {
+			storage_read_field_unsafe((uint8_t*) error_buf,
+				num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 
-				// read all errors that we have stored in MRAM in
-				for (int i = 0; i < num_stored_errors; i++) {
-					equistack_Push(error_stack, &(error_buf[i]));
-				}
+			// read all errors that we have stored in MRAM in
+			for (int i = 0; i < num_stored_errors; i++) {
+				equistack_Push(error_stack, &(error_buf[i]));
 			}
-		} else {
-			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, false);
+		}
+		
+		if (error_num_too_long) {
+			// log this after we've populated, making sure it's priority
+			// so it overwrites any garbage errors we may have gotten
+			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, true);
 		}
 		
 		xSemaphoreGive(mram_spi_mutex);
@@ -595,7 +651,7 @@ void write_custom_state(void) {
 	uint8_t prog_mem_rewritten =				false;
 	uint32_t radio_revive_timestamp =				0;
 	persistent_charging_data_t persistent_charging_data;
-	persistent_charging_data.li_caused_reboot = false;
+	persistent_charging_data.li_caused_reboot = -1;
 
 	#define NUM_ERRS	0
 	const uint8_t num_errs = NUM_ERRS;

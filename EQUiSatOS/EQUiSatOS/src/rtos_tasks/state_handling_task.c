@@ -153,7 +153,7 @@ static void decide_next_state(sat_state_t current_state) {
 		{
 			case INITIAL:
 				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S
-					&& charging_data.should_move_to_antenna_deploy) { // ""
+					&& charging_data.should_move_to_antenna_deploy) {
 					set_sat_state(ANTENNA_DEPLOY);
 				}
 				break;

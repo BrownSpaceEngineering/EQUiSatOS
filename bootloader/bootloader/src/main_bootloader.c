@@ -14,7 +14,7 @@
 #define APP_START_RESET_VEC_ADDRESS (APP_START_ADDRESS+(uint32_t)0x04)
 
 // TESTING
-//#define DISABLE_REWRITE_FROM_MRAM
+#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 /************************************************************************/
@@ -23,7 +23,7 @@
 // size of binary in bytes
 #define PROG_MEM_SIZE						124196
 // address at which binary is stored in mram
-#define MRAM_APP_ADDRESS					546
+#define MRAM_APP_ADDRESS					60
 // address at which prog mem rewritten boolean is stored in mram
 #define MRAM_PROG_MEM_REWRITTEN_ADDR		42
 // size of buffer to use when copying data from mram to flash

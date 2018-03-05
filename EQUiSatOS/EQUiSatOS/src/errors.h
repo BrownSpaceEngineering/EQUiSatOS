@@ -112,10 +112,10 @@ enum error_locations {
 	ELOC_BOOTLOADER =					72,
 	ELOC_RTOS =							73,
 
-	ELOC_BAT_L1 =           74,
-	ELOC_BAT_L2 =           75,
-	ELOC_BAT_LFB1 =         76,
-	ELOC_BAT_LFB2 =         77
+	ELOC_BAT_L1 =						74,
+	ELOC_BAT_L2 =						75,
+	ELOC_BAT_LFB1 =						76,
+	ELOC_BAT_LFB2 =						77
 };
 
 /******************** PROBLEM CODES ********************/
@@ -182,13 +182,14 @@ enum error_codes {
 
 	ECODE_BAT_NOT_DISCHARGING =         53,
 	ECODE_BAT_NOT_NOT_DISCHARGING =     54,
-	ECODE_BAT_NOT_CHARGING =         55,
-	ECODE_BAT_NOT_NOT_CHARGING =     56,
+	ECODE_BAT_NOT_CHARGING =			55,
+	ECODE_BAT_NOT_NOT_CHARGING =		56,
 	ECODE_BAT_NOT_DISCHARGING_RESTART = 57,
 	ECODE_BAT_FAULT =                   58,
 	ECODE_NOT_FULL_FOR_WHILE =          59,
 	ECODE_LOW_VOLTAGE_FOR_WHILE =       60,
-	ECODE_RECOMMISSION =                61
+	ECODE_RECOMMISSION =                61,
+	ECODE_ALL_SAME_VAL =				62
 };
 
 /************************************************************************/

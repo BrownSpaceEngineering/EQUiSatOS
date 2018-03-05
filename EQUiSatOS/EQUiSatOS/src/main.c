@@ -14,6 +14,7 @@ void run_tests(void) {
 	//test_equistack();
 	//assert_transmission_constants();
 	//pointer_typecast_test();
+	//longest_same_seq_len_test();
 
 	//system_test();
 }

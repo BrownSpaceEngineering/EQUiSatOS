@@ -21,9 +21,9 @@
 #define STORAGE_PROG_MEM_REWRITTEN_ADDR			42
 #define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		46
 #define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	50
-#define STORAGE_ERR_NUM_ADDR					60
-#define STORAGE_ERR_LIST_ADDR					64
-#define STORAGE_PROG_MEMORY_ADDR				546
+#define STORAGE_PROG_MEMORY_ADDR				60
+#define STORAGE_ERR_NUM_ADDR					175080
+#define STORAGE_ERR_LIST_ADDR					175084
 
 // maximum size of a single MRAM "field," used for global buffers
 #define STORAGE_MAX_FIELD_SIZE				240 // error list
@@ -114,5 +114,8 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 /* maintenance helpers */
 void write_custom_state(void);
 void write_cur_prog_mem_to_mram(void);
+
+/* utility functions (for testing elsewhere) */
+size_t longest_same_seq_len(uint8_t* data, size_t len);
 
 #endif
