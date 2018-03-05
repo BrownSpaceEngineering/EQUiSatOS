@@ -153,8 +153,6 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions
 charging_data_t charging_data;
 
-persistent_charging_data_t persistent_charging_data;
-
 int get_error_loc(battery_t bat);
 int get_current_timestamp_wrapped(void);
 sat_state_t get_sat_state_wrapped(void);
