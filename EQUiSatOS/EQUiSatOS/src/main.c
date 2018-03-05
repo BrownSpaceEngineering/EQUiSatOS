@@ -36,9 +36,11 @@ void run_rtos_tests(void) {
 void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
 	setup_pin(true, P_L1_RUN_CHG);
 	set_output(lion1, P_L1_RUN_CHG);
+	set_output(!lion1, P_L1_DISG);
 
 	setup_pin(true, P_L2_RUN_CHG);
 	set_output(lion2, P_L2_RUN_CHG);
+	set_output(!lion2, P_L2_DISG);
 
 	setup_pin(true, P_LF_B1_RUNCHG);
 	set_output(lifepo_b1, P_LF_B1_RUNCHG);
@@ -51,8 +53,8 @@ int main(void)
 {
 	global_init();
 	set_charging_states(true, true, true, true);
-	system_test(true);
-	run_tests();
+	//system_test(true);
+	//run_tests();
 
 	run_rtos();
 }

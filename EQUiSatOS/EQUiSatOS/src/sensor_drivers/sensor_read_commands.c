@@ -296,6 +296,47 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_BBRD_L2_SNS, true);
 }
 
+void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
+	uint16_t results[4];
+	status_code_genare_t sc;
+	uint16_t low_limit, high_limit;
+
+	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
+	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+		_enable_ir_pow_if_necessary();
+		// only lock hardware state mutex while needed to act on state,
+		// but long enough to ensure the state doesn't change in the middle of checking it
+		if (hardware_state_mutex_take()) {
+			sc = AD7991_read_all_mV(results, AD7991_BATBRD);
+			log_if_error(ELOC_AD7991_BBRD, sc, true);
+
+			struct hw_states* states = get_hw_states();
+			if (states->antenna_deploying || states->radio_transmitting) {
+				low_limit = B_L_CUR_REG_LOW;
+				high_limit = B_L_CUR_REG_HIGH;
+			} else {
+				low_limit = B_L_CUR_HIGH_LOW;
+				high_limit = B_L_CUR_HIGH_HIGH;
+			}
+
+			hardware_state_mutex_give();
+		} else {
+			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+			xSemaphoreGive(i2c_mutex); // outer mutex
+			return;
+		}
+		xSemaphoreGive(i2c_mutex);
+	} else {
+		log_error(ELOC_AD7991_BBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
+		return;
+	}
+	
+	// results[1] = L1_SNS
+	*val_1 = results[1];
+	// results[0] = L2_SNS
+	*val_2 = results[0];
+}
+
 // TODO: why is ad7991_ctrlbrd required outside here??
 // unsafe version required for verify_regulators_unsafe
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
@@ -423,6 +464,28 @@ void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
 	} else {
 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(lifepo_current_batch));
+	}
+}
+
+void read_lf_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+	{
+		_enable_ir_pow_if_necessary();
+		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+		{
+
+			commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			
+			xSemaphoreGive(processor_adc_mutex);
+		} else {
+			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+		}
+		xSemaphoreGive(i2c_mutex);
+	} else {
+		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
 	}
 }
 

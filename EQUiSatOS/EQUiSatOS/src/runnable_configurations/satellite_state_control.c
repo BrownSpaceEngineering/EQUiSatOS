@@ -7,6 +7,7 @@
 
 #include "satellite_state_control.h"
 #include "../testing_functions/os_system_tests.h"
+#include "antenna_pwm.h"
 
 /************************************************************************/
 /* State variables                                                      */
@@ -278,7 +279,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task (and double-check with pin input) and apply
-	if (cache_get_sat_event_history().antenna_deployed && get_input(P_DET_RTN)) { // TODO: are we sure we want to check pin? Consider current antenna deploy
+	if (cache_get_sat_event_history().antenna_deployed && get_antenna_deployed()) { // TODO: are we sure we want to check pin? Consider current antenna deploy
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;

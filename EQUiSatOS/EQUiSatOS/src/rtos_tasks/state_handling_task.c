@@ -1,5 +1,6 @@
 #include "rtos_tasks.h"
 #include "battery_charging_task.h"
+#include "../runnable_configurations/antenna_pwm.h"
 
 #define MIN_TIME_IN_INITIAL_S		(30*60)
 #define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
@@ -166,7 +167,7 @@ static void decide_next_state(sat_state_t current_state) {
 				// if the antenna is open kill the task because the antenna has been deployed
 				// or kill it if it's run more than 5 times because it's a lost cause
 				} else if (sat_history.antenna_deployed
-					|| (get_input(P_DET_RTN) && num_tries_ant_deploy() > 0) // must try at least once
+					|| (get_antenna_deployed() && num_tries_ant_deploy() > 0) // must try at least once
 					|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES) {
 					// switch state to hello world, then determine whether we should keep trying
 					// (we WON'T be suspended on state change)

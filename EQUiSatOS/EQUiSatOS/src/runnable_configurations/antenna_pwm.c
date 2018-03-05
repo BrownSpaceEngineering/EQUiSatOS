@@ -20,6 +20,13 @@ static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
 	}
 }
 
+bool get_antenna_deployed(void) {
+	_set_5v_enable(true);
+	bool did_deploy = get_input(P_DET_RTN);
+	_set_5v_enable(false);
+	return did_deploy;
+}
+
 void pwm_test(void) {
 	try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
 	try_pwm_deploy_basic(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
@@ -34,16 +41,14 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		enable_pwm(current_on_cycle);
 		get_hw_states()->antenna_deploying = true;
 		hardware_state_mutex_give();
-		
-		// read current (both just in case) so we can shut it down if we need
-		lion_current_batch li;
-		panelref_lref_batch toss;
-		read_ad7991_batbrd(li, toss);
-		lifepo_current_batch lf;
-		read_lifepo_current_batch(lf, false);
 	
 		//delay_ms(ms); // for testing only
 		vTaskDelay(ms);
+		
+		// read current (both just in case) so we can shut it down if we need
+		uint16_t li1, li2, lf1, lf2, lf3, lf4;
+		read_lion_current_precise(&li1, &li2);
+		read_lf_current_precise(&lf1, &lf2, &lf3, &lf4);
 	
 		hardware_state_mutex_take();
 		disable_pwm();
@@ -52,17 +57,14 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		
 		bool can_cont = true;
 		if (p_ant == 1) {
-			uint16_t li1 = (uint16_t)li[0] << 8;
-			uint16_t li2 = (uint16_t)li[1] << 8;
 			print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
 			if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		} else {
-			uint16_t bank1 = (uint16_t)(lf[0] + lf[1]) << 8;
-			uint16_t bank2 = (uint16_t)(lf[2] + lf[3]) << 8;
-			print("PWM was on LiFePO4\nCurrent on bank 1: %d\nCurrent on bank 2: %d\n", bank1, bank2);
-			if (bank1 > PWM_MAX_CUR || bank2 > PWM_MAX_CUR) {
+			uint16_t bank1 = lf1 + lf2;
+			print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", bank1);
+			if (bank1 > PWM_MAX_CUR) {
 				can_cont = false;
 			}
 		}
