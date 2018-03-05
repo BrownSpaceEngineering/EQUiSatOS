@@ -26,10 +26,10 @@
 #define STORAGE_ERR_LIST_ADDR					175084
 
 // maximum size of a single MRAM "field," used for global buffers
-#define STORAGE_MAX_FIELD_SIZE				240 // error list
+#define STORAGE_MAX_FIELD_SIZE				400 // error list
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
-#define MAX_STORED_ERRORS					ERROR_STACK_MAX // TODO: would be nice if we could store more than equstack size
+#define MAX_STORED_ERRORS					ERROR_STACK_MAX
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
@@ -51,6 +51,22 @@ typedef struct persistent_charging_data_t {
  instead of holding the MRAM as the ground truth. 
  In sum, this is why we ignore concurrency issues with an updated cache
  being readable before the state could be written, etc.					*/
+/* Also, this is the one bit of data memory (RAM) that we want to be 
+"RAD safe" because it gets written to RAD safe memory and is therefore 
+persistent. That is, a bit flip here is permanent, while elsewhere
+the watchdog will hopefully reset if something goes wrong and we'll be 
+on a clean slate.
+To provide redundancy, we simply keep 3 copies of this struct in RAM
+(slightly dispersed as you'll see below so they're not quite in the same
+region; though a large swath of bit flips is incredibly unlikely),
+and we simply have two vote against any one, assuming (justifiably) that
+the chance of all three being different is minuscule. 
+NOTE: this one is the one we refer to, but before using it the 
+cached_state_correct() method is (and should be) called to apply 
+the voting, and after writing to it call cached_state_sync_redundancy().
+Finally, note that this is not guaranteed to be rad safe to readers
+in the period between writes, only to be corrected before MRAM writes
+(which occur every PERSISTENT_DATA_BACKUP_TASK_FREQ = 10s) */
 /************************************************************************/
 struct persistent_data {
 	uint32_t secs_since_launch; // note: most recent one stored in MRAM, not current timestamp
@@ -63,24 +79,37 @@ struct persistent_data {
 	
 } cached_state;
 
-/* mutex for locking SPI lines and MRAM drivers */
-StaticSemaphore_t _mram_spi_mutex_d;
-SemaphoreHandle_t mram_spi_mutex;
+/* 
+	mutex for locking SPI lines and MRAM drivers 
+	Also is responsible for locking against multiple writes to the cache,
+	such that changes to all three redundant caches appear atomic 
+	(nobody misinterprets an intentional change to the cache as a bit flip)
+*/
+StaticSemaphore_t _mram_spi_cache_mutex_d;
+SemaphoreHandle_t mram_spi_cache_mutex;
+
+// dispersed!
+struct persistent_data cached_state_2;
 
 // variable to be updated on each data read so we know how current the MRAM
 // data is (only for computing timestamps) 
 // (measured relative to start of current RTOS tick count)
 uint32_t last_data_write_ms;
 
+// dispersed!
+struct persistent_data cached_state_3;
+
 /* memory interface / action functions */
 void init_persistent_storage(void);
 void read_state_from_storage(void);
 void write_state_to_storage(void);
 void write_state_to_storage_emergency(bool from_isr);
-void increment_reboot_count(void);
-void set_radio_revive_timestamp(uint32_t radio_revive_timestamp);
+void cached_state_correct_errors(void);
+
+bool increment_reboot_count(void);
+bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp);
 void set_persistent_charging_data_unsafe(persistent_charging_data_t data);
-void update_sat_event_history(uint8_t antenna_deployed,
+bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,

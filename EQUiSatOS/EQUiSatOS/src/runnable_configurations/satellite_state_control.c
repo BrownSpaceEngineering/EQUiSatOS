@@ -82,8 +82,10 @@ void startup_task(void* pvParameters) {
 	
 	print("RTOS starting... ");
 	
-	// utility function to write initial state to MRAM (ONCE before launch)
-	write_custom_state();
+	#ifdef WRITE_DEFAULT_MRAM_VALS
+		// utility function to write initial state to MRAM (ONCE before launch)
+		write_custom_state();
+	#endif
 	
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */

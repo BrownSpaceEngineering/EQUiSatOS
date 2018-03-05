@@ -49,9 +49,12 @@
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
-#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+//#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
+
+// whether to rewrite MRAM with "zero" values (done before launch)
+#define WRITE_DEFAULT_MRAM_VALS
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission
@@ -62,7 +65,7 @@
 // whether to use a mutex to avoid collisions with radio
 // define for radio testing but turn off for timing/task testing
 // (it slows down and alters the OS timings)
-#define SAFE_PRINT	
+//#define SAFE_PRINT	
 
 // define to print errors as the come in
 //#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows

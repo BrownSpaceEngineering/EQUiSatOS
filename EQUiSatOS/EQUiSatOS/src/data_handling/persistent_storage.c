@@ -21,7 +21,10 @@ struct spi_slave_inst mram2_slave;
 
 void write_state_to_storage(void);
 void write_state_to_storage_safety(bool safe);
+void cached_state_sync_redundancy(void);
 uint32_t get_current_timestamp_safety(bool safe);
+bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2);
+bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2);
 
 /************************************************************************/
 /* memory interface / init functions									*/
@@ -30,7 +33,7 @@ uint32_t get_current_timestamp_safety(bool safe);
 void init_persistent_storage(void) {
 	memset(&cached_state, 0, sizeof(cached_state)); // to avoid undefined behavior if someone accidentally uses it
 
-	mram_spi_mutex = xSemaphoreCreateMutexStatic(&_mram_spi_mutex_d);
+	mram_spi_cache_mutex = xSemaphoreCreateMutexStatic(&_mram_spi_cache_mutex_d);
 
 	mram_initialize_master(&spi_master_instance, MRAM_SPI_BAUD);
 	mram_initialize_slave(&mram1_slave, P_MRAM1_CS);
@@ -212,7 +215,7 @@ bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) 
 
 /* read state from storage into cache */
 void read_state_from_storage(void) {
-	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
+	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
 		#ifdef XPLAINED
 			// defaults when no MRAM available
@@ -233,41 +236,12 @@ void read_state_from_storage(void) {
 			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		#endif
 		
-		xSemaphoreGive(mram_spi_mutex);
+		xSemaphoreGive(mram_spi_cache_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
-}
-
-void increment_reboot_count(void) {
-	cached_state.reboot_count++;
-	write_state_to_storage();
-}
-
-void set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
-	cached_state.radio_revive_timestamp = radio_revive_timestamp;
-	write_state_to_storage();
-}
-
-void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
-	cached_state.persistent_charging_data = data;
-	write_state_to_storage_safety(false); // unsafe, need to have mutex above!
-}
-
-/* deep comparison of structs because their bit organization may differ */
-bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2) {
-	bool result = true;
-	result = result && history1->antenna_deployed == history2->antenna_deployed;
-	result = result && history1->first_flash == history2->first_flash;
-	result = result && history1->lifepo_b1_charged == history2->lifepo_b1_charged;
-	result = result && history1->lifepo_b2_charged == history2->lifepo_b2_charged;
-	result = result && history1->lion_1_charged == history2->lion_1_charged;
-	result = result && history1->lion_2_charged == history2->lion_2_charged;
-	result = result && history1->prog_mem_rewritten == history2->prog_mem_rewritten;
-	return result;
-}
-bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2) {
-	return data1->li_caused_reboot == data1->li_caused_reboot;
+	// write to redundancy for (probably) the first time
+	cached_state_sync_redundancy();
 }
 
 // writes error stack data to mram, and confirms it was written correctly if told to
@@ -325,39 +299,45 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	return true;
 }
 
-/* writes cached state to MRAM
- NOTE: the SPI mutex MUST be held if called with safe == false - otherwise all of MRAM can be corrupted */
+/* 
+	Writes cached state to MRAM
+	NOTE: the SPI mutex MUST be held if called with safe == false - otherwise all of MRAM can be corrupted 
+	Also serves to correct any errors in stack space for cached state
+*/
 void write_state_to_storage_safety(bool safe) {
-	cached_state.sat_state = get_sat_state();
-	// reboot count is only incremented on startup and is written through cache
-	// sat_event_history is written through when changed
-
-	// (variables for read results)
-	uint32_t temp_secs_since_launch;
-	uint8_t temp_reboot_count, temp_sat_state;
-	satellite_history_batch temp_sat_event_history;
-	uint8_t temp_prog_mem_rewritten;
-	uint32_t temp_radio_revive_timestamp;
-	persistent_charging_data_t temp_persistent_charging_data;
-	bool errors_write_confirmed = false;
-
-	// set write time right before writing
-	// (keep track of the old timestamp value in case the write fails and we have to reset)
-	uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
-	uint32_t prev_last_data_write_ms = last_data_write_ms;
-	
-	// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
-	uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
-	cache_time_fields_minimutex = true;
-	cached_state.secs_since_launch = cur_timestamp;
-	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
-	cache_time_fields_minimutex = false;
-	
-	bool got_mutex = false;
-
-	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
+	if (!safe || xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
-		got_mutex = true;
+		// always do this (every PERSISTENT_DATA_BACKUP_TASK_FREQ ms),
+		// plus we need to do it before every cached_state update
+		cached_state_correct_errors();
+	
+		cached_state.sat_state = get_sat_state();
+		// reboot count is only incremented on startup and is written through cache
+		// other fields are written through when changed
+
+		// (variables for read results)
+		uint32_t temp_secs_since_launch;
+		uint8_t temp_reboot_count, temp_sat_state;
+		satellite_history_batch temp_sat_event_history;
+		uint8_t temp_prog_mem_rewritten;
+		uint32_t temp_radio_revive_timestamp;
+		persistent_charging_data_t temp_persistent_charging_data;
+		bool errors_write_confirmed = false;
+
+		// set write time right before writing
+		// (keep track of the old timestamp value in case the write fails and we have to reset)
+		uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
+		uint32_t prev_last_data_write_ms = last_data_write_ms;
+	
+		// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
+		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
+		cache_time_fields_minimutex = true;
+		cached_state.secs_since_launch = cur_timestamp;
+		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
+		cache_time_fields_minimutex = false;
+		cached_state_sync_redundancy();
+	
+		// actually perform writes
 		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
@@ -376,45 +356,39 @@ void write_state_to_storage_safety(bool safe) {
 		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 		storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		
-		xSemaphoreGive(mram_spi_mutex);
+		// log error if the stored data was not consistent with what was just written
+		// note we have the mutex so no one should be able to write to these
+		// while we were reading / are comparing them
+		if (temp_secs_since_launch != cached_state.secs_since_launch 
+			|| temp_reboot_count != cached_state.reboot_count 
+			|| temp_sat_state != cached_state.sat_state 
+			|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
+			|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
+			|| temp_radio_revive_timestamp != cached_state.radio_revive_timestamp
+			|| !compare_persistent_charging_data(&temp_persistent_charging_data, &cached_state.persistent_charging_data)
+			|| !errors_write_confirmed) {
+
+			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
+
+			// in particular, if it was the secs_since_launch that was inconsistent,
+			// go off the old value in the MRAM
+			if (temp_secs_since_launch != cached_state.secs_since_launch &&
+			temp_secs_since_launch < cached_state.secs_since_launch) { // TODO: why the greater than condition??
+				// grab time field mutex
+				cache_time_fields_minimutex = true;
+				last_data_write_ms = prev_last_data_write_ms;
+				cached_state.secs_since_launch = prev_cached_secs_since_launch;
+				cache_time_fields_minimutex = false;
+			}
+		}
+		
+		// apply changes to cached state
+		cached_state_sync_redundancy();
+		
+		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
+		
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
-	}
-	
-	// skip the check if we didn't get the mutex, and reset last data write to old MRAM's
-	if (!got_mutex) {
-		// grab time field mutex
-		cache_time_fields_minimutex = true;
-		last_data_write_ms = prev_last_data_write_ms;
-		cached_state.secs_since_launch = prev_cached_secs_since_launch;
-		cache_time_fields_minimutex = false;
-		return;
-	}
-
-	// log error if the stored data was not consistent with what was just written
-	// note we have the mutex so no one should be able to write to these
-	// while we were reading / are comparing them
-	if (temp_secs_since_launch != cached_state.secs_since_launch 
-		|| temp_reboot_count != cached_state.reboot_count 
-		|| temp_sat_state != cached_state.sat_state 
-		|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
-		|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
-		|| temp_radio_revive_timestamp != cached_state.radio_revive_timestamp
-		|| !compare_persistent_charging_data(&temp_persistent_charging_data, &cached_state.persistent_charging_data)
-		|| !errors_write_confirmed) {
-
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
-
-		// in particular, if it was the secs_since_launch that was inconsistent,
-		// go off the old value in the MRAM
-		if (temp_secs_since_launch != cached_state.secs_since_launch &&
-		temp_secs_since_launch < cached_state.secs_since_launch) { // TODO: why the greater than condition??
-			// grab time field mutex
-			cache_time_fields_minimutex = true;
-			last_data_write_ms = prev_last_data_write_ms;
-			cached_state.secs_since_launch = prev_cached_secs_since_launch;
-			cache_time_fields_minimutex = false;
-		}
 	}
 }
 
@@ -428,18 +402,20 @@ void write_state_to_storage(void) {
 void write_state_to_storage_emergency(bool from_isr) {
 	bool got_mutex;
 	if (from_isr) {
-		got_mutex = xSemaphoreTakeFromISR(mram_spi_mutex, NULL);
+		got_mutex = xSemaphoreTakeFromISR(mram_spi_cache_mutex, NULL);
 	} else {
-		got_mutex = xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS);
+		got_mutex = xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS);
 	}
 	
 	if (got_mutex)
 	{
+		cached_state_correct_errors();
 		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
 		cache_time_fields_minimutex = true;
 		cached_state.secs_since_launch = cur_timestamp;
 		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 		cache_time_fields_minimutex = false;
+		cached_state_sync_redundancy();
 		
 		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
@@ -449,19 +425,110 @@ void write_state_to_storage_emergency(bool from_isr) {
 		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		storage_write_check_errors_unsafe(&error_equistack, false);
-
+		
 		if (from_isr) {
-			xSemaphoreGiveFromISR(mram_spi_mutex, NULL);
+			xSemaphoreGiveFromISR(mram_spi_cache_mutex, NULL);
 		} else {
-			xSemaphoreGive(mram_spi_mutex);
+			xSemaphoreGive(mram_spi_cache_mutex);
 		}
 	}
 }
 
+/************************************************************************/
+/* Cached state redundancy                                              */
+/************************************************************************/
+
+// Compares the state of the three redundant cached state buffers,
+// and corrects any errors it sees via a two vs. one vote 
+// (double-corruption is extremely unlikely)
+void cached_state_correct_errors(void) {
+	bool state1_matches_state2 = memcmp(&cached_state,	&cached_state_2, sizeof(struct persistent_data)) == 0;
+	bool state1_matches_state3 = memcmp(&cached_state,	&cached_state_3, sizeof(struct persistent_data)) == 0;
+	bool state2_matches_state3 = memcmp(&cached_state_2,&cached_state_3, sizeof(struct persistent_data)) == 0;
+	
+	if (state1_matches_state2 && state1_matches_state3 && state2_matches_state3) {
+		// 1 == 2 == 3 == 1; all match so nothing to do!
+		return;
+	} else if (state1_matches_state2) {
+		// 1 == 2 =/= 3 =/= 1; 1 matches 2 => 3 is wrong
+		memcpy(&cached_state_3, &cached_state, sizeof(struct persistent_data));
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED, false);
+		configASSERT(false); // only reason should be radiation corruption
+	} else if (state1_matches_state3) {
+		// 1 =/= 2 =/= 3 == 1; 1 matches 3 => 2 is wrong
+		memcpy(&cached_state_2, &cached_state, sizeof(struct persistent_data));
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED, false);
+		configASSERT(false); // only reason should be radiation corruption
+	} else if (state2_matches_state3) {
+		// 1 =/= 2 == 3 =/= 1; 2 matches 3 => 1 is wrong
+		memcpy(&cached_state, &cached_state_2, sizeof(struct persistent_data));
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED, false);
+		configASSERT(false); // only reason should be radiation corruption
+	} else {
+		// there's not much we can do (this is extremely unlikely), so just take the cached state
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED, true);
+		configASSERT(false); // only reason should be radiation corruption
+	}
+}
+
+// Propagate change(s) in the primary cached state to the backup
+// buffers. Must be called after every cache write
+void cached_state_sync_redundancy(void) {
+	memcpy(&cached_state_2, &cached_state, sizeof(struct persistent_data));
+	memcpy(&cached_state_3, &cached_state, sizeof(struct persistent_data));
+}
+
+/************************************************************************/
+/* External state write functions                                       */
+/************************************************************************/
+
+bool increment_reboot_count(void) {
+	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		cached_state_correct_errors();
+		cached_state.reboot_count++;
+		cached_state_sync_redundancy();
+		write_state_to_storage_safety(false);
+		
+		xSemaphoreGive(mram_spi_cache_mutex);
+		return true;
+		
+	} else {
+		// TODO: maybe increment reboot count anyways (and update sync redundancy)
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		return false;
+	}
+}
+
+bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
+	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		cached_state_correct_errors();
+		cached_state.radio_revive_timestamp = radio_revive_timestamp;
+		cached_state_sync_redundancy();
+		write_state_to_storage_safety(false);
+		
+		xSemaphoreGive(mram_spi_cache_mutex);
+		return true;
+		
+	} else {
+		// TODO: maybe set timestamp anyways (and update sync redundancy)
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		return false;
+	}
+}
+
+// will be called with scheduler suspended (and mutex taken), so no concurrency worries
+void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
+	cached_state_correct_errors();
+	cached_state.persistent_charging_data = data;
+	cached_state_sync_redundancy();
+	write_state_to_storage_safety(false); // unsafe, make sure to have mutex above!
+}
+
 /* Updates the sat_event_history if the given value is true, but ONLY
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
-   the original value (TRUE or FALSE) is retained. */
-void update_sat_event_history(uint8_t antenna_deployed,
+   the original value (TRUE or FALSE) is retained. 
+   Should really be called periodically for these crucial things */
+bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
@@ -469,22 +536,139 @@ void update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t first_flash,
 								uint8_t prog_mem_rewritten) {
 
-	if (antenna_deployed)
-		cached_state.sat_event_history.antenna_deployed = true;
-	if (lion_1_charged)
-		cached_state.sat_event_history.lion_1_charged = true;
-	if (lion_2_charged)
-		cached_state.sat_event_history.lion_2_charged = true;
-	if (lifepo_b1_charged)
-		cached_state.sat_event_history.lifepo_b1_charged = true;
-	if (lifepo_b2_charged)
-		cached_state.sat_event_history.lifepo_b2_charged = true;
-	if (first_flash)
-		cached_state.sat_event_history.first_flash = true;
-	if (prog_mem_rewritten)
-		cached_state.sat_event_history.prog_mem_rewritten = true;
+	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		cached_state_correct_errors();
+	
+		if (antenna_deployed)
+			cached_state.sat_event_history.antenna_deployed = true;
+		if (lion_1_charged)
+			cached_state.sat_event_history.lion_1_charged = true;
+		if (lion_2_charged)
+			cached_state.sat_event_history.lion_2_charged = true;
+		if (lifepo_b1_charged)
+			cached_state.sat_event_history.lifepo_b1_charged = true;
+		if (lifepo_b2_charged)
+			cached_state.sat_event_history.lifepo_b2_charged = true;
+		if (first_flash)
+			cached_state.sat_event_history.first_flash = true;
+		if (prog_mem_rewritten)
+			cached_state.sat_event_history.prog_mem_rewritten = true;
 
-	write_state_to_storage();
+		cached_state_sync_redundancy();
+		write_state_to_storage();
+		
+		xSemaphoreGive(mram_spi_cache_mutex);
+		return true;
+		
+	} else {
+		// TODO: maybe update state anyways (and update sync redundancy)?
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		return false;
+	}
+}
+
+
+/************************************************************************/
+// functions to get components of cached state
+// NOTE: use of mutexes here is necessary because we're using a single
+// MRAM chip which is a single-reader single-writer shared resource.
+/************************************************************************/
+
+uint32_t cache_get_secs_since_launch() {
+	// note: not necessary to take minimutex because people
+	// don't have access to last_write_time_ms
+	return cached_state.secs_since_launch;
+}
+
+uint8_t cache_get_reboot_count() {
+	return cached_state.reboot_count;
+}
+
+/* returns satellite state at last reboot */
+sat_state_t cache_get_sat_state() {
+	return cached_state.sat_state;
+}
+
+satellite_history_batch cache_get_sat_event_history() {
+	return cached_state.sat_event_history;
+}
+
+bool cache_get_prog_mem_rewritten(void) {
+	return cached_state.prog_mem_rewritten;
+}
+
+uint32_t cache_get_radio_revive_timestamp(void) {
+	return cached_state.radio_revive_timestamp;
+}
+
+persistent_charging_data_t cache_get_persistent_charging_data(void) {
+	return cached_state.persistent_charging_data;
+}
+
+/************************************************************************/
+/* functions which require reading from MRAM (bypass cache)				*/
+/************************************************************************/
+void populate_error_stacks(equistack* error_stack) {
+	// take big buffers off stack
+	static sat_error_t error_buf[ERROR_STACK_MAX];
+	
+	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
+	{
+		// read in errors from MRAM
+		uint8_t num_stored_errors;
+		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
+		// make sure number of errors is in a reasonable bound (note we're using a uint)
+		// it may be a larger issue if this is wrong, but read in errors anyway (we
+		// wouldn't want to miss anything - but we'll add this error at the end so we
+		// see that this happened)
+		bool error_num_too_long = false;
+		if (num_stored_errors >= ERROR_STACK_MAX) {
+			error_num_too_long = true;
+			num_stored_errors = ERROR_STACK_MAX;
+		}
+		
+		// special case; we can't read in 0 bytes (invalid arg)
+		if (num_stored_errors > 0) {
+			storage_read_field_unsafe((uint8_t*) error_buf,
+			num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+
+			// read all errors that we have stored in MRAM in
+			for (int i = 0; i < num_stored_errors; i++) {
+				equistack_Push(error_stack, &(error_buf[i]));
+			}
+		}
+		
+		if (error_num_too_long) {
+			// log this after we've populated, making sure it's priority
+			// so it overwrites any garbage errors we may have gotten
+			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, true);
+		}
+		
+		xSemaphoreGive(mram_spi_cache_mutex);
+	} else {
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+	}
+}
+
+
+/************************************************************************/
+/* Struct compare functions                                              */
+/************************************************************************/
+
+/* deep comparison of structs because their bit organization may differ */
+bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2) {
+	bool result = true;
+	result = result && history1->antenna_deployed == history2->antenna_deployed;
+	result = result && history1->first_flash == history2->first_flash;
+	result = result && history1->lifepo_b1_charged == history2->lifepo_b1_charged;
+	result = result && history1->lifepo_b2_charged == history2->lifepo_b2_charged;
+	result = result && history1->lion_1_charged == history2->lion_1_charged;
+	result = result && history1->lion_2_charged == history2->lion_2_charged;
+	result = result && history1->prog_mem_rewritten == history2->prog_mem_rewritten;
+	return result;
+}
+bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2) {
+	return data1->li_caused_reboot == data1->li_caused_reboot;
 }
 
 /************************************************************************/
@@ -554,88 +738,6 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 		}
 		return false;
 	#endif
-}
-
-/************************************************************************/
-// functions to get components of cached state
-// NOTE: use of mutexes here is necessary because we're using a single
-// MRAM chip which is a single-reader single-writer shared resource.
-/************************************************************************/
-
-uint32_t cache_get_secs_since_launch() {
-	// note: not necessary to take minimutex because people 
-	// don't have access to last_write_time_ms
-	return cached_state.secs_since_launch;
-}
-
-uint8_t cache_get_reboot_count() {
-	return cached_state.reboot_count;
-}
-
-/* returns satellite state at last reboot */
-sat_state_t cache_get_sat_state() {
-	return cached_state.sat_state;
-}
-
-satellite_history_batch cache_get_sat_event_history() {
-	return cached_state.sat_event_history;
-}
-
-bool cache_get_prog_mem_rewritten(void) {
-	return cached_state.prog_mem_rewritten;
-}
-
-uint32_t cache_get_radio_revive_timestamp(void) {
-	return cached_state.radio_revive_timestamp;
-}
-
-persistent_charging_data_t cache_get_persistent_charging_data(void) {
-	return cached_state.persistent_charging_data;
-}
-
-/************************************************************************/
-/* functions which require reading from MRAM (bypass cache)				*/
-/************************************************************************/
-void populate_error_stacks(equistack* error_stack) {
-	// take big buffers off stack
-	static sat_error_t error_buf[ERROR_STACK_MAX];
-	
-	if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
-	{
-		// read in errors from MRAM
-		uint8_t num_stored_errors;
-		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
-		// make sure number of errors is in a reasonable bound (note we're using a uint)
-		// it may be a larger issue if this is wrong, but read in errors anyway (we 
-		// wouldn't want to miss anything - but we'll add this error at the end so we 
-		// see that this happened)
-		bool error_num_too_long = false;
-		if (num_stored_errors >= ERROR_STACK_MAX) {
-			error_num_too_long = true;
-			num_stored_errors = ERROR_STACK_MAX;
-		}
-		
-		// special case; we can't read in 0 bytes (invalid arg)
-		if (num_stored_errors > 0) {
-			storage_read_field_unsafe((uint8_t*) error_buf,
-				num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
-
-			// read all errors that we have stored in MRAM in
-			for (int i = 0; i < num_stored_errors; i++) {
-				equistack_Push(error_stack, &(error_buf[i]));
-			}
-		}
-		
-		if (error_num_too_long) {
-			// log this after we've populated, making sure it's priority
-			// so it overwrites any garbage errors we may have gotten
-			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, true);
-		}
-		
-		xSemaphoreGive(mram_spi_mutex);
-	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
-	}
 }
 
 /************************************************************************/

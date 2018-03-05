@@ -908,7 +908,7 @@ int battery_logic()
 		// because we don't want this operation to be interrupted
 		// (if it fails, continue on, but just don't write to MRAM)
 		bool got_mutex_spi = false;
-		if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
 			got_mutex_spi = true;
 		} else {
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
@@ -930,7 +930,7 @@ int battery_logic()
 
 		// resume normal operation
 		xTaskResumeAll();
-		if (got_mutex) xSemaphoreGive(mram_spi_mutex);
+		if (got_mutex) xSemaphoreGive(mram_spi_cache_mutex);
 	}
 
 	///

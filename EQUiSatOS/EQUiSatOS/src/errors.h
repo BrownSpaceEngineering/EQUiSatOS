@@ -190,13 +190,14 @@ enum error_codes {
 	ECODE_NOT_FULL_FOR_WHILE =          59,
 	ECODE_LOW_VOLTAGE_FOR_WHILE =       60,
 	ECODE_RECOMMISSION =                61,
-	ECODE_ALL_SAME_VAL =				62
+	ECODE_ALL_SAME_VAL =				62,
+	ECODE_CORRUPTED =					63
 };
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */
 /************************************************************************/
-#define ERROR_STACK_MAX		50
+#define ERROR_STACK_MAX		51
 #define PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S		86400 // 1 day
 
 typedef struct {
