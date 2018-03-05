@@ -68,6 +68,10 @@ struct persistent_data {
 	
 } cached_state;
 
+/* mutex for locking SPI lines and MRAM drivers */
+StaticSemaphore_t _mram_spi_mutex_d;
+SemaphoreHandle_t mram_spi_mutex;
+
 // variable to be updated on each data read so we know how current the MRAM
 // data is (only for computing timestamps) 
 // (measured relative to start of current RTOS tick count)

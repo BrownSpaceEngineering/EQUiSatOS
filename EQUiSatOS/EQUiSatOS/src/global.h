@@ -35,7 +35,6 @@
 #include "sensor_drivers/HMC5883L_Magnetometer_Commands.h"
 #include "sensor_drivers/M24M01_EEPROM_Commands.h"
 #include "rtos_tasks/rtos_tasks_config.h"
-#include "data_handling/persistent_storage.h"
 #include "rtos_tasks/transmit_task.h"
 #include "data_handling/Sensor_Structs.h"
 #include "telemetry/Radio_Commands.h"
