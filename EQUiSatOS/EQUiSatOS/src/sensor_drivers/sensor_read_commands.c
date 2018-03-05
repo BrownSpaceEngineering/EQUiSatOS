@@ -248,13 +248,11 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t low_limit, high_limit;
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
-	//if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-	if (true) {
+	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		_enable_ir_pow_if_necessary();
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
-		//if (hardware_state_mutex_take()) {
-		if (true) {
+		if (hardware_state_mutex_take()) {
 			sc = AD7991_read_all_mV(results, AD7991_BATBRD);
 			log_if_error(ELOC_AD7991_BBRD, sc, true);
 
@@ -267,7 +265,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 				high_limit = B_L_CUR_HIGH_HIGH;
 			}
 
-			//hardware_state_mutex_give();
+			hardware_state_mutex_give();
 		} else {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 			memset(batch1, 0, sizeof(lion_current_batch));
@@ -275,7 +273,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			xSemaphoreGive(i2c_mutex); // outer mutex
 			return;
 		}
-		//xSemaphoreGive(i2c_mutex);
+		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_AD7991_BBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch1, 0, sizeof(lion_current_batch));

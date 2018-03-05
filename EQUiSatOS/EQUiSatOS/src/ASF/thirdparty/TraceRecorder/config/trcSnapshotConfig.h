@@ -98,7 +98,7 @@
  * Default value is 1000, which means that 4000 bytes is allocated for the
  * event buffer.
  ******************************************************************************/
-#define TRC_CFG_EVENT_BUFFER_SIZE 1000
+#define TRC_CFG_EVENT_BUFFER_SIZE 500
 
 /*******************************************************************************
  * TRC_CFG_NTASK, TRC_CFG_NISR, TRC_CFG_NQUEUE, TRC_CFG_NSEMAPHORE, TRC_CFG_NMUTEX
@@ -140,7 +140,7 @@
  *
  * Default value is 1.
  *****************************************************************************/
-#define TRC_CFG_INCLUDE_MEMMANG_EVENTS 1
+#define TRC_CFG_INCLUDE_MEMMANG_EVENTS 0
 
 /******************************************************************************
  * TRC_CFG_INCLUDE_USER_EVENTS
@@ -242,7 +242,7 @@
  *
  * Default value is 800.
  ******************************************************************************/
-#define TRC_CFG_SYMBOL_TABLE_SIZE 800
+#define TRC_CFG_SYMBOL_TABLE_SIZE 500
 
 #if (TRC_CFG_SYMBOL_TABLE_SIZE == 0)
 #error "TRC_CFG_SYMBOL_TABLE_SIZE may not be zero!"

@@ -35,6 +35,9 @@ void antenna_deploy_task(void *pvParameters) {
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 		}
 		
+		// report to watchdog (again)
+		report_task_running(ANTENNA_DEPLOY_TASK);
+		
 		if (num_tries == 0 && get_input(P_DET_RTN)) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
 		}
@@ -54,7 +57,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(1800000);
+				vTaskDelay(1800000 / portTICK_PERIOD_MS);
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
@@ -71,7 +74,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(3600000);
+				vTaskDelay(3600000 / portTICK_PERIOD_MS);
 			}
 		}
 	}

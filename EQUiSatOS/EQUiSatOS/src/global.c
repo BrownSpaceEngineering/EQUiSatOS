@@ -112,10 +112,12 @@ void suppress_other_prints(bool on) {
 void print(const char *format, ...)
 {
 	#if PRINT_DEBUG > 0 // if debug mode
-		bool got_mutex = false;
-		if (rtos_started) {
-			got_mutex = xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
-		}
+		#ifdef SAFE_PRINT
+			bool got_mutex = false;
+			if (rtos_started) {
+				got_mutex = xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+			}
+		#endif
 		
 		va_list arg;
 		va_start (arg, format);
@@ -132,8 +134,10 @@ void print(const char *format, ...)
 			usart_send_string((uint8_t*) debug_buf);
 		#endif
 	
-		if (rtos_started) {
-			if (got_mutex) xSemaphoreGiveRecursive(print_mutex);
-		}
+		#ifdef SAFE_PRINT
+			if (rtos_started) {
+				if (got_mutex) xSemaphoreGiveRecursive(print_mutex);
+			}
+		#endif
 	#endif
 }

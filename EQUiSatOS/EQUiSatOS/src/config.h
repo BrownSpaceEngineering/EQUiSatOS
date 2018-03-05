@@ -23,7 +23,7 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 //#define BAT_CHARGING_ACTIVE // enable battery charging logic
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
@@ -35,8 +35,11 @@
 // - don't read data distributed around an orbit
 #define TESTING_SPEEDUP
 
+// reduces the stack size of some tasks to a workable but risky level
+#define RISKY_STACK_SIZES
+
 // use this flag to disable reed-solomon tables (frees up memory)
-#define USE_REED_SOLOMON
+//#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
@@ -46,8 +49,8 @@
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
-#define RUN_RTOS_SYSTEM_TEST
-//#define RUN_TESTING_TASK
+#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+//#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
 // debug print control; set to:
@@ -56,9 +59,13 @@
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
 #define PRINT_DEBUG 1
+// whether to use a mutex to avoid collisions with radio
+// define for radio testing but turn off for timing/task testing
+// (it slows down and alters the OS timings)
+#define SAFE_PRINT	
 
 // define to print errors as the come in
-//#define PRINT_NEW_ERRORS
+//#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

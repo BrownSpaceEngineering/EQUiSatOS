@@ -17,7 +17,7 @@
 #define PWM_MAX_CUR			2000
 
 void pwm_test(void);
-void try_pwm_deploy(uint8_t pin, uint8_t pin_mux, int ms, uint8_t p_ant);
+void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant);
 int get_current_pwm_pin(void);
 
 #endif /* ANTENNA_PWM_H_ */

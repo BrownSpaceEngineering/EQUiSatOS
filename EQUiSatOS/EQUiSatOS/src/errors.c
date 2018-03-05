@@ -64,9 +64,6 @@ void print_error(enum status_code code){
 // logs an error if the given atmel status code is one, and returns whether it was an error
 bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
-		#ifdef PRINT_ERRORS
-			print_error(sc);
-		#endif
 		log_error(loc, atmel_to_equi_error(sc), priority);
 		return true;
 	}
@@ -146,6 +143,10 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
 	
 	add_error_to_equistack(&error_equistack, &full_error); 
+	
+	#ifdef PRINT_NEW_ERRORS
+		print_sat_error(&full_error, 0);
+	#endif
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */

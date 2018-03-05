@@ -277,6 +277,11 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	static sat_error_t temp_error_buf[ERROR_STACK_MAX];
 	
 	uint8_t num_errors = stack->cur_size;
+	if (num_errors >= ERROR_STACK_MAX) {
+		// watch for radiation bit flips, because this could overwrite part of the MRAM
+		log_error(ELOC_MRAM_WRITE, ECODE_OUT_OF_BOUNDS, true);
+		num_errors = ERROR_STACK_MAX;
+	}
 	
 	bool got_mutex = true;
 	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {

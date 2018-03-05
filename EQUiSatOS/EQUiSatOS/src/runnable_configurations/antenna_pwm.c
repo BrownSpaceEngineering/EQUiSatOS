@@ -26,7 +26,7 @@ void pwm_test(void) {
 	try_pwm_deploy_basic(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
 }
 
-void try_pwm_deploy(uint8_t pin, uint8_t pin_mux, int ms, uint8_t p_ant) {
+void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	#ifdef ANTENNA_DEPLOY_ACTIVE
 		configure_pwm(pin, pin_mux, p_ant);
 	
