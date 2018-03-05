@@ -907,9 +907,9 @@ int battery_logic()
 		// take the SPI mutex (we'll be using it), and then suspend the scheduler
 		// because we don't want this operation to be interrupted
 		// (if it fails, continue on, but just don't write to MRAM)
-		bool got_mutex = false;
+		bool got_mutex_spi = false;
 		if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
-			got_mutex = true;
+			got_mutex_spi = true;
 		} else {
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
@@ -919,8 +919,8 @@ int battery_logic()
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
 		persistent_charging_data_t persist_data;
-		persist_data.li_caused_reboot = charging.lion_discharging;
-		if (got_mutex) set_persistent_charging_data_unsafe(persist_data);
+		persist_data.li_caused_reboot = charging_data.lion_discharging;
+		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
 
