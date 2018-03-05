@@ -894,7 +894,16 @@ int battery_logic()
 		// the other to inactive
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// suspend the scheduler because we don't want this operation to be interrupted
+		// take the SPI mutex (we'll be using it), and then suspend the scheduler 
+		// because we don't want this operation to be interrupted
+		// (if it fails, continue on, but just don't write to MRAM)
+		bool got_mutex = false;
+		if (xSemaphoreTake(mram_spi_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+			got_mutex = true;
+		} else {
+			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
+		}
+		
 		vTaskSuspendAll();
 
 		// we're going to decommission here and undecommission if the satellite doesn't
@@ -905,17 +914,18 @@ int battery_logic()
 
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
-		set_persistent_charging_data_unsafe(persist_data);
+		if (got_mutex) set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
 
 		// undecommission the battery and reset our emergency write to the MRAM
 		undecommission(charging_data.lion_discharging); // TODO: ROHAN - does this do anything?
 		persist_data.li_caused_reboot = false;
-		set_persistent_charging_data_unsafe(persist_data);
+		if (got_mutex) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
 		xTaskResumeAll();
+		if (got_mutex) xSemaphoreGive(mram_spi_mutex);
 	}
 
 	///

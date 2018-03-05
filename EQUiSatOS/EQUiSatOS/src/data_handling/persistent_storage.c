@@ -7,10 +7,6 @@
 
 #include "persistent_storage.h"
 
-/* mutex for locking SPI lines and MRAM drivers */
-StaticSemaphore_t _mram_spi_mutex_d;
-SemaphoreHandle_t mram_spi_mutex;
-
 // super simple mutex used to sync the two operations required
 // to modify the cached data responsible for computing get_current_timestamp()
 // (true if fields are being modified, false otherwise)
@@ -208,7 +204,7 @@ void set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
 
 void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
 	cached_state.persistent_charging_data = data;
-	write_state_to_storage_emergency(false);
+	write_state_to_storage_safety(false); // unsafe, need to have mutex above!
 }
 
 /* deep comparison of structs because their bit organization may differ */
