@@ -33,11 +33,6 @@
 #define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
-// constants used when copying program memory live to MRAM
-#define PROG_MEM_START_ADDR					0x6000	// use default 0x0 OR set with .text=<addr> in Linker Memory settings
-#define PROG_MEM_SIZE						124196	// find for latest build in "output"
-#define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
-
 /* battery-specific state cache (put here for #include reasons) */
 typedef struct persistent_charging_data_t {
 	int8_t li_caused_reboot;
@@ -113,7 +108,6 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 
 /* maintenance helpers */
 void write_custom_state(void);
-void write_cur_prog_mem_to_mram(void);
 
 /* utility functions (for testing elsewhere) */
 size_t longest_same_seq_len(uint8_t* data, size_t len);

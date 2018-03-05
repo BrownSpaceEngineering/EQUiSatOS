@@ -53,7 +53,6 @@ int main(void)
 	set_charging_states(true, true, true, true);
 	system_test(true);
 	run_tests();
-	//write_cur_prog_mem_to_mram();
 
 	run_rtos();
 }
