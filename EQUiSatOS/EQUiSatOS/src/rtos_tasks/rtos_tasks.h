@@ -19,7 +19,6 @@
 #include "rtos_tasks_config.h"
 #include "data_handling/State_Structs.h"
 #include "watchdog_task.h"
-#include "battery_charging_task.h"
 
 /************************************************************************/
 /* TASK HEADERS                                                         */

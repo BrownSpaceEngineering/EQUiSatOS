@@ -23,7 +23,7 @@
 // size of binary in bytes
 #define PROG_MEM_SIZE						124196
 // address at which binary is stored in mram
-#define MRAM_APP_ADDRESS					1058
+#define MRAM_APP_ADDRESS					546
 // address at which prog mem rewritten boolean is stored in mram
 #define MRAM_PROG_MEM_REWRITTEN_ADDR		42
 // size of buffer to use when copying data from mram to flash

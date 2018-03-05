@@ -24,8 +24,8 @@ struct spi_slave_inst mram1_slave;
 struct spi_slave_inst mram2_slave;
 
 void write_state_to_storage(void);
+void write_state_to_storage_safety(bool safe);
 uint32_t get_current_timestamp_safety(bool safe);
-uint32_t cache_get_secs_since_launch_safety(bool safe);
 
 /************************************************************************/
 /* memory interface / init functions									*/
@@ -176,9 +176,10 @@ void read_state_from_storage(void) {
 			cached_state.secs_since_launch = 0;
 			cached_state.sat_state = INITIAL; // signifies initial boot
 			cached_state.reboot_count = 0;
-			cached_state.sat_event_history;
+			memset(cached_state.sat_event_history, 0, sizeof(satellite_history_batch))
 			cached_state.prog_mem_rewritten = false;
 			cached_state.radio_revive_timestamp = 0;
+			cached_state.persistent_charging_data.li_caused_reboot = false;
 		#else
 			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 			storage_read_field_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
@@ -186,6 +187,7 @@ void read_state_from_storage(void) {
 			storage_read_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 			storage_read_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
 			storage_read_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		#endif
 		
 		xSemaphoreGive(mram_spi_mutex);
@@ -199,12 +201,17 @@ void increment_reboot_count(void) {
 	write_state_to_storage();
 }
 
-void update_radio_revive_timestamp(uint16_t radio_revive_timestamp) {
+void set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
 	cached_state.radio_revive_timestamp = radio_revive_timestamp;
 	write_state_to_storage();
 }
 
-// deep comparison of structs because thier bit organization may differ
+void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
+	cached_state.persistent_charging_data = data;
+	write_state_to_storage_emergency(false);
+}
+
+/* deep comparison of structs because their bit organization may differ */
 bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2) {
 	bool result = true;
 	result = result && history1->antenna_deployed == history2->antenna_deployed;
@@ -215,6 +222,9 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	result = result && history1->lion_2_charged == history2->lion_2_charged;
 	result = result && history1->prog_mem_rewritten == history2->prog_mem_rewritten;
 	return result;
+}
+bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2) {
+	return data1->li_caused_reboot == data1->li_caused_reboot;
 }
 
 // writes error stack data to mram, and confirms it was written correctly if told to
@@ -268,8 +278,8 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 }
 
 /* writes cached state to MRAM
- NOTE: this does protect the SPI lines (takes that mutex) - it's NOT unsafe in that sense */
-void write_state_to_storage(void) {
+ NOTE: the SPI mutex MUST be held if called with safe == false - otherwise all of MRAM can be corrupted */
+void write_state_to_storage_safety(bool safe) {
 	cached_state.sat_state = get_sat_state();
 	// reboot count is only incremented on startup and is written through cache
 	// sat_event_history is written through when changed
@@ -280,6 +290,7 @@ void write_state_to_storage(void) {
 	satellite_history_batch temp_sat_event_history;
 	uint8_t temp_prog_mem_rewritten;
 	uint32_t temp_radio_revive_timestamp;
+	persistent_charging_data_t temp_persistent_charging_data;
 	bool errors_write_confirmed = false;
 
 	// set write time right before writing
@@ -288,7 +299,7 @@ void write_state_to_storage(void) {
 	uint32_t prev_last_data_write_ms = last_data_write_ms;
 	
 	// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
-	uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
+	uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
 	cache_time_fields_minimutex = true;
 	cached_state.secs_since_launch = cur_timestamp;
 	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
@@ -305,8 +316,8 @@ void write_state_to_storage(void) {
 		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack, true);
-		// NOTE: we don't write out the bootloader or program memory hash TODO: do we REALLY not want to write it out?
 
 		// read it right back to confirm validity
 		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
@@ -314,7 +325,8 @@ void write_state_to_storage(void) {
 		storage_read_field_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
 		storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_read_field_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
+		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		
 		xSemaphoreGive(mram_spi_mutex);
 	} else {
@@ -340,6 +352,7 @@ void write_state_to_storage(void) {
 		|| !compare_sat_event_history(&temp_sat_event_history, &cached_state.sat_event_history) 
 		|| temp_prog_mem_rewritten != cached_state.prog_mem_rewritten
 		|| temp_radio_revive_timestamp != cached_state.radio_revive_timestamp
+		|| !compare_persistent_charging_data(&temp_persistent_charging_data, &cached_state.persistent_charging_data)
 		|| !errors_write_confirmed) {
 
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
@@ -357,6 +370,11 @@ void write_state_to_storage(void) {
 	}
 }
 
+/* external function(s) */
+void write_state_to_storage(void) {
+	write_state_to_storage_safety(true);
+}
+
 /* Writes cached state to MRAM, but doesn't confirm it was correct. 
    Can also be used from an ISR if from_isr is true */
 void write_state_to_storage_emergency(bool from_isr) {
@@ -369,7 +387,7 @@ void write_state_to_storage_emergency(bool from_isr) {
 	
 	if (got_mutex)
 	{
-		uint32_t cur_timestamp = get_current_timestamp(); // take before because "takes" mutex
+		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
 		cache_time_fields_minimutex = true;
 		cached_state.secs_since_launch = cur_timestamp;
 		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
@@ -381,6 +399,7 @@ void write_state_to_storage_emergency(bool from_isr) {
 		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
 		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		storage_write_check_errors_unsafe(&error_equistack, false);
 
 		if (from_isr) {
@@ -518,8 +537,12 @@ bool cache_get_prog_mem_rewritten(void) {
 	return cached_state.prog_mem_rewritten;
 }
 
-uint16_t cache_get_radio_revive_timestamp(void) {
+uint32_t cache_get_radio_revive_timestamp(void) {
 	return cached_state.radio_revive_timestamp;
+}
+
+persistent_charging_data_t cache_get_persistent_charging_data(void) {
+	return cached_state.persistent_charging_data;
 }
 
 /************************************************************************/
@@ -566,8 +589,6 @@ void write_custom_state(void) {
 	uint8_t reboot_count =						0;
 	sat_state_t sat_state =						INITIAL;
 	satellite_history_batch sat_event_history;
-	uint8_t prog_mem_rewritten =				false;
-	uint16_t radio_revive_timestamp =				0;
 	sat_event_history.antenna_deployed =		false;
 	sat_event_history.first_flash =				false;
 	sat_event_history.lifepo_b1_charged =		false;
@@ -575,6 +596,10 @@ void write_custom_state(void) {
 	sat_event_history.lion_1_charged =			false;
 	sat_event_history.lion_2_charged =			false;
 	sat_event_history.prog_mem_rewritten =		false;
+	uint8_t prog_mem_rewritten =				false;
+	uint32_t radio_revive_timestamp =				0;
+	persistent_charging_data_t persistent_charging_data;
+	persistent_charging_data.li_caused_reboot = false;
 
 	#define NUM_ERRS	0
 	const uint8_t num_errs = NUM_ERRS;
@@ -596,7 +621,7 @@ void write_custom_state(void) {
 	storage_write_field_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	storage_write_field_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
 	storage_write_field_unsafe((uint8_t*) &radio_revive_timestamp, 4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-	// TODO: bootloader / program memory hashes
+	storage_write_field_unsafe((uint8_t*) &persistent_charging_data, 1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 
 	// write errors
 	storage_write_field_unsafe((uint8_t*) &num_errs,		1, STORAGE_ERR_NUM_ADDR);
@@ -608,20 +633,21 @@ void write_custom_state(void) {
 	uint32_t temp_secs_since_launch;
 	uint8_t temp_reboot_count;
 	sat_state_t temp_sat_state;
-	satellite_history_batch temp_sat_event_history; // fits in one
+	satellite_history_batch temp_sat_event_history;
 	uint8_t temp_prog_mem_rewritten;
-	uint16_t temp_radio_revive_timestamp;
+	uint32_t temp_radio_revive_timestamp;
+	persistent_charging_data_t temp_persistent_charging_data;
 
 	uint8_t temp_num_errs;
 	sat_error_t temp_error_buf[num_errs];
 
-	storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR); // TODO: wrong size, how do we do this?
+	storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 	storage_read_field_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
 	storage_read_field_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
 	storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
 	storage_read_field_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR); // TODO: wrong size, how do we do this?
-	// TODO: bootloader / program memory hashes
+	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data, 1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 
 	storage_read_field_unsafe((uint8_t*) &temp_num_errs,	1, STORAGE_ERR_NUM_ADDR);
 	configASSERT(temp_num_errs == num_errs);
@@ -636,6 +662,7 @@ void write_custom_state(void) {
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
 	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
 	configASSERT(temp_radio_revive_timestamp == radio_revive_timestamp);
+	configASSERT(compare_persistent_charging_data(&temp_persistent_charging_data, &persistent_charging_data))
 
 	configASSERT(memcmp(error_buf, temp_error_buf, num_errs * sizeof(sat_error_t)) == 0);
 }

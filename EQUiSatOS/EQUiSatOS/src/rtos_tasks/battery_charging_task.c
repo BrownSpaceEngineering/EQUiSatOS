@@ -894,20 +894,28 @@ int battery_logic()
 		// the other to inactive
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// TODO: suspend the scheduler
+		// suspend the scheduler because we don't want this operation to be interrupted
+		vTaskSuspendAll();
 
 		// we're going to decommission here and undecommission if the satellite doesn't
 		// reboot
-		decommission(charging_data.lion_discharging);
+		decommission(charging_data.lion_discharging); // TODO: ROHAN - does this do anything?
+		persistent_charging_data_t persist_data; // TODO: Rohan - maybe you want to do this globally? IDK
+		persist_data.li_caused_reboot = true;
 
-		// TODO: force a write to the MRAM
+		// write to the MRAM that the battery caused a reboot, in case does
+		// (we'll deal with this when we reboot)
+		set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
-		undecommission(charging_data.lion_discharging);
 
-		// TODO: force another write to the MRAM
+		// undecommission the battery and reset our emergency write to the MRAM
+		undecommission(charging_data.lion_discharging); // TODO: ROHAN - does this do anything?
+		persist_data.li_caused_reboot = false;
+		set_persistent_charging_data_unsafe(persist_data);
 
-		// TODO: resume the scheduler
+		// resume normal operation
+		xTaskResumeAll();
 	}
 
 	///

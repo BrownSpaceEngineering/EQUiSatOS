@@ -9,9 +9,10 @@
 #ifndef BATTERY_CHARGING_TASK_H_
 #define BATTERY_CHARGING_TASK_H_
 
-#include "global.h"
+#include <asf.h>
 #include "rtos_tasks.h"
 #include "testing_functions/battery_charging_simulated_data.h"
+#include "../data_handling/persistent_storage.h"
 
 // TODO: figure out these thresholds fully and deal with scaling
 
@@ -141,10 +142,6 @@ typedef struct charging_data
 	int charging_parity;
 } charging_data_t;
 
-typedef struct persistent_charging_data {
-	int8_t li_caused_reboot;
-} persistent_charging_data_t;
-
 // NOTE: these are initialized elsewhere -- should they maybe not be?
 // anyone doing something during which the battery state should not
 // be changed needs to honor this mutex
@@ -156,7 +153,7 @@ SemaphoreHandle_t battery_charging_mutex;
 // helper functions
 charging_data_t charging_data;
 
-charging_data_t persistent_charging_data;
+persistent_charging_data_t persistent_charging_data;
 
 int get_error_loc(battery_t bat);
 int get_current_timestamp_wrapped(void);

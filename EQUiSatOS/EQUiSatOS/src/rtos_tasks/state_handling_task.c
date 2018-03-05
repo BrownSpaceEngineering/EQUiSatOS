@@ -1,4 +1,5 @@
 #include "rtos_tasks.h"
+#include "battery_charging_task.h"
 
 #define MIN_TIME_IN_INITIAL_S		(30*60)
 #define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
