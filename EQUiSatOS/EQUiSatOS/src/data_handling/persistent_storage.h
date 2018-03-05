@@ -14,17 +14,16 @@
 #include "../processor_drivers/MRAM_Commands.h"
 
 /* addressing constants */
-#define STORAGE_SECS_SINCE_LAUNCH_ADDR		20
-#define STORAGE_REBOOT_CNT_ADDR				30
-#define STORAGE_SAT_STATE_ADDR				34
-#define STORAGE_SAT_EVENT_HIST_ADDR			38
-#define STORAGE_PROG_MEM_REWRITTEN_ADDR		42
-#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR	46
-#define STORAGE_BOOTLOADER_HASH_ADDR		56
-#define STORAGE_PROG_MEMORY_HASH_ADDR		314
-#define STORAGE_ERR_NUM_ADDR				572
-#define STORAGE_ERR_LIST_ADDR				576
-#define STORAGE_PROG_MEMORY_ADDR			1058
+#define STORAGE_SECS_SINCE_LAUNCH_ADDR			20
+#define STORAGE_REBOOT_CNT_ADDR					30
+#define STORAGE_SAT_STATE_ADDR					34
+#define STORAGE_SAT_EVENT_HIST_ADDR				38
+#define STORAGE_PROG_MEM_REWRITTEN_ADDR			42
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		46
+#define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	50
+#define STORAGE_ERR_NUM_ADDR					60
+#define STORAGE_ERR_LIST_ADDR					64
+#define STORAGE_PROG_MEMORY_ADDR				546
 
 // maximum size of a single MRAM "field," used for global buffers
 #define STORAGE_MAX_FIELD_SIZE				240 // error list
@@ -38,6 +37,11 @@
 #define PROG_MEM_START_ADDR					0x6000	// use default 0x0 OR set with .text=<addr> in Linker Memory settings
 #define PROG_MEM_SIZE						81240	// find for latest build in "output"
 #define PROG_MEM_COPY_BUF_SIZE				5120	// user-settable (currently matching bootloader batch size)
+
+/* battery-specific state cache (put here for #include reasons) */
+typedef struct persistent_charging_data_t {
+	int8_t li_caused_reboot;
+} persistent_charging_data_t;
 
 /************************************************************************/
 /* STATE CACHE                                                          */
@@ -59,7 +63,8 @@ struct persistent_data {
 	sat_state_t sat_state; // most recent known state
 	satellite_history_batch sat_event_history;
 	uint8_t prog_mem_rewritten; // actually a bool; only written by bootloader (one in sat event history follows that paradigm)
-	uint16_t radio_revive_timestamp;
+	uint32_t radio_revive_timestamp;
+	persistent_charging_data_t persistent_charging_data;
 	
 } cached_state;
 
@@ -74,7 +79,8 @@ void read_state_from_storage(void);
 void write_state_to_storage(void);
 void write_state_to_storage_emergency(bool from_isr);
 void increment_reboot_count(void);
-void update_radio_revive_timestamp(uint16_t radio_revive_timestamp);
+void set_radio_revive_timestamp(uint32_t radio_revive_timestamp);
+void set_persistent_charging_data_unsafe(persistent_charging_data_t data);
 void update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
@@ -89,7 +95,8 @@ uint8_t						cache_get_reboot_count(void);
 sat_state_t					cache_get_sat_state(void);
 satellite_history_batch		cache_get_sat_event_history(void);
 bool						cache_get_prog_mem_rewritten(void);
-uint16_t					cache_get_radio_revive_timestamp(void);
+uint32_t					cache_get_radio_revive_timestamp(void);
+persistent_charging_data_t	cache_get_persistent_charging_data(void);
 
 /* functions which require reading from MRAM (bypass cache) */
 void populate_error_stacks(equistack* error_stack);
