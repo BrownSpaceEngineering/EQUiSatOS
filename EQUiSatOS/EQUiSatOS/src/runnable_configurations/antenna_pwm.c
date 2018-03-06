@@ -21,9 +21,21 @@ static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
 }
 
 bool get_antenna_deployed(void) {
+	// if we fail to get the mutex, continue on and mess with anything reading sensors
+	// (we don't care about sensors much relative to antenna deployment)
+	bool got_mutex = false;
+	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+		got_mutex = true;		
+	} else {
+		log_error(ELOC_ANTENNA_DEPLOY, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+	}
+	
 	_set_5v_enable(true);
+	vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS);
 	bool did_deploy = get_input(P_DET_RTN);
 	_set_5v_enable(false);
+	
+	if (got_mutex) xSemaphoreGive(processor_adc_mutex);
 	return did_deploy;
 }
 

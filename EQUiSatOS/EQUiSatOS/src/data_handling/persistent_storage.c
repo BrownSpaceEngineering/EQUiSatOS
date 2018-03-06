@@ -371,9 +371,9 @@ void write_state_to_storage_safety(bool safe) {
 			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
 
 			// in particular, if it was the secs_since_launch that was inconsistent,
-			// go off the old value in the MRAM
+			// and it appears we failed to 
 			if (temp_secs_since_launch != cached_state.secs_since_launch &&
-			temp_secs_since_launch < cached_state.secs_since_launch) { // TODO: why the greater than condition??
+				temp_secs_since_launch < cached_state.secs_since_launch) {
 				// grab time field mutex
 				cache_time_fields_minimutex = true;
 				last_data_write_ms = prev_last_data_write_ms;
@@ -493,7 +493,8 @@ bool increment_reboot_count(void) {
 		return true;
 		
 	} else {
-		// TODO: maybe increment reboot count anyways (and update sync redundancy)
+		// note: this should never be called outside the statup task
+		// so this is really just token
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 		return false;
 	}
@@ -510,7 +511,11 @@ bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
 		return true;
 		
 	} else {
-		// TODO: maybe set timestamp anyways (and update sync redundancy)
+		// This is sufficiently rare that we want to make sure it at least gets set,
+		// so we do it and risk a error for "data inconcsistency"
+		cached_state_correct_errors();
+		cached_state.radio_revive_timestamp = radio_revive_timestamp;
+		cached_state_sync_redundancy();
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 		return false;
 	}
@@ -561,7 +566,7 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 		return true;
 		
 	} else {
-		// TODO: maybe update state anyways (and update sync redundancy)?
+		// we don't worry too much about this because it will be called periodically
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 		return false;
 	}
