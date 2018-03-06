@@ -23,7 +23,7 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 //#define BAT_CHARGING_ACTIVE // enable battery charging logic
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
@@ -49,7 +49,7 @@
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
-//#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 

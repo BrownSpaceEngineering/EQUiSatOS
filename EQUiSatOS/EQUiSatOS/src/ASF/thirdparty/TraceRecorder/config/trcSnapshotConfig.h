@@ -98,7 +98,7 @@
  * Default value is 1000, which means that 4000 bytes is allocated for the
  * event buffer.
  ******************************************************************************/
-#define TRC_CFG_EVENT_BUFFER_SIZE 500
+#define TRC_CFG_EVENT_BUFFER_SIZE 300
 
 /*******************************************************************************
  * TRC_CFG_NTASK, TRC_CFG_NISR, TRC_CFG_NQUEUE, TRC_CFG_NSEMAPHORE, TRC_CFG_NMUTEX

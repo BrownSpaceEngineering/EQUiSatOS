@@ -53,8 +53,8 @@ int main(void)
 {
 	global_init();
 	set_charging_states(true, true, true, true);
-	//system_test(true);
-	//run_tests();
+	system_test(true);
+	run_tests();
 
 	run_rtos();
 }

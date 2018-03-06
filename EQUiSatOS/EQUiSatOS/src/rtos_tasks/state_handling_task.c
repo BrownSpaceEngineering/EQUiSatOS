@@ -66,6 +66,8 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 	return current_state;
 }
 
+void decide_next_state(sat_state_t current_state);
+
 void state_handling_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
@@ -90,7 +92,7 @@ void state_handling_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-static void decide_next_state(sat_state_t current_state) {
+void decide_next_state(sat_state_t current_state) {
 
 	// if the current state is RIP we don't want to do anything
 	if (current_state != RIP)
