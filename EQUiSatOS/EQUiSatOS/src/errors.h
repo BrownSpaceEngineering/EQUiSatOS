@@ -191,7 +191,8 @@ enum error_codes {
 	ECODE_LOW_VOLTAGE_FOR_WHILE =       60,
 	ECODE_RECOMMISSION =                61,
 	ECODE_ALL_SAME_VAL =				62,
-	ECODE_CORRUPTED =					63
+	ECODE_CORRUPTED =					63,
+	ECODE_INVALID_STATE_CHANGE =		64
 };
 
 /************************************************************************/

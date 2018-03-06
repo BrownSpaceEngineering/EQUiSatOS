@@ -42,11 +42,11 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
 //													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED}})
-#define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
+#define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 #define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory

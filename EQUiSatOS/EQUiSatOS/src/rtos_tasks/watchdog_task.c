@@ -28,6 +28,7 @@ static uint32_t prev_time;
 SemaphoreHandle_t mutex;
 
 void watchdog_init(void) {
+	configASSERT(WATCHDOG_TASK == 0);
 	configure_watchdog();
 	memset(&check_ins, 0, sizeof(bool) * NUM_TASKS);
 	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
@@ -76,7 +77,7 @@ bool watchdog_as_function(void) {
 	}
 	prev_time = curr_time;
 	
-	for (task_type_t i = 0; i < NUM_TASKS; i++) {
+	for (task_type_t i = WATCHDOG_TASK + 1; i < NUM_TASKS; i++) { // NOTE: WATCHDOG_TASK == 0
 		if (!check_ins[i]) {
 			if (running_times[i]) {
 				watch_block = true;

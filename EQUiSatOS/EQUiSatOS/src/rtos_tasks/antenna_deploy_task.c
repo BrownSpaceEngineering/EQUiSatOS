@@ -10,7 +10,13 @@
 #include "../processor_drivers/PWM_Commands.h"
 #include "../runnable_configurations/antenna_pwm.h"
 
+#define ANTENNA_DEPLOY_MAX_TRIES	25
 static int num_tries = 0;
+
+bool should_exit_antenna_deploy(void) {
+	return (get_antenna_deployed() && num_tries_ant_deploy() > 0) // must try at least once
+		|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES;
+}
 
 int num_tries_ant_deploy(void) {
 	return num_tries;
