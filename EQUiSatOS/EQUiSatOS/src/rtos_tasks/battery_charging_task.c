@@ -926,11 +926,11 @@ int battery_logic()
 
 		// reset our emergency write to the MRAM
 		persist_data.li_caused_reboot = -1;
-		if (got_mutex) set_persistent_charging_data_unsafe(persist_data);
+		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
 		xTaskResumeAll();
-		if (got_mutex) xSemaphoreGive(mram_spi_cache_mutex);
+		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
 	}
 
 	///
