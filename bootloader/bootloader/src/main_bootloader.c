@@ -28,7 +28,7 @@
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-#define PROG_MEM_SIZE						144820
+#define PROG_MEM_SIZE						147740
 // address at which binary is stored in mram
 #define MRAM_APP_ADDRESS					60
 // address at which prog mem rewritten boolean is stored in mram

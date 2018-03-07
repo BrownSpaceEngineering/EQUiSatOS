@@ -36,7 +36,7 @@
 #define TESTING_SPEEDUP
 
 // reduces the stack size of some tasks to a workable but risky level
-#define RISKY_STACK_SIZES
+//#define RISKY_STACK_SIZES
 
 // use this flag to disable reed-solomon tables (frees up memory)
 //#define USE_REED_SOLOMON
@@ -56,11 +56,11 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-#define WRITE_DEFAULT_MRAM_VALS
+//#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 #define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
-#define EQUISIM_WATCHDOG_RESET_TEST
+//#define EQUISIM_WATCHDOG_RESET_TEST
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission

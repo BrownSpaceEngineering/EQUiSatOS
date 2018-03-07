@@ -97,6 +97,7 @@ void run_rtos(void);
 void init_task_state(task_type_t task);
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS FOR TESTING - DONT YOU DARE USE THESE */
+bool set_sat_state_helper(sat_state_t state);
 void set_all_task_states(task_states states, sat_state_t state);
 void task_suspend(task_type_t task_id);
 void task_resume(task_type_t task_id);

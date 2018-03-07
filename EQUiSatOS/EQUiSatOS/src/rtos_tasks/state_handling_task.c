@@ -47,7 +47,6 @@ void state_handling_task(void *pvParameters)
 		#if OVERRIDE_STATE_HOLD_INIT != 1
 	
 			#ifdef EQUISIM_WATCHDOG_RESET_TEST
-				test_all_state_transitions();
 				test_watchdog_reset_bat_charging();
 				test_watchdog_reset_attitude_data();
 				test_watchdog_reset_antenna_deploy();

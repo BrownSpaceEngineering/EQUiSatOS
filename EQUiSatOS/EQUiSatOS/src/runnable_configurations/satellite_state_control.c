@@ -430,35 +430,35 @@ bool set_sat_state_helper(sat_state_t state)
 			return false; // only done initially (via direct set)
 
 		case ANTENNA_DEPLOY: ;
-			print("CHANGED STATE to ANTENNA_DEPLOY");
+			print("\n\nCHANGED STATE to ANTENNA_DEPLOY\n\n");
 			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
 			set_radio_by_sat_state(ANTENNA_DEPLOY);
 			set_irpow_by_sat_state(ANTENNA_DEPLOY);
 			return prev_sat_state == INITIAL || prev_sat_state == LOW_POWER;
 
 		case HELLO_WORLD: ;
-			print("CHANGED STATE to HELLO_WORLD");
+			print("\n\nCHANGED STATE to HELLO_WORLD\n\n");
 			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
 			set_radio_by_sat_state(HELLO_WORLD);
 			set_irpow_by_sat_state(HELLO_WORLD);
 			return prev_sat_state == ANTENNA_DEPLOY;
 
 		case IDLE_NO_FLASH: ;
-			print("CHANGED STATE to IDLE_NO_FLASH");
+			print("\n\nCHANGED STATE to IDLE_NO_FLASH\n\n");
 			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
 			set_radio_by_sat_state(IDLE_NO_FLASH);
 			set_irpow_by_sat_state(IDLE_NO_FLASH);
 			return prev_sat_state == IDLE_FLASH || prev_sat_state == HELLO_WORLD || prev_sat_state == LOW_POWER;
 
 		case IDLE_FLASH: ;
-			print("CHANGED STATE to IDLE_FLASH");
+			print("\n\nCHANGED STATE to IDLE_FLASH\n\n");
 			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
 			set_radio_by_sat_state(IDLE_FLASH);
 			set_irpow_by_sat_state(IDLE_FLASH);
 			return prev_sat_state == IDLE_NO_FLASH;
 
 		case LOW_POWER: ;
-			print("CHANGED STATE to LOW_POWER");
+			print("\n\nCHANGED STATE to LOW_POWER\n\n");
 			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
 			set_radio_by_sat_state(LOW_POWER);
 			set_irpow_by_sat_state(LOW_POWER);
@@ -476,7 +476,7 @@ bool set_sat_state(sat_state_t state) {
 		bool valid = set_sat_state_helper(state);
 		if (!valid) {
 			log_error(ELOC_STATE_HANDLING, ECODE_INVALID_STATE_CHANGE, true);
-			configASSERT(false); // busy loop because this should only be radiation issues
+			//configASSERT(false); // busy loop because this should only be radiation issues
 		}
 		return valid;
 	#endif

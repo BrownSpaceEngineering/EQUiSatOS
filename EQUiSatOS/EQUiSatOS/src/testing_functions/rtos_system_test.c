@@ -272,11 +272,13 @@ void print_equistacks(void) {
 	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
 }
 
-void print_task_states(void) {
+void print_task_info(void) {
 	print("\n\n===========Task States===========\n");
 	for (int i = 0; i < NUM_TASKS; i++) {
 		eTaskState task_state = eTaskGetState(*(task_handles[i]));
-		print("%s: %s\n", get_task_str(i), get_task_state_str(task_state));
+		print("%s: %s (%s) RT: %d\n", get_task_str(i), 
+			get_task_state_str(task_state), _get_task_checked_in(i) ? "checked in " : "checked out",
+			_get_task_checked_in_time(i));
 	}
 }
 
@@ -325,7 +327,7 @@ void rtos_system_test(void) {
 	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
 	print("num errors:\t%d\n", error_equistack.cur_size);
-	print_task_states();
+	print_task_info();
 	print_cur_data_buf(_get_cur_data_buf());
 	print_equistacks();
 	print_task_stack_usages();

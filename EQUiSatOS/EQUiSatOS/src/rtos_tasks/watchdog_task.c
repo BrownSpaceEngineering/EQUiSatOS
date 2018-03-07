@@ -9,7 +9,7 @@
 #include "Watchdog_Task.h"
 
 uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
-	WATCHDOG_TASK_FREQ + WATCHDOG_BUFFER,
+	WATCHDOG_TASK_FREQ + WATCHDOG_BUFFER, // doesn't really matter, not used
 	STATE_HANDLING_TASK_FREQ + WATCHDOG_BUFFER,
 	ANTENNA_DEPLOY_TASK_LESS_FREQ + WATCHDOG_BUFFER, // TODO: this won't monitor very tight during ANTENNA_DEPLOY
 	BATTERY_CHARGING_TASK_FREQ + WATCHDOG_BUFFER,
@@ -34,6 +34,15 @@ void watchdog_init(void) {
 	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
 	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
 	prev_time = xTaskGetTickCount();
+}
+
+// testing function to get whether a task is checked in
+bool _get_task_checked_in(task_type_t task) {
+	return check_ins[task];
+}
+// testing function to get time a task was checked in
+uint32_t _get_task_checked_in_time(task_type_t task) {
+	return running_times[task];
 }
 
 static void task_pet_watchdog(bool got_mutex) {

@@ -31,4 +31,8 @@ void report_task_running(task_type_t task_ind); // always safe; uses mutex
 void check_out_task_unsafe(task_type_t task_ind);
 void watchdog_early_warning_callback(void);
 
+// testing functions
+bool _get_task_checked_in(task_type_t task);
+uint32_t _get_task_checked_in_time(task_type_t task);
+
 #endif /* WATCHDOG_TASK_H_ */
