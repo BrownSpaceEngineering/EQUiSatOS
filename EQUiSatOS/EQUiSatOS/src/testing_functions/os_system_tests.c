@@ -81,24 +81,12 @@ void test_normal_satellite_state_sequence(void) {
 	}
 	
 	if (state_num < 6) {
-		check_set_sat_state(LOW_POWER, RIP);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		state_num++;
-	}
-	
-	if (state_num < 7) {
-		check_set_sat_state(RIP, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		state_num++;
-	}
-	
-	if (state_num < 8) {
 		check_set_sat_state(LOW_POWER, IDLE_FLASH);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	
-	if (state_num < 9) {
+	if (state_num < 7) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
@@ -123,13 +111,9 @@ void test_error_case_satellite_state_sequence(void)
 		state_num++;
 	}
 	
-	// go to emergency low power AND RIP (this state is very different from IDLE_NO_FLASH)
+	// go to emergency low power (the ANTENNA_DEPLOY state is very different from IDLE_NO_FLASH)
 	if (state_num < 2) {
 		check_set_sat_state(ANTENNA_DEPLOY, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		check_set_sat_state(LOW_POWER, RIP);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		check_set_sat_state(RIP, LOW_POWER);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		check_set_sat_state(LOW_POWER, ANTENNA_DEPLOY);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
@@ -158,13 +142,9 @@ void test_error_case_satellite_state_sequence(void)
 		state_num++;
 	}
 	
-	// go to emergency low power, then RIP, then back again
+	// go to emergency low power, then back again
 	if (state_num < 6) {
 		check_set_sat_state(IDLE_NO_FLASH, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		check_set_sat_state(LOW_POWER, RIP);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		check_set_sat_state(RIP, LOW_POWER);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		check_set_sat_state(LOW_POWER, IDLE_NO_FLASH);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
@@ -182,26 +162,14 @@ void test_error_case_satellite_state_sequence(void)
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-
+	
 	if (state_num < 9) {
-		check_set_sat_state(LOW_POWER, RIP);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		state_num++;
-	}
-
-	if (state_num < 10) {
-		check_set_sat_state(RIP, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
-		state_num++;
-	}
-
-	if (state_num < 11) {
 		check_set_sat_state(LOW_POWER, IDLE_FLASH);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
-	if (state_num < 12) {
+	if (state_num < 10) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
@@ -333,25 +301,22 @@ bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state)
 	switch (old_state) 
 	{
 		case INITIAL:
-			configASSERT(!valid || valid && (new_state == ANTENNA_DEPLOY || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == ANTENNA_DEPLOY ));
 			return valid;
 		case ANTENNA_DEPLOY:
-			configASSERT(!valid || valid && (new_state == HELLO_WORLD || new_state == LOW_POWER || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == HELLO_WORLD || new_state == LOW_POWER));
 			return valid;
 		case HELLO_WORLD:
-			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER));
 			return valid;
 		case IDLE_NO_FLASH:
-			configASSERT(!valid || valid && (new_state == IDLE_FLASH || new_state == LOW_POWER || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == IDLE_FLASH || new_state == LOW_POWER));
 			return valid;
 		case IDLE_FLASH:
-			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER));
 			return valid;
 		case LOW_POWER:
-			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == ANTENNA_DEPLOY || new_state == RIP));
-			return valid;
-		case RIP:
-			configASSERT(!valid || valid && (new_state == LOW_POWER));
+			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == ANTENNA_DEPLOY));
 			return valid;
 		default:
 			configASSERT(!valid);
@@ -379,9 +344,6 @@ void force_set_state(sat_state_t new_state)
 			break;
 		case LOW_POWER:
 			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
-			break;
-		case RIP:
-			set_all_task_states(RIP_TASK_STATES, RIP);
 			break;
 		default:
 			configASSERT(false);

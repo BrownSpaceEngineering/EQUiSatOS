@@ -27,62 +27,6 @@ void handle_antenna_deploy_task(void) {
 	}
 }
 
-// returns the current state if no change required
-sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_state)
-{
-	// enter the rip state if both are lion_critical_mv
-	if (li1_mv <= LI_CRITICAL_MV && li2_mv <= LI_CRITICAL_MV)
-	{
-		int end_of_life = 1;
-
-		// we want to be very sure that both are actually lion_critical_mv
-		for (int i = 0; i < 5; i++)
-		{
-			vTaskDelay(TIME_TO_WAIT_FOR_CRIT_MS);
-
-			uint16_t li1_recalc_mv;
-			uint16_t li2_recalc_mv;
-			read_lion_volts_precise(&li1_recalc_mv, &li2_recalc_mv);
-
-			if (!(li1_recalc_mv <= LI_CRITICAL_MV && li2_recalc_mv <= LI_CRITICAL_MV))
-			{
-				end_of_life = 0;
-				break;
-			}
-		}
-
-		if (end_of_life)
-		{
-			log_error(ELOC_STATE_HANDLING, ECODE_ENTER_RIP, true);
-			return RIP;
-		}
-		// we got conflicted data
-		else
-		{
-			log_error(ELOC_STATE_HANDLING, ECODE_UNCERTAIN_RIP, true);
-			switch (current_state)
-			{
-				case INITIAL:
-					return current_state;
-				
-				case ANTENNA_DEPLOY:
-				case HELLO_WORLD:
-				case IDLE_FLASH:
-				case IDLE_NO_FLASH:
-				case LOW_POWER:
-					return LOW_POWER;
-
-				// this should really never happen
-				default:
-					log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
-					return INITIAL;
-			}
-		}
-	}
-
-	return current_state;
-}
-
 void decide_next_state(sat_state_t current_state);
 
 void state_handling_task(void *pvParameters)
@@ -153,17 +97,20 @@ void decide_next_state(sat_state_t current_state) {
 	int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
 
 	///
-	// we always will need a check whether we want to go into RIP (or a low
-	// power state is the data is conflicted)
+	// we always will need a check whether we want to go into a low
+	// power state is the data is conflicted
 	///
 
-	sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-	if (checked_state != current_state)
-	{
-		// checked state will be either RIP or LOW_POWER
-		set_sat_state(checked_state);
-		return;
-	}
+
+// TODO: Useless abstraction (to get back see just after https://github.com/BrownSpaceEngineering/EQUiSatOS/commit/c01ffbb545c42178f90baaeb7562b9b8f5425ccc)
+// 	
+// 	sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
+// 	if (checked_state != current_state)
+// 	{
+// 		// checked state will be either RIP or LOW_POWER
+// 		set_sat_state(checked_state);
+// 		return;
+// 	}
 
 	///
 	// now it's time to check for all of the standard state changes
@@ -245,14 +192,8 @@ void decide_next_state(sat_state_t current_state) {
 				else
 					set_sat_state(IDLE_NO_FLASH);
 			}
-			// RIP is handled above
 			break;
 		
-		case RIP:
-			if (both_li_above_high) {
-				set_sat_state(LOW_POWER);
-			}
-
 		default:
 			configASSERT(false);
 			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);

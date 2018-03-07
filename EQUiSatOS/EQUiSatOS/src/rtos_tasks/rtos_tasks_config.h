@@ -90,8 +90,7 @@ typedef enum
 	IDLE_NO_FLASH,
 	IDLE_FLASH,
 	LOW_POWER,
-	RIP,
-	NUM_SAT_STATES, // = RIP + 1
+	NUM_SAT_STATES, // = LOW_POWER + 1
 } sat_state_t;
 
 /************************************************************************/

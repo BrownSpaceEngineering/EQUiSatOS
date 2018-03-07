@@ -199,7 +199,6 @@ const char* get_sat_state_str(sat_state_t state) {
 		case INITIAL:				return "INITIAL				 ";
 		case ANTENNA_DEPLOY:		return "ANTENNA_DEPLOY		 ";
 		case LOW_POWER:				return "LOW_POWER			 ";
-		case RIP:					return "RIP					 ";
 		default: return "[invalid]";
 	}
 }

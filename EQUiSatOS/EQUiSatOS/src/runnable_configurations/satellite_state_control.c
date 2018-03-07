@@ -465,14 +465,6 @@ bool set_sat_state_helper(sat_state_t state)
 			return prev_sat_state == ANTENNA_DEPLOY || prev_sat_state == HELLO_WORLD || 
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 
-		case RIP: ;
-			print("CHANGED STATE to RIP");
-			set_all_task_states(RIP_TASK_STATES, RIP);
-			set_radio_by_sat_state(RIP);
-			set_irpow_by_sat_state(RIP);
-			// we can always go to RIP
-			return true;
-
 		default:
 			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
 			configASSERT(false); // bad state ID

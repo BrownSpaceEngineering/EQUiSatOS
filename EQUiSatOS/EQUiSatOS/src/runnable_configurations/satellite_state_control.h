@@ -44,8 +44,7 @@ typedef struct task_states {
 #define IDLE_NO_FLASH_TASK_STATES 		HELLO_WORLD_TASK_STATES
 #define IDLE_FLASH_TASK_STATES 			((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_ANY,		T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING}})
 #define LOW_POWER_TASK_STATES 			((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_SUSPENDED, 	T_STATE_RUNNING}})
-#define RIP_TASK_STATES 				IDLE_NO_FLASH_TASK_STATES
-// **see .c file for radio states**
+// **see .c file for radio, ir power states**
 
 /************************************************************************/
 /* global hardware states												
