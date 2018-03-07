@@ -10,19 +10,18 @@
 /************************************************************************/
 /* RADIO CONTROL FUNCTIONS                                              */
 /************************************************************************/
-enum radio_state {
-	COMMAND_MODE,
-	RECIEVING_COMMAND, // subset of COMMAND_MODE // TODO
-	TX_RX_MODE,
-	POWERED_OFF
-} cur_radio_mode = POWERED_OFF;
-#define POWER_ON_RADIO_MODE		TX_RX_MODE
-
 // temporary version of radio temp; set periodically (right before radio transmit)
 uint16_t radio_temp_cached;
 
 uint16_t get_radio_temp_cached(void) {
 	return radio_temp_cached;
+}
+
+// returns we've received a kill command and that command is currently active.
+bool radio_is_killed(void) {
+	// note: the cache is the most rad-tolerant area of the memory,
+	// so we always grab the value from there
+	return cache_get_radio_revive_timestamp() >= get_current_timestamp();
 }
 
 void read_radio_temp_mode(void) {
@@ -41,21 +40,10 @@ void read_radio_temp_mode(void) {
 	if (check_checksum(receivebuffer+1, 3, receivebuffer[4])) {
 		radio_temp_cached = (receivebuffer[2] << 8) | receivebuffer[3];
 	} else {
-		//Wait longer?
-		//log error
+		//TODO: Wait longer?
+		// log error
+		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);
 	}
-	
-	// TODO: may work:
-	// TODO: timeout!!
-	
-	// if there is data to be received, busy(ish) loop until then
-// 	if (expecting_rx_data) {
-// 		while (!receiveDataReady) {
-// 			vTaskDelay(STATE_CHANGE_MONITOR_DELAY_TICKS);
-// 		}
-// 		if (command->rx_data_ready != NULL)
-// 		*(command->rx_data_ready) = true;
-// 	}
 	
 	// warm reset to get back into transmit mode
 	warm_reset();
@@ -77,20 +65,37 @@ void read_radio_temp_mode(void) {
 StaticQueue_t _rx_command_queue_d;
 uint8_t _rx_command_queue_storage[RX_CMD_QUEUE_LEN * sizeof(rx_cmd_type_t)];
 
+char echo_response_buf[] =	{'E', 'C', 'H', 'O', 'C', 'H', 'O', 'C', 'O'};
+char flash_response_buf[] =	{'F', 'L', 'A', 'S', 'H', 'I', 'N', 'H', 0}; // last byte set to whether will flash
+char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N',  0,   0,   0,  0}; // last 4 bytes for revive timestamp
+
+// init for radio in general
 void radio_control_init(void) {
 	radio_init();
 	rx_command_queue = xQueueCreateStatic(RX_CMD_QUEUE_LEN,
-		sizeof(rx_cmd_type_t),
-		_rx_command_queue_storage,
-		&_rx_command_queue_d);
+	sizeof(rx_cmd_type_t),
+	_rx_command_queue_storage,
+	&_rx_command_queue_d);
+}
+
+/* Called on a kill command; increases the duration for which we're killed
+   for incrementally based on the previous duration. */
+void kill_radio_incremental(void) {
+	uint32_t prev_radio_kill_timestamp = cache_get_radio_revive_timestamp();
+	uint32_t cur_timestamp = get_current_timestamp();
+	
+	// TODO: we might need another MRAM field;
+	// we can't tell just based on the previous radio kill timestamp
+	// what we should set it to now (assuming we're increasing 
+	// our kill time on each kill command)
 }
 
 // listens for RX and handles uplink commands for up to RX_READY_PERIOD_MS
 void handle_uplinks(void) {
+	// get ready for buffer input and enable RX mode only
 	clear_USART_rx_buffer();
-	
-	// TODO: enable RX mode, set global state?
-	
+	setTXEnable(false);
+	setRXEnable(true);
 	
 	// continue to try and process commands until we're close enough to the
 	// time we need to exit RX mode that we need to get prepared
@@ -103,14 +108,37 @@ void handle_uplinks(void) {
 		// try to receive command from queue, waiting the maximum time we can before the processing deadline
 		if (xQueueReceive(rx_command_queue, &rx_command, processing_deadline - xTaskGetTickCount())) {
 			switch (rx_command) {
-				//TODO: act on commands
 				case CMD_ECHO:
+					// just an echo
+					if (!radio_is_killed())
+						transmit_buf_wait((uint8_t*) echo_response_buf, CMD_RESPONSE_SIZE);
 					break;
+					
 				case CMD_FLASH:
+					// write whether we will flash (weren't currently) to last byte
+					flash_response_buf[CMD_RESPONSE_SIZE-1] = would_flash_now();
+					if (!radio_is_killed())
+						transmit_buf_wait((uint8_t*) flash_response_buf, CMD_RESPONSE_SIZE);
+					// wait a bit after sending response before actually flashing
+					vTaskDelay(FLASH_CMD_PREFLASH_DELAY_MS);
+					// if flash task is currently in period between flashes,
+					// wake it up and flash. Otherwise, if we're currently flashing,
+					// this command does nothing.
+					flash_now();
 					break;
+					
 				case CMD_KILL:
+					// TODO: let kill command be activated while we're killed??
+					kill_radio_incremental(); // TODO: see function
+					if (!radio_is_killed()) {
+						uint32_t revive_time = cache_get_radio_revive_timestamp();
+						memcpy(kill_response_buf + 1, &revive_time, 4);
+						transmit_buf_wait((uint8_t*) kill_response_buf, CMD_RESPONSE_SIZE);
+					}
 					break;
+					
 				case CMD_NONE:
+					// nothing received, wait for more
 					break;
 			}
 		}
@@ -354,14 +382,15 @@ void transmit_task(void *pvParameters)
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);
 		
-		/* enter transmission stage */
-		attempt_transmission();
+		/* if the radio isn't killed, enter transmission stage */
+		if (!radio_is_killed()) {
+			attempt_transmission();
+		}
 		
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
-		setTXEnable(false);
 		handle_uplinks();
 		
 		/* shut down and block for any leftover time in next loop */

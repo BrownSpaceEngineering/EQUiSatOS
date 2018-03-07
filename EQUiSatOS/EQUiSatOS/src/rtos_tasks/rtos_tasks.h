@@ -133,6 +133,7 @@ void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign var
 void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, so the delay is determinate
 uint32_t get_time_of_next_flash(void);	// implemented in flash_activate_task
 bool flash_now(void);					// implemented in flash_activate_task
+bool would_flash_now(void);				// implemented in flash_activate_task
 equistack* get_msg_type_equistack(msg_data_type_t msg_type);
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 int num_tries_ant_deploy(void); // returns the number of times we've tried to deploy the antenna

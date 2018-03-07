@@ -46,6 +46,8 @@ bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index) {
 	return true;
 }
 
+// checks if an RX command was received, and signals the transmit
+// task if so. MUST be called from an interrupt while doing so.
 rx_cmd_type_t check_rx_received(void) {
 	//checking for callsign
 	for (int i = 0; i < (LEN_RECEIVEBUFFER - LEN_GROUND_CALLSIGN); i++) {
@@ -58,14 +60,24 @@ rx_cmd_type_t check_rx_received(void) {
 		}
 		if (callsign_valid) {
 			uint8_t rxbuf_cmd_start_index = i+4;
+			// if valid command, send to transmit task to handle when ready
+			rx_cmd_type_t command;
 			if (check_if_rx_matches(echo_buf, LEN_ECHOBUF, rxbuf_cmd_start_index)) {
 				//ECHO
+				command = CMD_ECHO;
+				xQueueSendFromISR(rx_command_queue, &command, NULL);
 				return CMD_ECHO;
+				
 			} else if (check_if_rx_matches(kill_buf, LEN_KILLBUF, rxbuf_cmd_start_index)) {
 				//KILL
+				command = CMD_KILL;
+				xQueueSendFromISR(rx_command_queue, &command, NULL);
 				return CMD_KILL;
+				
 			} else if (check_if_rx_matches(flash_buf, LEN_FLASHBUF, rxbuf_cmd_start_index)) {
 				//FLASH
+				command = CMD_FLASH;
+				xQueueSendFromISR(rx_command_queue, &command, NULL);
 				return CMD_FLASH;
 			}
 		}
@@ -232,7 +244,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		got_mutex = false;
 	}
 	
-	// suspend the scheduler to maek sure the whole buf is sent atomically
+	// suspend the scheduler to make sure the whole buf is sent atomically
 	// (so the radio gets the full buf at once and doesn't cut out in the middle)
 	vTaskSuspendAll();
 	usart_send_buf(buf, size);

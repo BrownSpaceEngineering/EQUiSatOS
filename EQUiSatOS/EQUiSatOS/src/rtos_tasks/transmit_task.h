@@ -17,9 +17,18 @@
 #define TIME_BTWN_MSGS_MS			100 // 2x EOT timeout for radio
 #define EXPECTED_TRANSMISSION_TIME	(3*(TRANSMIT_TIME_MS(MSG_SIZE) + TIME_BTWN_MSGS_MS))
 #define RX_READY_PERIOD_MS			2000
+#define FLASH_CMD_PREFLASH_DELAY_MS 1500
+#define CMD_RESPONSE_SIZE			9
+
+// radio kill time increments
+// TODO:
+// #define RADIO_KILL_1_DUR_S			259200		// 3 days
+// #define RADIO_KILL_2_DUR_S			1296000		// 15 days
+// #define RADIO_KILL_3_DUR_S			5184000		// 60 days
+// #define RADIO_KILL_SUBS_DUR_S		15552000	// 180 days
 
 // packet sequencing
-// TODO: is there an optimal?
+// TODO: is there an optimal order?
 #define DEFAULT_MSG_TYPE_SLOT_1		IDLE_DATA
 #define DEFAULT_MSG_TYPE_SLOT_2		ATTITUDE_DATA
 #define DEFAULT_MSG_TYPE_SLOT_3		FLASH_DATA
