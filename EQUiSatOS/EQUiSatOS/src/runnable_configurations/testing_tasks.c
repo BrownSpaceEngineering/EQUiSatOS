@@ -107,19 +107,6 @@ void testing_task(void *pvParameters)
 		//test_message_packaging();
 		//stress_test_message_packaging();
 		//configASSERT(check_task_state_consistency());
-		
-		/************************************************************************/
-		/* STATE CHANGES														*/
-		/************************************************************************/
-		// 	test_normal_satellite_state_sequence();
-		//	test_all_state_transitions();
-		// 	test_watchdog_reset_bat_charging();
-		// 	test_watchdog_reset_attitude_data();
-		// 	test_watchdog_reset_antenna_deploy();
-		// 	test_watchdog_reset_transmit_task();
-		// 	test_watchdog_reset_idle_data_task();
-		// 	test_watchdog_reset_flash_activate_task();
-		// 	test_watchdog_reset_low_power_data_task();
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

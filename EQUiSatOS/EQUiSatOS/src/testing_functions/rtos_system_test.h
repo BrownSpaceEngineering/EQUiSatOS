@@ -31,7 +31,7 @@ void print_satellite_state_history_batch(satellite_history_batch batch);
 void print_panelref_lref_batch(panelref_lref_batch batch);
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch);
 void print_radio_temp_batch(radio_temp_batch batch);
-void print_proc_temp_batch(proc_temp_batch batch);
+void print_imu_temp_batch(imu_temp_batch batch);
 
 void print_idle_data(idle_data_t* data, int i);
 void print_attitude_data(attitude_data_t* data, int i);

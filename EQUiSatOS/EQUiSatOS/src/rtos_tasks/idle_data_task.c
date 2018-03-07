@@ -47,7 +47,7 @@ void idle_data_task(void *pvParameters)
 		en_and_read_lion_temps_batch(	current_struct->lion_temps_data);
 		read_ad7991_batbrd(				current_struct->lion_current_data, current_struct->panelref_lref_data);
 		read_bat_charge_dig_sigs_batch(	&(current_struct->bat_charge_dig_sigs_data));
-		read_proc_temp_batch(			&(current_struct->proc_temp_data)); // TODO
+		read_imu_temp_batch(			&(current_struct->imu_temp_data));
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		

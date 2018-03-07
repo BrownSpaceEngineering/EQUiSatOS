@@ -755,17 +755,17 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	log_if_error(ELOC_TCA, sc, true);
 }
 
-void read_proc_temp_batch(proc_temp_batch* batch) {
+void read_imu_temp_batch(imu_temp_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		_enable_ir_pow_if_necessary();
 		int16_t buf;
 		enum status_code sc = MPU9250_read_temp(&buf);
-		log_if_error(ELOC_PROC_TEMP, sc, false);
-		log_if_out_of_bounds(buf, B_PROC_TEMP_LOW, B_PROC_TEMP_HIGH, ELOC_PROC_TEMP, false);
+		log_if_error(ELOC_IMU_TEMP, sc, false);
+		log_if_out_of_bounds(buf, B_IMU_TEMP_LOW, B_IMU_TEMP_HIGH, ELOC_IMU_TEMP, false);
 		*batch = truncate_u16t(buf);
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_PROC_TEMP, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IMU_TEMP, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(magnetometer_batch));
 	}
 }
@@ -777,7 +777,3 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
 	return (batch >> shift) & 1;
 }
-
-// void read_digital_out_batch(digital_out_batch* batch) {
-// 	// yet to be defined, mapped to certain events
-// }

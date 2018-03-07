@@ -77,7 +77,8 @@ bool watchdog_as_function(void) {
 	}
 	prev_time = curr_time;
 	
-	for (task_type_t i = WATCHDOG_TASK + 1; i < NUM_TASKS; i++) { // NOTE: WATCHDOG_TASK == 0
+	// NOTE: WATCHDOG_TASK == 0
+	for (task_type_t i = WATCHDOG_TASK + 1; i < NUM_TASKS; i++) { 
 		if (!check_ins[i]) {
 			if (running_times[i]) {
 				watch_block = true;

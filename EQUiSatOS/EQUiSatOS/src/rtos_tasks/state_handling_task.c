@@ -2,8 +2,13 @@
 #include "battery_charging_task.h"
 #include "../runnable_configurations/antenna_pwm.h"
 
-#define MIN_TIME_IN_INITIAL_S		(30*60)
-#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
+#ifndef TESTING_SPEEDUP
+	#define MIN_TIME_IN_INITIAL_S		(30*60)
+	#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
+#else 
+	#define MIN_TIME_IN_INITIAL_S		(15*60)
+	#define MIN_TIME_IN_BOOT_S			(ORBITAL_PERIOD_S / 2)
+#endif
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
 
 /* controls antenna deploy task state based on whether the antenna was deployed */
@@ -58,9 +63,9 @@ sat_state_t check_for_end_of_life(int li1_mv, int li2_mv, sat_state_t current_st
 			switch (current_state)
 			{
 				case INITIAL:
-				case ANTENNA_DEPLOY:
 					return current_state;
-
+				
+				case ANTENNA_DEPLOY:
 				case HELLO_WORLD:
 				case IDLE_FLASH:
 				case IDLE_NO_FLASH:
@@ -96,9 +101,27 @@ void state_handling_task(void *pvParameters)
 		report_task_running(STATE_HANDLING_TASK);
 
 		#if OVERRIDE_STATE_HOLD_INIT != 1
-			// handle antenna deploy task seperately
+	
+			#ifdef EQUISIM_WATCHDOG_RESET_TEST
+				test_all_state_transitions();
+				test_watchdog_reset_bat_charging();
+				test_watchdog_reset_attitude_data();
+				test_watchdog_reset_antenna_deploy();
+				test_watchdog_reset_transmit_task();
+				test_watchdog_reset_idle_data_task();
+				test_watchdog_reset_flash_activate_task();
+				test_watchdog_reset_low_power_data_task();
+			#endif
+			
+			#ifdef EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
+				test_normal_satellite_state_sequence();
+				test_error_case_satellite_state_sequence();
+			#endif
+						
+			/* normal operation */
+			// handle antenna deploy task separately
 			handle_antenna_deploy_task();
-		
+				
 			decide_next_state(get_sat_state());
 		#endif
 	}
@@ -109,128 +132,131 @@ void state_handling_task(void *pvParameters)
 
 void decide_next_state(sat_state_t current_state) {
 
-	// if the current state is RIP we don't want to do anything
-	if (current_state != RIP)
+	///
+	// the state decision will be predicated on the current battery levels and
+	// the timestamp -- we'll grab them here
+	///
+
+	uint16_t li1_mv;
+	uint16_t li2_mv;
+	read_lion_volts_precise(&li1_mv, &li2_mv);
+
+	// individual batteries within the life po banks
+	uint16_t lf1_mv;
+	uint16_t lf2_mv;
+	uint16_t lf3_mv;
+	uint16_t lf4_mv;
+	read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+
+	// average voltage for the batteries within each LF bank
+	int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
+	int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
+
+	///
+	// we always will need a check whether we want to go into RIP (or a low
+	// power state is the data is conflicted)
+	///
+
+	sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
+	if (checked_state != current_state)
 	{
-		///
-		// the state decision will be predicated on the current battery levels and
-		// the timestamp -- we'll grab them here
-		///
+		// checked state will be either RIP or LOW_POWER
+		set_sat_state(checked_state);
+		return;
+	}
 
-		uint16_t li1_mv;
-		uint16_t li2_mv;
-		read_lion_volts_precise(&li1_mv, &li2_mv);
+	///
+	// now it's time to check for all of the standard state changes
+	///
 
-		// individual batteries within the life po banks
-		uint16_t lf1_mv;
-		uint16_t lf2_mv;
-		uint16_t lf3_mv;
-		uint16_t lf4_mv;
-		read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	bool both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
+	bool both_li_above_high = li1_mv > LI_FULL_MV && li2_mv > LI_FULL_MV; // TODO: FULL_MV or FULL_SANITY_MV
 
-		// average voltage for the batteries within each LF bank
-		int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
-		int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
+	bool one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
 
-		///
-		// we always will need a check whether we want to go into RIP (or a low
-		// power state is the data is conflicted)
-		///
+	bool one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
+	bool one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
+	bool low_power_entry_criteria = charging_data.curr_meta_charge_state == TWO_LI_DOWN
+									|| charging_data.curr_meta_charge_state == TWO_LF_DOWN
+									|| (charging_data.curr_meta_charge_state == ALL_GOOD &&
+										one_li_below_low_power)
+									|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
+										(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
+										&& charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV));
+	bool low_power_exit_criteria = !low_power_entry_criteria;
 
-		sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-		if (checked_state != current_state)
-		{
-			// checked state will be either RIP or LOW_POWER
-			set_sat_state(checked_state);
-			return;
-		}
+	// TODO: do we want some notion of time?
+	satellite_history_batch sat_history = cache_get_sat_event_history();
 
-		///
-		// now it's time to check for all of the standard state changes
-		///
+	switch (current_state)
+	{
+		case INITIAL:
+			if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S
+				&& charging_data.should_move_to_antenna_deploy) {
+				set_sat_state(ANTENNA_DEPLOY);
+			}
+			break;
 
-		int both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
+		case ANTENNA_DEPLOY:
+			// if we should go to low power, do so
+			if (low_power_entry_criteria) {
+				set_sat_state(LOW_POWER);
 
-		int one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
+			// if the antenna is open kill the task because the antenna has been deployed
+			// or kill it if it's run more than 5 times because it's a lost cause
+			} else if (sat_history.antenna_deployed || should_exit_antenna_deploy()) { // TODO: really use persistent state as short circuit???
+				// switch state to hello world, then determine whether we should keep trying
+				// (we WON'T be suspended on state change)
+				set_sat_state(HELLO_WORLD);
 
-		int one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
-		int one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
-		int low_power_entry_criteria = charging_data.curr_meta_charge_state == TWO_LI_DOWN
-										|| charging_data.curr_meta_charge_state == TWO_LF_DOWN
-										|| (charging_data.curr_meta_charge_state == ALL_GOOD &&
-											one_li_below_low_power)
-										|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
-											(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
-											&& charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV));
-		int low_power_exit_criteria = !low_power_entry_criteria;
+				// suspend antenna deploy task if necessary
+				handle_antenna_deploy_task();
+			}
+			break;
 
-		// TODO: do we want some notion of time?
-		satellite_history_batch sat_history = cache_get_sat_event_history();
+		case HELLO_WORLD:
+			// it's higher priority to go to low power
+			if (low_power_entry_criteria)
+				set_sat_state(LOW_POWER);
+			else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
+				set_sat_state(IDLE_NO_FLASH);
+			break;
 
-		switch (current_state)
-		{
-			case INITIAL:
-				if (get_current_timestamp() > MIN_TIME_IN_INITIAL_S
-					&& charging_data.should_move_to_antenna_deploy) {
+		case IDLE_NO_FLASH:
+			// it's higher priority to go to low power
+			if (low_power_entry_criteria)
+				set_sat_state(LOW_POWER);
+			else if (one_lf_above_flash)
+				set_sat_state(IDLE_FLASH);
+			break;
+
+		case IDLE_FLASH:
+			// it's higher priority to go to low power
+			if (low_power_entry_criteria)
+				set_sat_state(LOW_POWER);
+			else if (!one_lf_above_flash)
+				set_sat_state(IDLE_NO_FLASH);
+			break;
+
+		case LOW_POWER:
+			if (low_power_exit_criteria) {
+				if (get_current_timestamp() <= MIN_TIME_IN_BOOT_S)
 					set_sat_state(ANTENNA_DEPLOY);
-				}
-				break;
-
-			case ANTENNA_DEPLOY:
-				// if we should go to low power, do so
-				if (low_power_entry_criteria) {
-					set_sat_state(LOW_POWER);
-
-				// if the antenna is open kill the task because the antenna has been deployed
-				// or kill it if it's run more than 5 times because it's a lost cause
-				} else if (sat_history.antenna_deployed || should_exit_antenna_deploy()) { // TODO: really use persistent state as short circuit???
-					// switch state to hello world, then determine whether we should keep trying
-					// (we WON'T be suspended on state change)
-					set_sat_state(HELLO_WORLD);
-
-					// suspend antenna deploy task if necessary
-					handle_antenna_deploy_task();
-				}
-				break;
-
-			case HELLO_WORLD:
-				// it's higher priority to go to low power
-				if (low_power_entry_criteria)
-					set_sat_state(LOW_POWER);
-				else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
+				else
 					set_sat_state(IDLE_NO_FLASH);
-				break;
+			}
+			// RIP is handled above
+			break;
+		
+		case RIP:
+			if (both_li_above_high) {
+				set_sat_state(LOW_POWER);
+			}
 
-			case IDLE_NO_FLASH:
-				// it's higher priority to go to low power
-				if (low_power_entry_criteria)
-					set_sat_state(LOW_POWER);
-				else if (one_lf_above_flash)
-					set_sat_state(IDLE_FLASH);
-				break;
-
-			case IDLE_FLASH:
-				// it's higher priority to go to low power
-				if (low_power_entry_criteria)
-					set_sat_state(LOW_POWER);
-				else if (!one_lf_above_flash)
-					set_sat_state(IDLE_NO_FLASH);
-				break;
-
-			case LOW_POWER:
-				if (low_power_exit_criteria) {
-					if (get_current_timestamp() <= MIN_TIME_IN_BOOT_S)
-						set_sat_state(ANTENNA_DEPLOY);
-					else
-						set_sat_state(IDLE_NO_FLASH);
-				}
-				break;
-
-			default:
-				configASSERT(false);
-				log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
-				set_sat_state(IDLE_NO_FLASH); // default state
-				break;
-		}
+		default:
+			configASSERT(false);
+			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
+			set_sat_state(IDLE_NO_FLASH); // default state
+			break;
 	}
 }

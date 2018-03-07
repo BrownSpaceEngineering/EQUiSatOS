@@ -22,7 +22,7 @@ typedef struct idle_data_t
 	panelref_lref_batch panelref_lref_data;
 	bat_charge_dig_sigs_batch bat_charge_dig_sigs_data;
 	radio_temp_batch radio_temp_data;
-	proc_temp_batch proc_temp_data;
+	imu_temp_batch imu_temp_data;
 	ir_ambient_temps_batch ir_amb_temps_data;
 
 	uint32_t timestamp;

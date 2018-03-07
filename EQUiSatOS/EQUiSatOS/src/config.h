@@ -50,11 +50,17 @@
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 #define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+	// whether to print all data every test or only one element per stack (with exception of error stack)
+	#define RTOS_SYSTEM_TEST_ONLY_RECENT 
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
 #define WRITE_DEFAULT_MRAM_VALS
+
+/** System Tests/Simulations **/
+#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
+#define EQUISIM_WATCHDOG_RESET_TEST
 
 // debug print control; set to:
 // 0 to suppress prints and allow radio transmission

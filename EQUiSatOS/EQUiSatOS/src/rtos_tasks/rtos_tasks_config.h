@@ -173,16 +173,16 @@ typedef enum
 // these are offsets are added to "start time" to avoid periodic contention of tasks
 // offsets should be different especially for tasks that have similar (high) frequencies/priorities
 // these are all within 1000ms because that's the highest task frequency
-#define WATCHDOG_TASK_FREQ_OFFSET				100 // high-freq 
+#define WATCHDOG_TASK_FREQ_OFFSET				100 // high-freq; should be small
 #define STATE_HANDLING_TASK_FREQ_OFFSET			200
 #define ANTENNA_DEPLOY_TASK_FREQ_OFFSET			300 // high-freq
-#define BATTERY_CHARGING_TASK_FREQ_OFFSET		400
-#define TRANSMIT_TASK_FREQ_OFFSET				500
+#define BATTERY_CHARGING_TASK_FREQ_OFFSET		150 // should be small
+#define TRANSMIT_TASK_FREQ_OFFSET				400
 #define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600 // high-freq
 #define IDLE_DATA_TASK_FREQ_OFFSET				700 // high-freq
 #define LOW_POWER_DATA_TASK_FREQ_OFFSET			800 // high-freq
 #define ATTITUDE_DATA_TASK_FREQ_OFFSET			900 // high-freq
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	150	// high-freq
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	500	// high-freq
 
 /* action frequency periods in MS (some that actually have data collection are below) */
 #ifndef TESTING_SPEEDUP
@@ -244,13 +244,13 @@ typedef enum
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
 	#define TRANSMIT_TASK_FREQ				10000
-	#define STATE_HANDLING_TASK_FREQ		30000
-	#define ANTENNA_DEPLOY_TASK_LESS_FREQ	1000 // TODO change back to 900000
+	#define STATE_HANDLING_TASK_FREQ		15000
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ	1000
 	#define IDLE_DATA_TASK_FREQ				2500
 	#define ATTITUDE_DATA_TASK_FREQ			5000
 	#define FLASH_ACTIVATE_TASK_FREQ		15000
 	#define LOW_POWER_DATA_TASK_FREQ		7500
-	#define BATTERY_CHARGING_TASK_FREQ		15000
+	#define BATTERY_CHARGING_TASK_FREQ		60000
 #endif
 
 #endif

@@ -13,6 +13,7 @@
  * These generally must be run and checked from the idle task hook
  */
 void test_normal_satellite_state_sequence(void);
+void test_error_case_satellite_state_sequence(void);
 void test_all_state_transitions(void);
 // watchdog test
 void test_watchdog_reset_bat_charging(void);

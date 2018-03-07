@@ -100,7 +100,7 @@ enum error_locations {
 	ELOC_ANTENNA_DEPLOY	=				62,
 	ELOC_ERROR_STACK =					63,
 	ELOC_WATCHDOG =						64,
-	ELOC_PROC_TEMP =					65,
+	ELOC_IMU_TEMP =						65,
 	ELOC_VERIFY_REGS =					66,
 
 	ELOC_IDLE_DATA =					67,

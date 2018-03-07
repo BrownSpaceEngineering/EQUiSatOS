@@ -60,8 +60,8 @@
 #define B_CHARGE_HIGH					~0
 #define B_GYRO_LOW						0
 #define B_GYRO_HIGH						~0
-#define B_PROC_TEMP_LOW					0
-#define B_PROC_TEMP_HIGH				~0
+#define B_IMU_TEMP_LOW					0
+#define B_IMU_TEMP_HIGH					~0
 #define B_3V3_REF_LOW					3000
 #define B_3V3_REF_HIGH					3600
 #define B_3V6_REF_OFF_LOW				0
@@ -119,7 +119,7 @@ void read_ad7991_batbrd(			lion_current_batch batch1, panelref_lref_batch batch2
 void en_and_read_lion_temps_batch(	lion_temps_batch batch);
 void read_lifepo_volts_batch(		lifepo_volts_batch batch);
 void read_ir_object_temps_batch(	ir_object_temps_batch batch);
-void read_proc_temp_batch(			proc_temp_batch* batch); // pointer to single value
+void read_imu_temp_batch(			imu_temp_batch* batch); // pointer to single value
 void read_pdiode_batch(				pdiode_batch* batch); // pointer to single value
 void read_ir_ambient_temps_batch(	ir_ambient_temps_batch batch);
 void read_accel_batch(				accelerometer_batch accel_batch);

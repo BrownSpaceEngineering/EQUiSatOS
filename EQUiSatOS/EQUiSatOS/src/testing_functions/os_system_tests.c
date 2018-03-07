@@ -9,7 +9,10 @@
 
 #define TASK_EXECUTION_WINDOW_BUFFER_TIME		1000 // how long to add to a perfectly sized window for a task to run in (buffer)
 #define TICKS_IN_EACH_VALID_STATE				11000
-#define IN_STATE_TIME 500 // ms
+
+// determines how long we spend in each state
+#define LOWEST_TASK_FREQ			BATTERY_CHARGING_TASK_FREQ
+#define IN_STATE_TIME_MS			(LOWEST_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME)
 
 void test_all_state_transitions(void) 
 {
@@ -37,61 +40,173 @@ void test_all_state_transitions(void)
 	}
 }
 
-void test_normal_satellite_state_sequence(void)
-{
-	static state_num = 0; // set to some number to skip to a state
+void test_normal_satellite_state_sequence(void) {
+	int state_num = 0; // set to some number to skip to a state
 	
-	TickType_t ms = xTaskGetTickCount();
+	if (state_num == 0) {
+		// start out in initial
+		check_set_sat_state(INITIAL, INITIAL);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+	}
 	
 	if (state_num < 1) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 			TASK_EXECUTION_WINDOW_BUFFER_TIME);
-		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);	
-		state_num++;		
+		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
 	}
 	
 	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
-	else if (state_num < 2) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+	if (state_num < 2) {
 		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	
-	else if (state_num < 3) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+	if (state_num < 3) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-				
-	else if (state_num < 4) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
+
+	if (state_num < 4) {
+		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 5) {
+		check_set_sat_state(IDLE_FLASH, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 6) {
+		check_set_sat_state(LOW_POWER, RIP);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 7) {
+		check_set_sat_state(RIP, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 8) {
+		check_set_sat_state(LOW_POWER, IDLE_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 9) {
+		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	vTaskDelay(LOWEST_TASK_FREQ * 10);
+}
+
+void test_error_case_satellite_state_sequence(void)
+{
+	int state_num = 0; // set to some number to skip to a state
+	
+	if (state_num == 0) {
+		// start out in initial
+		check_set_sat_state(INITIAL, INITIAL);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+	}
+	
+	if (state_num < 1) {
+		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);	
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	// go to emergency low power AND RIP (this state is very different from IDLE_NO_FLASH)
+	if (state_num < 2) {
+		check_set_sat_state(ANTENNA_DEPLOY, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(LOW_POWER, RIP);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(RIP, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(LOW_POWER, ANTENNA_DEPLOY);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
+	if (state_num < 3) {
+		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	// go to emergency low power
+	if (state_num < 4) {
+		check_set_sat_state(HELLO_WORLD, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(LOW_POWER, HELLO_WORLD);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	if (state_num < 5) {
+		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	
+	// go to emergency low power, then RIP, then back again
+	if (state_num < 6) {
+		check_set_sat_state(IDLE_NO_FLASH, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(LOW_POWER, RIP);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(RIP, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		check_set_sat_state(LOW_POWER, IDLE_NO_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+
+	if (state_num < 7) {
 		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);	
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;			
 	}
 	
-	else if (state_num < 5) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(ATTITUDE_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-		check_set_sat_state(IDLE_FLASH, LOW_POWER);		
-		state_num++;		
+	if (state_num < 8) {
+		check_set_sat_state(IDLE_FLASH, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
 	}
-	
-	else if (state_num < 6) {
-		vTaskDelay(IN_STATE_TIME);
-// 		delay_ms(2 * LOW_POWER_DATA_TASK_FREQ + // lowest frequency task in state // TODO: BATTERY_CHARGING_TASK
-// 				TASK_EXECUTION_WINDOW_BUFFER_TIME);
-		// throw RIP in at the very end
-		check_set_sat_state(LOW_POWER, RIP);		
-		state_num++;		
+
+	if (state_num < 9) {
+		check_set_sat_state(LOW_POWER, RIP);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
 	}
+
+	if (state_num < 10) {
+		check_set_sat_state(RIP, LOW_POWER);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+
+	if (state_num < 11) {
+		check_set_sat_state(LOW_POWER, IDLE_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+
+	if (state_num < 12) {
+		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		state_num++;
+	}
+	vTaskDelay(LOWEST_TASK_FREQ * 10);
 }
 
 /************************************************************************/
@@ -221,10 +336,10 @@ bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state)
 			configASSERT(!valid || valid && (new_state == ANTENNA_DEPLOY || new_state == RIP));
 			return valid;
 		case ANTENNA_DEPLOY:
-			configASSERT(!valid || valid && (new_state == HELLO_WORLD || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == HELLO_WORLD || new_state == LOW_POWER || new_state == RIP));
 			return valid;
 		case HELLO_WORLD:
-			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER || new_state == RIP));
 			return valid;
 		case IDLE_NO_FLASH:
 			configASSERT(!valid || valid && (new_state == IDLE_FLASH || new_state == LOW_POWER || new_state == RIP));
@@ -233,10 +348,10 @@ bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state)
 			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == LOW_POWER || new_state == RIP));
 			return valid;
 		case LOW_POWER:
-			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == RIP));
+			configASSERT(!valid || valid && (new_state == IDLE_NO_FLASH || new_state == ANTENNA_DEPLOY || new_state == RIP));
 			return valid;
-		case RIP: 
-			configASSERT(!valid); // can't transition from here
+		case RIP:
+			configASSERT(!valid || valid && (new_state == LOW_POWER));
 			return valid;
 		default:
 			configASSERT(!valid);

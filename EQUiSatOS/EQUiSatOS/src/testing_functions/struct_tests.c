@@ -15,7 +15,7 @@ void init_test_struct(void){
 	
 	IDT->radio_temp_data = 5;
 	
-	IDT->proc_temp_data = 5;
+	IDT->imu_temp_data = 5;
 	
 	IDT->ir_amb_temps_data[5] = 5;
 }

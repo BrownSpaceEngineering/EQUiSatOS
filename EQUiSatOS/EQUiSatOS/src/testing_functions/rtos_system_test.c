@@ -6,6 +6,12 @@
  */ 
 #include "rtos_system_test.h"
 
+#ifdef RTOS_SYSTEM_TEST_ONLY_NEW
+	const bool only_print_recent_data = true;
+#else
+	const bool only_print_recent_data = true;
+#endif
+
 /************************************************************************/
 /* Sensor type printing methods                                         */
 /************************************************************************/
@@ -88,8 +94,8 @@ void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 void print_radio_temp_batch(radio_temp_batch batch) {
 	print("radio temp: %d\n", (uint16_t)batch<<8);
 }
-void print_proc_temp_batch(proc_temp_batch batch) {
-	print("processor temp: %d\n", (uint16_t)batch<<8);
+void print_imu_temp_batch(imu_temp_batch batch) {
+	print("imu temp: %d\n", (uint16_t)batch<<8);
 }
 
 /************************************************************************/
@@ -109,7 +115,7 @@ void print_idle_data(idle_data_t* data, int i) {
 	print_panelref_lref_batch(data->panelref_lref_data);
 	print_bat_charge_dig_sigs_batch(data->bat_charge_dig_sigs_data);
 	print_radio_temp_batch(data->radio_temp_data);
-	print_proc_temp_batch(data->proc_temp_data);
+	print_imu_temp_batch(data->imu_temp_data);
 	print_ir_ambient_temps_batch(data->ir_amb_temps_data);
 }
 
@@ -249,6 +255,10 @@ void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char
 	print("data:\n");
 	for (int i = 0; i < stack->cur_size; i++) {
 		(*elm_print)(equistack_Get(stack, i), i);
+		
+		if (only_print_recent_data && stack != &error_equistack) {
+			break; // only print first element of stack in this case, unless it's errors
+		}
 	}
 }
 

@@ -392,7 +392,7 @@ void write_idle_data_packet(uint8_t* buffer, uint8_t* buf_index, idle_data_t* id
 	write_bytes_and_shift(buffer, buf_index,	idle_data->panelref_lref_data,			sizeof(panelref_lref_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->bat_charge_dig_sigs_data),	sizeof(bat_charge_dig_sigs_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->radio_temp_data),			sizeof(radio_temp_batch));
-	write_bytes_and_shift(buffer, buf_index,	&(idle_data->proc_temp_data),			sizeof(proc_temp_batch));
+	write_bytes_and_shift(buffer, buf_index,	&(idle_data->imu_temp_data),			sizeof(imu_temp_batch));
 	write_bytes_and_shift(buffer, buf_index,	idle_data->ir_amb_temps_data,			sizeof(ir_ambient_temps_batch));
 	write_bytes_and_shift(buffer, buf_index,	&(idle_data->timestamp),				4 /* uint32_t */);
 }
