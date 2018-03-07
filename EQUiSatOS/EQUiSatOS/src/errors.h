@@ -93,29 +93,30 @@ enum error_locations {
 	ELOC_MRAM_READ =					55,
 	ELOC_MRAM1_WRITE = 					56,
 	ELOC_MRAM2_WRITE = 					57,
-	ELOC_5V_REF = 						58,
-	ELOC_STATE_HANDLING = 				59,
-	ELOC_BAT_CHARGING =					60,
-	ELOC_ANTENNA_DEPLOY	=				61,
-	ELOC_ERROR_STACK =					62,
-	ELOC_WATCHDOG =						63,
-	ELOC_PROC_TEMP =					64,
-	ELOC_VERIFY_REGS =					65,
+	ELOC_MRAM_WRITE =					58,
+	ELOC_5V_REF = 						59,
+	ELOC_STATE_HANDLING = 				60,
+	ELOC_BAT_CHARGING =					61,
+	ELOC_ANTENNA_DEPLOY	=				62,
+	ELOC_ERROR_STACK =					63,
+	ELOC_WATCHDOG =						64,
+	ELOC_PROC_TEMP =					65,
+	ELOC_VERIFY_REGS =					66,
 
-	ELOC_IDLE_DATA =					66,
-	ELOC_ATTITUDE_DATA =				67,
-	ELOC_FLASH =						68, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				69,
-	ELOC_EQUISTACK_GET =				70,
-	ELOC_EQUISTACK_PUT =				71,
+	ELOC_IDLE_DATA =					67,
+	ELOC_ATTITUDE_DATA =				68,
+	ELOC_FLASH =						69, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				70,
+	ELOC_EQUISTACK_GET =				71,
+	ELOC_EQUISTACK_PUT =				72,
 
-	ELOC_BOOTLOADER =					72,
-	ELOC_RTOS =							73,
+	ELOC_BOOTLOADER =					73,
+	ELOC_RTOS =							74,
 
-	ELOC_BAT_L1 =           74,
-	ELOC_BAT_L2 =           75,
-	ELOC_BAT_LFB1 =         76,
-	ELOC_BAT_LFB2 =         77
+	ELOC_BAT_L1 =						75,
+	ELOC_BAT_L2 =						76,
+	ELOC_BAT_LFB1 =						77,
+	ELOC_BAT_LFB2 =						78
 };
 
 /******************** PROBLEM CODES ********************/
@@ -182,19 +183,22 @@ enum error_codes {
 
 	ECODE_BAT_NOT_DISCHARGING =         53,
 	ECODE_BAT_NOT_NOT_DISCHARGING =     54,
-	ECODE_BAT_NOT_CHARGING =         55,
-	ECODE_BAT_NOT_NOT_CHARGING =     56,
+	ECODE_BAT_NOT_CHARGING =			55,
+	ECODE_BAT_NOT_NOT_CHARGING =		56,
 	ECODE_BAT_NOT_DISCHARGING_RESTART = 57,
 	ECODE_BAT_FAULT =                   58,
 	ECODE_NOT_FULL_FOR_WHILE =          59,
 	ECODE_LOW_VOLTAGE_FOR_WHILE =       60,
-	ECODE_RECOMMISSION =                61
+	ECODE_RECOMMISSION =                61,
+	ECODE_ALL_SAME_VAL =				62,
+	ECODE_CORRUPTED =					63,
+	ECODE_INVALID_STATE_CHANGE =		64
 };
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */
 /************************************************************************/
-#define ERROR_STACK_MAX		50
+#define ERROR_STACK_MAX		51
 #define PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S		86400 // 1 day
 
 typedef struct {

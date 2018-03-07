@@ -9,7 +9,8 @@
 #ifndef BATTERY_CHARGING_TASK_H_
 #define BATTERY_CHARGING_TASK_H_
 
-#include "global.h"
+#include <asf.h>
+#include "../data_handling/persistent_storage.h"
 #include "rtos_tasks.h"
 #include "testing_functions/battery_charging_simulated_data.h"
 
@@ -94,7 +95,8 @@ typedef enum
 	FILL_LI_D
 } charge_state_t;
 
-typedef struct charging_data {
+typedef struct charging_data
+{
 	// the battery that's currently charging
 	int bat_charging;
 
@@ -148,7 +150,7 @@ SemaphoreHandle_t battery_charging_mutex;
 
 // although it somewhat breaks abstraction to have the main parameter to
 // battery logic be a global variable, this is necessary for some of the
-// helper functions that use as
+// helper functions
 charging_data_t charging_data;
 
 int get_error_loc(battery_t bat);

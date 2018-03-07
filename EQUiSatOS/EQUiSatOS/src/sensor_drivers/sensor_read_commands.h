@@ -142,6 +142,8 @@ void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 /* utility */
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
+void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
+void read_lf_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
 void _enable_ir_pow_if_necessary(void);
 bool _set_5v_enable(bool on);

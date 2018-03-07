@@ -10,7 +10,13 @@
 #include "../processor_drivers/PWM_Commands.h"
 #include "../runnable_configurations/antenna_pwm.h"
 
+#define ANTENNA_DEPLOY_MAX_TRIES	25
 static int num_tries = 0;
+
+bool should_exit_antenna_deploy(void) {
+	return (get_antenna_deployed() && num_tries_ant_deploy() > 0) // must try at least once
+		|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES;
+}
 
 int num_tries_ant_deploy(void) {
 	return num_tries;
@@ -35,8 +41,18 @@ void antenna_deploy_task(void *pvParameters) {
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 		}
 		
-		if (num_tries == 0 && get_input(P_DET_RTN)) {
+		// report to watchdog (again)
+		report_task_running(ANTENNA_DEPLOY_TASK);
+		
+		bool did_deploy = get_antenna_deployed();
+		if (num_tries == 0 && did_deploy) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
+		} else if (did_deploy) {
+			// then the antenna should actually be deployed
+			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+		} else {
+			int a = 1;
+			// victory
 		}
 		
 		int current_pwm_pin = get_current_pwm_pin();
@@ -54,7 +70,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(1800000);
+				vTaskDelay(1800000 / portTICK_PERIOD_MS);
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
@@ -71,7 +87,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(3600000);
+				vTaskDelay(1000 / portTICK_PERIOD_MS); // TODO make 3600000
 			}
 		}
 	}

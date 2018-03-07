@@ -9,6 +9,7 @@
 #define TEST_DATA_H
 
 #include "test_structs.h"
+#include "../data_handling/persistent_storage.h"
 
 typedef struct test_data
 {
@@ -20,5 +21,6 @@ typedef struct test_data
 } test_data;
 
 void fill_test(test_data*, uint16_t);
+void longest_same_seq_len_test(void);
 
 #endif

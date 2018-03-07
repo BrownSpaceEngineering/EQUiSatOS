@@ -7,8 +7,6 @@
 
 #include "battery_charging_task.h"
 
-// TODO: make sure that everything is okay after coming back from boot
-
 // To check (TODO):
 //   - make sure that everywhere an array is being indexed, the right thing is
 //     happening (i.e. we never try to use the index -1)
@@ -20,6 +18,8 @@
 //     discharging LI
 //   - check all pins
 //   - error priorities
+//   - everything is okay coming back from a boot
+//   - warnings
 
 int get_current_timestamp_wrapped(void)
 {
@@ -176,7 +176,7 @@ int get_st_val(battery_t bat)
 int get_panel_ref_val()
 {
 	uint8_t four_buf[4];
-	read_ad7991_batbrd(four_buf, four_buf+2); // TODO: are we worried about warning?
+	read_ad7991_batbrd(four_buf, four_buf+2);
 	return ((int) four_buf[2]<<8);
 }
 
@@ -185,6 +185,7 @@ int is_lion(battery_t bat)
 	return (bat == LI1 || bat == LI2);
 }
 
+// NOTE: no error message will be sent from here
 void decommission(battery_t bat)
 {
 	if (!charging_data.decommissioned[bat])
@@ -255,7 +256,7 @@ void init_charging_data()
 
 	charging_data.should_move_to_antenna_deploy = false;
 
-	// set all old voltage values to -1
+	// set all new and old voltage values to -1
 	for (battery_t bat = 0; bat < 4; bat++)
 	{
 		charging_data.bat_voltages[bat] = -1;
@@ -271,6 +272,16 @@ void init_charging_data()
 	}
 
 	charging_data.charging_parity = 0;
+
+	// we need to decommission here if the MRAM says that one of the LI's caused
+	// a reboot
+	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
+	if (persist_data.li_caused_reboot != -1)
+	{
+		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
+		decommission(persist_data.li_caused_reboot);
+	}
+
 	print("initializing charging data - complete\n");
 }
 
@@ -893,18 +904,33 @@ int battery_logic()
 		// the other to inactive
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// TODO: suspend the scheduler
-		// we're going to decommission here and undecommission if the satellite doesn't
-		// reboot
-		log_error(get_error_loc(charging_data.lion_discharging), ECODE_BAT_NOT_DISCHARGING_RESTART, 1);
-		decommission(charging_data.lion_discharging);
+		// take the SPI mutex (we'll be using it), and then suspend the scheduler
+		// because we don't want this operation to be interrupted
+		// (if it fails, continue on, but just don't write to MRAM)
+		bool got_mutex_spi = false;
+		if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+			got_mutex_spi = true;
+		} else {
+			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
+		}
 
-		// TODO: force a write to the MRAM
+		vTaskSuspendAll();
+
+		// write to the MRAM that the battery caused a reboot, in case does
+		// (we'll deal with this when we reboot)
+		persistent_charging_data_t persist_data;
+		persist_data.li_caused_reboot = charging_data.lion_discharging;
+		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
-		undecommission(charging_data.lion_discharging);
 
-		// TODO: resume the scheduler
+		// reset our emergency write to the MRAM
+		persist_data.li_caused_reboot = -1;
+		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
+
+		// resume normal operation
+		xTaskResumeAll();
+		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
 	}
 
 	///
@@ -915,9 +941,7 @@ int battery_logic()
 	if (old_bat_charging == -1)
 	{
 		for (int i = 0; i < 4; i++)
-		{
 			set_bat_to_charge(i, i == charging_data.bat_charging);
-		}
 	}
 	else if (charging_data.bat_charging != old_bat_charging)
 	{

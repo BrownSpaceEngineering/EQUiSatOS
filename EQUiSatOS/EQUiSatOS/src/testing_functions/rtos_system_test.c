@@ -188,7 +188,6 @@ void print_sat_error(sat_error_t* err, int i) {
 const char* get_sat_state_str(sat_state_t state) {
 	switch (state) {
 		case HELLO_WORLD:			return "HELLO_WORLD          ";
-		case HELLO_WORLD_LOW_POWER: return "HELLO_WORLD_LOW_POWER";
 		case IDLE_FLASH:			return "IDLE_FLASH		     ";
 		case IDLE_NO_FLASH:			return "IDLE_NO_FLASH		 ";
 		case INITIAL:				return "INITIAL				 ";

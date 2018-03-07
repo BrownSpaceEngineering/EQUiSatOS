@@ -361,20 +361,15 @@ void transmit_task(void *pvParameters)
 		report_task_running(TRANSMIT_TASK);
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
-		
 		setTXEnable(false);
 		handle_uplinks();
 		
-		// TODO: good place to transfer buffer if necessary
-		
-		
 		/* shut down and block for any leftover time in next loop */
-		
-		
+		setRadioState(false, true);
 		// TODO: actually confirm??
 		
-		
-		setRadioState(false, true); 
+		// report to watchdog (again)
+		report_task_running(TRANSMIT_TASK);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

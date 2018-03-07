@@ -19,7 +19,6 @@
 #include "rtos_tasks_config.h"
 #include "data_handling/State_Structs.h"
 #include "watchdog_task.h"
-#include "battery_charging_task.h"
 
 /************************************************************************/
 /* TASK HEADERS                                                         */
@@ -137,6 +136,7 @@ bool flash_now(void);					// implemented in flash_activate_task
 equistack* get_msg_type_equistack(msg_data_type_t msg_type);
 void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 int num_tries_ant_deploy(void); // returns the number of times we've tried to deploy the antenna
+bool should_exit_antenna_deploy(void);
 
 /************************************************************************/
 /*  Required functions for FreeRTOS 9 static allocation                 */

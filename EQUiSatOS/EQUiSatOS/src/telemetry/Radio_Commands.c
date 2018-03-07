@@ -218,9 +218,11 @@ void setRXEnable(bool enable) {
 /* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
-	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		// take this for a shorter time than normal to not mess up RTOS much
-		xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
+	#ifdef SAFE_PRINT
+		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+			// take this for a shorter time than normal to not mess up RTOS much
+			xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
+		#endif
 	#endif
 	
 	// we don't care too much here if the mutex times out; we gotta transmit!
@@ -252,8 +254,10 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	
 	if (got_mutex) hardware_state_mutex_give();
 	
-	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		xSemaphoreGiveRecursive(print_mutex);
+	#ifdef SAFE_PRINT
+		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+			xSemaphoreGiveRecursive(print_mutex);
+		#endif
 	#endif
 	
 }

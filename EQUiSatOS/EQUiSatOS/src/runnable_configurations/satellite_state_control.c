@@ -7,21 +7,22 @@
 
 #include "satellite_state_control.h"
 #include "../testing_functions/os_system_tests.h"
+#include "antenna_pwm.h"
 
 /************************************************************************/
 /* State variables                                                      */
 /************************************************************************/
-// vector of radio states       RLIIHHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
-const uint16_t RADIO_STATES = 0b10110100;
+// vector of radio states       RLIIHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
+const uint16_t RADIO_STATES = 0b1111100;
 // vector of ir pow states (note that "off" doesn't enforce off, it's just not state-controlled)
-const uint16_t IRPOW_STATES = 0b10110111;
+const uint16_t IRPOW_STATES = 0b1011111;
 
 /************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
 /************************************************************************/ 
 sat_state_t current_sat_state = INITIAL;
 
-// specific state for radio, IR pow (set to OFF initally to ensure they'll be turned on)
+// specific state for radio, IR pow (set to OFF initially to ensure they'll be turned on)
 bool current_radio_state = false;
 bool current_irpow_state = false;
 
@@ -82,8 +83,10 @@ void startup_task(void* pvParameters) {
 	
 	print("RTOS starting... ");
 	
-	// utility function to write initial state to MRAM (ONCE before launch)
-	write_custom_state();
+	#ifdef WRITE_DEFAULT_MRAM_VALS
+		// utility function to write initial state to MRAM (ONCE before launch)
+		write_custom_state();
+	#endif
 	
 	/************************************************************************/
 	/* ESSENTIAL INITIALIZATION                                             */
@@ -276,7 +279,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task (and double-check with pin input) and apply
-	if (cache_get_sat_event_history().antenna_deployed && get_input(P_DET_RTN)) { // TODO: are we sure we want to check pin? Consider current antenna deploy
+	if (cache_get_sat_event_history().antenna_deployed && get_antenna_deployed()) {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -364,14 +367,18 @@ bool check_task_state_consistency(void) {
 
 /* Returns whether we're currently in a low power state */
 bool low_power_active(void) {
-	return current_sat_state == LOW_POWER || current_sat_state == HELLO_WORLD_LOW_POWER;
+	return current_sat_state == LOW_POWER;
 }
 
 /************************************************************************/
 /* GLOBAL STATE SETTING                                                 */
 /************************************************************************/
 
-/* wrapper for setting radio power state */
+/* wrapper for setting radio power state 
+	NOTE: this wrapper shuts off/turns on the radio agressively, without concern
+	for the radio state. We wouldn't do this if it changed state much (was 
+	permanently on or off), but it only really does so once in the satellite state 
+	progression, or maybe twice. */
 void set_radio_by_sat_state(sat_state_t state) {
 	bool new_state = RADIO_STATES & 1 << state;
 	
@@ -379,10 +386,8 @@ void set_radio_by_sat_state(sat_state_t state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_radio_state != new_state) 
 			setRadioState(true, true);
-			//TODO: //submit_radio_command(POWER_ON, true /* (confirm) */, NULL, NULL, 4000);
 	} else {
-		setRadioState(false, false);
-		//TODO: //submit_radio_command(POWER_OFF, true /* (confirm) */, NULL, NULL, 2000);
+		setRadioState(false, false); // doesn't matter because we don't confirm off
 	}
 	current_radio_state = new_state;
 }
@@ -406,16 +411,18 @@ void set_irpow_by_sat_state(sat_state_t state) {
 
 /* Sets the current satellite state to the given state, if a transition from
    the current state is valid; returns whether the state change was made (i.e. was valid)
-   CAN be called consistenly (i.e. if state == CurrentState), which will ensure all correct tasks
+   CAN be called consistently (i.e. if state == CurrentState), which will ensure all correct tasks
    for a state are running, etc. */
 bool set_sat_state_helper(sat_state_t state)
-{
+{	
 	// setting the state to the current state is not wrong,
 	// but we don't want to actually change task states every time this is called
 	// when the state is the current state
 	if (state == current_sat_state) {
 		return true;
 	}
+	
+	sat_state_t prev_sat_state = current_sat_state;
 
 	switch(state)
 	{
@@ -423,70 +430,47 @@ bool set_sat_state_helper(sat_state_t state)
 			return false; // only done initially (via direct set)
 
 		case ANTENNA_DEPLOY: ;
-			if (current_sat_state == INITIAL) {
-				print("CHANGED STATE to ANTENNA_DEPLOY");
-				set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
-				set_radio_by_sat_state(ANTENNA_DEPLOY);
-				set_irpow_by_sat_state(ANTENNA_DEPLOY);
-				return true;
-			}
-			return false;
+			print("CHANGED STATE to ANTENNA_DEPLOY");
+			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
+			set_radio_by_sat_state(ANTENNA_DEPLOY);
+			set_irpow_by_sat_state(ANTENNA_DEPLOY);
+			return prev_sat_state == INITIAL || prev_sat_state == LOW_POWER;
 
 		case HELLO_WORLD: ;
-			if (current_sat_state == ANTENNA_DEPLOY) {
-				print("CHANGED STATE to HELLO_WORLD");
-				set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
-				set_radio_by_sat_state(HELLO_WORLD);
-				set_irpow_by_sat_state(HELLO_WORLD);
-				return true;
-			}
-			return false;
-
-		case HELLO_WORLD_LOW_POWER: ;
-			if (current_sat_state == HELLO_WORLD) {
-				print("CHANGED STATE to HELLO_WORLD_LOW_POWER");
-				set_all_task_states(HELLO_WORLD_LOW_POWER_TASK_STATES, HELLO_WORLD_LOW_POWER);
-				set_radio_by_sat_state(HELLO_WORLD_LOW_POWER);
-				set_irpow_by_sat_state(HELLO_WORLD_LOW_POWER);
-				return true;
-			}
+			print("CHANGED STATE to HELLO_WORLD");
+			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
+			set_radio_by_sat_state(HELLO_WORLD);
+			set_irpow_by_sat_state(HELLO_WORLD);
+			return prev_sat_state == ANTENNA_DEPLOY;
 
 		case IDLE_NO_FLASH: ;
-			if (current_sat_state == IDLE_FLASH || current_sat_state == HELLO_WORLD || current_sat_state == LOW_POWER) {
-				print("CHANGED STATE to IDLE_NO_FLASH");
-				set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
-				set_radio_by_sat_state(IDLE_NO_FLASH);
-				set_irpow_by_sat_state(IDLE_NO_FLASH);
-				return true;
-			}
-			return false;
+			print("CHANGED STATE to IDLE_NO_FLASH");
+			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
+			set_radio_by_sat_state(IDLE_NO_FLASH);
+			set_irpow_by_sat_state(IDLE_NO_FLASH);
+			return prev_sat_state == IDLE_FLASH || prev_sat_state == HELLO_WORLD || prev_sat_state == LOW_POWER;
 
 		case IDLE_FLASH: ;
-			if (current_sat_state == IDLE_NO_FLASH) {
-				print("CHANGED STATE to IDLE_FLASH");
-				set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
-				set_radio_by_sat_state(IDLE_FLASH);
-				set_irpow_by_sat_state(IDLE_FLASH);
-				return true;
-			}
-			return false;
+			print("CHANGED STATE to IDLE_FLASH");
+			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
+			set_radio_by_sat_state(IDLE_FLASH);
+			set_irpow_by_sat_state(IDLE_FLASH);
+			return prev_sat_state == IDLE_NO_FLASH;
 
 		case LOW_POWER: ;
-			if (current_sat_state == IDLE_NO_FLASH || current_sat_state == IDLE_FLASH) {
-				print("CHANGED STATE to LOW_POWER");
-				set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
-				set_radio_by_sat_state(LOW_POWER);
-				set_irpow_by_sat_state(LOW_POWER);
-				return true;
-			}
-			return false;
+			print("CHANGED STATE to LOW_POWER");
+			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
+			set_radio_by_sat_state(LOW_POWER);
+			set_irpow_by_sat_state(LOW_POWER);
+			return prev_sat_state == ANTENNA_DEPLOY || prev_sat_state == HELLO_WORLD || 
+					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 
 		case RIP: ;
-			// we can always go to RIP
 			print("CHANGED STATE to RIP");
 			set_all_task_states(RIP_TASK_STATES, RIP);
 			set_radio_by_sat_state(RIP);
 			set_irpow_by_sat_state(RIP);
+			// we can always go to RIP
 			return true;
 
 		default:
@@ -499,7 +483,8 @@ bool set_sat_state(sat_state_t state) {
 	#if OVERRIDE_STATE_HOLD_INIT != 1
 		bool valid = set_sat_state_helper(state);
 		if (!valid) {
-			configASSERT(false); // busy loop because this is bad
+			log_error(ELOC_STATE_HANDLING, ECODE_INVALID_STATE_CHANGE, true);
+			configASSERT(false); // busy loop because this should only be radiation issues
 		}
 		return valid;
 	#endif

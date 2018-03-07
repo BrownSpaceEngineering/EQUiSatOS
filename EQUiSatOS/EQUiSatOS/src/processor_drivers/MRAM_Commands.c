@@ -40,6 +40,10 @@ void mram_initialize_slave(struct spi_slave_inst *slave, int ss_pin) {
 	spi_attach_slave(slave, &slave_dev_config);
 }
 
+void mram_reset(struct spi_module *spi_master_instance) {
+	spi_reset(spi_master_instance);
+}
+
 status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave) {
 	uint8_t enable = ENABLE_COMMAND;
 	spi_select_slave(spi_master_instance, slave, true);
