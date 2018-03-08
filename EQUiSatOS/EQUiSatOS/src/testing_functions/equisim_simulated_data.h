@@ -3,12 +3,13 @@
  *
  * Created: 2/10/2018 12:40:32 AM
  *  Author: rjha
- */ 
+ */
 #include "rtos_tasks/rtos_tasks.h"
 
 #ifndef BATTERY_CHARGING_SIMULATED_DATA_H_
 #define BATTERY_CHARGING_SIMULATED_DATA_H_
 
+// NOTE: for battery charging unit tests, not the simulator!
 extern int simulated_timestamp;
 extern int simulated_state;
 extern int simulated_curr_charging_filled_up;
@@ -27,19 +28,20 @@ typedef struct equisim_bat_actions_t {
 	bool l2_run_chg;
 	bool l1_disg;
 	bool l2_disg;
+
 	// lifepos
 	bool lf_b1_runchg;
 	bool lf_b2_runchg;
-	
+
 	// timings
 	uint64_t last_setting_time_ms;
-	
 } equisim_bat_actions_t;
 
 typedef struct equisim_bat_state_t {
 	// discharge state
 	bool l1_st;
 	bool l2_st;
+
 	// chip outputs
 	bool l1_chgn;
 	bool l2_chgn;
@@ -49,8 +51,11 @@ typedef struct equisim_bat_state_t {
 	bool lf_b2_chgn;
 	bool lf_b1_faultn;
 	bool lf_b2_faultn;
-	// other state
+
+	// panel-related state
 	bool spf_st;
+	uint8_t panel_ref_mv; 
+
 	// voltages
 	uint16_t li1_volts;
 	uint16_t li2_volts;
@@ -58,6 +63,7 @@ typedef struct equisim_bat_state_t {
 	uint16_t lf2_volts;
 	uint16_t lf3_volts;
 	uint16_t lf4_volts;
+
 	// currents
 	uint16_t li1_current;
 	uint16_t li2_current;
@@ -65,7 +71,6 @@ typedef struct equisim_bat_state_t {
 	uint16_t lf2_current;
 	uint16_t lf3_current;
 	uint16_t lf4_current;
-	
 } equisim_bat_state_t;
 
 // functions to get state

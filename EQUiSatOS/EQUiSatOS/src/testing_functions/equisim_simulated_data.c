@@ -73,6 +73,93 @@ void equisim_read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint1
 /************************************************************************/
 /* Actual battery representation functions                              */
 /************************************************************************/
+
+void fault_to_default()
+{
+	// NOTE: actie low, so flipping here
+	cur_state.l1_faultn = 1;
+	cur_state.l2_faultn = 1;
+	cur_state.lf_b1_faultn = 1;
+	cur_state.lf_b1_faultn = 1;
+}
+
+void panel_to_default()
+{
+	cur_state.panel_ref_mv = 9000;
+	cur_state.spf_st = 1;
+}
+
+void currents_to_default()
+{
+	cur_state.li1_current = 0;
+	cur_state.li2_current = 0;
+	cur_state.lf1_current = 0;
+	cur_state.lf2_current = 0;
+	cur_state.lf3_current = 0;
+	cur_state.lf4_current = 0;
+}
+
+void st_normal()
+{
+	cur_state.l1_st = cur_actions.l1_disg;
+	cur_state.l2_st = cur_actions.l2_disg;
+}
+
+void chgn_normal()
+{
+	// NOTE: active low, so flipping here
+	cur_state.l1_chgn = !cur_actions.l1_run_chg;
+	cur_state.l2_chgn = !cur_actions.l2_run_chg;
+	cur_state.lf_b1_chgn = !cur_actions.lf_b1_runchg;
+	cur_state.lf_b2_chgn = !cur_actions.lf_b2_runchg;
+}
+
+void voltages_normal(uint64_t timestamp_ms)
+{
+	uint64_t time_since_last_update = timestamp_ms - cur_actions.last_setting_time_ms;
+	cur_actions.last_setting_time_ms = timestamp_ms;
+
+	// starting with linear for now
+	float li_charging_mv_per_ms = 0.005;
+	float li_discharging_mv_per_ms = -0.003;
+	float lf_charging_mv_per_ms = 0.005;
+
+	// discharging
+	if (cur_actions.l1_disg && cur_actions.l2_disg)
+	{
+		cur_state.li1_volts -= (li_discharging_mv_per_ms / 2);
+		cur_state.li2_volts -= (li_discharging_mv_per_ms / 2);
+	}
+	else
+	{
+		cur_state.li1_volts -= cur_actions.l1_disg ? (li_discharging_mv_per_ms / 2) : 0;
+		cur_state.li2_volts -= cur_actions.l2_disg ? (li_discharging_mv_per_ms / 2) : 0;
+	}
+
+	cur_state.li1_volts += cur_actions.l1_run_chg ? li_charging_mv_per_ms : 0;
+	cur_state.li2_volts += cur_actions.l2_run_chg ? li_charging_mv_per_ms : 0;
+	cur_state.lf1_volts += cur_actions.lf_b1_runchg ? lf_charging_mv_per_ms : 0;
+	cur_state.lf2_volts += cur_actions.lf_b1_runchg ? lf_charging_mv_per_ms : 0;
+	cur_state.lf3_volts += cur_actions.lf_b2_runchg ? lf_charging_mv_per_ms : 0;
+	cur_state.lf4_volts += cur_actions.lf_b2_runchg ? lf_charging_mv_per_ms : 0;
+
+	// can't be negative
+	cur_state.li1_volts = Max(cur_state.li1_volts, 0);
+	cur_state.li2_volts = Max(cur_state.li2_volts, 0);
+	cur_state.lf1_volts = Max(cur_state.lf1_volts, 0);
+	cur_state.lf2_volts = Max(cur_state.lf2_volts, 0);
+	cur_state.lf3_volts = Max(cur_state.lf3_volts, 0);
+	cur_state.lf4_volts = Max(cur_state.lf4_volts, 0);
+}
+
 void normal_charge_discharge(uint64_t timestamp_ms) {
-	
+		// takes the information from the action struct and updates the state
+		// struct
+
+		st_normal(); // ST pins
+		chgn_normal(); // CHGN pins
+		fault_to_default(); // FAULTN pins
+		panel_to_default(); // PANEL_REF
+		currents_to_default(); // currents
+		voltages_normal(timestamp_ms);
 }
