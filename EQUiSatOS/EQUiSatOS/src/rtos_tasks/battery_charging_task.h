@@ -12,7 +12,7 @@
 #include <asf.h>
 #include "../data_handling/persistent_storage.h"
 #include "rtos_tasks.h"
-#include "testing_functions/battery_charging_simulated_data.h"
+#include "testing_functions/equisim_simulated_data.h"
 
 // TODO: figure out these thresholds fully and deal with scaling
 

@@ -89,7 +89,7 @@ void decide_next_state(sat_state_t current_state) {
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
 	// average voltage for the batteries within each LF bank
 	int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;

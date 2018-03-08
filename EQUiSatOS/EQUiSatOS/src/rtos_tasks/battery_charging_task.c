@@ -393,7 +393,7 @@ int battery_logic()
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lf_volts_precise(&(lf1_mv), &(lf2_mv), &(lf3_mv), &(lf4_mv));
+	read_lifepo_volts_precise(&(lf1_mv), &(lf2_mv), &(lf3_mv), &(lf4_mv));
 
 	// considering the voltage of the life po banks to be the max of the cells for
 	// our purposes

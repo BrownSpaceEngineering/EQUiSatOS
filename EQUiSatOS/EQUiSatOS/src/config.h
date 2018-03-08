@@ -59,6 +59,7 @@
 //#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
+#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
 #define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
 //#define EQUISIM_WATCHDOG_RESET_TEST
 

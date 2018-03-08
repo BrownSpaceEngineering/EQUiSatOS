@@ -229,10 +229,14 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-		commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-		*val_1 = *val_1 * 25 / 10;
-		*val_2 = *val_2 * 25 / 10;
+		#ifndef EQUISIM_SIMULATE_BATTERIES
+			commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+			commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+			*val_1 = *val_1 * 25 / 10;
+			*val_2 = *val_2 * 25 / 10;
+		#else
+			equisim_read_lion_volts_precise(val_1, val_2);
+		#endif
 
 		xSemaphoreGive(processor_adc_mutex);
 	} else {
@@ -307,8 +311,12 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
 		if (hardware_state_mutex_take()) {
-			sc = AD7991_read_all_mV(results, AD7991_BATBRD);
-			log_if_error(ELOC_AD7991_BBRD, sc, true);
+			#ifndef EQUISIM_SIMULATE_BATTERIES
+				sc = AD7991_read_all_mV(results, AD7991_BATBRD);
+				log_if_error(ELOC_AD7991_BBRD, sc, true);
+			#else
+				equisim_read_lion_current_precise(val_1, val_2);
+			#endif
 
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying || states->radio_transmitting) {
@@ -331,10 +339,12 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 		return;
 	}
 	
+	#ifndef EQUISIM_SIMULATE_BATTERIES
 	// results[1] = L1_SNS
 	*val_1 = results[1];
 	// results[0] = L2_SNS
 	*val_2 = results[0];
+	#endif
 }
 
 // TODO: why is ad7991_ctrlbrd required outside here??
@@ -359,30 +369,30 @@ void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 /************************************************************************/
 /* FLASH-RELATED FUNCTIONS - include unsafe and safe version            */
 /************************************************************************/
-
-void en_and_read_led_temps_batch(led_temps_batch batch) {
-	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-	{
-		_enable_ir_pow_if_necessary();
-		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-		{
-			_set_5v_enable(true);
-			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
-			verify_regulators_unsafe();
-			_read_led_temps_batch_unsafe(batch);
-			_set_5v_enable(false);
-
-			xSemaphoreGive(processor_adc_mutex);
-		} else {
-			log_error(ELOC_TEMP_L_2, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-			memset(batch, 0, sizeof(led_temps_batch));
-		}
-		xSemaphoreGive(i2c_mutex);
-	} else {
-		log_error(ELOC_TEMP_L_2, ECODE_I2C_MUTEX_TIMEOUT, true);
-		memset(batch, 0, sizeof(led_temps_batch));
-	}
-}
+// TODO: may be unused, in favor of verify_flash_readings (currently is)
+// void en_and_read_led_temps_batch(led_temps_batch batch) {
+// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 	{
+// 		_enable_ir_pow_if_necessary();
+// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 		{
+// 			_set_5v_enable(true);
+// 			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
+// 			verify_regulators_unsafe();
+// 			_read_led_temps_batch_unsafe(batch);
+// 			_set_5v_enable(false);
+// 
+// 			xSemaphoreGive(processor_adc_mutex);
+// 		} else {
+// 			log_error(ELOC_TEMP_L_2, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+// 			memset(batch, 0, sizeof(led_temps_batch));
+// 		}
+// 		xSemaphoreGive(i2c_mutex);
+// 	} else {
+// 		log_error(ELOC_TEMP_L_2, ECODE_I2C_MUTEX_TIMEOUT, true);
+// 		memset(batch, 0, sizeof(led_temps_batch));
+// 	}
+// }
 
 // note: only called from flash_task, and with i2c_irpow_mutex held
 void _read_led_temps_batch_unsafe(led_temps_batch batch) {
@@ -395,30 +405,30 @@ void _read_led_temps_batch_unsafe(led_temps_batch batch) {
 	}
 }
 
-// TODO: may be unnecessary
-void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-	{
-		_enable_ir_pow_if_necessary();
-		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-		{
-			_set_5v_enable(true);
-			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
-			verify_regulators_unsafe();
-			_read_lifepo_temps_batch_unsafe(batch);
-			_set_5v_enable(false);
-
-			xSemaphoreGive(processor_adc_mutex);
-		} else {
-			log_error(ELOC_TEMP_LF_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-			memset(batch, 0, sizeof(lifepo_bank_temps_batch));
-		}
-		xSemaphoreGive(i2c_mutex);
-	} else {
-		log_error(ELOC_TEMP_LF_1, ECODE_I2C_MUTEX_TIMEOUT, true);
-		memset(batch, 0, sizeof(lifepo_bank_temps_batch));
-	}
-}
+// TODO: may be unused, in favor of verify_flash_readings (currently is)
+// void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
+// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 	{
+// 		_enable_ir_pow_if_necessary();
+// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 		{
+// 			_set_5v_enable(true);
+// 			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
+// 			verify_regulators_unsafe();
+// 			_read_lifepo_temps_batch_unsafe(batch);
+// 			_set_5v_enable(false);
+// 
+// 			xSemaphoreGive(processor_adc_mutex);
+// 		} else {
+// 			log_error(ELOC_TEMP_LF_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+// 			memset(batch, 0, sizeof(lifepo_bank_temps_batch));
+// 		}
+// 		xSemaphoreGive(i2c_mutex);
+// 	} else {
+// 		log_error(ELOC_TEMP_LF_1, ECODE_I2C_MUTEX_TIMEOUT, true);
+// 		memset(batch, 0, sizeof(lifepo_bank_temps_batch));
+// 	}
+// }
 
 void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 	for (int i = 0; i < 2; i++) {
@@ -447,37 +457,42 @@ void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, low_limit, high_limit, true);
 }
 
-void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
+// TODO: may be unused, in favor of verify_flash_readings (currently is)
+// void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
+// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 	{
+// 		_enable_ir_pow_if_necessary();
+// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+// 		{
+// 			_read_lifepo_current_batch_unsafe(batch, flashing_now);
+// 			
+// 			xSemaphoreGive(processor_adc_mutex);
+// 		} else {
+// 			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+// 			memset(batch, 0, sizeof(lifepo_current_batch));
+// 		}
+// 		xSemaphoreGive(i2c_mutex);
+// 	} else {
+// 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+// 		memset(batch, 0, sizeof(lifepo_current_batch));
+// 	}
+// }
+
+// only used in antenna deploy task
+void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		_enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
-			_read_lifepo_current_batch_unsafe(batch, flashing_now);
-			
-			xSemaphoreGive(processor_adc_mutex);
-		} else {
-			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-			memset(batch, 0, sizeof(lifepo_current_batch));
-		}
-		xSemaphoreGive(i2c_mutex);
-	} else {
-		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
-		memset(batch, 0, sizeof(lifepo_current_batch));
-	}
-}
-
-void read_lf_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
-	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-	{
-		_enable_ir_pow_if_necessary();
-		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-		{
-
-			commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-			commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-			commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-			commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			#ifndef EQUISIM_SIMULATE_BATTERIES
+				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+			#else
+				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
+			#endif
 			
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
@@ -489,24 +504,29 @@ void read_lf_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, 
 	}
 }
 
+// reads precise values; just a helper function
+void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+	#ifndef EQUISIM_SIMULATE_BATTERIES
+		// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
+		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+		commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+		commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+		commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
 
-void read_lf_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
-	// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
-	commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-	commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-
-	*val_2 = *val_2 * 195 / 100;
-	*val_4 = *val_4 * 195 / 100;
-	*val_1 = (*val_1 * 387 / 100) - *val_2;
-	*val_3 = (*val_3 * 387 / 100) - *val_4;
+		*val_2 = *val_2 * 195 / 100;
+		*val_4 = *val_4 * 195 / 100;
+		*val_1 = (*val_1 * 387 / 100) - *val_2;
+		*val_3 = (*val_3 * 387 / 100) - *val_4;
+	#else 
+		equisim_read_lifepo_volts_precise(val_1, val_2, val_3, val_4);
+	#endif
 }
 
-void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+// reads precise values; mutex safe
+void read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		read_lf_volts_precise_unsafe(val_1, val_2, val_3, val_4);
+		read_lifepo_volts_precise_unsafe(val_1, val_2, val_3, val_4);
 		xSemaphoreGive(processor_adc_mutex);
 	} else {
 		log_error(ELOC_L1_REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
@@ -517,6 +537,7 @@ void read_lf_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, ui
 	}
 }
 
+// reads truncated batch; called in flash task while mutex is held
 void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 	// TODO: make sure this all looks okay
 	uint16_t val_1_precise;
@@ -524,7 +545,7 @@ void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 	uint16_t val_3_precise;
 	uint16_t val_4_precise;
 
-	read_lf_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
+	read_lifepo_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
 	batch[0] = truncate_u16t(val_1_precise);
 	batch[1] = truncate_u16t(val_2_precise);
@@ -532,6 +553,7 @@ void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 	batch[3] = truncate_u16t(val_4_precise);
 }
 
+// reads truncated batch; mutex safe
 void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
@@ -558,7 +580,6 @@ void _read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) 
 	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, low_limit, high_limit, true);
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, low_limit, high_limit, true);
 }
-
 
 void verify_flash_readings(bool flashing_now) {
 	// note: if this function happens to context switch into being flashing

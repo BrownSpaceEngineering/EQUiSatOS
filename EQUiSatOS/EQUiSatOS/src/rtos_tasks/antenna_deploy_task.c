@@ -74,7 +74,7 @@ void antenna_deploy_task(void *pvParameters) {
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
-			read_lf_volts_precise(&lf1, &lf2, &lf3, &lf4);
+			read_lifepo_volts_precise(&lf1, &lf2, &lf3, &lf4);
 			if (lf1 + lf2 > PWM_LIFEPO_MIN_V) {
 				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;
