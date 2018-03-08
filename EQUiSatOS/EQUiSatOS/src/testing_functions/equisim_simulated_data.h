@@ -13,6 +13,54 @@ extern int simulated_timestamp;
 extern int simulated_state;
 extern int simulated_curr_charging_filled_up;
 
+/************************************************************************/
+/* CONFIG                                                               */
+/************************************************************************/
+#define EQUISIM_TIMESTAMP_SCALING	1
+
+/************************************************************************/
+/* Battery charging sim states                                          */
+/************************************************************************/
+typedef struct equisim_bat_actions_t {
+	// lions
+	bool l1_run_chg;
+	bool l2_run_chg;
+	bool l1_disg;
+	bool l2_disg;
+	// lifepos
+	bool lf_b1_runchg;
+	bool lf_b2_runchg;
+} equisim_bat_actions_t;
+
+typedef struct equisim_bat_state_t {
+	// discharge state
+	bool l1_st;
+	bool l2_st;
+	// chip outputs
+	bool l1_chgn;
+	bool l2_chgn;
+	bool l1_faultn;
+	bool l2_faultn;
+	bool lf_b1_chgn;
+	bool lf_b2_chgn;
+	bool lf_b1_faultn;
+	bool lf_b2_faultn;
+	// other state
+	bool spf_st;
+	// voltages
+	uint16_t li1_volts;
+	uint16_t li2_volts;
+	uint16_t lf_b1_volts;
+	uint16_t lf_b2_volts;
+	// currents
+	uint16_t li1_current;
+	uint16_t li2_current;
+	uint16_t lf_b1_current;
+	uint16_t lf_b2_current;
+	
+} equisim_bat_state_t;
+
+// functions to get state
 void equisim_read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void equisim_read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 void equisim_read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
