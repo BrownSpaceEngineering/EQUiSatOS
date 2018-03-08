@@ -280,6 +280,10 @@ void init_charging_data()
 	{
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
+		
+		// reset persistent data so we give another chance
+		persist_data.li_caused_reboot = -1;
+		set_persistent_charging_data_unsafe(persist_data);
 	}
 
 	print("initializing charging data - complete\n");

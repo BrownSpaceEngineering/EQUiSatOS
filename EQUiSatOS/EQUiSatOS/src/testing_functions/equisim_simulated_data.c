@@ -85,7 +85,7 @@ void init_charging_state(void) {
 	currents_to_default(); // currents
 }
 
-void equisim_init() {
+void equisim_init(void) {
 	init_charging_actions();
 	init_charging_state();
 }
@@ -98,18 +98,18 @@ void equisim_read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	*batch |= cur_actions.l2_run_chg	<< 1;
 	*batch |= cur_actions.lf_b1_runchg	<< 2;
 	*batch |= cur_actions.lf_b2_runchg	<< 3;
-	*batch |= cur_state.lf_b2_chgn		<< 4;
-	*batch |= cur_state.lf_b2_faultn	<< 5;
-	*batch |= cur_state.lf_b1_faultn	<< 6;
-	*batch |= cur_state.lf_b1_chgn		<< 7;
+	*batch |= cur_state.lf_b2_chgn_inv		<< 4;
+	*batch |= cur_state.lf_b2_faultn_inv	<< 5;
+	*batch |= cur_state.lf_b1_faultn_inv	<< 6;
+	*batch |= cur_state.lf_b1_chgn_inv		<< 7;
 	*batch |= cur_state.l2_st			<< 8;
 	*batch |= cur_state.l1_st			<< 9;
 	*batch |= cur_actions.l1_disg		<< 10;
 	*batch |= cur_actions.l2_disg		<< 11;
-	*batch |= cur_state.l1_chgn			<< 12;
-	*batch |= cur_state.l1_faultn		<< 13;
-	*batch |= cur_state.l1_chgn			<< 14;
-	*batch |= cur_state.l2_faultn		<< 15;
+	*batch |= cur_state.l1_chgn_inv			<< 12;
+	*batch |= cur_state.l1_faultn_inv		<< 13;
+	*batch |= cur_state.l1_chgn_inv			<< 14;
+	*batch |= cur_state.l2_faultn_inv		<< 15;
 }
 // TODO: spf_st not read from this file if flag defined!
 
@@ -153,10 +153,10 @@ uint16_t equisim_read_panelref(void) {
 void fault_to_default()
 {
 	// NOTE: actie low, so flipping here
-	cur_state.l1_faultn = 1;
-	cur_state.l2_faultn = 1;
-	cur_state.lf_b1_faultn = 1;
-	cur_state.lf_b1_faultn = 1;
+	cur_state.l1_faultn_inv = 1;
+	cur_state.l2_faultn_inv = 1;
+	cur_state.lf_b1_faultn_inv = 1;
+	cur_state.lf_b2_faultn_inv = 1;
 }
 
 void panel_to_default()
@@ -184,10 +184,10 @@ void st_normal()
 void chgn_normal()
 {
 	// NOTE: active low, so flipping here
-	cur_state.l1_chgn = !cur_actions.l1_run_chg;
-	cur_state.l2_chgn = !cur_actions.l2_run_chg;
-	cur_state.lf_b1_chgn = !cur_actions.lf_b1_runchg;
-	cur_state.lf_b2_chgn = !cur_actions.lf_b2_runchg;
+	cur_state.l1_chgn_inv = !cur_actions.l1_run_chg;
+	cur_state.l2_chgn_inv = !cur_actions.l2_run_chg;
+	cur_state.lf_b1_chgn_inv = !cur_actions.lf_b1_runchg;
+	cur_state.lf_b2_chgn_inv = !cur_actions.lf_b2_runchg;
 }
 
 void voltages_normal(uint64_t timestamp_ms)

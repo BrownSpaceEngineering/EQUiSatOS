@@ -44,14 +44,14 @@ typedef struct equisim_bat_state_t {
 	bool l2_st;
 
 	// chip outputs
-	bool l1_chgn;
-	bool l2_chgn;
-	bool l1_faultn;
-	bool l2_faultn;
-	bool lf_b1_chgn;
-	bool lf_b2_chgn;
-	bool lf_b1_faultn;
-	bool lf_b2_faultn;
+	bool l1_chgn_inv;
+	bool l2_chgn_inv;
+	bool l1_faultn_inv;
+	bool l2_faultn_inv;
+	bool lf_b1_chgn_inv;
+	bool lf_b2_chgn_inv;
+	bool lf_b1_faultn_inv;
+	bool lf_b2_faultn_inv;
 	
 	// panel-related state
 	bool spf_st;
@@ -75,6 +75,7 @@ typedef struct equisim_bat_state_t {
 } equisim_bat_state_t;
 
 // setting actions
+void equisim_init(void);
 void equisim_set_action_by_pin(bool setting, int pin);
 
 // functions to get state

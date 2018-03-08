@@ -117,7 +117,7 @@ void decide_next_state(sat_state_t current_state) {
 										one_li_below_low_power)
 									|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
 										(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
-										&& charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV));
+										&& (charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV)));
 	bool low_power_exit_criteria = !low_power_entry_criteria;
 
 	// TODO: do we want some notion of time?
