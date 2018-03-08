@@ -100,17 +100,6 @@ void decide_next_state(sat_state_t current_state) {
 	// power state is the data is conflicted
 	///
 
-
-// TODO: Useless abstraction (to get back see just after https://github.com/BrownSpaceEngineering/EQUiSatOS/commit/c01ffbb545c42178f90baaeb7562b9b8f5425ccc)
-// 	
-// 	sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-// 	if (checked_state != current_state)
-// 	{
-// 		// checked state will be either RIP or LOW_POWER
-// 		set_sat_state(checked_state);
-// 		return;
-// 	}
-
 	///
 	// now it's time to check for all of the standard state changes
 	///

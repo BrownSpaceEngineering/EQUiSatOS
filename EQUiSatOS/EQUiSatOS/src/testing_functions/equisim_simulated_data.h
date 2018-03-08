@@ -5,6 +5,7 @@
  *  Author: rjha
  */
 #include "rtos_tasks/rtos_tasks.h"
+#include "../rtos_tasks/battery_charging_task.h"
 
 #ifndef BATTERY_CHARGING_SIMULATED_DATA_H_
 #define BATTERY_CHARGING_SIMULATED_DATA_H_
@@ -51,11 +52,11 @@ typedef struct equisim_bat_state_t {
 	bool lf_b2_chgn;
 	bool lf_b1_faultn;
 	bool lf_b2_faultn;
-
+	
 	// panel-related state
 	bool spf_st;
-	uint8_t panel_ref_mv; 
-
+	uint8_t panel_ref_mv;
+	
 	// voltages
 	uint16_t li1_volts;
 	uint16_t li2_volts;
@@ -73,10 +74,15 @@ typedef struct equisim_bat_state_t {
 	uint16_t lf4_current;
 } equisim_bat_state_t;
 
+// setting actions
+void equisim_set_action_by_pin(bool setting, int pin);
+
 // functions to get state
+void equisim_read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);
 void equisim_read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 void equisim_read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 void equisim_read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void equisim_read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
+uint16_t equisim_read_panelref(void);
 
 #endif /* BATTERY_CHARGING_SIMULATED_DATA_H_ */

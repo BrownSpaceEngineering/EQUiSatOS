@@ -10,6 +10,11 @@ int simulated_curr_charging_filled_up = 0;
 /************************************************************************/
 /* Battery representations (forward defined list)                       */
 /************************************************************************/
+void fault_to_default(void);
+void panel_to_default(void);
+void currents_to_default(void);
+void st_normal(void);
+void chgn_normal(void);
 void normal_charge_discharge(uint64_t timestamp_ms);
 
 /************************************************************************/
@@ -17,23 +22,33 @@ void normal_charge_discharge(uint64_t timestamp_ms);
 /************************************************************************/
 equisim_bat_actions_t cur_actions;
 equisim_bat_state_t cur_state;
-// 	bool l1_run_chg;
-// 	bool l2_run_chg;
-// 	bool l1_disg;
-// 	bool l2_disg;
-// 	// lifepos
-// 	bool lf_b1_runchg;
-// 	bool lf_b2_runchg;
 
 void equisim_set_action_by_pin(bool setting, int pin) {
 	switch (pin) {
-		case P_L1_RUN_CHG: cur_actions.l1_run_chg = setting;
-		// TODO...
+		case P_L1_RUN_CHG:	
+			cur_actions.l1_run_chg = setting;
+			return;
+		case P_L2_RUN_CHG:	
+			cur_actions.l2_run_chg = setting;
+			return;
+		case P_L1_DISG:		
+			cur_actions.l1_disg = setting;
+			return;
+		case P_L2_DISG:		
+			cur_actions.l2_disg = setting;
+			return;
+		case P_LF_B1_RUNCHG:
+			cur_actions.lf_b1_runchg = setting;
+			return;
+		case P_LF_B2_RUNCHG:
+			cur_actions.lf_b2_runchg = setting;
+			return;
+		default: configASSERT(false);
 	}
 }
 
 uint32_t equisim_get_current_timestamp_ms() {
-	return EQUISIM_TIMESTAMP_SCALING * get_current_timestamp_ms();
+	return EQUISIM_TIMESTAMP_SCALING * get_current_timestamp_ms(); 
 }
 
 void update_bat_state_from_actions(void) {
@@ -41,8 +56,63 @@ void update_bat_state_from_actions(void) {
 }
 
 /************************************************************************/
+/* Initialization                                                       */
+/************************************************************************/
+void init_charging_actions(void) {
+	cur_actions.l1_run_chg	= true;
+	cur_actions.l2_run_chg	= true;
+	cur_actions.l1_disg		= true;
+	cur_actions.l2_disg		= false;
+	cur_actions.lf_b1_runchg= false;
+	cur_actions.lf_b2_runchg= false;
+	cur_actions.last_setting_time_ms = get_current_timestamp_ms();
+}
+
+void init_charging_state(void) {
+	st_normal(); // ST pins
+	chgn_normal(); // CHGN pins
+	fault_to_default(); // FAULTN pins
+	panel_to_default(); // PANEL_REF
+	
+	// voltages
+	cur_state.li1_volts = LI_FULL_MV;
+	cur_state.li2_volts = LI_FULL_MV;
+	cur_state.lf1_volts = 0;
+	cur_state.lf2_volts = 0;
+	cur_state.lf3_volts = 0;
+	cur_state.lf4_volts = 0;
+
+	currents_to_default(); // currents
+}
+
+void equisim_init() {
+	init_charging_actions();
+	init_charging_state();
+}
+
+/************************************************************************/
 /* Battery voltage/current output interfaces                            */
 /************************************************************************/
+void equisim_read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
+	*batch |= cur_actions.l1_run_chg;
+	*batch |= cur_actions.l2_run_chg	<< 1;
+	*batch |= cur_actions.lf_b1_runchg	<< 2;
+	*batch |= cur_actions.lf_b2_runchg	<< 3;
+	*batch |= cur_state.lf_b2_chgn		<< 4;
+	*batch |= cur_state.lf_b2_faultn	<< 5;
+	*batch |= cur_state.lf_b1_faultn	<< 6;
+	*batch |= cur_state.lf_b1_chgn		<< 7;
+	*batch |= cur_state.l2_st			<< 8;
+	*batch |= cur_state.l1_st			<< 9;
+	*batch |= cur_actions.l1_disg		<< 10;
+	*batch |= cur_actions.l2_disg		<< 11;
+	*batch |= cur_state.l1_chgn			<< 12;
+	*batch |= cur_state.l1_faultn		<< 13;
+	*batch |= cur_state.l1_chgn			<< 14;
+	*batch |= cur_state.l2_faultn		<< 15;
+}
+// TODO: spf_st not read from this file if flag defined!
+
 void equisim_read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	update_bat_state_from_actions();
 	*val_1 = cur_state.li1_volts;
@@ -58,6 +128,7 @@ void equisim_read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_
 }
 
 void equisim_read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
+	update_bat_state_from_actions();
 	*val_1 = cur_state.li1_current;
 	*val_2 = cur_state.li2_current;
 }
@@ -68,6 +139,11 @@ void equisim_read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint1
 	*val_2 = cur_state.lf2_current;
 	*val_3 = cur_state.lf3_current;
 	*val_4 = cur_state.lf4_current;
+}
+
+uint16_t equisim_read_panelref(void) {
+	update_bat_state_from_actions();
+	return cur_state.panel_ref_mv;
 }
 
 /************************************************************************/

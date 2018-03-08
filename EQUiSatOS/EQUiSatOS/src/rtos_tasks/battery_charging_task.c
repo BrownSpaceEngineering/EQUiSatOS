@@ -290,7 +290,13 @@ void set_li_to_discharge(int bat, int discharge)
 	int discharge_pin = get_run_dischg_pin(bat);
 
 	// NOTE: discharge pins are active low
-	set_output(!discharge, discharge_pin);
+	#ifndef EQUISIM_SIMULATE_BATTERIES
+		#ifdef BAT_CHARGING_ACTIVE
+			set_output(!discharge, discharge_pin);
+		#endif
+	#else
+		equisim_set_action_by_pin(!discharge, discharge_pin);
+	#endif
 
 	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 	int discharging_contributing_to_output = get_st_val(bat);
@@ -303,13 +309,19 @@ void set_li_to_discharge(int bat, int discharge)
 void set_bat_to_charge(int bat, int charge)
 {
 	int chg_pin = get_run_chg_pin(bat);
-	set_output(charge, chg_pin);
+	#ifndef EQUISIM_SIMULATE_BATTERIES
+		#ifdef BAT_CHARGING_ACTIVE
+			set_output(charge, chg_pin);
+		#endif
+	#else
+		equisim_set_action_by_pin(charge, chg_pin);
+	#endif
 	print("set bat %d to charge\n", bat);
 
 	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 	if (get_fault_pin_val_w_conversion(bat))
 	{
-		print("fault pin active for bat %d -- decommmissioning\n", bat);
+		print("fault pin active for bat %d -- decommissioning\n", bat);
 		log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
 		decommission(bat);
 	}
@@ -355,7 +367,6 @@ void battery_charging_task(void *pvParameters)
 
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
-		#ifdef BAT_CHARGING_ACTIVE
 		if (!battery_logic())
 		{
 			if (!battery_logic())
@@ -363,7 +374,6 @@ void battery_charging_task(void *pvParameters)
 				battery_logic();
 			}
 		}
-		#endif
 	}
 
 	// delete this task if it ever breaks out
@@ -503,7 +513,7 @@ int battery_logic()
 	if (num_lf_down == 1)
 		good_lf = charging_data.decommissioned[LFB1] ? LFB2 : LFB1;
 
-	print("currently have %d good li and %d good lf\n", num_li_down, num_lf_down);
+	print("currently have %d bad li and %d bad lf\n", num_li_down, num_lf_down);
 
 	// we often want to know whether the higher cells within the life po banks have filled up
 	bool life_po_full = (num_lf_down == 0 &&
@@ -914,7 +924,7 @@ int battery_logic()
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
 
-		vTaskSuspendAll();
+		//TODO: vTaskSuspendAll();
 
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
@@ -929,7 +939,7 @@ int battery_logic()
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
-		xTaskResumeAll();
+		//TODO: xTaskResumeAll();
 		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
 	}
 

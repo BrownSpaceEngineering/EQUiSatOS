@@ -296,6 +296,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	batch2[1] = truncate_u16t(results[2]);
 	log_if_out_of_bounds(results[2], B_LREF_LOW, B_LREF_HIGH, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[3] = PANELREF
+	#ifdef EQUISIM_SIMULATE_BATTERIES
+		results[3] = equisim_read_panelref();
+	#endif
 	batch2[0] = truncate_u16t(results[3]);
 	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_BBRD_L2_SNS, true);
 }
@@ -756,17 +759,21 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		_enable_ir_pow_if_necessary();
-		sc = TCA9535_init(batch);
-		// zero out the places we're going to overwrite
-		// see order in Message Format spreadsheet
-		*batch &= 0xF3F0;
-		// fill in the new values we want
-		*batch |= get_input(P_L1_RUN_CHG);
-		*batch |= (get_input(P_L2_RUN_CHG)<<1);
-		*batch |= (get_input(P_LF_B1_RUNCHG)<<2);
-		*batch |= (get_input(P_LF_B2_RUNCHG)<<3);
-		*batch |= (get_input(P_L1_DISG)<<10);
-		*batch |= (get_input(P_L2_DISG)<<11);
+		#ifndef EQUISIM_SIMULATE_BATTERIES
+			sc = TCA9535_init(batch);
+			// zero out the places we're going to overwrite
+			// see order in Message Format spreadsheet
+			*batch &= 0xF3F0;
+			// fill in the new values we want
+			*batch |= get_input(P_L1_RUN_CHG);
+			*batch |= (get_input(P_L2_RUN_CHG)<<1);
+			*batch |= (get_input(P_LF_B1_RUNCHG)<<2);
+			*batch |= (get_input(P_LF_B2_RUNCHG)<<3);
+			*batch |= (get_input(P_L1_DISG)<<10);
+			*batch |= (get_input(P_L2_DISG)<<11);
+		#else 
+			equisim_read_bat_charge_dig_sigs_batch(batch);
+		#endif
 
 		xSemaphoreGive(i2c_mutex);
 	} else {
