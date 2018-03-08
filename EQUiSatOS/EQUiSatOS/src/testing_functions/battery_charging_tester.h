@@ -9,7 +9,7 @@
 #define BATTERY_CHARGING_TESTER_H_
 
 #include "rtos_tasks/battery_charging_task.h"
-#include "battery_charging_simulated_data.h"
+#include "equisim_simulated_data.h"
 
 void set_voltages(int li1_mv, int li2_mv, int lf1_mv, int lf2_mv);
 void run_battery_charging_tests(void);

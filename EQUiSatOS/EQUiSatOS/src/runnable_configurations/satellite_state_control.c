@@ -89,19 +89,8 @@ void startup_task(void* pvParameters) {
 	#endif
 	
 	/************************************************************************/
-	/* ESSENTIAL INITIALIZATION                                             */
-	/************************************************************************/
-
-	// read state from MRAM for first time
-	// this initializes the error equistacks, so make sure no errors
-	// are logged before this (they shouldn't be before RTOS is started...)
-	configure_state_from_reboot();
-
-	// function in global to init things that use RTOS
-	global_init_post_rtos();
-
-	// populate task_handles array and setup constants
-	pre_init_rtos_tasks();
+	/* DATA INITIALIZATION                                                  */
+	/************************************************************************/	
 
 	// Initialize misc. state mutexes
 	hardware_state_mutex = xSemaphoreCreateMutexStatic(&_hardware_state_mutex_d);
@@ -125,6 +114,20 @@ void startup_task(void* pvParameters) {
 		sizeof(flash_cmp_data_t), FLASH_CMP_STACK_MAX, _flash_cmp_equistack_mutex);
  	equistack_Init(&low_power_readings_equistack, &_low_power_equistack_arr,
 		sizeof(low_power_data_t), LOW_POWER_STACK_MAX, _low_power_equistack_mutex);
+		
+	/************************************************************************/
+	/* ESSENTIAL INITIALIZATION                                             */
+	/************************************************************************/
+	// read state from MRAM for first time
+	// this initializes the error equistacks, so make sure no errors
+	// are logged before this (they shouldn't be before RTOS is started...)
+	configure_state_from_reboot();
+
+	// function in global to init things that use RTOS
+	global_init_post_rtos();
+
+	// populate task_handles array and setup constants
+	pre_init_rtos_tasks();
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */

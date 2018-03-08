@@ -89,7 +89,7 @@ void decide_next_state(sat_state_t current_state) {
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lf_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
 	// average voltage for the batteries within each LF bank
 	int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
@@ -99,17 +99,6 @@ void decide_next_state(sat_state_t current_state) {
 	// we always will need a check whether we want to go into a low
 	// power state is the data is conflicted
 	///
-
-
-// TODO: Useless abstraction (to get back see just after https://github.com/BrownSpaceEngineering/EQUiSatOS/commit/c01ffbb545c42178f90baaeb7562b9b8f5425ccc)
-// 	
-// 	sat_state_t checked_state = check_for_end_of_life(lf1_mv, lf2_mv, current_state);
-// 	if (checked_state != current_state)
-// 	{
-// 		// checked state will be either RIP or LOW_POWER
-// 		set_sat_state(checked_state);
-// 		return;
-// 	}
 
 	///
 	// now it's time to check for all of the standard state changes
@@ -128,7 +117,7 @@ void decide_next_state(sat_state_t current_state) {
 										one_li_below_low_power)
 									|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
 										(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
-										&& charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV));
+										&& (charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV)));
 	bool low_power_exit_criteria = !low_power_entry_criteria;
 
 	// TODO: do we want some notion of time?

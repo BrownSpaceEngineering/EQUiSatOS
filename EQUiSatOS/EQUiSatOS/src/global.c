@@ -84,6 +84,9 @@ void global_init(void) {
 	#ifdef USE_REED_SOLOMON
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
 	#endif
+	#ifdef EQUISIM_SIMULATE_BATTERIES
+		equisim_init();
+	#endif
 	
 	// pet watchdog here in case of long initialization
 	pet_watchdog();

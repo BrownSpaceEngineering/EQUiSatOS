@@ -25,7 +25,7 @@
 //#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
-//#define BAT_CHARGING_ACTIVE // enable battery charging logic
+//#define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING / DEBUG ***/
@@ -59,7 +59,8 @@
 //#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
-#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
+//#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
+//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 // debug print control; set to:

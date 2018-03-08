@@ -60,7 +60,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		// read current (both just in case) so we can shut it down if we need
 		uint16_t li1, li2, lf1, lf2, lf3, lf4;
 		read_lion_current_precise(&li1, &li2);
-		read_lf_current_precise(&lf1, &lf2, &lf3, &lf4);
+		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
 	
 		hardware_state_mutex_take();
 		disable_pwm();
