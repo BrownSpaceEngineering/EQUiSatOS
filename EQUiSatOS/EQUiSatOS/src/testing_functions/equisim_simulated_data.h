@@ -30,6 +30,10 @@ typedef struct equisim_bat_actions_t {
 	// lifepos
 	bool lf_b1_runchg;
 	bool lf_b2_runchg;
+	
+	// timings
+	uint64_t last_setting_time_ms;
+	
 } equisim_bat_actions_t;
 
 typedef struct equisim_bat_state_t {
@@ -50,13 +54,17 @@ typedef struct equisim_bat_state_t {
 	// voltages
 	uint16_t li1_volts;
 	uint16_t li2_volts;
-	uint16_t lf_b1_volts;
-	uint16_t lf_b2_volts;
+	uint16_t lf1_volts;
+	uint16_t lf2_volts;
+	uint16_t lf3_volts;
+	uint16_t lf4_volts;
 	// currents
 	uint16_t li1_current;
 	uint16_t li2_current;
-	uint16_t lf_b1_current;
-	uint16_t lf_b2_current;
+	uint16_t lf1_current;
+	uint16_t lf2_current;
+	uint16_t lf3_current;
+	uint16_t lf4_current;
 	
 } equisim_bat_state_t;
 
