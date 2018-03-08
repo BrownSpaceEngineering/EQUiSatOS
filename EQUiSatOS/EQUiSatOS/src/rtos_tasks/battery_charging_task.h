@@ -168,7 +168,6 @@ void set_li_to_discharge(int bat, int discharge);
 void set_bat_to_charge(int bat, int charge);
 int battery_logic(void);
 void decommission(battery_t bat);
-void undecommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);
 

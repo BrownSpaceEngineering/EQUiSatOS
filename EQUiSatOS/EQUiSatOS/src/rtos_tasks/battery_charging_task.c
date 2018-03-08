@@ -196,15 +196,6 @@ void decommission(battery_t bat)
 	}
 }
 
-void undecommission(battery_t bat)
-{
-	if (charging_data.decommissioned[bat])
-	{
-		charging_data.decommissioned[bat] = 0;
-		charging_data.decommissioned_count[bat]--;
-	}
-}
-
 int time_for_recomission(battery_t bat)
 {
 	int decommissioned_count = charging_data.decommissioned_count[bat];
