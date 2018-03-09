@@ -41,5 +41,5 @@ void pet_watchdog(void){
 }
 
 bool did_watchdog_kick(void){
-	return (system_get_reset_cause() == SYSTEM_RESET_CAUSE_WDT);
+	return (system_get_reset_cause() == SYSTEM_RESET_CAUSE_WDT || system_get_reset_cause() == SYSTEM_RESET_CAUSE_SOFTWARE);
 }

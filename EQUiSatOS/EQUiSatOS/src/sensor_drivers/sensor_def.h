@@ -159,11 +159,11 @@ typedef enum {
 	S_3V6_SNS_ON,
 	S_5VREF_OFF,
 	S_5VREF_ON
-} sensor_id_t;
+} sig_id_t;
 
-uint get_low_bound_from_signal(sensor_id_t sig);
-uint get_high_bound_from_signal(sensor_id_t sig);
-int get_line_m_from_signal(sensor_id_t sig);
-int get_line_b_from_signal(sensor_id_t sig);
+uint get_low_bound_from_signal(sig_id_t sig);
+uint get_high_bound_from_signal(sig_id_t sig);
+int get_line_m_from_signal(sig_id_t sig);
+int get_line_b_from_signal(sig_id_t sig);
 
 #endif /* SENSOR_DEF_H_ */

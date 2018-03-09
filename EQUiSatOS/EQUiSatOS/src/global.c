@@ -31,7 +31,7 @@ static void pin_init(void) {
 	setup_pin(true,P_LF_B2_OUTEN);
 	setup_pin(true,P_LF_B1_RUNCHG);
 	setup_pin(true,P_LF_B2_RUNCHG);
-	setup_pin(true,P_L1_RUN_CHG); //TODO consider if we need these here
+	setup_pin(true,P_L1_RUN_CHG);
 	setup_pin(true,P_L2_RUN_CHG);
 	setup_pin(true,P_L1_DISG);
 	setup_pin(true,P_L2_DISG);
@@ -95,8 +95,6 @@ void global_init(void) {
 // initialization that can only be done with RTOS started
 void global_init_post_rtos(void) {
 	// now that errors are initialized, try to init AD7991 and log potential errors
-	// TODO: we can't do this here because we haven't yet populated the error equistacks
-	// from MRAM and these errors here may be overwritten once we do
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
 }

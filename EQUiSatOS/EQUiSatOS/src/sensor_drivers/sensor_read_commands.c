@@ -60,13 +60,13 @@ void init_sensor_read_commands(void) {
 
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
-static inline uint8_t truncate_u16t(uint16_t src, sensor_id_t sig) {
+static inline uint8_t truncate_u16t(uint16_t src, sig_id_t sig) {
 	int m = get_line_m_from_signal(sig);
 	int b = get_line_b_from_signal(sig);
 	return ((src * m) - b) >> 8;
 }
 
-static inline int8_t truncate_16t(int16_t src, sensor_id_t sig) {
+static inline int8_t truncate_16t(int16_t src, sig_id_t sig) {
 	int m = get_line_m_from_signal(sig);
 	int b = get_line_b_from_signal(sig);
 	return ((src * m) - b) >> 8;
@@ -81,7 +81,7 @@ static void log_if_out_of_bounds(int reading, int low, int high, int eloc, bool 
 }
 
 // note: processor ADC is locked externally to these methods for speed and for particular edge cases
-static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, sensor_id_t sig, bool priority) {
+static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	uint low_bound = get_low_bound_from_signal(sig);
 	uint high_bound = get_high_bound_from_signal(sig);
 	status_code_genare_t sc = configure_adc(&adc_instance, pin);
@@ -91,7 +91,7 @@ static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, sensor_i
 	log_if_out_of_bounds(*dest, low_bound, high_bound, eloc, priority);
 }
 
-static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, sensor_id_t sig, bool priority) {
+static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	uint16_t read;
 	commands_read_adc_mV(&read, pin, eloc, sig, priority);
 	*dest = truncate_u16t(read, sig);

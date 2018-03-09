@@ -20,8 +20,7 @@
 #define FLASH_CMD_PREFLASH_DELAY_MS 1500
 #define CMD_RESPONSE_SIZE			9
 
-// radio kill time increments
-// TODO:
+// TODO: radio kill time increments
 // #define RADIO_KILL_1_DUR_S			259200		// 3 days
 // #define RADIO_KILL_2_DUR_S			1296000		// 15 days
 // #define RADIO_KILL_3_DUR_S			5184000		// 60 days

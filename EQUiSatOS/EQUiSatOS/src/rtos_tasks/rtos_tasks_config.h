@@ -102,44 +102,6 @@ typedef enum
 } sat_state_t;
 
 /************************************************************************/
-/*  Enum for all types of collected sensor readings						*
- * (for consistency across sensor read functions)						*
- * Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
- *	NOTE:																*
- *	If you add/remove a type of collected data, there are several		*
- *	things you must change:												*
- *		- Create a batch type definition								*
- *		- Create the required frequencies								*
- *		- Add a new array of data to ALL of the relevant state structs  *
- *		- Add an add_*_batch_if_ready function						    *
- * NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*
- ************************************************************************/
-typedef enum // TODO: needed?
-{
-	LION_VOLTS_DATA,
-	LION_CURRENT_DATA,
-	LED_TEMPS_DATA,
-	LIFEPO_CURRENT_DATA,
-	LIFEPO_VOLTS_DATA,
-	IR_DATA,
-	DIODE_DATA,
-	BAT_TEMP_DATA,
-	IR_TEMPS_DATA,
-	RADIO_TEMP_DATA,
-	ACCELEROMETER_DATA,
-	GYRO_DATA,
-	MAGNETOMETER_DATA,
-	LED_CURRENT_DATA,
-	RADIO_VOLTS_DATA,
-	IMU_TEMP_DATA,
-	BAT_CHARGE_VOLTS_DATA,
-	BAT_CHARGE_DIG_SIGS_DATA,
-	DIGITAL_OUT_DATA,
-	RAIL_5V_DATA,
-	NUM_DATA_TYPES //= RAIL_5V_DATA + 1
-} sensor_type_t;
-
-/************************************************************************/
 /* enum for all types of data that can be read							*/
 /* (all types that will be in the 'data' section of a message packet)   */
 /************************************************************************/

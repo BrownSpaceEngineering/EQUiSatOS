@@ -86,7 +86,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(1000 / portTICK_PERIOD_MS); // TODO make 3600000
+				vTaskDelay(3600000 / portTICK_PERIOD_MS);
 			}
 		}
 	}
