@@ -7,6 +7,9 @@
 
 #include "battery_charging_task.h"
 
+// TODO: look into SPF_ST
+// TODO: think about persistence of decommissions
+
 // To check (TODO):
 //   - make sure that everywhere an array is being indexed, the right thing is
 //     happening (i.e. we never try to use the index -1)

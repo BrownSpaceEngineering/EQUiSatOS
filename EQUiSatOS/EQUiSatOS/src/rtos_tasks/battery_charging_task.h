@@ -27,7 +27,7 @@
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
 
-#define LF_FULL_MAX_MV             			3500
+#define LF_FULL_MAX_MV             			3500 // what here?
 #define LF_FULL_SANITY_MV               3000
 #define LF_FLASH_AVG_MV            			3250
 
