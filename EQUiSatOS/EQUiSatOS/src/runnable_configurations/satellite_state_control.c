@@ -282,11 +282,11 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task (and double-check with pin input) and apply
-	if (cache_get_sat_event_history().antenna_deployed && get_antenna_deployed()) {
-		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
-	} else {
+	//if (cache_get_sat_event_history().antenna_deployed && get_antenna_deployed()) {
+		//boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
+	//} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
-	}
+	//}
 	
 	// if the satellite restarted because of the watchdog, log that as an error so we know
 	if (did_watchdog_kick()) {

@@ -50,9 +50,6 @@ void antenna_deploy_task(void *pvParameters) {
 		} else if (did_deploy) {
 			// then the antenna should actually be deployed
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
-		} else {
-			int a = 1;
-			// victory
 		}
 		
 		int current_pwm_pin = get_current_pwm_pin();
@@ -79,7 +76,9 @@ void antenna_deploy_task(void *pvParameters) {
 				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;
 					int mux = current_pwm_pin == 2 ? P_ANT_DRV2_MUX : P_ANT_DRV3_MUX;
+					set_output(true, P_LF_B1_OUTEN);
 					try_pwm_deploy(pin, mux, PWM_LENGTH_MS, current_pwm_pin);
+					set_output(false, P_LF_B1_OUTEN);
 					
 					xSemaphoreGive(critical_action_mutex);
 				} else {
