@@ -166,7 +166,7 @@ int is_lion(battery_t bat);
 void init_charging_data(void);
 void set_li_to_discharge(int bat, int discharge);
 void set_bat_to_charge(int bat, int charge);
-int battery_logic(void);
+void battery_logic(void);
 void decommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);

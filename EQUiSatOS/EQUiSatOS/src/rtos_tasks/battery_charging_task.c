@@ -271,7 +271,7 @@ void init_charging_data()
 	{
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
-		
+
 		// reset persistent data so we give another chance
 		persist_data.li_caused_reboot = -1;
 		set_persistent_charging_data_unsafe(persist_data);
@@ -362,20 +362,14 @@ void battery_charging_task(void *pvParameters)
 
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
-		if (!battery_logic())
-		{
-			if (!battery_logic())
-			{
-				battery_logic();
-			}
-		}
+		battery_logic();
 	}
 
 	// delete this task if it ever breaks out
 	vTaskDelete(NULL);
 }
 
-int battery_logic()
+void battery_logic()
 {
 	print("entering battery logic\n");
 
@@ -958,5 +952,4 @@ int battery_logic()
 	#endif
 
 	print("leaving battery charging\n");
-	return true;
 }
