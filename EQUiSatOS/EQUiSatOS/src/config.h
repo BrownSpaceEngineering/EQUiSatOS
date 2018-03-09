@@ -34,7 +34,8 @@
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
 #define TESTING_SPEEDUP
-
+// add strict asserts to notify of events that we want to be rare
+#define USE_STRICT_ASSERTIONS
 // reduces the stack size of some tasks to a workable but risky level
 //#define RISKY_STACK_SIZES
 

@@ -7,13 +7,6 @@
 
 #include "persistent_storage.h"
 
-// super simple mutex used to sync the two operations required
-// to modify the cached data responsible for computing get_current_timestamp()
-// (true if fields are being modified, false otherwise)
-// note: this only works because it's only being written by one thread at a time
-// (except in rare cases), and because read/stores are atomic in single-processor ARM
-bool cache_time_fields_minimutex = false;
-
 /* SPI master and slave handles */
 struct spi_module spi_master_instance;
 struct spi_slave_inst mram1_slave;
@@ -31,7 +24,9 @@ bool compare_persistent_charging_data(persistent_charging_data_t* data1, persist
 /************************************************************************/
 
 void init_persistent_storage(void) {
-	memset(&cached_state, 0, sizeof(cached_state)); // to avoid undefined behavior if someone accidentally uses it
+	// to avoid undefined behavior if someone accidentally uses the cache
+	memset(&cached_state, 0, sizeof(cached_state)); 
+	cached_state_sync_redundancy(); // sync to others
 
 	mram_spi_cache_mutex = xSemaphoreCreateMutexStatic(&_mram_spi_cache_mutex_d);
 
@@ -213,7 +208,8 @@ bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) 
 			address + num_bytes), true); // priority
 }
 
-/* read state from storage into cache */
+/* read state from storage into cache - should only really be called on boot, 
+   otherwise the information in the time since the last write would be lost. */
 void read_state_from_storage(void) {
 	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
@@ -236,11 +232,18 @@ void read_state_from_storage(void) {
 			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		#endif
 		
+		// set initial _secs_since_launch_at_boot based on the last stored timestamp in the MRAM
+		// from here on out this will be used to judge our current _accurate_ timestamp (using xTaskGetTickCount rel. to this)
+		// and secs_since_launch will just be periodically updated in case of reboot
+		// (note that xTaskGetTickCount/1000 is very likely 0 when we first read the state on boot)
+		cached_state._secs_since_launch_at_boot = cached_state.secs_since_launch
+					- (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000;
+		
 		xSemaphoreGive(mram_spi_cache_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
-	// write to redundancy for (probably) the first time
+	// write to redundancy to sync changes
 	cached_state_sync_redundancy();
 }
 
@@ -299,6 +302,18 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	return true;
 }
 
+// Updates timestamp properties (some should be updated)
+void update_cached_timestamp(void) {
+	// write our current timestamp to MRAM to be ready for next reboot
+	// (it's not actually directly referenced/used anywhere, we use secs_since_launch_at_boot)
+	cached_state.secs_since_launch = get_current_timestamp();
+	// NOTE: we don't actually need to update the secs_since_launch_at_boot because, intuitively,
+	// this doesn't change. However, we do it here in case we had a bad MRAM read or similar.
+	// IMPORTANT: this is atomic because ARM stores are for aligned addresses
+	cached_state._secs_since_launch_at_boot = cached_state.secs_since_launch
+					- (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000;
+}
+
 /* 
 	Writes cached state to MRAM
 	NOTE: the SPI mutex MUST be held if called with safe == false - otherwise all of MRAM can be corrupted 
@@ -310,10 +325,13 @@ void write_state_to_storage_safety(bool safe) {
 		// always do this (every PERSISTENT_DATA_BACKUP_TASK_FREQ ms),
 		// plus we need to do it before every cached_state update
 		cached_state_correct_errors();
-	
+		update_cached_timestamp();
 		cached_state.sat_state = get_sat_state();
 		// reboot count is only incremented on startup and is written through cache
 		// other fields are written through when changed
+		
+		// finally, we've made all our changes and can propagate them
+		cached_state_sync_redundancy();
 
 		// (variables for read results)
 		uint32_t temp_secs_since_launch;
@@ -323,19 +341,6 @@ void write_state_to_storage_safety(bool safe) {
 		uint32_t temp_radio_revive_timestamp;
 		persistent_charging_data_t temp_persistent_charging_data;
 		bool errors_write_confirmed = false;
-
-		// set write time right before writing
-		// (keep track of the old timestamp value in case the write fails and we have to reset)
-		uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
-		uint32_t prev_last_data_write_ms = last_data_write_ms;
-	
-		// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
-		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
-		cache_time_fields_minimutex = true;
-		cached_state.secs_since_launch = cur_timestamp;
-		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
-		cache_time_fields_minimutex = false;
-		cached_state_sync_redundancy();
 	
 		// actually perform writes
 		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
@@ -369,21 +374,7 @@ void write_state_to_storage_safety(bool safe) {
 			|| !errors_write_confirmed) {
 
 			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
-
-			// in particular, if it was the secs_since_launch that was inconsistent,
-			// and it appears we failed to 
-			if (temp_secs_since_launch != cached_state.secs_since_launch &&
-				temp_secs_since_launch < cached_state.secs_since_launch) {
-				// grab time field mutex
-				cache_time_fields_minimutex = true;
-				last_data_write_ms = prev_last_data_write_ms;
-				cached_state.secs_since_launch = prev_cached_secs_since_launch;
-				cache_time_fields_minimutex = false;
-			}
 		}
-		
-		// apply changes to cached state
-		cached_state_sync_redundancy();
 		
 		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
 		
@@ -410,11 +401,9 @@ void write_state_to_storage_emergency(bool from_isr) {
 	if (got_mutex)
 	{
 		cached_state_correct_errors();
-		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
-		cache_time_fields_minimutex = true;
-		cached_state.secs_since_launch = cur_timestamp;
-		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
-		cache_time_fields_minimutex = false;
+		// see above comments for the details about these
+		update_cached_timestamp();
+		cached_state.sat_state = get_sat_state();
 		cached_state_sync_redundancy();
 		
 		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
@@ -493,7 +482,7 @@ bool increment_reboot_count(void) {
 		return true;
 		
 	} else {
-		// note: this should never be called outside the statup task
+		// note: this should never be called outside the startup task
 		// so this is really just token
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 		return false;
@@ -512,7 +501,7 @@ bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
 		
 	} else {
 		// This is sufficiently rare that we want to make sure it at least gets set,
-		// so we do it and risk a error for "data inconcsistency"
+		// so we do it and risk a error for "data inconsistency"
 		cached_state_correct_errors();
 		cached_state.radio_revive_timestamp = radio_revive_timestamp;
 		cached_state_sync_redundancy();
@@ -575,13 +564,10 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 
 /************************************************************************/
 // functions to get components of cached state
-// NOTE: use of mutexes here is necessary because we're using a single
-// MRAM chip which is a single-reader single-writer shared resource.
 /************************************************************************/
 
+// only use for cached secs since launch, NOT for current timestamp
 uint32_t cache_get_secs_since_launch() {
-	// note: not necessary to take minimutex because people
-	// don't have access to last_write_time_ms
 	return cached_state.secs_since_launch;
 }
 
@@ -686,16 +672,14 @@ bool compare_persistent_charging_data(persistent_charging_data_t* data1, persist
  * due to a watchdog reset). Segment since reboot is accurate to ms.
  */
 uint32_t get_current_timestamp(void) {
-	while (cache_time_fields_minimutex) {}; // wait on time field mutex
-	return ((xTaskGetTickCount() / portTICK_PERIOD_MS - last_data_write_ms) / 1000)
-		 + cache_get_secs_since_launch();
+	return (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000 
+		+ cached_state._secs_since_launch_at_boot;
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
-	while (cache_time_fields_minimutex) {}; // wait on time field mutex
-	return (xTaskGetTickCount() / portTICK_PERIOD_MS) - last_data_write_ms
-			+ (1000 * cache_get_secs_since_launch());
+	return xTaskGetTickCount() / portTICK_PERIOD_MS 
+		+ 1000 * cached_state._secs_since_launch_at_boot;
 }
 
 /* returns truncated number or orbits since first boot */
