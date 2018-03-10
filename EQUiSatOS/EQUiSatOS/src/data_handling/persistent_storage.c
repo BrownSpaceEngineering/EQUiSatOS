@@ -12,6 +12,9 @@ struct spi_module spi_master_instance;
 struct spi_slave_inst mram1_slave;
 struct spi_slave_inst mram2_slave;
 
+/* log of last known tick count to detect overflows */
+TickType_t prev_write_ticks = 0;
+
 void write_state_to_storage(void);
 void write_state_to_storage_safety(bool safe);
 void cached_state_sync_redundancy(void);
@@ -302,16 +305,56 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	return true;
 }
 
-// Updates timestamp properties (some should be updated)
-void update_cached_timestamp(void) {
-	// write our current timestamp to MRAM to be ready for next reboot
-	// (it's not actually directly referenced/used anywhere, we use secs_since_launch_at_boot)
-	cached_state.secs_since_launch = get_current_timestamp();
-	// NOTE: we don't actually need to update the secs_since_launch_at_boot because, intuitively,
-	// this doesn't change. However, we do it here in case we had a bad MRAM read or similar.
-	// IMPORTANT: this is atomic because ARM stores are for aligned addresses
-	cached_state._secs_since_launch_at_boot = cached_state.secs_since_launch
-					- (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000;
+// Updates all cache fields that should be updated on each write
+// NOTE: must be called with the SPI mutex to protect the changes
+// in the cached state
+// Returns whether we should reboot (tick count overflowed)
+bool update_cache_fields(void) {
+	// make sure all the cached states are in sync
+	cached_state_correct_errors();
+	
+	// before writing timestamp, check if the tick count overflowed.
+	// If it did, reset the processor to reset the timestamp (it's
+	// the only way), AFTER finishing this write to MRAM
+	// (we wouldn't write the timestamp in this case (it'll be wrong)
+	bool should_reboot = false;
+	TickType_t cur_ticks = xTaskGetTickCount();
+	if (cur_ticks < prev_write_ticks) {
+		should_reboot = true;
+		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
+		
+	} else {
+		prev_write_ticks = cur_ticks;
+		
+		// write our current timestamp to MRAM to be ready for next reboot
+		// (it's not actually directly referenced/used anywhere, we use secs_since_launch_at_boot)
+		cached_state.secs_since_launch = get_current_timestamp();
+	}
+	
+	// grab current sat state
+	cached_state.sat_state = get_sat_state();
+	
+	// reboot count is only incremented on startup and is written through cache
+	// other fields are written through when changed
+	
+	// we've made all our changes and can propagate them
+	cached_state_sync_redundancy();
+
+	return should_reboot;
+}
+
+// helper to perform actual field writes of cache (used in two places)
+// Returns whether error writes were correctly confirmed,
+// if confirm_errors was true (otherwise true)
+bool write_cache_fields_to_storage(bool confirm_errors) {
+	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	return storage_write_check_errors_unsafe(&error_equistack, confirm_errors);
 }
 
 /* 
@@ -324,14 +367,7 @@ void write_state_to_storage_safety(bool safe) {
 	{
 		// always do this (every PERSISTENT_DATA_BACKUP_TASK_FREQ ms),
 		// plus we need to do it before every cached_state update
-		cached_state_correct_errors();
-		update_cached_timestamp();
-		cached_state.sat_state = get_sat_state();
-		// reboot count is only incremented on startup and is written through cache
-		// other fields are written through when changed
-		
-		// finally, we've made all our changes and can propagate them
-		cached_state_sync_redundancy();
+		bool should_reboot = update_cache_fields();
 
 		// (variables for read results)
 		uint32_t temp_secs_since_launch;
@@ -340,17 +376,9 @@ void write_state_to_storage_safety(bool safe) {
 		uint8_t temp_prog_mem_rewritten;
 		uint32_t temp_radio_revive_timestamp;
 		persistent_charging_data_t temp_persistent_charging_data;
-		bool errors_write_confirmed = false;
 	
-		// actually perform writes
-		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
-		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack, true);
+		// actually perform writes (DO check that errors wrote)
+		bool errors_write_confirmed = write_cache_fields_to_storage(true);
 
 		// read it right back to confirm validity
 		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
@@ -374,6 +402,11 @@ void write_state_to_storage_safety(bool safe) {
 			|| !errors_write_confirmed) {
 
 			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
+		}
+		
+		// if the tick count overflowed, reboot to reset it (error logged above)
+		if (should_reboot) {
+			system_reset();
 		}
 		
 		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
@@ -400,20 +433,16 @@ void write_state_to_storage_emergency(bool from_isr) {
 	
 	if (got_mutex)
 	{
-		cached_state_correct_errors();
-		// see above comments for the details about these
-		update_cached_timestamp();
-		cached_state.sat_state = get_sat_state();
-		cached_state_sync_redundancy();
+		// update fields in MRAM to prep for writing
+		bool should_reboot = update_cache_fields();
 		
-		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
-		storage_write_check_errors_unsafe(&error_equistack, false);
+		// actually perform writes (DON'T check that errors wrote)
+		write_cache_fields_to_storage(false);
+		
+		// if the tick count overflowed, reboot to reset it (error logged above)
+		if (should_reboot) {
+			system_reset();
+		}
 		
 		if (from_isr) {
 			xSemaphoreGiveFromISR(mram_spi_cache_mutex, NULL);
