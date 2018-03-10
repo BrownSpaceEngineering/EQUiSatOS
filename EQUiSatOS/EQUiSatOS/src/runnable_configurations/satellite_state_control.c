@@ -282,7 +282,7 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task (and double-check with pin input) and apply
-	//if (cache_get_sat_event_history().antenna_deployed && get_antenna_deployed()) {
+	//if (cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy()) {
 		//boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	//} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -469,7 +469,7 @@ bool set_sat_state_helper(sat_state_t state)
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 
 		default:
-			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			configASSERT(false); // bad state ID
 	}
 }
@@ -478,7 +478,7 @@ bool set_sat_state(sat_state_t state) {
 	#if OVERRIDE_STATE_HOLD_INIT != 1
 		bool valid = set_sat_state_helper(state);
 		if (!valid) {
-			log_error(ELOC_STATE_HANDLING, ECODE_INVALID_STATE_CHANGE, true);
+			log_error(ELOC_STATE_HANDLING, ECODE_INVALID_STATE_CHANGE, false);
 			//configASSERT(false); // busy loop because this should only be radiation issues
 		}
 		return valid;

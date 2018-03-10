@@ -522,6 +522,7 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
    Should really be called periodically for these crucial things */
+// TODO: change this so not all params have to be passed in?
 bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
@@ -760,9 +761,6 @@ void write_custom_state(void) {
 // 	};
 
 	/*** WRITING ***/
-
-	// set write time right before writing
-	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 
 	storage_write_field_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 	storage_write_field_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);

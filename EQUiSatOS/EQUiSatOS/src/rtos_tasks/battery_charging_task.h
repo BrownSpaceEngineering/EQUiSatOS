@@ -17,7 +17,7 @@
 // TODO: figure out these thresholds fully and deal with scaling
 
 // #define BAT_TESTING
-#define WITHOUT_DECOMMISION
+// #define WITHOUT_DECOMMISION
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life

@@ -7,7 +7,7 @@
 
 #include "sensor_def.h"
 
-uint get_low_bound_from_signal(sig_id_t sig) {
+uint16_t get_low_bound_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
 			return B_IR_OBJ_LOW;
@@ -93,7 +93,7 @@ uint get_low_bound_from_signal(sig_id_t sig) {
 	}
 }
 
-uint get_high_bound_from_signal(sig_id_t sig) {
+uint16_t get_high_bound_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
 			return B_IR_OBJ_HIGH;
@@ -179,7 +179,7 @@ uint get_high_bound_from_signal(sig_id_t sig) {
 	}
 }
 
-int get_line_m_from_signal(sig_id_t sig) {
+uint16_t get_line_m_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
 			return A_IR_OBJ_M;
@@ -274,7 +274,7 @@ int get_line_m_from_signal(sig_id_t sig) {
 	}
 }
 
-int get_line_b_from_signal(sig_id_t sig) {
+int16_t get_line_b_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
 			return A_IR_OBJ_B;
