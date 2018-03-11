@@ -23,13 +23,13 @@
 #endif
 
 // static memory for watchdog task mutex
+// This MUST be taken when using check_in_task_unsafe and check_out_take_unsafe
 StaticSemaphore_t _watchdog_task_mutex_d;
+SemaphoreHandle_t watchdog_mutex;
 
 void watchdog_init(void);
 bool watchdog_as_function(void);
 
-BaseType_t watchdog_mutex_take(void);
-void watchdog_mutex_give(void);
 void check_in_task_unsafe(task_type_t task_ind);
 void report_task_running(task_type_t task_ind); // always safe; uses mutex
 void check_out_task_unsafe(task_type_t task_ind);

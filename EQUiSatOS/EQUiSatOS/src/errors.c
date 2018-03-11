@@ -147,6 +147,10 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	#ifdef PRINT_NEW_ERRORS
 		print_sat_error(&full_error, 0);
 	#endif
+	
+	#ifdef USE_STRICT_ASSERTIONS
+		hang_on_bad_error(&full_error);
+	#endif
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
@@ -161,6 +165,10 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 	// in this case, just push it right onto the stack and ignore conventions...
 	// don't want to spend to much time on it (or write more ISR alternative functions :P)
 	equistack_Push_from_isr(&error_equistack, &full_error);
+	
+	#ifdef USE_STRICT_ASSERTIONS
+		hang_on_bad_error(&full_error);
+	#endif
 }
 
 /* adds the given error to the given error equistack, in such a way 

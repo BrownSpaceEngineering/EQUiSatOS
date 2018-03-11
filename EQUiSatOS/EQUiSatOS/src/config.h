@@ -65,7 +65,7 @@
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
+#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 // debug print control; set to:

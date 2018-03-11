@@ -45,6 +45,8 @@ void antenna_deploy_task(void *pvParameters) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
 		} else if (did_deploy) {
 			// then the antenna should actually be deployed
+			// (update the event history and then delay until the state handling task suspends us)
+			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 			continue;
 		}

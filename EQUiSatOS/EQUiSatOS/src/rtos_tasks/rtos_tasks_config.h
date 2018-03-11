@@ -14,6 +14,11 @@
 #include <inttypes.h>
 
 /************************************************************************/
+/* General constants                                                    */
+/************************************************************************/
+#define ORBITAL_PERIOD_S					5580 // s; 93 mins
+
+/************************************************************************/
 /* Classes of Task Priorities                                           */
 /************************************************************************/
 // lowest priority is at the top
@@ -40,7 +45,7 @@ enum {
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
 #ifdef RISKY_STACK_SIZES
-#define TASK_WATCHDOG_STACK_SIZE					(900/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #else
 #define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #endif
@@ -189,7 +194,9 @@ typedef enum
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
+#ifndef TESTING_SPEEDUP
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
+#endif
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;

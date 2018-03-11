@@ -30,7 +30,6 @@
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX
-#define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
 /* battery-specific state cache (put here for #include reasons) */

@@ -311,6 +311,8 @@ void print_equistacks(void) {
 
 void print_task_info(void) {
 	print("\n\n===========Task Information===========\n");
+	print("state consistency: %s\n", 
+		check_task_state_consistency() ? "consistent": "!! INCONSISTENT TASK STATES !!");
 	for (int task = 0; task < NUM_TASKS; task++) {
 		eTaskState task_state = eTaskGetState(*(task_handles[task]));
 		uint16_t stack_space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
@@ -320,11 +322,10 @@ void print_task_info(void) {
 		uint32_t last_check_in = _get_task_checked_in_time(task);
 		uint32_t task_freq = get_task_freq(task);
 		
-		print("%s: %s (%s) seen: %8d ago: %5d (%3d%%) | %4d / %4d (%3d%%)\n", 
+		print("%s: %s (%s) seen: -%5d (%3d%%) stack: %4d / %4d (%3d%%)\n", 
 			get_task_str(task), 
 			get_task_state_str(task_state),
 			checked_in ? "checked in " : "checked out",
-			last_check_in,
 			checked_in ? (xTaskGetTickCount() - last_check_in) : 0,
 			checked_in ? (100 * (xTaskGetTickCount() - last_check_in) / task_freq) : 0,
 			stack_space_available - stack_space_left,
@@ -355,7 +356,7 @@ void rtos_system_test(void) {
 	int max_num_errors = 10;
 	#endif
 	print("\n\n==============System Info==============\n");
-	print("timestamp: \t%d\n", get_current_timestamp());
+	print("timestamp: \t%ds \t(%dmin)\n", get_current_timestamp(), get_current_timestamp()/60);
 	print("ticks:	  \t%d\n", xTaskGetTickCount());
 	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  \t%d\n", cache_get_reboot_count());

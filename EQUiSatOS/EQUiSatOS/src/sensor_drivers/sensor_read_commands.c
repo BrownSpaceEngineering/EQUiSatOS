@@ -104,8 +104,9 @@ bool _set_5v_enable(bool on) {
 	{
 		set_output(on, P_5V_EN);
 		get_hw_states()->rail_5v_enabled = on;
-
 		hardware_state_mutex_give();
+		// allow time to power up before someone uses it
+		if (on) vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS);
 		return true;
 	} else {
 		log_error(ELOC_5V_REF, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
@@ -122,7 +123,7 @@ void _enable_ir_pow_if_necessary(void) {
 	bool is_enabled = get_output(P_IR_PWR_CMD);
 	if (!is_enabled && !low_power_active()) { // TODO: really not in low power?
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY_MS);
+		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 	}
 }
 
@@ -649,7 +650,6 @@ void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			_set_5v_enable(true);
-			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
 			verify_regulators_unsafe();
 
 			for (int i = 2; i < 4; i++) {
