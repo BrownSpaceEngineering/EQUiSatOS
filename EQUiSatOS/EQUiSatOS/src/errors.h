@@ -116,7 +116,8 @@ enum error_locations {
 	ELOC_BAT_L1 =						75,
 	ELOC_BAT_L2 =						76,
 	ELOC_BAT_LFB1 =						77,
-	ELOC_BAT_LFB2 =						78
+	ELOC_BAT_LFB2 =						78,
+	ELOC_IR_POW =						79
 };
 
 /******************** PROBLEM CODES ********************/
@@ -191,7 +192,8 @@ enum error_codes {
 	ECODE_ALL_SAME_VAL =				60,
 	ECODE_CORRUPTED =					61,
 	ECODE_INVALID_STATE_CHANGE =		62,
-	ECODE_TIMESTAMP_WRAPAROUND =		63
+	ECODE_TIMESTAMP_WRAPAROUND =		63,
+	ECODE_INCONSISTENT_STATE =			64,
 };
 
 /************************************************************************/

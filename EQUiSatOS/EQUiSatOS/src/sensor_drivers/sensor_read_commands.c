@@ -97,7 +97,8 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 	*dest = truncate_u16t(read, sig);
 }
 
-bool _set_5v_enable(bool on) {
+// unsafe becuse need i2c_mutex AND/OR processor_adc_mutex
+bool _set_5v_enable_unsafe(bool on) {
 	// note: to avoid chance of deadlock, any locks
 	// of the i2c bus / processor adc mutex must be above this
 	if (hardware_state_mutex_take())
@@ -114,17 +115,63 @@ bool _set_5v_enable(bool on) {
 	}
 }
 
-// emergency function to turn on IR power if it happens not to be on
-// note: this will only turn on IR power if we're NOT in low power mode;
-// we determined that the risk of
-void _enable_ir_pow_if_necessary(void) {
-	// note: doesn't take irpow_mutex because that's only used in low power
-	// (and this is an emergency function)
+// wrapper function to handle enabling IR power:
+// If we're in low power this is protected by a mutex, but
+// if we're in a normal mode we expect it to be on and this 
+// function will turn it on in an emergency
+bool enable_ir_pow_if_necessary(void) {
+	bool got_mutex = false; // default is that we didn't (try to) get mutex
 	bool is_enabled = get_output(P_IR_PWR_CMD);
-	if (!is_enabled && !low_power_active()) { // TODO: really not in low power?
+	if (!is_enabled) {
+		if (low_power_active()) {
+			// irpow mutex locked only in LOW_POWER
+			got_mutex = xSemaphoreTake(irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+			if (!got_mutex) {
+				log_error(ELOC_IR_POW, ECODE_IRPOW_MUTEX_TIMEOUT, true);
+			}
+		}
+		// no matter if we got the mutex, still turn it on (we won't turn it OFF)
 		set_output(true, P_IR_PWR_CMD);
 		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 	}
+	// if it's already enabled, carry on!
+	return got_mutex; 
+}
+
+// wrapper function to handle disabling IR power:
+// If we're in low power we must give the mutex if taken, but
+// if we're in normal mode we don't do anything here (leave IR power on)
+void disable_ir_pow_if_necessary(bool got_mutex_on_en) {
+	if (got_mutex_on_en) {
+		xSemaphoreGive(irpow_mutex);
+		if (low_power_active()) {
+			// only turn off if we got the mutex (favor
+			// leaving it on to shutting someone's data reading down
+			// and screwing up their values)
+			set_output(false, P_IR_PWR_CMD);
+		}
+	}
+}
+
+// disables IR power if it's still on in LOW_POWER and no one has the mutex
+// run periodically by low power data task; reports errors if NOT expected on when was
+void disable_ir_pow_if_should_be_off(bool expected_on) {
+	if (xSemaphoreTake(irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+		if (low_power_active()  
+			&& get_output(P_IR_PWR_CMD)) {
+			// if we're in low power AND we have the mutex, AND IR power is still on, something
+			// is wrong and we should turn it off
+			set_output(false, P_IR_PWR_CMD);	
+			if (!expected_on) {
+				log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, true);
+				configASSERT(false); // this should never happen if mutex system is good
+			}
+		}
+		xSemaphoreGive(irpow_mutex);
+	} else {
+		log_error(ELOC_IR_POW, ECODE_IRPOW_MUTEX_TIMEOUT, true);
+	}
+	// if it's not low power or we fail to get the mutex we can't turn it off
 }
 
 void verify_regulators_unsafe(void) {
@@ -143,7 +190,6 @@ void verify_regulators_unsafe(void) {
 		return;
 	}
 
-
 	// 3V6_REF is index 0
 	log_if_out_of_bounds(batch[0], states->radio_powered ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
 	// 3V6_SNS is index 1
@@ -157,8 +203,11 @@ void verify_regulators_unsafe(void) {
 void verify_regulators(void) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		verify_regulators_unsafe();
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_AD7991_BBRD_L2_SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -172,7 +221,9 @@ void verify_regulators(void) {
 void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
@@ -180,6 +231,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 			log_if_out_of_bounds(obj, S_IR_OBJ, IR_ELOCS[i], false);
 			batch[i] = obj;
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 
 		xSemaphoreGive(i2c_mutex);
 	} else {
@@ -191,7 +243,9 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		for (int i = 0; i < 6; i++) {
 			uint16_t amb;
 			status_code_genare_t sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
@@ -199,7 +253,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 			log_if_out_of_bounds(amb, S_IR_AMB, IR_ELOCS[i], false);
 			batch[i] = truncate_u16t(amb, S_IR_AMB);
 		}
-
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IR_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -245,7 +299,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
 		if (hardware_state_mutex_take()) {
@@ -263,6 +319,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			xSemaphoreGive(i2c_mutex); // outer mutex
 			return;
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_AD7991_BBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -296,7 +353,9 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
 		if (hardware_state_mutex_take()) {
@@ -322,6 +381,7 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 			xSemaphoreGive(i2c_mutex); // outer mutex
 			return;
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_AD7991_BBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -346,8 +406,11 @@ void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		read_ad7991_ctrlbrd_unsafe(batch);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_AD7991_CBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -358,31 +421,6 @@ void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 /************************************************************************/
 /* FLASH-RELATED FUNCTIONS - include unsafe and safe version            */
 /************************************************************************/
-// TODO: may be unused, in favor of verify_flash_readings (currently is)
-// void en_and_read_led_temps_batch(led_temps_batch batch) {
-// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 	{
-// 		_enable_ir_pow_if_necessary();
-// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 		{
-// 			_set_5v_enable(true);
-// 			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
-// 			verify_regulators_unsafe();
-// 			_read_led_temps_batch_unsafe(batch);
-// 			_set_5v_enable(false);
-// 
-// 			xSemaphoreGive(processor_adc_mutex);
-// 		} else {
-// 			log_error(ELOC_TEMP_L_2, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-// 			memset(batch, 0, sizeof(led_temps_batch));
-// 		}
-// 		xSemaphoreGive(i2c_mutex);
-// 	} else {
-// 		log_error(ELOC_TEMP_L_2, ECODE_I2C_MUTEX_TIMEOUT, true);
-// 		memset(batch, 0, sizeof(led_temps_batch));
-// 	}
-// }
-
 // note: only called from flash_task, and with i2c_irpow_mutex held
 void _read_led_temps_batch_unsafe(led_temps_batch batch) {
 	for (int i = 4; i < 8; i++) {
@@ -393,31 +431,6 @@ void _read_led_temps_batch_unsafe(led_temps_batch batch) {
 		batch[i - 4] = rs8;
 	}
 }
-
-// TODO: may be unused, in favor of verify_flash_readings (currently is)
-// void en_and_read_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 	{
-// 		_enable_ir_pow_if_necessary();
-// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 		{
-// 			_set_5v_enable(true);
-// 			vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS); // TODO: maybe don't hold the proc_adc_mutex
-// 			verify_regulators_unsafe();
-// 			_read_lifepo_temps_batch_unsafe(batch);
-// 			_set_5v_enable(false);
-// 
-// 			xSemaphoreGive(processor_adc_mutex);
-// 		} else {
-// 			log_error(ELOC_TEMP_LF_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-// 			memset(batch, 0, sizeof(lifepo_bank_temps_batch));
-// 		}
-// 		xSemaphoreGive(i2c_mutex);
-// 	} else {
-// 		log_error(ELOC_TEMP_LF_1, ECODE_I2C_MUTEX_TIMEOUT, true);
-// 		memset(batch, 0, sizeof(lifepo_bank_temps_batch));
-// 	}
-// }
 
 void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 	for (int i = 0; i < 2; i++) {
@@ -439,32 +452,13 @@ void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing
 	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, sig, true);
 }
 
-// TODO: may be unused, in favor of verify_flash_readings (currently is)
-// void read_lifepo_current_batch(lifepo_current_batch batch, bool flashing_now) {
-// 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 	{
-// 		_enable_ir_pow_if_necessary();
-// 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
-// 		{
-// 			_read_lifepo_current_batch_unsafe(batch, flashing_now);
-// 			
-// 			xSemaphoreGive(processor_adc_mutex);
-// 		} else {
-// 			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-// 			memset(batch, 0, sizeof(lifepo_current_batch));
-// 		}
-// 		xSemaphoreGive(i2c_mutex);
-// 	} else {
-// 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
-// 		memset(batch, 0, sizeof(lifepo_current_batch));
-// 	}
-// }
-
 // only used in antenna deploy task
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			#ifndef EQUISIM_SIMULATE_BATTERIES
@@ -480,6 +474,7 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		} else {
 			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -521,7 +516,6 @@ void read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3
 
 // reads truncated batch; called in flash task while mutex is held
 void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
-	// TODO: make sure this all looks okay
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
 	uint16_t val_3_precise;
@@ -547,7 +541,6 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 	}
 }
 
-// TODO: only reason the second argument exists right now is because of system_test
 void _read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) {
 	uint sig = flashing_now ? S_LED_CUR_FLASH : S_LED_CUR_REG;
 	commands_read_adc_mV_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, sig, true);
@@ -563,14 +556,18 @@ void verify_flash_readings(bool flashing_now) {
 	// (the passed flash state will be valid even if a flash happens)
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			uint8_t buffer[4]; // size of largest data type
 
 			// read values to nowhere, making them check bounds for errors
+			_set_5v_enable_unsafe(true); // required only for these three
 			_read_led_temps_batch_unsafe(buffer);
 			_read_lifepo_temps_batch_unsafe(buffer);
+			_set_5v_enable_unsafe(false);
 			_read_lifepo_current_batch_unsafe(buffer, flashing_now);
 			_read_lifepo_volts_batch_unsafe(buffer);
 			_read_led_current_batch_unsafe(buffer, flashing_now);
@@ -580,6 +577,7 @@ void verify_flash_readings(bool flashing_now) {
 			log_error(ELOC_LED1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 			// no data passed back that needs to be cleared
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_LED1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -602,14 +600,18 @@ uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 	} else if (raw >= PDIODE_10_11) {
 		return 3;
 	} else {
-		return 4; //Error: Bit flip?
+		// PD_ACCESS used as general photo diode indicator
+		log_error(ELOC_PD_ACCESS, ECODE_UNEXPECTED_CASE, false);
+		return 4;
 	}
 }
 
 void read_pdiode_batch(pdiode_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			uint8_t rs;
@@ -637,6 +639,7 @@ void read_pdiode_batch(pdiode_batch* batch) {
 		} else {
 			log_error(ELOC_PD_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);			
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_PD_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);		
@@ -646,10 +649,12 @@ void read_pdiode_batch(pdiode_batch* batch) {
 void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
-			_set_5v_enable(true);
+			_set_5v_enable_unsafe(true);
 			verify_regulators_unsafe();
 
 			for (int i = 2; i < 4; i++) {
@@ -660,12 +665,13 @@ void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 				batch[i - 2] = rs8;
 			}
 
-			_set_5v_enable(false);
+			_set_5v_enable_unsafe(false);
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
 			log_error(ELOC_TEMP_L_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 			memset(batch, 0, sizeof(lion_temps_batch));
 		}
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_TEMP_L_1, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -678,8 +684,11 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		sc = MPU9250_read_acc(rs);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_ACC, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -709,8 +718,11 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		sc = MPU9250_read_gyro(rs);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_GYRO, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -730,7 +742,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		enable_ir_pow_if_necessary();
 		//sc = MPU9250_read_mag(rs);
 		sc = HMC5883L_readXYZ(rs);
 		xSemaphoreGive(i2c_mutex);
@@ -750,7 +762,9 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		#ifndef EQUISIM_SIMULATE_BATTERIES
 			sc = TCA9535_init(batch);
 			// zero out the places we're going to overwrite
@@ -767,6 +781,7 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 			equisim_read_bat_charge_dig_sigs_batch(batch);
 		#endif
 
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_TCA, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -777,12 +792,15 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		_enable_ir_pow_if_necessary();
+		// note: IR power will always be enabled if necessary but we can't
+		// give an un-taken mutex
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		int16_t buf;
 		enum status_code sc = MPU9250_read_temp(&buf);
 		log_if_error(ELOC_IMU_TEMP, sc, false);
 		log_if_out_of_bounds(buf, S_IMU_TEMP, ELOC_IMU_TEMP, false);
 		*batch = truncate_u16t(buf, S_IMU_TEMP);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_TEMP, ECODE_I2C_MUTEX_TIMEOUT, true);

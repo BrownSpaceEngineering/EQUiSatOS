@@ -48,7 +48,9 @@ void idle_data_task(void *pvParameters)
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		
-		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		// verify readings (without storing) at regular intervals in this task
+		lion_temps_batch garbage;
+		en_and_read_lion_temps_batch(garbage);
 		verify_regulators();
 		verify_flash_readings(false); // not flashing (function is thread-safe)
 
@@ -64,10 +66,6 @@ void idle_data_task(void *pvParameters)
 				time_of_last_log_s = get_current_timestamp();
 			}
 		} else {
-			#ifdef USE_STRICT_ASSERTIONS
-				configASSERT(false);
-			#endif
-			
 			// log error if the data read took too long
 			log_error(ELOC_IDLE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}

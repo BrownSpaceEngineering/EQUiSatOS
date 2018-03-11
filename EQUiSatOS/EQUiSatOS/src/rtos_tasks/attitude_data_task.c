@@ -60,10 +60,6 @@ void attitude_data_task(void *pvParameters)
 				time_of_last_log_s = get_current_timestamp();
 			}
 		} else {
-			#ifdef USE_STRICT_ASSERTIONS
-				configASSERT(false);
-			#endif
-			
 			// log error if the data read took too long
 			log_error(ELOC_ATTITUDE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}

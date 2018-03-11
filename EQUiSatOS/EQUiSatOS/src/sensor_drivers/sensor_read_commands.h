@@ -110,10 +110,13 @@ typedef enum {
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _i2c_mutex_d;
 SemaphoreHandle_t i2c_mutex;
-StaticSemaphore_t _irpow_mutex_d;
-SemaphoreHandle_t irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
+// NOTE: this mutex is only used in LOW_POWER, otherwise IR power is kept on constantly
+// (anyone can enable it, no one can disable it). Tasks using it in low power:
+// LOW_POWER_DATA_TASK, TRANSMIT_TASK, BATTERY_CHARGING_TASK, 
+StaticSemaphore_t _irpow_mutex_d;
+SemaphoreHandle_t irpow_mutex;
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -152,8 +155,10 @@ void read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3
 void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
-void _enable_ir_pow_if_necessary(void);
-bool _set_5v_enable(bool on);
+bool enable_ir_pow_if_necessary(void); // ONLY used in flash task
+void disable_ir_pow_if_necessary(bool got_mutex_on_en);
+void disable_ir_pow_if_should_be_off(bool expected_on);
+bool _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);
 

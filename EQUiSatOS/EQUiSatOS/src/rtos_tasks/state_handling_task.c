@@ -74,6 +74,9 @@ void decide_next_state(sat_state_t current_state) {
 	// handle antenna deploy task separately
 	emergency_resume_antenna_deploy();
 	
+	// shutdown IR power if it's on when it shouldn't be
+	disable_ir_pow_if_should_be_off(false);
+	
 	///
 	// the state decision will be predicated on the current battery levels and
 	// the timestamp -- we'll grab them here

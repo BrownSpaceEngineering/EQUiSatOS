@@ -39,18 +39,10 @@ void low_power_data_task(void *pvParameters)
 		current_struct->satellite_history = cache_get_sat_event_history();
 		read_lion_volts_batch(current_struct->lion_volts_data);		
 		
-		// (we need ir power on for the rest of this)
-		bool got_mutex = true;
-		if (!xSemaphoreTake(irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-			log_error(ELOC_LOW_POWER_DATA, ECODE_IRPOW_MUTEX_TIMEOUT, true);
-			got_mutex = false;
-		}
-		// no matter whether we get the mutex, power IR power on so we can try to use it
-		// (it may get shut down but it's worth a try)
-		// TODO: the issue with this is that, if something has gone wrong, we'll be leaving
-		// the IR power on forever (might be watchdog reset...)
+		// power on IR power so that the sensor reads in here
+		// don't have to wait on it (they won't shut if off if they didn't power it on)
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY_MS);
+		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 		{
 			en_and_read_lion_temps_batch(current_struct->lion_temps_data);
 			read_ad7991_batbrd(current_struct->lion_current_data, current_struct->panelref_lref_data);
@@ -58,16 +50,13 @@ void low_power_data_task(void *pvParameters)
 			read_ir_object_temps_batch(current_struct->ir_obj_temps_data);
 			read_gyro_batch(current_struct->gyro_data);
 		
+			// verify readings (without storing) at regular intervals in this task
 			verify_regulators();
 			verify_flash_readings(false); // not flashing (function is thread-safe)
 		}
-		// give mutex + shut off power
-		if (got_mutex) {
-			// only power off IR power if we DID get the mutex (to avoid shutting people down while reading)
-			set_output(false, P_IR_PWR_CMD);
-			xSemaphoreGive(irpow_mutex);
-		}
-		
+		// disable IR power, but only if we get the mutex (we expect it to be on so no errors)
+		disable_ir_pow_if_should_be_off(true);
+	
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// if we were suspended in some period between start of this packet and here, DON'T add it
 		// and go on to rewrite the current one
@@ -76,9 +65,6 @@ void low_power_data_task(void *pvParameters)
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (low_power_data_t*) equistack_Stage(&low_power_readings_equistack);
 		} else {
-			#ifdef USE_STRICT_ASSERTIONS
-				configASSERT(false);
-			#endif
 			// log error if the data read took too long
 			log_error(ELOC_LOW_POWER_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}

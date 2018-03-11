@@ -929,15 +929,22 @@ void battery_logic()
 		// the other to inactive
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// take the SPI mutex (we'll be using it), and then suspend the scheduler
-		// because we don't want this operation to be interrupted
-		// (if it fails, continue on, but just don't write to MRAM)
+		// take the SPI mutex because we'll be using it AND we don't
+		// want the satellite to reboot from power failure while writing to the MRAM
+		// elsewhere. We increase the timeout hear to be more confident we get it.
+		// (if it fails, continue on, and don't write to the MRAM)
 		bool got_mutex_spi = false;
-		if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		if (xSemaphoreTake(mram_spi_cache_mutex, 2 * MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
 			got_mutex_spi = true;
 		} else {
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
+		
+		
+		
+		// TODO: maybe give up on this check if we fail to get the mutex?? ROHAN??
+
+
 
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
@@ -946,13 +953,9 @@ void battery_logic()
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 		
 		set_li_to_discharge(lion_not_discharging, 0);
-		// suspend scheduler to make sure the satellite is in a good 
-		// state if it reboots (we would do it earlier but we need to 
-		// read sensors, etc. and it's hard to suspend the scheduler)
-		pet_watchdog(); // in case this takes a bit and we're close
-		vTaskSuspendAll();
-		delay_ms(SAT_NO_POWER_TURN_OFF_T_MS); // TODO: must be shorter than watchdog timeout
-		xTaskResumeAll();
+		// wait a sufficiently long time that we think the satellite would've rebooted
+		// if this battery had failed
+		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 		// TODO: check STs now
 		// TODO: if both STs are 0 right now (you're powering off the chargers), log error to MRAM (write-through), then crie
 		

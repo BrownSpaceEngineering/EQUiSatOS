@@ -191,12 +191,12 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	{
 		sat_error_t* newest_same_error = NULL;
 		int num_same_errors = 0;
-		for (int i = 0; i < stack->cur_size; i++) {
+		for (uint8_t i = 0; i < stack->cur_size; i++) {
 			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(stack, i);
 		
 			if (err != NULL &&
 				err->eloc == new_error->eloc &&
-				err->ecode == new_error->ecode) {
+				err->ecode == new_error->ecode) { // includes priority bit comparison
 				num_same_errors++;
 			
 				// find newest error for later use (there should only be a max of two)
@@ -251,7 +251,10 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 
 
 // hangs on the given error if it's a "bad/rare" one as defined in this function
+// ONLY called if USE_STRICT_ASSERTIONS enabled
 void hang_on_bad_error(sat_error_t* full_error) {
 	// NOT a mutex timeout
-	configASSERT(full_error->ecode < ECODE_CRIT_ACTION_MUTEX_TIMEOUT && full_error->ecode > ECODE_IRPOW_MUTEX_TIMEOUT);
+	uint8_t actual_code = full_error->ecode & 0b01111111;
+	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_IRPOW_MUTEX_TIMEOUT);
+	configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 };

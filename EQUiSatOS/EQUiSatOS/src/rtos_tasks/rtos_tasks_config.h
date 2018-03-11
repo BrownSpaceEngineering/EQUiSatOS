@@ -180,8 +180,8 @@ typedef enum
 
 #ifndef TESTING_SPEEDUP
 #define TRANSMIT_TASK_FREQ						20000	// 20 secs; how often to transmit
-#endif
 	#define TRANSMIT_TASK_LESS_FREQ					40000 // 40 secs; half as fast in low power
+#endif
 
 #ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						10000 // ms
@@ -195,7 +195,7 @@ typedef enum
 #ifndef TESTING_SPEEDUP
 #define LOW_POWER_DATA_TASK_FREQ				30000
 #endif
-	#define LOW_POWER_DATA_MAX_READ_TIME			1000
+	#define LOW_POWER_DATA_MAX_READ_TIME			15000 // has to turn on IR power
 
 #ifndef TESTING_SPEEDUP
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
@@ -230,6 +230,7 @@ typedef enum
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
 	#define TRANSMIT_TASK_FREQ					10000
+		#define TRANSMIT_TASK_LESS_FREQ				20000
 	#define STATE_HANDLING_TASK_FREQ			15000
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ		1000
 	#define IDLE_DATA_TASK_FREQ					2500

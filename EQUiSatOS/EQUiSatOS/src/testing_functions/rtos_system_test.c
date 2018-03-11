@@ -322,7 +322,7 @@ void print_task_info(void) {
 		uint32_t last_check_in = _get_task_checked_in_time(task);
 		uint32_t task_freq = get_task_freq(task);
 		
-		print("%s: %s (%s) seen: -%5d (%3d%%) stack: %4d / %4d (%3d%%)\n", 
+		print("%s: %s (%s) LRT: %5d (%3d%%) stack: %4d / %4d (%3d%%)\n", 
 			get_task_str(task), 
 			get_task_state_str(task_state),
 			checked_in ? "checked in " : "checked out",

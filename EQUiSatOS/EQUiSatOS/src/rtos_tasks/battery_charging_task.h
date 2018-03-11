@@ -37,7 +37,7 @@
 #define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
-#define SAT_NO_POWER_TURN_OFF_T_MS		3000
+#define SAT_NO_POWER_TURN_OFF_T_MS		1000
 
 #define TRY_PIN_DELAY_TIME_MS           100
 #define MAX_TIMES_TRY_PIN               3
