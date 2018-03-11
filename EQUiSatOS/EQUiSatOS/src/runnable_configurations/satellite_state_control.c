@@ -421,7 +421,7 @@ bool set_sat_state_helper(sat_state_t state)
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 
 		default:
-			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE_1, false);
+			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			configASSERT(false); // bad state ID
 	}
 }

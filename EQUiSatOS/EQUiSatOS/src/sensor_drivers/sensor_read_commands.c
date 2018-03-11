@@ -66,9 +66,9 @@ static uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
 	return (((uint16_t)(src + b)) * m) >> 8;
 }
 
-static void log_if_out_of_bounds(int reading, sig_id_t sig, int eloc, bool priority) {
-	uint low = get_low_bound_from_signal(sig);
-	uint high = get_high_bound_from_signal(sig);
+static void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool priority) {
+	uint16_t low = get_low_bound_from_signal(sig);
+	uint16_t high = get_high_bound_from_signal(sig);
 	if (reading <= low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
 	} else if (reading >= high) {
@@ -77,7 +77,7 @@ static void log_if_out_of_bounds(int reading, sig_id_t sig, int eloc, bool prior
 }
 
 // note: processor ADC is locked externally to these methods for speed and for particular edge cases
-static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
+static void commands_read_adc_mV(uint16_t* dest, uint8_t pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	status_code_genare_t sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
 	sc = read_adc_mV(adc_instance, dest);
@@ -121,7 +121,7 @@ void _enable_ir_pow_if_necessary(void) {
 	}
 }
 
-void verify_regulators_unsafe(void) {
+static void verify_regulators_unsafe(void) {
 	struct hw_states* states;
 	ad7991_ctrlbrd_batch batch;
 
@@ -493,7 +493,7 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 }
 
 // reads precise values; just a helper function
-void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+static void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	#ifndef EQUISIM_SIMULATE_BATTERIES
 		// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
 		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, S_LF_VOLT, true);
@@ -598,7 +598,7 @@ void verify_flash_readings(bool flashing_now) {
 /************************************************************************/
 
 //raw is in mV
-uint8_t get_pdiode_two_bit_range(uint16_t raw) {
+static uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 	if (raw < PDIODE_00_01) {
 		return 0;
 	} else if (raw >= PDIODE_00_01 && raw < PDIODE_01_10) {
