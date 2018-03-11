@@ -203,10 +203,10 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			return A_LED_TEMP_M;
 			break;
 		case S_LED_SNS_REG:
-			return A_LED_SNS_REG_M;
+			return A_LED_SNS_M;
 			break;
 		case S_LED_SNS_FLASH:
-			return A_LED_SNS_FLASH_M;
+			return A_LED_SNS_M;
 			break;
 		case S_L_TEMP:
 			return A_L_TEMP_M;
@@ -278,10 +278,10 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			return A_LED_TEMP_B;
 			break;
 		case S_LED_SNS_REG:
-			return A_LED_SNS_REG_B;
+			return A_LED_SNS_B;
 			break;
 		case S_LED_SNS_FLASH:
-			return A_LED_SNS_FLASH_B;
+			return A_LED_SNS_B;
 			break;
 		case S_L_TEMP:
 			return A_L_TEMP_B;

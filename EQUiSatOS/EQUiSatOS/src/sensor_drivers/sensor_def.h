@@ -17,39 +17,37 @@
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
 #define A_LED_TEMP_M				0
 #define A_LED_TEMP_B				~0
-#define A_LED_SNS_REG_M				0
-#define A_LED_SNS_REG_B				~0
-#define A_LED_SNS_FLASH_M			0
-#define A_LED_SNS_FLASH_B			~0
+#define A_LED_SNS_M					3/100
+#define A_LED_SNS_B					0
 #define A_LF_TEMP_M					0
 #define A_LF_TEMP_B					~0
-#define A_LF_SNS_M					49
+#define A_LF_SNS_M					197/4
 #define A_LF_SNS_B					-960
-#define A_LF_OSNS_M					71
+#define A_LF_OSNS_M					500/7
 #define A_LF_OSNS_B					0
-#define A_LF_VOLT_M					14
+#define A_LF_VOLT_M					130/9
 #define A_LF_VOLT_B					0
 #define A_L_TEMP_M					0
 #define A_L_TEMP_B					~0
 #define A_L_SNS_M					20
 #define A_L_SNS_B					150
-#define A_L_VOLT_M					14
+#define A_L_VOLT_M					130/9
 #define A_L_VOLT_B					0
-#define A_LREF_M					14
+#define A_LREF_M					130/9
 #define A_LREF_B					0
-#define A_PANELREF_M				6
+#define A_PANELREF_M				13/2
 #define A_PANELREF_B				0
-#define A_IR_AMB_M					7
+#define A_IR_AMB_M					63/8
 #define A_IR_AMB_B					-11657
 #define A_GYRO_M					1
 #define A_GYRO_B					32750
 #define A_ACCEL_M					1
 #define A_ACCEL_B					32768
-#define A_MAG_M						11
+#define A_MAG_M						58/5
 #define A_MAG_B						2800
-#define A_RAD_TEMP_M				16
+#define A_RAD_TEMP_M				65/4
 #define A_RAD_TEMP_B				2000
-#define A_IMU_TEMP_M				1
+#define A_IMU_TEMP_M				14/9
 #define A_IMU_TEMP_B				20374
 
 /************************************************************************/
@@ -64,9 +62,9 @@
 #define B_LED_TEMP_LOW					0
 #define B_LED_TEMP_HIGH					~0
 #define B_LED_SNS_REG_LOW				0
-#define B_LED_SNS_REG_HIGH				~0
-#define B_LED_SNS_FLASH_LOW				0
-#define B_LED_SNS_FLASH_HIGH			~0
+#define B_LED_SNS_REG_HIGH				5
+#define B_LED_SNS_FLASH_LOW				166
+#define B_LED_SNS_FLASH_HIGH			2000
 #define B_LF_TEMP_LOW					0
 #define B_LF_TEMP_HIGH					~0
 #define B_LF_SNS_REG_LOW				0
@@ -121,6 +119,7 @@ typedef enum {
 	S_IR_AMB,
 	S_PD,
 	S_LED_TEMP,
+	S_LED_SNS,
 	S_LED_SNS_REG,
 	S_LED_SNS_FLASH,
 	S_LF_TEMP,
