@@ -25,8 +25,11 @@
 
 li_discharging_t get_li_discharging(void)
 {
-	bool li1_st_active = st_pin_active(LI1);
-	bool li2_st_active = st_pin_active(LI2);
+	bat_charge_dig_sigs_batch batch;
+	read_bat_charge_dig_sigs_batch(&batch);
+	
+	bool li1_st_active = st_pin_active(LI1, batch);
+	bool li2_st_active = st_pin_active(LI2, batch);
 	
 	if (li1_st_active && !li2_st_active)
 		return LI1_DISG;
@@ -76,7 +79,7 @@ uint8_t get_error_loc(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_1, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_1, ECODE_UNEXPECTED_CASE, true);
 			return ELOC_BAT_CHARGING;
 	}
 }
@@ -99,7 +102,7 @@ uint8_t get_run_chg_pin(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_2, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_2, ECODE_UNEXPECTED_CASE, true);
 			return P_L1_RUN_CHG;
 	}
 }
@@ -110,7 +113,7 @@ uint8_t get_run_dischg_pin(int8_t bat)
 }
 
 // NOTE: returns the chg pin value with the conversion from active low
-bool chg_pin_active(int8_t bat)
+bool chg_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
 	uint8_t chg_position;
 	switch (bat)
@@ -133,19 +136,16 @@ bool chg_pin_active(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_3, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_3, ECODE_UNEXPECTED_CASE, true);
 			chg_position = 12;
 			break;
 	}
-
-	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
 
 	// NOTE: CHGN is active low, so we're making a conversion here
 	return !((batch>>chg_position)&0x1);
 }
 
-bool fault_pin_active(int8_t bat)
+bool fault_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
 	uint8_t fault_position;
 	switch (bat)
@@ -168,23 +168,18 @@ bool fault_pin_active(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_4, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_4, ECODE_UNEXPECTED_CASE, true);
 			fault_position = 13;
 			break;
 	}
-
-	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
 
 	// NOTE: FAULTN is active low, so we're making a conversion here
 	return !((batch>>fault_position)&0x1);
 }
 
-bool st_pin_active(int8_t bat)
+bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
 	uint8_t st_position = (bat == LI1) ? 9 : 8;
-	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
 	return (batch>>st_position)&0x01;
 }
 
@@ -311,11 +306,28 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 	#else
 		equisim_set_action_by_pin(!discharge, discharge_pin);
 	#endif
+}
 
-	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-	if (st_pin_active(bat) != discharge)
+void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
+{
+	bat_charge_dig_sigs_batch batch;
+	read_bat_charge_dig_sigs_batch(&batch);
+	
+	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
+	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
+	
+	if (!bat_discharging_st_pin_active)
 	{
-		log_error(get_error_loc(bat), discharge ? ECODE_BAT_NOT_DISCHARGING : ECODE_BAT_NOT_NOT_DISCHARGING, true);
+		log_error(get_error_loc(bat_discharging), ECODE_BAT_NOT_DISCHARGING, true);
+		print("bat %d not discharging -- decommissioning\n", bat_discharging);
+		decommission(bat_discharging);
+	}
+	
+	if (bat_not_discharging_st_pin_active)
+	{
+		log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
+		print("bat %d not discharging -- decommissioning\n", bat_discharging);
+		decommission(bat_not_discharging);
 	}
 }
 
@@ -330,20 +342,25 @@ void set_bat_to_charge(int8_t bat, bool charge)
 		equisim_set_action_by_pin(charge, chg_pin);
 	#endif
 	print("set bat %d to charge\n", bat);
+}
 
-	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-	if (fault_pin_active(bat))
+void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch)
+{
+	if (fault_pin_active(bat, batch))
 	{
 		print("fault pin active for bat %d -- decommissioning\n", bat);
 		log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
 		decommission(bat);
 	}
+}
 
-	bool new_charge_running = chg_pin_active(bat);
-	if (charge)
+void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch)
+{
+	bool charge_running = chg_pin_active(bat, batch);
+	if (should_be_charging)
 	{
-		if (!new_charge_running &&
-		    get_panel_ref_val() > PANEL_REF_SUN_MV &&
+		if (!charge_running &&
+			get_panel_ref_val() > PANEL_REF_SUN_MV &&
 			charging_data.bat_voltages[bat] >= MIGHT_BE_FULL)
 		{
 			print("not charging for bat %d -- decommissioning\n", bat);
@@ -351,9 +368,34 @@ void set_bat_to_charge(int8_t bat, bool charge)
 			decommission(bat);
 		}
 	}
-	else if (new_charge_running)
+	else if (charge_running)
 	{
 		log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, false);
+	}
+}
+
+void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
+{
+	bat_charge_dig_sigs_batch batch;
+	read_bat_charge_dig_sigs_batch(&batch);
+	
+	// NOTE: on the first time through, we want to check each of the batteries
+	bool first_time_through = (old_bat_charging == -1);
+	if (first_time_through)
+	{
+		for (int8_t bat = 0; bat < 4; bat++)
+		{
+			check_fault(bat, batch);
+			check_chg(bat, bat == bat_charging, batch);
+		}
+	}
+	else
+	{
+		check_fault(bat_charging, batch);
+		check_chg(bat_charging, true, batch);
+		
+		check_fault(old_bat_charging, batch);
+		check_chg(bat_charging, false, batch);
 	}
 }
 
@@ -445,7 +487,10 @@ void battery_logic()
 	bool curr_charging_filled_up = false;
 	if (is_lion(charging_data.bat_charging))
 	{
-		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging) &&
+		bat_charge_dig_sigs_batch batch;
+		read_bat_charge_dig_sigs_batch(&batch);
+		
+		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
 									charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
 									(get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
 									charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
@@ -592,7 +637,7 @@ void battery_logic()
 
 					default:
 						configASSERT(false);
-						log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_5, 1);
+						log_error(ELOC_BAT_CHARGING_SWITCH_5, ECODE_UNEXPECTED_CASE, 1);
 						break;
 				}
 			}
@@ -721,7 +766,7 @@ void battery_logic()
 					default:
 						// trying to get past -Wswitch
 						configASSERT(false);
-						log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_6, 1);
+						log_error(ELOC_BAT_CHARGING_SWITCH_6, ECODE_UNEXPECTED_CASE, 1);
 						break;
 				}
 			}
@@ -751,7 +796,7 @@ void battery_logic()
 				default:
 					// trying to get past -Wswitch
 					configASSERT(false);
-					log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_7, 1);
+					log_error(ELOC_BAT_CHARGING_SWITCH_7, ECODE_UNEXPECTED_CASE, 1);
 					break;
 			}
 		}
@@ -817,7 +862,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_8, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_8, ECODE_UNEXPECTED_CASE, 1);
 				break;
 		}
 	}
@@ -849,7 +894,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING, ECODE_UNEXPECTED_CASE_9, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_9, ECODE_UNEXPECTED_CASE, 1);
 				break;
 		}
 	}
@@ -910,6 +955,7 @@ void battery_logic()
 		set_li_to_discharge(LI1, 1);
 		set_li_to_discharge(LI2, 1);
 	}
+	// TODO: get the flow right on the first time through here
 	else if (charging_data.lion_discharging != old_li_discharging)
 	{
 		// we also need to make changes with respect to lion that isn't discharging
@@ -936,6 +982,7 @@ void battery_logic()
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
+		
 		// suspend scheduler to make sure the satellite is in a good
 		// state if it reboots (we would do it earlier but we need to
 		// read sensors, etc. and it's hard to suspend the scheduler)
@@ -943,8 +990,9 @@ void battery_logic()
 		vTaskSuspendAll();
 		delay_ms(SAT_NO_POWER_TURN_OFF_T_MS); // TODO: must be shorter than watchdog timeout
 		xTaskResumeAll();
-		// TODO*: check STs now
-		// TODO*: if both STs are 0 right now (you're powering off the chargers), log error to MRAM (write-through), then crie
+		
+		// TODO: check this flow with Mckenna -- enough delay
+		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
 		// reset our emergency write to the MRAM
 		persist_data.li_caused_reboot = -1;
@@ -972,7 +1020,9 @@ void battery_logic()
 		set_bat_to_charge(old_bat_charging, 0);
 		set_bat_to_charge(charging_data.bat_charging, 1);
 	}
-	// TODO*: do our pin checks now
-
+	
+	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+	check_after_charging(charging_data.bat_charging, old_bat_charging);
+	
 	print("leaving battery charging\n");
 }
