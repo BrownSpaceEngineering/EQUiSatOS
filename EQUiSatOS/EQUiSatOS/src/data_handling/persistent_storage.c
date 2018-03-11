@@ -581,7 +581,7 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 			cached_state.sat_event_history.prog_mem_rewritten = true;
 
 		cached_state_sync_redundancy();
-		write_state_to_storage();
+		write_state_to_storage_safety(false);
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 		return true;
