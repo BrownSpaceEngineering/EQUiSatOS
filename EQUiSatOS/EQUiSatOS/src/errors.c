@@ -163,6 +163,20 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 	equistack_Push_from_isr(&error_equistack, &full_error);
 }
 
+// should only be called while scheduler suspended
+void log_error_unsafe(uint8_t loc, uint8_t err, bool priority) {
+	configASSERT(err <= 127); // only 7 bits
+
+	sat_error_t full_error;
+	full_error.timestamp = get_current_timestamp(); // NOTE: xTaskGetTickCount shouldn't hang
+	full_error.eloc = loc;
+	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
+
+	// in this case, just push it right onto the stack and ignore conventions...
+	// this should be rare and it's not worth completely rewriting the adding function
+	equistack_Push_Unsafe(&error_equistack, &full_error);
+}
+
 /* adds the given error to the given error equistack, in such a way 
    that only two errors will ever be stored during a "period of errors":
    one to mark the start and one to mark the most recent occurrence.

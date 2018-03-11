@@ -401,6 +401,9 @@ void write_state_to_storage_safety(bool safe) {
 			|| !errors_write_confirmed) {
 
 			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
+			
+			// this should NOT happen in normal operations			
+			configASSERT(false);
 		}
 		
 		// if the tick count overflowed, reboot to reset it (error logged above)

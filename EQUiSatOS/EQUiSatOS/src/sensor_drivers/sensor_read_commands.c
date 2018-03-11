@@ -122,7 +122,7 @@ void _enable_ir_pow_if_necessary(void) {
 	bool is_enabled = get_output(P_IR_PWR_CMD);
 	if (!is_enabled && !low_power_active()) { // TODO: really not in low power?
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY);
+		vTaskDelay(IR_WAKE_DELAY_MS);
 	}
 }
 
@@ -618,7 +618,13 @@ void read_pdiode_batch(pdiode_batch* batch) {
 
 				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 				log_if_error(PD_ELOCS[i], sc, false);
-				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+				
+				
+				
+				
+				
+				// TODO: someone check this I had to fix a build error
+				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], S_PD, false); 
 				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
 				if (two_bit_range == 4) {
 					// TODO: Log error for unexpected pdiode case

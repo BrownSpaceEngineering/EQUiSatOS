@@ -140,6 +140,7 @@ void startup_task(void* pvParameters) {
 
 	// suspend the scheduler while adding tasks so their task handles
 	// are non-null when they start executing (i.e. they can be controlled)
+	pet_watchdog(); // in case this takes a bit and we're close
 	vTaskSuspendAll();
 	
 	/************************************************************************/
@@ -149,7 +150,8 @@ void startup_task(void* pvParameters) {
 	/************************************************************************/
 	/* END TESTING                                                          */
 	/************************************************************************/
-
+	
+	#ifndef ONLY_RUN_TESTING_TASKS
 	battery_charging_task_handle = xTaskCreateStatic(battery_charging_task,
 		"battery charging action task",
 		TASK_BATTERY_CHARGING_STACK_SIZE,
@@ -231,6 +233,7 @@ void startup_task(void* pvParameters) {
 		TASK_LOW_POWER_DATA_RD_PRIORITY,
 		low_power_data_task_stack,
 		&low_power_data_task_buffer);
+	#endif
 
 	xTaskResumeAll();
 	
@@ -404,7 +407,7 @@ void set_irpow_by_sat_state(sat_state_t state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_irpow_state != new_state) {
 			set_output(true, P_IR_PWR_CMD);
-			vTaskDelay(IR_WAKE_DELAY);
+			vTaskDelay(IR_WAKE_DELAY_MS);
 		}
 	} else {
 		// note: we should be in a high enough priority task when this changes 
@@ -506,6 +509,7 @@ void set_all_task_states(const task_states states, sat_state_t state)
 		// if the watchdog manages to time out, 
 		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 	}
+	pet_watchdog(); // in case this takes a bit and we're close
 	vTaskSuspendAll();
 
 	// values given by external-facing functions

@@ -36,8 +36,10 @@ void pre_init_rtos_tasks(void) {
 /* Helper Functions														*/
 /************************************************************************/
 
+// TODO: get rid of this if no one uses it
 void rtos_safe_delay(uint32_t ms) 
 {
+	pet_watchdog(); // in case this takes a bit and we're close
 	vTaskSuspendAll();
 	delay_ms(ms);
 	xTaskResumeAll();

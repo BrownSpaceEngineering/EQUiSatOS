@@ -16,7 +16,11 @@
 
 #define WATCHDOG_MUTEX_WAIT_TIME_TICKS ((TickType_t) 500)
 
-#define WATCHDOG_BUFFER 30000
+#ifdef TESTING_SPEEDUP
+	#define WATCHDOG_TASK_TIMEOUT_BUFFER 10000
+#else
+	#define WATCHDOG_TASK_TIMEOUT_BUFFER 120000 // TODO: too long?
+#endif
 
 // static memory for watchdog task mutex
 StaticSemaphore_t _watchdog_task_mutex_d;

@@ -2,7 +2,7 @@
  * battery_charging_task.c
  *
  * Created: 9/21/2017 20:37:56
- *  Author: mcken
+ *  Author: rjha
  */
 
 #include "battery_charging_task.h"
@@ -939,17 +939,20 @@ void battery_logic()
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
 
-		//TODO: vTaskSuspendAll();
-
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
 		persistent_charging_data_t persist_data;
 		persist_data.li_caused_reboot = charging_data.lion_discharging;
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
-
-		set_li_to_discharge(lion_not_discharging, 0);
-		// TODO: delay_ms(3000);
 		
+		set_li_to_discharge(lion_not_discharging, 0);
+		// suspend scheduler to make sure the satellite is in a good 
+		// state if it reboots (we would do it earlier but we need to 
+		// read sensors, etc. and it's hard to suspend the scheduler)
+		pet_watchdog(); // in case this takes a bit and we're close
+		vTaskSuspendAll();
+		delay_ms(SAT_NO_POWER_TURN_OFF_T_MS); // TODO: must be shorter than watchdog timeout
+		xTaskResumeAll();
 		// TODO: check STs now
 		// TODO: if both STs are 0 right now (you're powering off the chargers), log error to MRAM (write-through), then crie
 		
@@ -958,7 +961,6 @@ void battery_logic()
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
-		//TODO: xTaskResumeAll();
 		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
 	}
 

@@ -50,7 +50,7 @@ void low_power_data_task(void *pvParameters)
 		// TODO: the issue with this is that, if something has gone wrong, we'll be leaving
 		// the IR power on forever (might be watchdog reset...)
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY);
+		vTaskDelay(IR_WAKE_DELAY_MS);
 		{
 			en_and_read_lion_temps_batch(current_struct->lion_temps_data);
 			read_ad7991_batbrd(current_struct->lion_current_data, current_struct->panelref_lref_data);

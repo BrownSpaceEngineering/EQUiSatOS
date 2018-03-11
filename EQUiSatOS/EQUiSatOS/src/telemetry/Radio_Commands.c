@@ -230,11 +230,9 @@ void setRXEnable(bool enable) {
 /* transmits the buffer of given size over the radio USART,
 	then waits the expected transmit time to emulate an atomic operation */
 void transmit_buf_wait(const uint8_t* buf, size_t size) {
-	#ifdef SAFE_PRINT
-		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-			// take this for a shorter time than normal to not mess up RTOS much
-			xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
-		#endif
+	#if defined(SAFE_PRINT) && (PRINT_DEBUG == 1 || PRINT_DEBUG == 3)
+		// take this for a shorter time than normal to not mess up RTOS much
+		xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
 	#endif
 	
 	// we don't care too much here if the mutex times out; we gotta transmit!
@@ -244,10 +242,17 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		got_mutex = false;
 	}
 	
+	#ifdef DONT_PRINT_RAW_TRANSMISSIONS
+		print("Transmitted %d bytes\n", size);
+	#endif
+	
 	// suspend the scheduler to make sure the whole buf is sent atomically
 	// (so the radio gets the full buf at once and doesn't cut out in the middle)
+	pet_watchdog(); // in case this takes a bit and we're close to reset
 	vTaskSuspendAll();
-	usart_send_buf(buf, size);
+	#ifndef DONT_PRINT_RAW_TRANSMISSIONS
+		usart_send_buf(buf, size);
+	#endif
 	xTaskResumeAll();
 	get_hw_states()->radio_transmitting = true;
 	
@@ -266,10 +271,8 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	
 	if (got_mutex) hardware_state_mutex_give();
 	
-	#ifdef SAFE_PRINT
-		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-			xSemaphoreGiveRecursive(print_mutex);
-		#endif
+	#if defined(SAFE_PRINT) && (PRINT_DEBUG == 1 || PRINT_DEBUG == 3)
+		xSemaphoreGiveRecursive(print_mutex);
 	#endif
 	
 }

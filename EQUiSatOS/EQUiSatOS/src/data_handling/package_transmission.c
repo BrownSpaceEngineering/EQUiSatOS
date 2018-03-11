@@ -63,7 +63,7 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 		// TODO: the issue with this is that, if something has gone wrong, we'll be leaving
 		// the IR power on forever (might be watchdog reset...)
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY);
+		vTaskDelay(IR_WAKE_DELAY_MS);
 	}
 	{
 		// we read all battery board inputs at once,

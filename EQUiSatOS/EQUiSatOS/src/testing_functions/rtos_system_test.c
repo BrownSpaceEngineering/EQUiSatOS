@@ -242,6 +242,38 @@ const char* get_msg_type_str(msg_data_type_t msg_type) {
 	}
 }
 
+uint16_t get_task_stack_size(task_type_t task) {
+	switch (task) {
+		case WATCHDOG_TASK: return TASK_WATCHDOG_STACK_SIZE;
+		case STATE_HANDLING_TASK: return TASK_STATE_HANDLING_STACK_SIZE;
+		case ANTENNA_DEPLOY_TASK: return TASK_ANTENNA_DEPLOY_STACK_SIZE;
+		case BATTERY_CHARGING_TASK: return TASK_BATTERY_CHARGING_STACK_SIZE;
+		case TRANSMIT_TASK: return TASK_TRANSMIT_STACK_SIZE;
+		case FLASH_ACTIVATE_TASK: return TASK_FLASH_ACTIVATE_STACK_SIZE;
+		case IDLE_DATA_TASK: return TASK_IDLE_DATA_RD_STACK_SIZE;
+		case LOW_POWER_DATA_TASK: return TASK_LOW_POWER_DATA_RD_STACK_SIZE;
+		case ATTITUDE_DATA_TASK: return TASK_ATTITUDE_DATA_RD_STACK_SIZE;
+		case PERSISTENT_DATA_BACKUP_TASK: return TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE;
+		default: return -1;
+	}
+}
+
+uint32_t get_task_freq(task_type_t task) {
+	switch (task) {
+		case WATCHDOG_TASK: return WATCHDOG_TASK_FREQ;
+		case STATE_HANDLING_TASK: return STATE_HANDLING_TASK_FREQ;
+		case ANTENNA_DEPLOY_TASK: return ANTENNA_DEPLOY_TASK_FREQ;
+		case BATTERY_CHARGING_TASK: return BATTERY_CHARGING_TASK_FREQ;
+		case TRANSMIT_TASK: return TRANSMIT_TASK_FREQ;
+		case FLASH_ACTIVATE_TASK: return FLASH_ACTIVATE_TASK_FREQ;
+		case IDLE_DATA_TASK: return IDLE_DATA_TASK_FREQ;
+		case LOW_POWER_DATA_TASK: return LOW_POWER_DATA_TASK_FREQ;
+		case ATTITUDE_DATA_TASK: return ATTITUDE_DATA_TASK_FREQ;
+		case PERSISTENT_DATA_BACKUP_TASK: return PERSISTENT_DATA_BACKUP_TASK_FREQ;
+		default: return -1;
+	}
+}
+
 /************************************************************************/
 /* System test                                                          */
 /************************************************************************/
@@ -273,12 +305,26 @@ void print_equistacks(void) {
 }
 
 void print_task_info(void) {
-	print("\n\n===========Task States===========\n");
-	for (int i = 0; i < NUM_TASKS; i++) {
-		eTaskState task_state = eTaskGetState(*(task_handles[i]));
-		print("%s: %s (%s) RT: %d\n", get_task_str(i), 
-			get_task_state_str(task_state), _get_task_checked_in(i) ? "checked in " : "checked out",
-			_get_task_checked_in_time(i));
+	print("\n\n===========Task Information===========\n");
+	for (int task = 0; task < NUM_TASKS; task++) {
+		eTaskState task_state = eTaskGetState(*(task_handles[task]));
+		uint16_t stack_space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
+		uint16_t stack_size = get_task_stack_size(task);
+		uint16_t stack_space_available = stack_size * sizeof(portSTACK_TYPE);
+		bool checked_in = _get_task_checked_in(task);
+		uint32_t last_check_in = _get_task_checked_in_time(task);
+		uint32_t task_freq = get_task_freq(task);
+		
+		print("%s: %s (%s) seen: %9d ago: %7d (%3d%%) | %4d / %4d (%3d%%)\n", 
+			get_task_str(task), 
+			get_task_state_str(task_state),
+			checked_in ? "checked in " : "checked out",
+			last_check_in,
+			checked_in ? (xTaskGetTickCount() - last_check_in) : 0,
+			checked_in ? (100 * (xTaskGetTickCount() - last_check_in) / task_freq) : 0,
+			stack_space_available - stack_space_left,
+			stack_space_available,
+			(100 * (stack_space_available - stack_space_left)) / stack_space_available);
 	}
 }
 
@@ -294,42 +340,21 @@ void print_cur_data_buf(uint8_t* cur_data_buf) {
 	print_lifepo_volts_batch(		&(cur_data_buf[12]));
 }
 
-// given task id and stack_size in words, prints usage
-void print_task_stack_usage(task_type_t task, uint32_t stack_size) {
-	uint16_t space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
-	uint16_t space_available = stack_size * sizeof(portSTACK_TYPE);
-	print("%s: %4d / %4d (%3d%%)\n",
-		get_task_str(task),
-		space_available - space_left,
-		space_available,
-		(100 * (space_available - space_left)) / space_available);
-}
-
-void print_task_stack_usages(void) {
-	print("\n\n========RTOS Task Stack High Water Marks=======\n");
-	print_task_stack_usage(WATCHDOG_TASK, TASK_WATCHDOG_STACK_SIZE);
-	print_task_stack_usage(STATE_HANDLING_TASK, TASK_STATE_HANDLING_STACK_SIZE);
-	print_task_stack_usage(ANTENNA_DEPLOY_TASK, TASK_ANTENNA_DEPLOY_STACK_SIZE);
-	print_task_stack_usage(BATTERY_CHARGING_TASK, TASK_BATTERY_CHARGING_STACK_SIZE);
-	print_task_stack_usage(TRANSMIT_TASK, TASK_TRANSMIT_STACK_SIZE);
-	print_task_stack_usage(FLASH_ACTIVATE_TASK, TASK_FLASH_ACTIVATE_STACK_SIZE);
-	print_task_stack_usage(IDLE_DATA_TASK, TASK_IDLE_DATA_RD_STACK_SIZE);
-	print_task_stack_usage(LOW_POWER_DATA_TASK, TASK_LOW_POWER_DATA_RD_STACK_SIZE);
-	print_task_stack_usage(ATTITUDE_DATA_TASK, TASK_ATTITUDE_DATA_RD_STACK_SIZE);
-	print_task_stack_usage(PERSISTENT_DATA_BACKUP_TASK, TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE);
-	print("\n");
-}
-
 void rtos_system_test(void) {
 	print("\n\n==============RTOS System Test==============\n");
+	#ifndef RTOS_SYSTEM_TEST_SUMMARY
+	print_cur_data_buf(_get_cur_data_buf());
+	print_equistacks();
+	#endif
+	print("\n\n==============System Info==============\n");
 	print("timestamp: \t%d\n", get_current_timestamp());
 	print("ticks:	  \t%d\n", xTaskGetTickCount());
 	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
 	print("num errors:\t%d\n", error_equistack.cur_size);
+	sat_error_t* err = equistack_Get(&error_equistack, 0);
+	print("most recent err: ");
+	print_sat_error(err, 0);
 	print_task_info();
-	print_cur_data_buf(_get_cur_data_buf());
-	print_equistacks();
-	print_task_stack_usages();
 	print("====================End=====================\n\n");
 }

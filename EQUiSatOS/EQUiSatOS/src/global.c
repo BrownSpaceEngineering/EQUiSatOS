@@ -103,11 +103,13 @@ void global_init_post_rtos(void) {
 // in order to print without being disturbed, and then CALL IT AGAIN to deactivate 
 // and allow other tasks to print again
 void suppress_other_prints(bool on) {
-	if (on) {
-		xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
-	} else {
-		xSemaphoreGiveRecursive(print_mutex);
-	}
+	#if PRINT_DEBUG > 0 // if debug mode
+		if (on) {
+			xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
+			} else {
+			xSemaphoreGiveRecursive(print_mutex);
+		}
+	#endif
 }
 
 // use in debug mode (set in header file)
