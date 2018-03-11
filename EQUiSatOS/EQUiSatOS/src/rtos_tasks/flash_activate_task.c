@@ -155,12 +155,12 @@ void flash_activate_task(void *pvParameters)
 						
 						actually_flashed = true;
 				
+						// disable sensor regulators and free up mutexes
+						_set_5v_enable(false);
 						xSemaphoreGive(processor_adc_mutex);
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-					}	
-					// disable sensor regulators and free up mutexes
-					_set_5v_enable(false);
+					}
 					xSemaphoreGive(i2c_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);

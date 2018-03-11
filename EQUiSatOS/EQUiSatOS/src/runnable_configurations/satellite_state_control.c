@@ -12,10 +12,9 @@
 /************************************************************************/
 /* State variables                                                      */
 /************************************************************************/
-// vector of radio states       RLIIHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
-const uint16_t RADIO_STATES = 0b1111100;
 // vector of ir pow states (note that "off" doesn't enforce off, it's just not state-controlled)
-const uint16_t IRPOW_STATES = 0b1011111;
+//								LIIHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
+const uint16_t IRPOW_STATES = 0b011111;
 
 /************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
@@ -23,7 +22,6 @@ const uint16_t IRPOW_STATES = 0b1011111;
 sat_state_t current_sat_state = INITIAL;
 
 // specific state for radio, IR pow (set to OFF initially to ensure they'll be turned on)
-bool current_radio_state = false;
 bool current_irpow_state = false;
 
 /************************************************************************/
@@ -47,9 +45,7 @@ StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 
 void configure_state_from_reboot(void);
-void assign_task_states(task_states states_to_set, const task_states states_setting);
 void set_single_task_state(enum task_state state, task_type_t task_id);
-void set_radio_by_sat_state(sat_state_t state);
 void set_irpow_by_sat_state(sat_state_t state);
 void startup_task(void* pvParameters);
 
@@ -123,7 +119,8 @@ void startup_task(void* pvParameters) {
 	// are logged before this (they shouldn't be before RTOS is started...)
 	configure_state_from_reboot();
 
-	// function in global to init things that use RTOS
+	// function in global to init things that use RTOS 
+	// (MUST be done after config state from reboot)
 	global_init_post_rtos();
 
 	// populate task_handles array and setup constants
@@ -284,8 +281,9 @@ void configure_state_from_reboot(void) {
 	}
 	#endif
 
-	// get state of antenna deploy task (and double-check with pin input) and apply
-	if (cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy()) {
+	// set state of antenna deploy task based on sat state and antenna deploy criteria
+	if (current_sat_state == INITIAL ||
+		(cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy())) {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
 	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
@@ -311,8 +309,7 @@ void configure_state_from_reboot(void) {
 	increment_reboot_count();
 	
 	// initial hardware settings (last because they have delays)
-	// TODO: turn the radio off (once)
-	//set_radio_by_sat_state(current_sat_state);
+	setRadioState(false, false); // turn radio off and don't confirm (won't confirm going off)
 	set_irpow_by_sat_state(current_sat_state);
 }
 
@@ -382,24 +379,6 @@ bool low_power_active(void) {
 /* GLOBAL STATE SETTING                                                 */
 /************************************************************************/
 
-/* wrapper for setting radio power state 
-	NOTE: this wrapper shuts off/turns on the radio agressively, without concern
-	for the radio state. We wouldn't do this if it changed state much (was 
-	permanently on or off), but it only really does so once in the satellite state 
-	progression, or maybe twice. */
-void set_radio_by_sat_state(sat_state_t state) {
-	bool new_state = RADIO_STATES & 1 << state;
-	
-	if (new_state) {
-		// don't re-enable, because this entails waiting to confirm power on
-		if (current_radio_state != new_state) 
-			setRadioState(true, true);
-	} else {
-		setRadioState(false, false); // doesn't matter because we don't confirm off
-	}
-	current_radio_state = new_state;
-}
-
 /* wrapper for setting ir power state */
 void set_irpow_by_sat_state(sat_state_t state) {
 	bool new_state = IRPOW_STATES & 1 << state;
@@ -440,35 +419,33 @@ bool set_sat_state_helper(sat_state_t state)
 		case ANTENNA_DEPLOY: ;
 			print("\n\nCHANGED STATE to ANTENNA_DEPLOY\n\n");
 			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
-			set_radio_by_sat_state(ANTENNA_DEPLOY);
+			// turn radio off and don't confirm (won't confirm going off)
+			// (this is the only state that can be re-entered where the transmit task is suspended)
+			setRadioState(false, false);
 			set_irpow_by_sat_state(ANTENNA_DEPLOY);
 			return prev_sat_state == INITIAL || prev_sat_state == LOW_POWER;
 
 		case HELLO_WORLD: ;
 			print("\n\nCHANGED STATE to HELLO_WORLD\n\n");
 			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
-			set_radio_by_sat_state(HELLO_WORLD);
 			set_irpow_by_sat_state(HELLO_WORLD);
 			return prev_sat_state == ANTENNA_DEPLOY;
 
 		case IDLE_NO_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_NO_FLASH\n\n");
 			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
-			set_radio_by_sat_state(IDLE_NO_FLASH);
 			set_irpow_by_sat_state(IDLE_NO_FLASH);
 			return prev_sat_state == IDLE_FLASH || prev_sat_state == HELLO_WORLD || prev_sat_state == LOW_POWER;
 
 		case IDLE_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_FLASH\n\n");
 			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
-			set_radio_by_sat_state(IDLE_FLASH);
 			set_irpow_by_sat_state(IDLE_FLASH);
 			return prev_sat_state == IDLE_NO_FLASH;
 
 		case LOW_POWER: ;
 			print("\n\nCHANGED STATE to LOW_POWER\n\n");
 			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
-			set_radio_by_sat_state(LOW_POWER);
 			set_irpow_by_sat_state(LOW_POWER);
 			return prev_sat_state == ANTENNA_DEPLOY || prev_sat_state == HELLO_WORLD || 
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
@@ -552,38 +529,40 @@ void set_single_task_state(enum task_state state, task_type_t task_id) {
 // suspends the given task if it was not already suspended, and (always) checks it out of the watchdog
 void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
-
 	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend THIS task
-	// TODO: add actual NULL check
 
 	// always check out of watchdog when called (to be double-sure)
 	// this is only called here so doesn't need to be safe
 	check_out_task_unsafe(task_id);
-	if (eTaskGetState(*task_handle) != eSuspended) {
-		vTaskSuspend(*task_handle); // actually suspend using handle
+	if (task_handle != NULL && *task_handle != NULL
+		&& eTaskGetState(*task_handle) != eSuspended) 
+	{
+		// actually suspend using handle
+		vTaskSuspend(*task_handle);
 	}
+	// if task_handle or it's value was NULL, we're in for a watchdog reset
+	// which is what we want because somethings very wrong
 }
 
 // resumes the given task if it was suspended, and (always) checks it in to the watchdog
 void task_resume(task_type_t task_id)
 {
 	TaskHandle_t* task_handle = task_handles[task_id];
-	configASSERT(task_handle != NULL);
-	// TODO: add actual NULL check
+	configASSERT(task_handle != NULL && *task_handle != NULL);
 
 	// always check in for watchdog when called
 	// (in case it wasn't, for example on BOOT)
 	// this is only called here so doesn't need to be safe
 	check_in_task_unsafe(task_id);
 
-	if (eTaskGetState(*task_handle) == eSuspended)
+	if (task_handle != NULL && *task_handle != NULL
+		&& eTaskGetState(*task_handle) == eSuspended)
 	{
 		// actually resume task (will be graceful if task_handle task is not actually suspended)
-
-		configASSERT(*task_handle != NULL);
-
 		vTaskResume(*task_handle);
 	}
+	// if task_handle or it's value was NULL, we're in for a watchdog reset
+	// which is what we want because somethings very wrong
 }
 
 /* suspends or resumes the given task, safely pausing the watchdog 
@@ -597,7 +576,6 @@ void set_task_state_safe(task_type_t task_id, bool run) {
 	}
 	watchdog_mutex_give();
 }
-
 
 /************************************************************************/
 /* HARDWARE STATE HANDLING                                              */
