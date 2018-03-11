@@ -3,7 +3,7 @@
  *
  * Created: 12/2/17 8:58:23 PM
  *  Author: jacobleiken
- */ 
+ */
 
 #include "antenna_pwm.h"
 
@@ -25,15 +25,15 @@ bool antenna_did_deploy(void) {
 	// (we don't care about sensors much relative to antenna deployment)
 	bool got_mutex = false;
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		got_mutex = true;		
+		got_mutex = true;
 	} else {
 		log_error(ELOC_ANTENNA_DEPLOY, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 	}
-	
+
 	_set_5v_enable_unsafe(true);
 	bool did_deploy = get_input(P_DET_RTN);
 	_set_5v_enable_unsafe(false);
-	
+
 	if (got_mutex) xSemaphoreGive(processor_adc_mutex);
 	return did_deploy;
 }
@@ -46,38 +46,60 @@ void pwm_test(void) {
 
 void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	configure_pwm(pin, pin_mux, p_ant);
-	
+
 	hardware_state_mutex_take();
 	enable_pwm(current_on_cycle);
 	get_hw_states()->antenna_deploying = true;
 	hardware_state_mutex_give();
-	
+
 	//delay_ms(ms); // for testing only
 	vTaskDelay(ms / portTICK_PERIOD_MS);
-		
+
 	// read current (both just in case) so we can shut it down if we need
-	// TODO: depend on pin
-	uint16_t li1, li2, lf1, lf2, lf3, lf4;
-	read_lion_current_precise(&li1, &li2);
-	read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
-	
+	uint16_t li1, li2 ,lf1, lf2, lf3, lf4;
+	if (p_ant == 1) {
+		read_lion_current_precise(&li1, &li2);
+	} else {
+		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
+	}
+
 	hardware_state_mutex_take();
 	disable_pwm();
 	get_hw_states()->antenna_deploying = false;
 	hardware_state_mutex_give();
-		
+
 	bool can_cont = true;
+	bool deployed = antenna_did_deploy();
+	// Check if we're past max current and need to move on to the next pin
+	// Also check if we were below the minimum expected current and log an error if we were (low priority)
 	if (p_ant == 1) {
 		print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
-		// TODO: if current is too low log an error
-		if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
+		uint16_t li_cur;
+		li_discharging_t lid = get_li_discharging();
+		if (lid == LI1_DISG) {
+			lid = li1;
+		} else if (lid == LI2_DISG) {
+			lid = li2;
+		} else {
+			lid = li1 + li2;
+		}
+
+		if (li_cur > PWM_MAX_CUR) {
 			can_cont = false;
+		} else if (deployed && li_cur < PWM_VERY_MIN_CUR) {
+			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
+		} else if (deployed && li_cur < PWM_MIN_CUR) {
+			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	} else {
 		uint16_t bank1 = lf1 + lf2;
 		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", bank1);
 		if (bank1 > PWM_MAX_CUR) {
 			can_cont = false;
+		} else if (deployed && bank1 < PWM_VERY_MIN_CUR) {
+			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
+		} else if (deployed && bank1 < PWM_MIN_CUR) {
+			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	}
 	if (can_cont) {

@@ -7,6 +7,7 @@
 
 #include "sensor_def.h"
 
+// IF SIG ISN'T IN THE CASES WE'RE CHECKING, THIS WILL RETURN ~0
 uint16_t get_low_bound_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
@@ -21,11 +22,11 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_LED_TEMP:
 			return B_LED_TEMP_LOW;
 			break;
-		case S_LED_CUR_REG:
-			return B_LED_CUR_REG_LOW;
+		case S_LED_SNS_REG:
+			return B_LED_SNS_REG_LOW;
 			break;
-		case S_LED_CUR_FLASH:
-			return B_LED_CUR_FLASH_LOW;
+		case S_LED_SNS_FLASH:
+			return B_LED_SNS_FLASH_LOW;
 			break;
 		case S_L_TEMP:
 			return B_L_TEMP_LOW;
@@ -33,17 +34,23 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_LF_TEMP:
 			return B_LF_TEMP_LOW;
 			break;
-		case S_LF_CUR_REG:
-			return B_LF_CUR_REG_LOW;
+		case S_LF_SNS_REG:
+			return B_LF_SNS_REG_LOW;
 			break;
-		case S_LF_CUR_FLASH:
-			return B_LF_CUR_FLASH_LOW;
+		case S_LF_SNS_FLASH:
+			return B_LF_SNS_FLASH_LOW;
 			break;
-		case S_L_CUR_REG:
-			return B_L_CUR_REG_LOW;
+		case S_L_SNS_IDLE_RAD_OFF:
+			return B_L_SNS_IDLE_RAD_OFF_LOW;
 			break;
-		case S_L_CUR_HIGH:
-			return B_L_CUR_HIGH_LOW;
+		case S_L_SNS_IDLE_RAD_ON:
+			return B_L_SNS_IDLE_RAD_ON_LOW;
+			break;
+		case S_L_SNS_TRANSMIT:
+			return B_L_SNS_TRANSMIT_LOW;
+			break;
+		case S_L_SNS_ANT_DEPLOY:
+			return B_L_SNS_ANT_DEPLOY_LOW;
 			break;
 		case S_LF_VOLT:
 			return B_LF_VOLT_LOW;
@@ -56,9 +63,6 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 			break;
 		case S_PANELREF:
 			return B_PANELREF_LOW;
-			break;
-		case S_CHARGE:
-			return B_CHARGE_LOW;
 			break;
 		case S_GYRO:
 			return B_GYRO_LOW;
@@ -81,6 +85,9 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_3V6_SNS_ON:
 			return B_3V6_SNS_OFF_LOW;
 			break;
+		case S_3V6_SNS_TRANSMIT:
+			return B_3V6_SNS_TRANSMIT_LOW;
+			break;
 		case S_5VREF_OFF:
 			return B_5VREF_OFF_LOW;
 			break;
@@ -93,6 +100,7 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 	}
 }
 
+// IF SIG ISN'T IN THE CASES WE'RE CHECKING, THIS WILL RETURN 0
 uint16_t get_high_bound_from_signal(sig_id_t sig) {
 	switch (sig) {
 		case S_IR_OBJ:
@@ -107,11 +115,11 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_LED_TEMP:
 			return B_LED_TEMP_HIGH;
 			break;
-		case S_LED_CUR_REG:
-			return B_LED_CUR_REG_HIGH;
+		case S_LED_SNS_REG:
+			return B_LED_SNS_REG_HIGH;
 			break;
-		case S_LED_CUR_FLASH:
-			return B_LED_CUR_FLASH_HIGH;
+		case S_LED_SNS_FLASH:
+			return B_LED_SNS_FLASH_HIGH;
 			break;
 		case S_L_TEMP:
 			return B_L_TEMP_HIGH;
@@ -119,17 +127,23 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_LF_TEMP:
 			return B_LF_TEMP_HIGH;
 			break;
-		case S_LF_CUR_REG:
-			return B_LF_CUR_REG_HIGH;
+		case S_LF_SNS_REG:
+			return B_LF_SNS_REG_HIGH;
 			break;
-		case S_LF_CUR_FLASH:
-			return B_LF_CUR_FLASH_HIGH;
+		case S_LF_SNS_FLASH:
+			return B_LF_SNS_FLASH_HIGH;
 			break;
-		case S_L_CUR_REG:
-			return B_L_CUR_REG_HIGH;
+		case S_L_SNS_IDLE_RAD_OFF:
+			return B_L_SNS_IDLE_RAD_OFF_HIGH;
 			break;
-		case S_L_CUR_HIGH:
-			return B_L_CUR_HIGH_HIGH;
+		case S_L_SNS_IDLE_RAD_ON:
+			return B_L_SNS_IDLE_RAD_ON_HIGH;
+			break;
+		case S_L_SNS_TRANSMIT:
+			return B_L_SNS_TRANSMIT_HIGH;
+			break;
+		case S_L_SNS_ANT_DEPLOY:
+			return B_L_SNS_ANT_DEPLOY_HIGH;
 			break;
 		case S_LF_VOLT:
 			return B_LF_VOLT_HIGH;
@@ -142,9 +156,6 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 			break;
 		case S_PANELREF:
 			return B_PANELREF_HIGH;
-			break;
-		case S_CHARGE:
-			return B_CHARGE_HIGH;
 			break;
 		case S_GYRO:
 			return B_GYRO_HIGH;
@@ -167,6 +178,9 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_3V6_SNS_ON:
 			return B_3V6_SNS_OFF_HIGH;
 			break;
+		case S_3V6_SNS_TRANSMIT:
+			return B_3V6_SNS_TRANSMIT_HIGH;
+			break;
 		case S_5VREF_OFF:
 			return B_5VREF_OFF_HIGH;
 			break;
@@ -174,30 +188,25 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 			return B_5VREF_ON_HIGH;
 			break;
 		default:
-			return ~0;
+			return 0;
 			break;
 	}
 }
 
+// IF SIG ISN'T IN THE CASES WE'RE CHECKING, THIS WILL RETURN 0
 uint16_t get_line_m_from_signal(sig_id_t sig) {
 	switch (sig) {
-		case S_IR_OBJ:
-			return A_IR_OBJ_M;
-			break;
 		case S_IR_AMB:
 			return A_IR_AMB_M;
-			break;
-		case S_PD:
-			return A_PD_M;
 			break;
 		case S_LED_TEMP:
 			return A_LED_TEMP_M;
 			break;
-		case S_LED_CUR_REG:
-			return A_LED_CUR_REG_M;
+		case S_LED_SNS_REG:
+			return A_LED_SNS_M;
 			break;
-		case S_LED_CUR_FLASH:
-			return A_LED_CUR_FLASH_M;
+		case S_LED_SNS_FLASH:
+			return A_LED_SNS_M;
 			break;
 		case S_L_TEMP:
 			return A_L_TEMP_M;
@@ -205,17 +214,26 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_LF_TEMP:
 			return A_LF_TEMP_M;
 			break;
-		case S_LF_CUR_REG:
-			return A_LF_CUR_REG_M;
+		case S_LF_SNS_REG:
+			return A_LF_SNS_M;
 			break;
-		case S_LF_CUR_FLASH:
-			return A_LF_CUR_FLASH_M;
+		case S_LF_SNS_FLASH:
+			return A_LF_SNS_M;
 			break;
-		case S_L_CUR_REG:
-			return A_L_CUR_REG_M;
+		case S_L_SNS:
+			return A_L_SNS_M;
 			break;
-		case S_L_CUR_HIGH:
-			return A_L_CUR_HIGH_M;
+		case S_L_SNS_IDLE_RAD_OFF:
+			return A_L_SNS_M;
+			break;
+		case S_L_SNS_IDLE_RAD_ON:
+			return A_L_SNS_M;
+			break;
+		case S_L_SNS_TRANSMIT:
+			return A_L_SNS_M;
+			break;
+		case S_L_SNS_ANT_DEPLOY:
+			return A_L_SNS_M;
 			break;
 		case S_LF_VOLT:
 			return A_LF_VOLT_M;
@@ -228,9 +246,6 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			break;
 		case S_PANELREF:
 			return A_PANELREF_M;
-			break;
-		case S_CHARGE:
-			return A_CHARGE_M;
 			break;
 		case S_GYRO:
 			return A_GYRO_M;
@@ -247,52 +262,26 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_M;
 			break;
-		case S_3V3_REF:
-			return A_3V3_REF_M;
-			break;
-		case S_3V6_REF_OFF:
-			return A_3V6_REF_OFF_M;
-			break;
-		case S_3V6_REF_ON:
-			return A_3V6_REF_ON_M;
-			break;
-		case S_3V6_SNS_OFF:
-			return A_3V6_SNS_OFF_M;
-			break;
-		case S_3V6_SNS_ON:
-			return A_3V6_SNS_OFF_M;
-			break;
-		case S_5VREF_OFF:
-			return A_5VREF_OFF_M;
-			break;
-		case S_5VREF_ON:
-			return A_5VREF_ON_M;
-			break;
 		default:
-			return ~0;
+			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 			break;
 	}
 }
 
+// IF SIG ISN'T IN THE CASES WE'RE CHECKING, THIS WILL RETURN 0
 int16_t get_line_b_from_signal(sig_id_t sig) {
 	switch (sig) {
-		case S_IR_OBJ:
-			return A_IR_OBJ_B;
-			break;
 		case S_IR_AMB:
 			return A_IR_AMB_B;
-			break;
-		case S_PD:
-			return A_PD_B;
 			break;
 		case S_LED_TEMP:
 			return A_LED_TEMP_B;
 			break;
-		case S_LED_CUR_REG:
-			return A_LED_CUR_REG_B;
+		case S_LED_SNS_REG:
+			return A_LED_SNS_B;
 			break;
-		case S_LED_CUR_FLASH:
-			return A_LED_CUR_FLASH_B;
+		case S_LED_SNS_FLASH:
+			return A_LED_SNS_B;
 			break;
 		case S_L_TEMP:
 			return A_L_TEMP_B;
@@ -300,17 +289,26 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_LF_TEMP:
 			return A_LF_TEMP_B;
 			break;
-		case S_LF_CUR_REG:
-			return A_LF_CUR_REG_B;
+		case S_LF_SNS_REG:
+			return A_LF_SNS_B;
 			break;
-		case S_LF_CUR_FLASH:
-			return A_LF_CUR_FLASH_B;
+		case S_LF_SNS_FLASH:
+			return A_LF_OSNS_B;
 			break;
-		case S_L_CUR_REG:
-			return A_L_CUR_REG_B;
+		case S_L_SNS:
+			return A_L_SNS_B;
 			break;
-		case S_L_CUR_HIGH:
-			return A_L_CUR_HIGH_B;
+		case S_L_SNS_IDLE_RAD_OFF:
+			return A_L_SNS_B;
+			break;
+		case S_L_SNS_IDLE_RAD_ON:
+			return A_L_SNS_B;
+			break;
+		case S_L_SNS_TRANSMIT:
+			return A_L_SNS_B;
+			break;
+		case S_L_SNS_ANT_DEPLOY:
+			return A_L_SNS_B;
 			break;
 		case S_LF_VOLT:
 			return A_LF_VOLT_B;
@@ -323,9 +321,6 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			break;
 		case S_PANELREF:
 			return A_PANELREF_B;
-			break;
-		case S_CHARGE:
-			return A_CHARGE_B;
 			break;
 		case S_GYRO:
 			return A_GYRO_B;
@@ -342,29 +337,8 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_B;
 			break;
-		case S_3V3_REF:
-			return A_3V3_REF_B;
-			break;
-		case S_3V6_REF_OFF:
-			return A_3V6_REF_OFF_B;
-			break;
-		case S_3V6_REF_ON:
-			return A_3V6_REF_ON_B;
-			break;
-		case S_3V6_SNS_OFF:
-			return A_3V6_SNS_OFF_B;
-			break;
-		case S_3V6_SNS_ON:
-			return A_3V6_SNS_OFF_B;
-			break;
-		case S_5VREF_OFF:
-			return A_5VREF_OFF_B;
-			break;
-		case S_5VREF_ON:
-			return A_5VREF_ON_B;
-			break;
 		default:
-			return ~0;
+			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 			break;
 	}
 }
