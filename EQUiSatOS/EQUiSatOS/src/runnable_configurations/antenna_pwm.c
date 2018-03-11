@@ -57,10 +57,12 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		vTaskDelay(ms / portTICK_PERIOD_MS);
 		
 		// read current (both just in case) so we can shut it down if we need
-		// TODO: depend on pin
-		uint16_t li1, li2, lf1, lf2, lf3, lf4;
-		read_lion_current_precise(&li1, &li2);
-		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
+		uint16_t li1, li2 ,lf1, lf2, lf3, lf4;
+		if (p_ant == 1) {
+			read_lion_current_precise(&li1, &li2);
+		} else {
+			read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
+		}
 	
 		hardware_state_mutex_take();
 		disable_pwm();
@@ -68,17 +70,27 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		hardware_state_mutex_give();
 		
 		bool can_cont = true;
+		bool deployed = antenna_did_deploy();
+		// Check if we're past max current and need to move on to the next pin
+		// Also check if we were below the minimum expected current and log an error if we were (low priority)
 		if (p_ant == 1) {
 			print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
-			// TODO: if current is too low log an error
 			if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
 				can_cont = false;
+			} else if (deployed && li1 < PWM_VERY_MIN_CUR && li2 < PWM_VERY_MIN_CUR) {
+				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
+			} else if (deployed && li1 < PWM_MIN_CUR && li2 < PWM_MIN_CUR) {
+				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 			}
 		} else {
 			uint16_t bank1 = lf1 + lf2;
 			print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", bank1);
 			if (bank1 > PWM_MAX_CUR) {
 				can_cont = false;
+			} else if (deployed && bank1 < PWM_VERY_MIN_CUR) {
+				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
+			} else if (deployed && bank1 < PWM_MIN_CUR) {
+				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 			}
 		}
 		if (can_cont) {

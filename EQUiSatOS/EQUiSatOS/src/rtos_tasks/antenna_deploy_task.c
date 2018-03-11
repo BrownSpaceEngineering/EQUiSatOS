@@ -11,6 +11,8 @@
 #include "../runnable_configurations/antenna_pwm.h"
 
 #define ANTENNA_DEPLOY_MAX_TRIES	26
+#define LI_NOT_CHARGED_WAIT			1800000
+#define LF_NOT_CHARGED_WAIT			3600000
 static int num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
@@ -66,8 +68,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				// TODO: #define
-				vTaskDelay(1800000 / portTICK_PERIOD_MS);
+				vTaskDelay(LI_NOT_CHARGED_WAIT / portTICK_PERIOD_MS);
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
@@ -86,7 +87,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(3600000 / portTICK_PERIOD_MS);
+				vTaskDelay(LF_NOT_CHARGED_WAIT / portTICK_PERIOD_MS);
 			}
 		}
 	}
