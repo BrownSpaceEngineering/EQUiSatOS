@@ -18,11 +18,8 @@ void attitude_data_task(void *pvParameters)
 	// variable for timing data reads (which may include task suspensions)
 	TickType_t time_before_data_read;
 	
-	// variable for keeping track of our current progress through an orbit
-	// (= numerator of (x / ATTITUDE_DATA_LOGS_PER_ORBIT) of an orbit)
-	// we set this to the max because we want it to think we've wrapped around
-	// an orbit on boot (log immediately)
-	uint8_t prev_orbit_numerator = ATTITUDE_DATA_LOGS_PER_ORBIT; 
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
 	
 	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
 	
@@ -56,11 +53,17 @@ void attitude_data_task(void *pvParameters)
 		// and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= ATTITUDE_DATA_MAX_READ_TIME) {
-			if (passed_orbit_fraction(&prev_orbit_numerator, ATTITUDE_DATA_LOGS_PER_ORBIT)) {
+			uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
+			if (time_since_last_log_s >= ATTITUDE_DATA_LOG_FREQ) {
 				// validate previous stored value in stack, getting back the next staged address we can start adding to
 				current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
+				time_of_last_log_s = get_current_timestamp();
 			}
 		} else {
+			#ifdef USE_STRICT_ASSERTIONS
+				configASSERT(false);
+			#endif
+			
 			// log error if the data read took too long
 			log_error(ELOC_ATTITUDE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}

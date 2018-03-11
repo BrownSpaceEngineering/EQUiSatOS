@@ -178,7 +178,7 @@ void decide_next_state(sat_state_t current_state) {
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
+			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE_1, false);
 			set_sat_state(IDLE_NO_FLASH); // default state
 			break;
 	}

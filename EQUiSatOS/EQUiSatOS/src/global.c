@@ -147,9 +147,3 @@ void print(const char *format, ...)
 		#endif
 	#endif
 }
-
-// hangs on the given error if it's a "bad/rare" one as defined in this function
-void hang_on_bad_error(sat_error_t* full_error) {
-	// NOT a mutex timeout
-	configASSERT(full_error->ecode < ECODE_CRIT_ACTION_MUTEX_TIMEOUT && full_error->ecode > ECODE_IRPOW_MUTEX_TIMEOUT);
-};

@@ -57,8 +57,10 @@ void antenna_deploy_task(void *pvParameters) {
 		if (current_pwm_pin == 1) {
 			uint16_t li1, li2;
 			read_lion_volts_precise(&li1, &li2);
-			if (li1 > PWM_LION_MIN_V || li2 > PWM_LION_MIN_V
-					/* TODO: doesn't take into account which battery is discharging */) {
+			li_discharging_t lid = get_li_discharging();
+			if ((lid == LI1_DISG && li1 > PWM_LION_MIN_V)
+					|| (lid == LI2_DISG && li2 > PWM_LION_MIN_V)
+					|| (lid == BOTH_DISG && li1 + li2 > PWM_LION_MIN_V)) {
 				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 					try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
 					

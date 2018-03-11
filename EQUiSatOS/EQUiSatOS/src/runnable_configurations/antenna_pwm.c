@@ -75,11 +75,21 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		// Also check if we were below the minimum expected current and log an error if we were (low priority)
 		if (p_ant == 1) {
 			print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
-			if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
+			uint16_t li_cur;
+			li_discharging_t lid = get_li_discharging();
+			if (lid == LI1_DISG) {
+				lid = li1;
+			} else if (lid == LI2_DISG) {
+				lid = li2;
+			} else {
+				lid = li1 + li2;
+			}
+			
+			if (li_cur > PWM_MAX_CUR) {
 				can_cont = false;
-			} else if (deployed && li1 < PWM_VERY_MIN_CUR && li2 < PWM_VERY_MIN_CUR) {
+			} else if (deployed && li_cur < PWM_VERY_MIN_CUR) {
 				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
-			} else if (deployed && li1 < PWM_MIN_CUR && li2 < PWM_MIN_CUR) {
+			} else if (deployed && li_cur < PWM_MIN_CUR) {
 				log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 			}
 		} else {
