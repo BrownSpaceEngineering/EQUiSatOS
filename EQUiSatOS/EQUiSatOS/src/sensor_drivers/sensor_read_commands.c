@@ -619,34 +619,49 @@ void verify_flash_readings(bool flashing_now) {
 /* END OF FLASH-RELATED FUNCTIONS                                       */
 /************************************************************************/
 
+//raw is in mV
+uint8_t get_pdiode_two_bit_range(uint16_t raw) {
+	if (raw < PDIODE_00_01) {
+		return 0;
+	} else if (raw >= PDIODE_00_01 && raw < PDIODE_01_10) {
+		return 1;
+	} else if (raw >= PDIODE_01_10 && raw < PDIODE_10_11) {
+		return 2;
+	} else if (raw >= PDIODE_10_11) {
+		return 3;
+	} else {
+		return 4; //Error: Bit flip?
+	}
+}
+
 void read_pdiode_batch(pdiode_batch* batch) {
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		_enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
-			// TODO: need to output to two bits of a uint16_t
+			uint8_t rs;
+			memset(batch, 0, sizeof(pdiode_batch));			
 			for (int i = 0; i < 6; i++) {
-				uint8_t rs;
-				// TODO: LTC1380_channel_select takes a uint8, not 16
-
-				// TODO INFO: it looks like these (uint8_t) readings need to be
-				// taken, truncated, and shifted onto the batch (i.e. (x >> 6) << (i*2))
+				uint16_t result;								
 
 				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 				log_if_error(PD_ELOCS[i], sc, false);
-				commands_read_adc_mV(&rs, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
-				//batch[i] = truncate_16t(rs);
+				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], B_PD_LOW, B_PD_HIGH, false);
+				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
+				if (two_bit_range == 4) {
+					// TODO: Log error for unexpected pdiode case
+				} else {
+					*batch |= (two_bit_range << (i*2));
+				}				
 			}
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_PD_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-			memset(batch, 0, sizeof(pdiode_batch));
+			log_error(ELOC_PD_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);			
 		}
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_PD_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
-		memset(batch, 0, sizeof(pdiode_batch));
+		log_error(ELOC_PD_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);		
 	}
 }
 
