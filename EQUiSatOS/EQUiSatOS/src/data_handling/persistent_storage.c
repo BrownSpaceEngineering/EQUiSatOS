@@ -15,7 +15,6 @@ struct spi_slave_inst mram2_slave;
 /* log of last known tick count to detect overflows */
 TickType_t prev_write_ticks = 0;
 
-void write_state_to_storage(void);
 void write_state_to_storage_safety(bool safe);
 void cached_state_sync_redundancy(void);
 uint32_t get_current_timestamp_safety(bool safe);
@@ -190,6 +189,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 			return false;
 		}
 	}
+	return false; // should never happen but compiler warnings...
 }
 
 // wrapper for writing a field to MRAM
@@ -581,7 +581,7 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 			cached_state.sat_event_history.prog_mem_rewritten = true;
 
 		cached_state_sync_redundancy();
-		write_state_to_storage();
+		write_state_to_storage_safety(false);
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 		return true;
@@ -717,47 +717,6 @@ uint64_t get_current_timestamp_ms(void) {
 /* returns truncated number or orbits since first boot */
 uint16_t get_orbits_since_launch(void) {
 	return get_current_timestamp() / ORBITAL_PERIOD_S;
-}
-
-/**
- * Returns whether we're currently at or above
- * (*prev_orbit_numerator / orbit_fraction_denominator) percent through an orbit,
- * where prev_orbit_fraction is the last known orbit fraction (set by this function)
- * and 1 / orbit_fraction_denominator is a fraction ("bucket") to divide an orbit by such that
- * this function will return true after each such fraction of orbital time passes.
- * This function is designed specifically to be used to time actions according
- * to fractions of the current orbit, and ensures this function will return true
- * orbit_fraction_denominator times during an orbit as long as it is called at least
- * that many times during the orbit.
- *
- * Test cases (with implicit argument of current orbit percentage):
- *		at_orbit_fraction(0, 2, .1) = false
- */
-bool passed_orbit_fraction(uint8_t* prev_orbit_numerator, uint8_t orbit_fraction_denominator) {
-	#ifdef TESTING_SPEEDUP
-		return true;
-	#else
-		// TODO: Does this work??
-		// first, we scale up by the denominator to bring our integer precision up to the
-		// fractional (bucket) size. Thus, we will truncate all bits that determine how
-		// far we are inside a fractional bucket, and it will give us only the current one
-		// we're in
-		// TODO: Will the calculations stay in the 32 bit registers? I.e. will they overflow?
-		// (use 64 bit for now to be safe)
-		uint64_t cur_orbit_fraction = (get_current_timestamp() * orbit_fraction_denominator) /
-										(ORBITAL_PERIOD_S * orbit_fraction_denominator);
-
-		// strictly not equal to (really greater than) because we only want
-		// this to return true on a CHANGE,
-		// i.e. when the fraction moves from one "bucket" or
-		// fraction component to the next we set prev_orbit_fraction
-		// so that we wait the fractional amount before returning true again
-		if (cur_orbit_fraction != *prev_orbit_numerator) {
-			*prev_orbit_numerator = cur_orbit_fraction;
-			return true;
-		}
-		return false;
-	#endif
 }
 
 /************************************************************************/

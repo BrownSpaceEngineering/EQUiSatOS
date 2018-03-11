@@ -278,34 +278,41 @@ uint32_t get_task_freq(task_type_t task) {
 /* System test                                                          */
 /************************************************************************/
 
+void print_errors(int max_num) {
+	print_equistack(&error_equistack, print_sat_error, "Error Stack", max_num);
+}
+
 // prints the given equistack using the given element-wise string building method
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header) {
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header, int max_num) {
 	print("\n==============%s==============\n", header);
 	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
 		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
-	print("data:\n");
-	for (int i = 0; i < stack->cur_size; i++) {
+	print("data (max n=%d):\n", max_num);
+	if (max_num == -1) 
+		max_num = stack->cur_size;
+	for (int i = 0; i < min(stack->cur_size, max_num); i++) {
 		(*elm_print)(equistack_Get(stack, i), i);
-		
-		if (only_print_recent_data && stack != &error_equistack) {
-			break; // only print first element of stack in this case, unless it's errors
-		}
 	}
 }
 
 void print_equistacks(void) {
 	print("\n==============Equistack Dump==============\n");
+	int max_size = -1;
+	if (only_print_recent_data) {
+		max_size = 1;
+	}
 	// note: apparently C can't use void* as generic pointers if they're function pointer args... (sigh)
-	print_equistack(&error_equistack,				print_sat_error,		"Error Stack");
-	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
-	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
-	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
-	print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack");
-	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
+	print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack",			max_size);
+	print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack",		max_size);
+	print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack",			max_size);
+	print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack",		max_size);
+	print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack",		max_size);
 }
 
 void print_task_info(void) {
 	print("\n\n===========Task Information===========\n");
+	print("state consistency: %s\n", 
+		check_task_state_consistency() ? "consistent": "!! INCONSISTENT TASK STATES !!");
 	for (int task = 0; task < NUM_TASKS; task++) {
 		eTaskState task_state = eTaskGetState(*(task_handles[task]));
 		uint16_t stack_space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
@@ -315,11 +322,10 @@ void print_task_info(void) {
 		uint32_t last_check_in = _get_task_checked_in_time(task);
 		uint32_t task_freq = get_task_freq(task);
 		
-		print("%s: %s (%s) seen: %9d ago: %7d (%3d%%) | %4d / %4d (%3d%%)\n", 
+		print("%s: %s (%s) seen: -%5d (%3d%%) stack: %4d / %4d (%3d%%)\n", 
 			get_task_str(task), 
 			get_task_state_str(task_state),
 			checked_in ? "checked in " : "checked out",
-			last_check_in,
 			checked_in ? (xTaskGetTickCount() - last_check_in) : 0,
 			checked_in ? (100 * (xTaskGetTickCount() - last_check_in) / task_freq) : 0,
 			stack_space_available - stack_space_left,
@@ -345,16 +351,18 @@ void rtos_system_test(void) {
 	#ifndef RTOS_SYSTEM_TEST_SUMMARY
 	print_cur_data_buf(_get_cur_data_buf());
 	print_equistacks();
+	int max_num_errors = -1;
+	#else
+	int max_num_errors = 10;
 	#endif
 	print("\n\n==============System Info==============\n");
-	print("timestamp: \t%d\n", get_current_timestamp());
+	print("timestamp: \t%ds \t(%dmin)\n", get_current_timestamp(), get_current_timestamp()/60);
 	print("ticks:	  \t%d\n", xTaskGetTickCount());
 	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
 	print("num errors:\t%d\n", error_equistack.cur_size);
-	sat_error_t* err = equistack_Get(&error_equistack, 0);
-	print("most recent err: ");
-	print_sat_error(err, 0);
+	print("most recent errs: ");
+	print_errors(max_num_errors);
 	print_task_info();
 	print("====================End=====================\n\n");
 }

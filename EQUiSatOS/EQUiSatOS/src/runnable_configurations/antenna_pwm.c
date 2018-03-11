@@ -31,7 +31,6 @@ bool antenna_did_deploy(void) {
 	}
 	
 	_set_5v_enable(true);
-	vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS);
 	bool did_deploy = get_input(P_DET_RTN);
 	_set_5v_enable(false);
 	

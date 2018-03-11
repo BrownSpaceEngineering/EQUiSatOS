@@ -14,6 +14,11 @@
 #include <inttypes.h>
 
 /************************************************************************/
+/* General constants                                                    */
+/************************************************************************/
+#define ORBITAL_PERIOD_S					5580 // s; 93 mins
+
+/************************************************************************/
 /* Classes of Task Priorities                                           */
 /************************************************************************/
 // lowest priority is at the top
@@ -40,7 +45,7 @@ enum {
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
 #ifdef RISKY_STACK_SIZES
-#define TASK_WATCHDOG_STACK_SIZE					(900/sizeof(portSTACK_TYPE))
+#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #else
 #define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #endif
@@ -183,13 +188,18 @@ typedef enum
 #endif
 	#define IDLE_DATA_MAX_READ_TIME					1000
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
+	#ifndef TESTING_SPEEDUP
+	#define IDLE_DATA_LOG_FREQ						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
+	#endif
 	
 #ifndef TESTING_SPEEDUP
 #define LOW_POWER_DATA_TASK_FREQ				30000
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
+#ifndef TESTING_SPEEDUP
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
+#endif
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;
@@ -201,6 +211,9 @@ typedef enum
 #endif
 	#define ATTITUDE_DATA_MAX_READ_TIME				1000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			ATTITUDE_DATA_PACKETS // == 5
+	#ifndef TESTING_SPEEDUP
+	#define ATTITUDE_DATA_LOG_FREQ					(ORBITAL_PERIOD_S / ATTITUDE_DATA_LOGS_PER_ORBIT)
+	#endif
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
 #ifndef TESTING_SPEEDUP
@@ -210,6 +223,9 @@ typedef enum
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
 	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 	#define FLASH_CMP_DATA_LOGS_PER_ORBIT			FLASH_CMP_DATA_PACKETS // == 6
+	#ifndef TESTING_SPEEDUP
+	#define FLASH_CMP_DATA_LOG_FREQ					(ORBITAL_PERIOD_S / FLASH_CMP_DATA_LOGS_PER_ORBIT)
+	#endif
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
@@ -217,8 +233,11 @@ typedef enum
 	#define STATE_HANDLING_TASK_FREQ			15000
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ		1000
 	#define IDLE_DATA_TASK_FREQ					2500
+		#define IDLE_DATA_LOG_FREQ					5000
 	#define ATTITUDE_DATA_TASK_FREQ				5000
+		#define ATTITUDE_DATA_LOG_FREQ				10000
 	#define FLASH_ACTIVATE_TASK_FREQ			15000
+		#define FLASH_CMP_DATA_LOG_FREQ				30000
 	#define LOW_POWER_DATA_TASK_FREQ			7500
 	#define BATTERY_CHARGING_TASK_FREQ			16000
 	#define PERSISTENT_DATA_BACKUP_TASK_FREQ	10000

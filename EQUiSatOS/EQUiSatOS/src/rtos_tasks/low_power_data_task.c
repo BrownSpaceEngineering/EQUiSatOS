@@ -76,6 +76,9 @@ void low_power_data_task(void *pvParameters)
 			// validate previous stored value in stack, getting back the next staged address we can start adding to
 			current_struct = (low_power_data_t*) equistack_Stage(&low_power_readings_equistack);
 		} else {
+			#ifdef USE_STRICT_ASSERTIONS
+				configASSERT(false);
+			#endif
 			// log error if the data read took too long
 			log_error(ELOC_LOW_POWER_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}

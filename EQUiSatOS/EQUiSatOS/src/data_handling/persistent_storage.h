@@ -30,7 +30,6 @@
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX
-#define ORBITAL_PERIOD_S					5580 // s; 93 mins
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
 
 /* battery-specific state cache (put here for #include reasons) */
@@ -131,7 +130,6 @@ void populate_error_stacks(equistack* error_stack);
 uint32_t get_current_timestamp(void);
 uint64_t get_current_timestamp_ms(void);
 uint16_t get_orbits_since_launch(void);
-bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator);
 
 /* maintenance helpers */
 void write_custom_state(void);

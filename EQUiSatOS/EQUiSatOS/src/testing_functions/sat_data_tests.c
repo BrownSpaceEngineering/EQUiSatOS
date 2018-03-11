@@ -97,23 +97,23 @@ void print_transmission_info(msg_data_type_t type, uint32_t current_timestamp, u
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
 	print("num errors:\t%d\n", error_equistack.cur_size);
 	print_cur_data_buf(cur_data_buf);
-	print_equistack(&error_equistack, print_sat_error, "Error Stack");
+	print_equistack(&error_equistack, print_sat_error, "Error Stack", -1);
 	print("\nnote: there's more information here than is in the packet (look for non-transmitted packets)\n");
 	switch (type) {
 		case IDLE_DATA:
-			print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack");
+			print_equistack(&idle_readings_equistack,		print_idle_data,		"Idle Data Stack", -1);
 			return;
 		case ATTITUDE_DATA:
-			print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack");
+			print_equistack(&attitude_readings_equistack,	print_attitude_data,	"Attitude Data Stack", -1);
 			return;
 		case FLASH_DATA:
-			print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack");
+			print_equistack(&flash_readings_equistack,		print_flash_data,		"Flash Data Stack", -1);
 			return;
 		case FLASH_CMP_DATA:
-			print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack");
+			print_equistack(&flash_cmp_readings_equistack,	print_flash_cmp_data,	"Flash Cmp Data Stack", -1);
 			return;
 		case LOW_POWER_DATA:
-			print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack");
+			print_equistack(&low_power_readings_equistack,	print_low_power_data,	"Low Power Data Stack", -1);
 			return;
 		default: return;
 	}

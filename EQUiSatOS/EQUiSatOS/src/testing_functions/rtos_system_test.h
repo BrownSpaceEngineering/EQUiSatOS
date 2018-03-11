@@ -45,7 +45,8 @@ const char* get_task_state_str(eTaskState state);
 const char* get_msg_type_str(msg_data_type_t msg_type);
 
 void print_task_info(void);
-void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header);
+void print_errors(int max_num);
+void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header, int max_num);
 void print_cur_data_buf(uint8_t* cur_data_buf);
 void print_task_stack_usage(task_type_t task, uint32_t stack_size);
 void print_task_stack_usages(void);

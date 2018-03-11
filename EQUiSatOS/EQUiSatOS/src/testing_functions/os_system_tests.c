@@ -339,24 +339,25 @@ bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state)
 
 void force_set_state(sat_state_t new_state) 
 {
+	// note: probably a transition from new_state -> new_state in here
 	switch (new_state) {
 		case INITIAL:
-			set_all_task_states(INITIAL_TASK_STATES, INITIAL);
+			set_all_task_states(INITIAL_TASK_STATES, INITIAL, new_state);
 			break;
 		case ANTENNA_DEPLOY:
-			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY);
+			set_all_task_states(ANTENNA_DEPLOY_TASK_STATES, ANTENNA_DEPLOY, new_state);
 			break;
 		case HELLO_WORLD:
-			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD);
+			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD, new_state);
 			break;
 		case IDLE_NO_FLASH:
-			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH);
+			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH, new_state);
 			break;
 		case IDLE_FLASH:
-			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH);
+			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH, new_state);
 			break;
 		case LOW_POWER:
-			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER);
+			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER, new_state);
 			break;
 		default:
 			configASSERT(false);
