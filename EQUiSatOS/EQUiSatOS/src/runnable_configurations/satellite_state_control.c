@@ -282,13 +282,18 @@ void configure_state_from_reboot(void) {
 	#endif
 
 	// get state of antenna deploy task (and double-check with pin input) and apply
-	//if (cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy()) {
-		//boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
-	//} else {
+	if (cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy()) {
+		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_SUSPENDED;
+	} else {
 		boot_task_states.states[ANTENNA_DEPLOY_TASK] = T_STATE_RUNNING;
-	//}
+	}
+	
+	// add any errors we can from MRAM cache
+	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
+	populate_error_stacks(&error_equistack);
 	
 	// if the satellite restarted because of the watchdog, log that as an error so we know
+	// TODO: Jacob add two errors instead of generalizing
 	if (did_watchdog_kick()) {
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
 	}
@@ -299,15 +304,12 @@ void configure_state_from_reboot(void) {
 		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
 	}
 
-	// add any errors we can from MRAM cache
-	// (NOTE; no one should've logged any yet, or else they may be overwritten!)
-	populate_error_stacks(&error_equistack);
-
 	// note we've rebooted
 	increment_reboot_count();
 	
 	// initial hardware settings (last because they have delays)
-	set_radio_by_sat_state(current_sat_state);
+	// TODO: turn the radio off (once)
+	//set_radio_by_sat_state(current_sat_state);
 	set_irpow_by_sat_state(current_sat_state);
 }
 
@@ -397,7 +399,7 @@ void set_radio_by_sat_state(sat_state_t state) {
 
 /* wrapper for setting ir power state */
 void set_irpow_by_sat_state(sat_state_t state) {
-	bool new_state = RADIO_STATES & 1 << state;
+	bool new_state = IRPOW_STATES & 1 << state;
 	if (new_state) {
 		// don't re-enable, because this entails waiting to confirm power on
 		if (current_irpow_state != new_state) {
@@ -525,11 +527,11 @@ void set_single_task_state(enum task_state state, task_type_t task_id) {
 	configASSERT(task_id < NUM_TASKS);
 	switch (state) {
 		case T_STATE_RUNNING:
-			prev_task_states.states[task_id] = T_STATE_RUNNING;
+			prev_task_states.states[task_id] = T_STATE_RUNNING; // TODO: set to current task state
 			task_resume(task_id);
 			return;
 		case T_STATE_SUSPENDED:
-			prev_task_states.states[task_id] = T_STATE_SUSPENDED;
+			prev_task_states.states[task_id] = T_STATE_SUSPENDED; // TODO: set to current task state
 			task_suspend(task_id);
 			return;
 		case T_STATE_ANY:
@@ -548,6 +550,7 @@ void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 
 	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend THIS task
+	// TODO: add actual NULL check
 
 	// always check out of watchdog when called (to be double-sure)
 	// this is only called here so doesn't need to be safe
@@ -562,6 +565,7 @@ void task_resume(task_type_t task_id)
 {
 	TaskHandle_t* task_handle = task_handles[task_id];
 	configASSERT(task_handle != NULL);
+	// TODO: add actual NULL check
 
 	// always check in for watchdog when called
 	// (in case it wasn't, for example on BOOT)

@@ -74,7 +74,7 @@ enum {
 #else
 #define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1280/sizeof(portSTACK_TYPE))
 #endif
-#define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
+#define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(ACTION_PRIORITY)
 
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
@@ -172,15 +172,12 @@ typedef enum
 #ifndef TESTING_SPEEDUP
 #define TRANSMIT_TASK_FREQ						20000	// 20 secs; how often to transmit
 #endif
-	#define TRANSMIT_TASK_LESS_FREQ					30000 // 30 secs; half as fast in low power
-	#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
-	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
-	#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
+	#define TRANSMIT_TASK_LESS_FREQ					40000 // 40 secs; half as fast in low power
 
 #ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						10000 // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					1000 
+	#define IDLE_DATA_MAX_READ_TIME					1000
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	
 #ifndef TESTING_SPEEDUP
@@ -188,7 +185,7 @@ typedef enum
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ		10000
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;

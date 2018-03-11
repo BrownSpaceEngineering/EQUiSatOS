@@ -65,8 +65,7 @@ size_t longest_same_seq_len(uint8_t* data, size_t len) {
 // wrapper for reading a field from MRAM
 // handles RAIDing, error checking and correction, and field duplication
 // returns whether accurate data should be expected in data (whether error checks worked out)
-bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
-	// data is used as mram1_data1
+bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t address) {
 	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
@@ -74,7 +73,7 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	
 	// read both duplicates from MRAM1
 	bool success_mram1_data1 = !log_if_error(ELOC_MRAM1_READ,
-		mram_read_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
+		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data1, num_bytes, address),
 		true); // priority
 	bool success_mram1_data2 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data2, num_bytes, 
@@ -90,12 +89,12 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	// helpful constants
 	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
 	bool success_mram2 = success_mram2_data1 && success_mram2_data2;
-	bool mram1_data_matches = memcmp(data,		  mram1_data2, num_bytes) == 0;
+	bool mram1_data_matches = memcmp(mram1_data1,		  mram1_data2, num_bytes) == 0;
 	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
 	
 	/* if both sets of data match, do an additional comparison between them to determine our confidence */
 	if (mram1_data_matches && mram2_data_matches) {
-		bool mrams_match = memcmp(data, mram2_data1, num_bytes) == 0;
+		bool mrams_match = memcmp(mram1_data1, mram2_data1, num_bytes) == 0;
 		if (mrams_match) {
 			// return data in data
 			return true;
@@ -107,14 +106,14 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 				return false;
 			}
 			if (!success_mram1) {
-				memcpy(data, mram2_data1, num_bytes);
+				memcpy(mram1_data1, mram2_data1, num_bytes);
 				return false;
 			}
 			
 			// if both are okay but still didn't match, take the one with the shortest sequence of shared bytes
 			// (if one has failed, it's likely all 0xFF's or 0x00's and therefore "matches")
 			// note that if the data is 1 byte long this essentially defaults to mram1
-			size_t mram1_same_seq_len = longest_same_seq_len(data,		num_bytes);
+			size_t mram1_same_seq_len = longest_same_seq_len(mram1_data1, num_bytes);
 			size_t mram2_same_seq_len = longest_same_seq_len(mram2_data1, num_bytes);
 			
 			// do some additional error logging of long same sequences
@@ -126,10 +125,10 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 			}
 			
 			if (mram1_same_seq_len <= mram2_same_seq_len) { // mram1 has a shorter stream
-				// return data in data
+				// return data in mram1_data1
 				return false;
 			} else {
-				memcpy(data, mram2_data2, num_bytes);
+				memcpy(mram1_data1, mram2_data2, num_bytes);
 				return false;
 			}
 		}
@@ -149,7 +148,7 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	if (!mram1_data_matches && mram2_data_matches) {
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
-		memcpy(data, mram2_data1, num_bytes);
+		memcpy(mram1_data1, mram2_data1, num_bytes);
 		return success_mram2;
 	}
 	
@@ -164,24 +163,24 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		
-		if (memcmp(data, mram2_data1, num_bytes) == 0 
+		if (memcmp(mram1_data1, mram2_data1, num_bytes) == 0 
 			&& success_mram1_data1 && success_mram2_data1) {
-			// return data in data
+			// return data in mram1_data1
 			return true;
 		}
-		else if (memcmp(data, mram2_data2, num_bytes) == 0
+		else if (memcmp(mram1_data1, mram2_data2, num_bytes) == 0
 			&& success_mram1_data1 && success_mram2_data2) {
-			// return data in data
+			// return data in mram1_data1
 			return true;
 		}
 		else if (memcmp(mram1_data2, mram2_data1, num_bytes) == 0
 			&& success_mram1_data2 && success_mram2_data1) {
-			memcpy(data, mram1_data2, num_bytes);
+			memcpy(mram1_data1, mram1_data2, num_bytes); // mram1_data2 == mram2_data1
 			return true;
 		}
 		else if (memcmp(mram1_data2, mram2_data2, num_bytes) == 0
 			&& success_mram1_data2 && success_mram2_data2) {
-			memcpy(data, mram1_data2, num_bytes);
+			memcpy(mram1_data1, mram1_data2, num_bytes); // mram1_data2 == mram2_data2
 			return true;
 		} else {
 			log_error(ELOC_MRAM1_READ, ECODE_BAD_DATA, true); // just really bad 
@@ -719,7 +718,7 @@ uint16_t get_orbits_since_launch(void) {
 
 /**
  * Returns whether we're currently at or above
- * (*prev_orbit_fraction / orbit_fraction_denominator) percent through an orbit,
+ * (*prev_orbit_numerator / orbit_fraction_denominator) percent through an orbit,
  * where prev_orbit_fraction is the last known orbit fraction (set by this function)
  * and 1 / orbit_fraction_denominator is a fraction ("bucket") to divide an orbit by such that
  * this function will return true after each such fraction of orbital time passes.
@@ -730,9 +729,8 @@ uint16_t get_orbits_since_launch(void) {
  *
  * Test cases (with implicit argument of current orbit percentage):
  *		at_orbit_fraction(0, 2, .1) = false
- *		at_orbit_fraction(0, 2, .1) = false
  */
-bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator) {
+bool passed_orbit_fraction(uint8_t* prev_orbit_numerator, uint8_t orbit_fraction_denominator) {
 	#ifdef TESTING_SPEEDUP
 		return true;
 	#else
@@ -751,8 +749,8 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 		// i.e. when the fraction moves from one "bucket" or
 		// fraction component to the next we set prev_orbit_fraction
 		// so that we wait the fractional amount before returning true again
-		if (cur_orbit_fraction != *prev_orbit_fraction) {
-			*prev_orbit_fraction = cur_orbit_fraction;
+		if (cur_orbit_fraction != *prev_orbit_numerator) {
+			*prev_orbit_numerator = cur_orbit_fraction;
 			return true;
 		}
 		return false;

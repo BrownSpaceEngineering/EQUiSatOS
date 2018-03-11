@@ -9,7 +9,7 @@
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-#define DISABLE_REWRITE_FROM_MRAM
+//#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
@@ -74,8 +74,8 @@ static void start_application(void)
 	 * Stay in SAM-BA if *(APP_START+0x4) == 0xFFFFFFFF
 	 */
 	if (app_start_address == 0xFFFFFFFF) {
-		/* Stay in bootloader */
-		// TODO: What to do??????? Try MRAM again?
+		// try again...
+		system_reset();
 		return;
 	}
 

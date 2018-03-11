@@ -165,8 +165,8 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 
 /* adds the given error to the given error equistack, in such a way 
    that only two errors will ever be stored during a "period of errors":
-   one to mark the start and one to mark the most recent occurrence */
-// TODO: code review!
+   one to mark the start and one to mark the most recent occurrence.
+   Dependent on starting from an empty stack. */
 void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	
 	// Note: taking the mutex around this logic both ensures the equistack
@@ -209,10 +209,7 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 			// If a normal error being added will overwrite a priority error, only do so if
 			// that priority error is past the "importance timeout" (too old to matter)
 			// If a priority error is being added, always add it
-			if (is_priority_error(*new_error)) {
-				equistack_Push_Unsafe(stack, new_error);
-
-			} else if (stack->cur_size == stack->max_size) {
+			if (stack->cur_size == stack->max_size) {
 				// we only need to check to determine whether to overwrite with a normal error
 				// when the stack is full. We'll only overwrite if we're overwriting a normal
 				// error or we're overwriting an OLD priority error.
@@ -222,6 +219,8 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 						get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S)) {
 					equistack_Push_Unsafe(stack, new_error);
 				}
+			} else {
+				equistack_Push_Unsafe(stack, new_error);
 			}
 		
 		} else if(num_same_errors == 2) {
