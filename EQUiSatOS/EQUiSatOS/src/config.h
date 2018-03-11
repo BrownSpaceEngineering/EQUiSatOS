@@ -23,7 +23,7 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 //#define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
@@ -34,7 +34,8 @@
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
 #define TESTING_SPEEDUP
-
+// add strict asserts to notify of events that we want to be rare
+#define USE_STRICT_ASSERTIONS
 // reduces the stack size of some tasks to a workable but risky level
 //#define RISKY_STACK_SIZES
 
@@ -46,7 +47,7 @@
 #define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
 //													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED}})
-#define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
+#define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 #define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory

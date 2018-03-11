@@ -307,7 +307,7 @@
     <avrtoolserialnumber>ATML2130021800007809</avrtoolserialnumber>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x10010300</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
@@ -1165,6 +1165,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\data_handling\State_Structs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sensor_drivers\sensor_def.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sensor_drivers\sensor_def.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\telemetry\Radio_Commands.c">

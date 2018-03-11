@@ -58,7 +58,6 @@ void low_power_data_task(void *pvParameters)
 			read_ir_object_temps_batch(current_struct->ir_obj_temps_data);
 			read_gyro_batch(current_struct->gyro_data);
 		
-			// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
 			verify_regulators();
 			verify_flash_readings(false); // not flashing (function is thread-safe)
 		}

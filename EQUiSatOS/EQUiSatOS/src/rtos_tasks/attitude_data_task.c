@@ -22,7 +22,7 @@ void attitude_data_task(void *pvParameters)
 	// (= numerator of (x / ATTITUDE_DATA_LOGS_PER_ORBIT) of an orbit)
 	// we set this to the max because we want it to think we've wrapped around
 	// an orbit on boot (log immediately)
-	uint8_t prev_orbit_fraction = ATTITUDE_DATA_LOGS_PER_ORBIT; 
+	uint8_t prev_orbit_numerator = ATTITUDE_DATA_LOGS_PER_ORBIT; 
 	
 	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
 	
@@ -56,7 +56,7 @@ void attitude_data_task(void *pvParameters)
 		// and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= ATTITUDE_DATA_MAX_READ_TIME) {
-			if (passed_orbit_fraction(&prev_orbit_fraction, ATTITUDE_DATA_LOGS_PER_ORBIT)) {
+			if (passed_orbit_fraction(&prev_orbit_numerator, ATTITUDE_DATA_LOGS_PER_ORBIT)) {
 				// validate previous stored value in stack, getting back the next staged address we can start adding to
 				current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
 			}

@@ -74,7 +74,7 @@ enum {
 #else
 #define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1280/sizeof(portSTACK_TYPE))
 #endif
-#define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(DATA_READ_PRIORITY)
+#define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(ACTION_PRIORITY)
 
 /********************************************************************************/
 /* Data reading task stack sizes - how many they can store before overwriting	*/
@@ -100,44 +100,6 @@ typedef enum
 	LOW_POWER,
 	NUM_SAT_STATES, // = LOW_POWER + 1
 } sat_state_t;
-
-/************************************************************************/
-/*  Enum for all types of collected sensor readings						*
- * (for consistency across sensor read functions)						*
- * Based off: https://docs.google.com/a/brown.edu/spreadsheets/d/1sHQNTC5f5sg6j5DD4OKjuQykpIM3z16uetWT9YuB9PQ/edit?usp=sharing
- *	NOTE:																*
- *	If you add/remove a type of collected data, there are several		*
- *	things you must change:												*
- *		- Create a batch type definition								*
- *		- Create the required frequencies								*
- *		- Add a new array of data to ALL of the relevant state structs  *
- *		- Add an add_*_batch_if_ready function						    *
- * NOTE: To move this somewhere, use this regex: (\w*)_DATA, --> $1		*
- ************************************************************************/
-typedef enum // TODO: needed?
-{
-	LION_VOLTS_DATA,
-	LION_CURRENT_DATA,
-	LED_TEMPS_DATA,
-	LIFEPO_CURRENT_DATA,
-	LIFEPO_VOLTS_DATA,
-	IR_DATA,
-	DIODE_DATA,
-	BAT_TEMP_DATA,
-	IR_TEMPS_DATA,
-	RADIO_TEMP_DATA,
-	ACCELEROMETER_DATA,
-	GYRO_DATA,
-	MAGNETOMETER_DATA,
-	LED_CURRENT_DATA,
-	RADIO_VOLTS_DATA,
-	IMU_TEMP_DATA,
-	BAT_CHARGE_VOLTS_DATA,
-	BAT_CHARGE_DIG_SIGS_DATA,
-	DIGITAL_OUT_DATA,
-	RAIL_5V_DATA,
-	NUM_DATA_TYPES //= RAIL_5V_DATA + 1
-} sensor_type_t;
 
 /************************************************************************/
 /* enum for all types of data that can be read							*/
@@ -210,15 +172,12 @@ typedef enum
 #ifndef TESTING_SPEEDUP
 #define TRANSMIT_TASK_FREQ						20000	// 20 secs; how often to transmit
 #endif
-	#define TRANSMIT_TASK_LESS_FREQ					30000 // 30 secs; half as fast in low power
-	#define TRANSMIT_TASK_TRANS_MONITOR_FREQ		150		// check period for transmit_task during transmission
-	#define TRANSMIT_TASK_CONFIRM_TIMEOUT			2000	// max "transmission time" before timing out confirmation and quit
-	#define TRANSMIT_TASK_MSG_REPEATS				2		// number of times to send the same transmission
+	#define TRANSMIT_TASK_LESS_FREQ					40000 // 40 secs; half as fast in low power
 
 #ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						10000 // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					1000 
+	#define IDLE_DATA_MAX_READ_TIME					1000
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	
 #ifndef TESTING_SPEEDUP
@@ -226,7 +185,7 @@ typedef enum
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			1000
 
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ		10000
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
 
 /** 
  * NOTE: The idle data collection task doesn't really need these constants;

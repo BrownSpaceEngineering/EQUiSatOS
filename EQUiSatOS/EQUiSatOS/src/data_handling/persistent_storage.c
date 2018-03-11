@@ -7,17 +7,13 @@
 
 #include "persistent_storage.h"
 
-// super simple mutex used to sync the two operations required
-// to modify the cached data responsible for computing get_current_timestamp()
-// (true if fields are being modified, false otherwise)
-// note: this only works because it's only being written by one thread at a time
-// (except in rare cases), and because read/stores are atomic in single-processor ARM
-bool cache_time_fields_minimutex = false;
-
 /* SPI master and slave handles */
 struct spi_module spi_master_instance;
 struct spi_slave_inst mram1_slave;
 struct spi_slave_inst mram2_slave;
+
+/* log of last known tick count to detect overflows */
+TickType_t prev_write_ticks = 0;
 
 void write_state_to_storage(void);
 void write_state_to_storage_safety(bool safe);
@@ -31,7 +27,9 @@ bool compare_persistent_charging_data(persistent_charging_data_t* data1, persist
 /************************************************************************/
 
 void init_persistent_storage(void) {
-	memset(&cached_state, 0, sizeof(cached_state)); // to avoid undefined behavior if someone accidentally uses it
+	// to avoid undefined behavior if someone accidentally uses the cache
+	memset(&cached_state, 0, sizeof(cached_state)); 
+	cached_state_sync_redundancy(); // sync to others
 
 	mram_spi_cache_mutex = xSemaphoreCreateMutexStatic(&_mram_spi_cache_mutex_d);
 
@@ -67,8 +65,7 @@ size_t longest_same_seq_len(uint8_t* data, size_t len) {
 // wrapper for reading a field from MRAM
 // handles RAIDing, error checking and correction, and field duplication
 // returns whether accurate data should be expected in data (whether error checks worked out)
-bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
-	// data is used as mram1_data1
+bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t address) {
 	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
@@ -76,7 +73,7 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	
 	// read both duplicates from MRAM1
 	bool success_mram1_data1 = !log_if_error(ELOC_MRAM1_READ,
-		mram_read_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
+		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data1, num_bytes, address),
 		true); // priority
 	bool success_mram1_data2 = !log_if_error(ELOC_MRAM1_READ,
 		mram_read_bytes(&spi_master_instance, &mram1_slave, mram1_data2, num_bytes, 
@@ -92,12 +89,12 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	// helpful constants
 	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
 	bool success_mram2 = success_mram2_data1 && success_mram2_data2;
-	bool mram1_data_matches = memcmp(data,		  mram1_data2, num_bytes) == 0;
+	bool mram1_data_matches = memcmp(mram1_data1,		  mram1_data2, num_bytes) == 0;
 	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
 	
 	/* if both sets of data match, do an additional comparison between them to determine our confidence */
 	if (mram1_data_matches && mram2_data_matches) {
-		bool mrams_match = memcmp(data, mram2_data1, num_bytes) == 0;
+		bool mrams_match = memcmp(mram1_data1, mram2_data1, num_bytes) == 0;
 		if (mrams_match) {
 			// return data in data
 			return true;
@@ -109,14 +106,14 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 				return false;
 			}
 			if (!success_mram1) {
-				memcpy(data, mram2_data1, num_bytes);
+				memcpy(mram1_data1, mram2_data1, num_bytes);
 				return false;
 			}
 			
 			// if both are okay but still didn't match, take the one with the shortest sequence of shared bytes
 			// (if one has failed, it's likely all 0xFF's or 0x00's and therefore "matches")
 			// note that if the data is 1 byte long this essentially defaults to mram1
-			size_t mram1_same_seq_len = longest_same_seq_len(data,		num_bytes);
+			size_t mram1_same_seq_len = longest_same_seq_len(mram1_data1, num_bytes);
 			size_t mram2_same_seq_len = longest_same_seq_len(mram2_data1, num_bytes);
 			
 			// do some additional error logging of long same sequences
@@ -128,10 +125,10 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 			}
 			
 			if (mram1_same_seq_len <= mram2_same_seq_len) { // mram1 has a shorter stream
-				// return data in data
+				// return data in mram1_data1
 				return false;
 			} else {
-				memcpy(data, mram2_data2, num_bytes);
+				memcpy(mram1_data1, mram2_data2, num_bytes);
 				return false;
 			}
 		}
@@ -151,7 +148,7 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	if (!mram1_data_matches && mram2_data_matches) {
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
-		memcpy(data, mram2_data1, num_bytes);
+		memcpy(mram1_data1, mram2_data1, num_bytes);
 		return success_mram2;
 	}
 	
@@ -166,24 +163,24 @@ bool storage_read_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		
-		if (memcmp(data, mram2_data1, num_bytes) == 0 
+		if (memcmp(mram1_data1, mram2_data1, num_bytes) == 0 
 			&& success_mram1_data1 && success_mram2_data1) {
-			// return data in data
+			// return data in mram1_data1
 			return true;
 		}
-		else if (memcmp(data, mram2_data2, num_bytes) == 0
+		else if (memcmp(mram1_data1, mram2_data2, num_bytes) == 0
 			&& success_mram1_data1 && success_mram2_data2) {
-			// return data in data
+			// return data in mram1_data1
 			return true;
 		}
 		else if (memcmp(mram1_data2, mram2_data1, num_bytes) == 0
 			&& success_mram1_data2 && success_mram2_data1) {
-			memcpy(data, mram1_data2, num_bytes);
+			memcpy(mram1_data1, mram1_data2, num_bytes); // mram1_data2 == mram2_data1
 			return true;
 		}
 		else if (memcmp(mram1_data2, mram2_data2, num_bytes) == 0
 			&& success_mram1_data2 && success_mram2_data2) {
-			memcpy(data, mram1_data2, num_bytes);
+			memcpy(mram1_data1, mram1_data2, num_bytes); // mram1_data2 == mram2_data2
 			return true;
 		} else {
 			log_error(ELOC_MRAM1_READ, ECODE_BAD_DATA, true); // just really bad 
@@ -213,7 +210,8 @@ bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) 
 			address + num_bytes), true); // priority
 }
 
-/* read state from storage into cache */
+/* read state from storage into cache - should only really be called on boot, 
+   otherwise the information in the time since the last write would be lost. */
 void read_state_from_storage(void) {
 	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
 	{
@@ -236,11 +234,18 @@ void read_state_from_storage(void) {
 			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
 		#endif
 		
+		// set initial _secs_since_launch_at_boot based on the last stored timestamp in the MRAM
+		// from here on out this will be used to judge our current _accurate_ timestamp (using xTaskGetTickCount rel. to this)
+		// and secs_since_launch will just be periodically updated in case of reboot
+		// (note that xTaskGetTickCount/1000 is very likely 0 when we first read the state on boot)
+		cached_state._secs_since_launch_at_boot = cached_state.secs_since_launch
+					- (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000;
+		
 		xSemaphoreGive(mram_spi_cache_mutex);
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
-	// write to redundancy for (probably) the first time
+	// write to redundancy to sync changes
 	cached_state_sync_redundancy();
 }
 
@@ -299,6 +304,58 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	return true;
 }
 
+// Updates all cache fields that should be updated on each write
+// NOTE: must be called with the SPI mutex to protect the changes
+// in the cached state
+// Returns whether we should reboot (tick count overflowed)
+bool update_cache_fields(void) {
+	// make sure all the cached states are in sync
+	cached_state_correct_errors();
+	
+	// before writing timestamp, check if the tick count overflowed.
+	// If it did, reset the processor to reset the timestamp (it's
+	// the only way), AFTER finishing this write to MRAM
+	// (we wouldn't write the timestamp in this case (it'll be wrong)
+	bool should_reboot = false;
+	TickType_t cur_ticks = xTaskGetTickCount();
+	if (cur_ticks < prev_write_ticks) {
+		should_reboot = true;
+		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
+		
+	} else {
+		prev_write_ticks = cur_ticks;
+		
+		// write our current timestamp to MRAM to be ready for next reboot
+		// (it's not actually directly referenced/used anywhere, we use secs_since_launch_at_boot)
+		cached_state.secs_since_launch = get_current_timestamp();
+	}
+	
+	// grab current sat state
+	cached_state.sat_state = get_sat_state();
+	
+	// reboot count is only incremented on startup and is written through cache
+	// other fields are written through when changed
+	
+	// we've made all our changes and can propagate them
+	cached_state_sync_redundancy();
+
+	return should_reboot;
+}
+
+// helper to perform actual field writes of cache (used in two places)
+// Returns whether error writes were correctly confirmed,
+// if confirm_errors was true (otherwise true)
+bool write_cache_fields_to_storage(bool confirm_errors) {
+	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	return storage_write_check_errors_unsafe(&error_equistack, confirm_errors);
+}
+
 /* 
 	Writes cached state to MRAM
 	NOTE: the SPI mutex MUST be held if called with safe == false - otherwise all of MRAM can be corrupted 
@@ -309,11 +366,7 @@ void write_state_to_storage_safety(bool safe) {
 	{
 		// always do this (every PERSISTENT_DATA_BACKUP_TASK_FREQ ms),
 		// plus we need to do it before every cached_state update
-		cached_state_correct_errors();
-	
-		cached_state.sat_state = get_sat_state();
-		// reboot count is only incremented on startup and is written through cache
-		// other fields are written through when changed
+		bool should_reboot = update_cache_fields();
 
 		// (variables for read results)
 		uint32_t temp_secs_since_launch;
@@ -322,30 +375,9 @@ void write_state_to_storage_safety(bool safe) {
 		uint8_t temp_prog_mem_rewritten;
 		uint32_t temp_radio_revive_timestamp;
 		persistent_charging_data_t temp_persistent_charging_data;
-		bool errors_write_confirmed = false;
-
-		// set write time right before writing
-		// (keep track of the old timestamp value in case the write fails and we have to reset)
-		uint32_t prev_cached_secs_since_launch = cached_state.secs_since_launch;
-		uint32_t prev_last_data_write_ms = last_data_write_ms;
 	
-		// quickly set time fields mutex while we're doing this so timestamp doesn't jump forward
-		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
-		cache_time_fields_minimutex = true;
-		cached_state.secs_since_launch = cur_timestamp;
-		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
-		cache_time_fields_minimutex = false;
-		cached_state_sync_redundancy();
-	
-		// actually perform writes
-		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
-		errors_write_confirmed = storage_write_check_errors_unsafe(&error_equistack, true);
+		// actually perform writes (DO check that errors wrote)
+		bool errors_write_confirmed = write_cache_fields_to_storage(true);
 
 		// read it right back to confirm validity
 		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
@@ -369,21 +401,12 @@ void write_state_to_storage_safety(bool safe) {
 			|| !errors_write_confirmed) {
 
 			log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_INCONSISTENT_DATA, true);
-
-			// in particular, if it was the secs_since_launch that was inconsistent,
-			// and it appears we failed to 
-			if (temp_secs_since_launch != cached_state.secs_since_launch &&
-				temp_secs_since_launch < cached_state.secs_since_launch) {
-				// grab time field mutex
-				cache_time_fields_minimutex = true;
-				last_data_write_ms = prev_last_data_write_ms;
-				cached_state.secs_since_launch = prev_cached_secs_since_launch;
-				cache_time_fields_minimutex = false;
-			}
 		}
 		
-		// apply changes to cached state
-		cached_state_sync_redundancy();
+		// if the tick count overflowed, reboot to reset it (error logged above)
+		if (should_reboot) {
+			system_reset();
+		}
 		
 		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
 		
@@ -409,22 +432,16 @@ void write_state_to_storage_emergency(bool from_isr) {
 	
 	if (got_mutex)
 	{
-		cached_state_correct_errors();
-		uint32_t cur_timestamp = get_current_timestamp(); // grab before because "takes" mutex
-		cache_time_fields_minimutex = true;
-		cached_state.secs_since_launch = cur_timestamp;
-		last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
-		cache_time_fields_minimutex = false;
-		cached_state_sync_redundancy();
+		// update fields in MRAM to prep for writing
+		bool should_reboot = update_cache_fields();
 		
-		storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
-		storage_write_check_errors_unsafe(&error_equistack, false);
+		// actually perform writes (DON'T check that errors wrote)
+		write_cache_fields_to_storage(false);
+		
+		// if the tick count overflowed, reboot to reset it (error logged above)
+		if (should_reboot) {
+			system_reset();
+		}
 		
 		if (from_isr) {
 			xSemaphoreGiveFromISR(mram_spi_cache_mutex, NULL);
@@ -493,7 +510,7 @@ bool increment_reboot_count(void) {
 		return true;
 		
 	} else {
-		// note: this should never be called outside the statup task
+		// note: this should never be called outside the startup task
 		// so this is really just token
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
 		return false;
@@ -512,7 +529,7 @@ bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp) {
 		
 	} else {
 		// This is sufficiently rare that we want to make sure it at least gets set,
-		// so we do it and risk a error for "data inconcsistency"
+		// so we do it and risk a error for "data inconsistency"
 		cached_state_correct_errors();
 		cached_state.radio_revive_timestamp = radio_revive_timestamp;
 		cached_state_sync_redundancy();
@@ -533,6 +550,7 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
    Should really be called periodically for these crucial things */
+// TODO: change this so not all params have to be passed in?
 bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
@@ -575,13 +593,10 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 
 /************************************************************************/
 // functions to get components of cached state
-// NOTE: use of mutexes here is necessary because we're using a single
-// MRAM chip which is a single-reader single-writer shared resource.
 /************************************************************************/
 
+// only use for cached secs since launch, NOT for current timestamp
 uint32_t cache_get_secs_since_launch() {
-	// note: not necessary to take minimutex because people
-	// don't have access to last_write_time_ms
 	return cached_state.secs_since_launch;
 }
 
@@ -686,16 +701,14 @@ bool compare_persistent_charging_data(persistent_charging_data_t* data1, persist
  * due to a watchdog reset). Segment since reboot is accurate to ms.
  */
 uint32_t get_current_timestamp(void) {
-	while (cache_time_fields_minimutex) {}; // wait on time field mutex
-	return ((xTaskGetTickCount() / portTICK_PERIOD_MS - last_data_write_ms) / 1000)
-		 + cache_get_secs_since_launch();
+	return (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000 
+		+ cached_state._secs_since_launch_at_boot;
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
-	while (cache_time_fields_minimutex) {}; // wait on time field mutex
-	return (xTaskGetTickCount() / portTICK_PERIOD_MS) - last_data_write_ms
-			+ (1000 * cache_get_secs_since_launch());
+	return xTaskGetTickCount() / portTICK_PERIOD_MS 
+		+ 1000 * cached_state._secs_since_launch_at_boot;
 }
 
 /* returns truncated number or orbits since first boot */
@@ -705,7 +718,7 @@ uint16_t get_orbits_since_launch(void) {
 
 /**
  * Returns whether we're currently at or above
- * (*prev_orbit_fraction / orbit_fraction_denominator) percent through an orbit,
+ * (*prev_orbit_numerator / orbit_fraction_denominator) percent through an orbit,
  * where prev_orbit_fraction is the last known orbit fraction (set by this function)
  * and 1 / orbit_fraction_denominator is a fraction ("bucket") to divide an orbit by such that
  * this function will return true after each such fraction of orbital time passes.
@@ -716,9 +729,8 @@ uint16_t get_orbits_since_launch(void) {
  *
  * Test cases (with implicit argument of current orbit percentage):
  *		at_orbit_fraction(0, 2, .1) = false
- *		at_orbit_fraction(0, 2, .1) = false
  */
-bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_denominator) {
+bool passed_orbit_fraction(uint8_t* prev_orbit_numerator, uint8_t orbit_fraction_denominator) {
 	#ifdef TESTING_SPEEDUP
 		return true;
 	#else
@@ -737,8 +749,8 @@ bool passed_orbit_fraction(uint8_t* prev_orbit_fraction, uint8_t orbit_fraction_
 		// i.e. when the fraction moves from one "bucket" or
 		// fraction component to the next we set prev_orbit_fraction
 		// so that we wait the fractional amount before returning true again
-		if (cur_orbit_fraction != *prev_orbit_fraction) {
-			*prev_orbit_fraction = cur_orbit_fraction;
+		if (cur_orbit_fraction != *prev_orbit_numerator) {
+			*prev_orbit_numerator = cur_orbit_fraction;
 			return true;
 		}
 		return false;
@@ -776,9 +788,6 @@ void write_custom_state(void) {
 // 	};
 
 	/*** WRITING ***/
-
-	// set write time right before writing
-	last_data_write_ms = xTaskGetTickCount() / portTICK_PERIOD_MS;
 
 	storage_write_field_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
 	storage_write_field_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);

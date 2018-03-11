@@ -5,7 +5,7 @@
 #ifndef TESTING_SPEEDUP
 	#define MIN_TIME_IN_INITIAL_S		(30*60)
 	#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
-#else 
+#else
 	#define MIN_TIME_IN_INITIAL_S		(15*60)
 	#define MIN_TIME_IN_BOOT_S			(ORBITAL_PERIOD_S / 2)
 #endif
@@ -13,11 +13,11 @@
 
 /* controls antenna deploy task state based on whether the antenna was deployed */
 void handle_antenna_deploy_task(void) {
-	if (get_antenna_deployed()) { 
+	if (should_exit_antenna_deploy()) {
 		// if the antenna has been deployed, suspend the task and note it occurred
-		update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+		update_sat_event_history(antenna_did_deploy(), 0, 0, 0, 0, 0, 0);
 		set_task_state_safe(ANTENNA_DEPLOY_TASK, false); // we're the only task that can suspend a task explicitly
-		
+
 	} else if (get_sat_state() != INITIAL
 				&& get_sat_state() != ANTENNA_DEPLOY
 				&& get_sat_state() != LOW_POWER) {
@@ -45,7 +45,7 @@ void state_handling_task(void *pvParameters)
 		report_task_running(STATE_HANDLING_TASK);
 
 		#if OVERRIDE_STATE_HOLD_INIT != 1
-	
+
 			#ifdef EQUISIM_WATCHDOG_RESET_TEST
 				test_watchdog_reset_bat_charging();
 				test_watchdog_reset_attitude_data();
@@ -55,16 +55,13 @@ void state_handling_task(void *pvParameters)
 				test_watchdog_reset_flash_activate_task();
 				test_watchdog_reset_low_power_data_task();
 			#endif
-			
+
 			#ifdef EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
 				test_normal_satellite_state_sequence();
 				test_error_case_satellite_state_sequence();
 			#endif
-						
+
 			/* normal operation */
-			// handle antenna deploy task separately
-			handle_antenna_deploy_task();
-				
 			decide_next_state(get_sat_state());
 		#endif
 	}
@@ -74,7 +71,9 @@ void state_handling_task(void *pvParameters)
 }
 
 void decide_next_state(sat_state_t current_state) {
-
+	// handle antenna deploy task separately
+	handle_antenna_deploy_task();
+	
 	///
 	// the state decision will be predicated on the current battery levels and
 	// the timestamp -- we'll grab them here
@@ -120,7 +119,6 @@ void decide_next_state(sat_state_t current_state) {
 										&& (charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV)));
 	bool low_power_exit_criteria = !low_power_entry_criteria;
 
-	// TODO: do we want some notion of time?
 	satellite_history_batch sat_history = cache_get_sat_event_history();
 
 	switch (current_state)
@@ -139,13 +137,10 @@ void decide_next_state(sat_state_t current_state) {
 
 			// if the antenna is open kill the task because the antenna has been deployed
 			// or kill it if it's run more than 5 times because it's a lost cause
-			} else if (sat_history.antenna_deployed || should_exit_antenna_deploy()) { // TODO: really use persistent state as short circuit???
+			} else if (sat_history.antenna_deployed && should_exit_antenna_deploy()) {
 				// switch state to hello world, then determine whether we should keep trying
 				// (we WON'T be suspended on state change)
 				set_sat_state(HELLO_WORLD);
-
-				// suspend antenna deploy task if necessary
-				handle_antenna_deploy_task();
 			}
 			break;
 
@@ -157,6 +152,7 @@ void decide_next_state(sat_state_t current_state) {
 				set_sat_state(IDLE_NO_FLASH);
 			break;
 
+		// TODO: new criteria here
 		case IDLE_NO_FLASH:
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
@@ -181,10 +177,10 @@ void decide_next_state(sat_state_t current_state) {
 					set_sat_state(IDLE_NO_FLASH);
 			}
 			break;
-		
+
 		default:
 			configASSERT(false);
-			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			set_sat_state(IDLE_NO_FLASH); // default state
 			break;
 	}

@@ -60,15 +60,21 @@ void init_sensor_read_commands(void) {
 
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
-static inline uint8_t truncate_u16t(uint16_t src) {
-	return src >> 8;
+static inline uint8_t truncate_u16t(uint16_t src, sig_id_t sig) {
+	int m = get_line_m_from_signal(sig);
+	int b = get_line_b_from_signal(sig);
+	return ((src * m) - b) >> 8;
 }
 
-static inline int8_t truncate_16t(int16_t src) {
-	return src >> 8;
+static inline uint8_t truncate_16t(int16_t src, sig_id_t sig) {
+	int m = get_line_m_from_signal(sig);
+	int b = get_line_b_from_signal(sig);
+	return ((src * m) - b) >> 8;
 }
 
-static void log_if_out_of_bounds(int reading, int low, int high, int eloc, bool priority) {
+static void log_if_out_of_bounds(int reading, sig_id_t sig, int eloc, bool priority) {
+	uint low = get_low_bound_from_signal(sig);
+	uint high = get_high_bound_from_signal(sig);
 	if (reading <= low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
 	} else if (reading >= high) {
@@ -77,23 +83,18 @@ static void log_if_out_of_bounds(int reading, int low, int high, int eloc, bool 
 }
 
 // note: processor ADC is locked externally to these methods for speed and for particular edge cases
-static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc,
-	uint low_bound, uint high_bound, bool priority) {
+static void commands_read_adc_mV(uint16_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	status_code_genare_t sc = configure_adc(&adc_instance, pin);
 	log_if_error(eloc, sc, priority);
 	sc = read_adc_mV(adc_instance, dest);
 	log_if_error(eloc, sc, priority);
-	log_if_out_of_bounds(*dest, low_bound, high_bound, eloc, priority);
+	log_if_out_of_bounds(*dest, sig, eloc, priority);
 }
 
-static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, uint low_bound, uint high_bound, bool priority) {
+static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	uint16_t read;
-	status_code_genare_t sc = configure_adc(&adc_instance, pin);
-	log_if_error(eloc, sc, priority);
-	sc = read_adc_mV(adc_instance, &read);
-	log_if_error(eloc, sc, priority);
-	log_if_out_of_bounds(read, low_bound, high_bound, eloc, priority);
-	*dest = truncate_u16t(read);
+	commands_read_adc_mV(&read, pin, eloc, sig, priority);
+	*dest = truncate_u16t(read, sig);
 }
 
 bool _set_5v_enable(bool on) {
@@ -127,7 +128,6 @@ void _enable_ir_pow_if_necessary(void) {
 
 void verify_regulators_unsafe(void) {
 	struct hw_states* states;
-	uint16_t low3v6RefBound, high3v6RefBound, low3v6SnsBound, high3v6SnsBound;
 	ad7991_ctrlbrd_batch batch;
 
 	// only lock hardware state mutex while needed to act on state,
@@ -135,31 +135,22 @@ void verify_regulators_unsafe(void) {
 	if (hardware_state_mutex_take())
 	{
 		read_ad7991_ctrlbrd_unsafe(batch);
-
 		states = get_hw_states();
-		low3v6RefBound = states->radio_powered ? B_3V6_REF_ON_LOW : B_3V6_REF_OFF_LOW;
-		high3v6RefBound = states->radio_powered ? B_3V6_REF_ON_HIGH : B_3V6_REF_OFF_HIGH;
-		low3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_LOW : B_3V6_SNS_OFF_LOW;
-		high3v6SnsBound = states->radio_powered ? B_3V6_SNS_ON_HIGH : B_3V6_SNS_OFF_HIGH;
-
 		hardware_state_mutex_give();
 	} else {
 		log_error(ELOC_VERIFY_REGS, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 		return;
 	}
 
-	// 5V regulator state is technically locked by both i2c_irpow_mutex and processor_adc_mutex
-	uint16_t low5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_LOW : B_5VREF_OFF_LOW;
-	uint16_t high5vRefBound = states->rail_5v_enabled ? B_5VREF_ON_HIGH : B_5VREF_OFF_HIGH;
 
 	// 3V6_REF is index 0
-	log_if_out_of_bounds(batch[0], low3v6RefBound, high3v6RefBound, ELOC_AD7991_CBRD_3V6_REF, true);
+	log_if_out_of_bounds(batch[0], states->radio_powered ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
 	// 3V6_SNS is index 1
-	log_if_out_of_bounds(batch[1], low3v6SnsBound, high3v6SnsBound, ELOC_AD7991_CBRD_3V6_SNS, true);
+	log_if_out_of_bounds(batch[1], states->radio_powered ? S_3V6_SNS_ON : S_3V6_SNS_OFF, ELOC_AD7991_CBRD_3V6_SNS, true);
 	// 5VREF is index 2
-	log_if_out_of_bounds(batch[2], low5vRefBound, high5vRefBound, ELOC_AD7991_CBRD_5V_REF, true);
+	log_if_out_of_bounds(batch[2], states->rail_5v_enabled ? S_5VREF_ON : S_5VREF_OFF, ELOC_AD7991_CBRD_5V_REF, true);
 	// 3V3REF current is index 3
-	log_if_out_of_bounds(batch[3], B_3V3_REF_LOW, B_3V3_REF_HIGH, ELOC_AD7991_CBRD_3V3_REF, true);
+	log_if_out_of_bounds(batch[3], S_3V3_REF, ELOC_AD7991_CBRD_3V3_REF, true);
 }
 
 void verify_regulators(void) {
@@ -185,7 +176,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 			uint16_t obj;
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
 			log_if_error(IR_ELOCS[i], sc, false);
-			log_if_out_of_bounds(obj, B_IR_OBJ_LOW, B_IR_OBJ_HIGH, IR_ELOCS[i], false);
+			log_if_out_of_bounds(obj, S_IR_OBJ, IR_ELOCS[i], false);
 			batch[i] = obj;
 		}
 
@@ -204,8 +195,8 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 			uint16_t amb;
 			status_code_genare_t sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
 			log_if_error(IR_ELOCS[i], sc, false);
-			log_if_out_of_bounds(amb, B_IR_AMB_LOW, B_IR_AMB_HIGH, IR_ELOCS[i], false);
-			batch[i] = truncate_u16t(amb);
+			log_if_out_of_bounds(amb, S_IR_AMB, IR_ELOCS[i], false);
+			batch[i] = truncate_u16t(amb, S_IR_AMB);
 		}
 
 		xSemaphoreGive(i2c_mutex);
@@ -222,16 +213,16 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 
 	// locks and releases processor_adc_mutex
 	read_lion_volts_precise(&val_1_precise, &val_2_precise);
-	batch[0] = truncate_u16t(val_1_precise);
-	batch[1] = truncate_u16t(val_2_precise);
+	batch[0] = truncate_u16t(val_1_precise, S_L_VOLT);
+	batch[1] = truncate_u16t(val_2_precise, S_L_VOLT);
 }
 
 void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		#ifndef EQUISIM_SIMULATE_BATTERIES
-			commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
-			commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, B_L_VOLT_LOW, B_L_VOLT_HIGH, true);
+			commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, S_L_VOLT, true);
+			commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, S_L_VOLT, true);
 			*val_1 = *val_1 * 25 / 10;
 			*val_2 = *val_2 * 25 / 10;
 		#else
@@ -249,7 +240,7 @@ void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	uint16_t results[4];
 	status_code_genare_t sc;
-	uint16_t low_limit, high_limit;
+	sig_id_t sig;
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
@@ -261,13 +252,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			log_if_error(ELOC_AD7991_BBRD, sc, true);
 
 			struct hw_states* states = get_hw_states();
-			if (states->antenna_deploying || states->radio_transmitting) {
-				low_limit = B_L_CUR_REG_LOW;
-				high_limit = B_L_CUR_REG_HIGH;
-			} else {
-				low_limit = B_L_CUR_HIGH_LOW;
-				high_limit = B_L_CUR_HIGH_HIGH;
-			}
+			sig = (states->antenna_deploying || states->radio_transmitting) ? S_L_CUR_REG : S_L_CUR_HIGH;
 
 			hardware_state_mutex_give();
 		} else {
@@ -286,21 +271,21 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	}
 
 	// results[0] = L2_SNS
-	batch1[1] = truncate_u16t(results[0]);
-	log_if_out_of_bounds(results[0], low_limit, high_limit, ELOC_AD7991_BBRD_L2_SNS, true);
+	batch1[1] = truncate_u16t(results[0], S_L_CUR_REG);
+	log_if_out_of_bounds(results[0], sig, ELOC_AD7991_BBRD_L2_SNS, true);
 	// results[1] = L1_SNS
-	batch1[0] = truncate_u16t(results[1]);
-	log_if_out_of_bounds(results[1], low_limit, high_limit, ELOC_AD7991_BBRD_L1_SNS, true);
+	batch1[0] = truncate_u16t(results[1], S_L_CUR_REG);
+	log_if_out_of_bounds(results[1], sig, ELOC_AD7991_BBRD_L1_SNS, true);
 
 	// results[2] = L_REF
-	batch2[1] = truncate_u16t(results[2]);
-	log_if_out_of_bounds(results[2], B_LREF_LOW, B_LREF_HIGH, ELOC_AD7991_BBRD_L1_SNS, true);
+	batch2[1] = truncate_u16t(results[2], S_LREF);
+	log_if_out_of_bounds(results[2], S_LREF, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[3] = PANELREF
 	#ifdef EQUISIM_SIMULATE_BATTERIES
 		results[3] = equisim_read_panelref();
 	#endif
-	batch2[0] = truncate_u16t(results[3]);
-	log_if_out_of_bounds(results[3], B_PANELREF_LOW, B_PANELREF_HIGH, ELOC_AD7991_BBRD_L2_SNS, true);
+	batch2[0] = truncate_u16t(results[3], S_PANELREF);
+	log_if_out_of_bounds(results[3], S_PANELREF, ELOC_AD7991_BBRD_L2_SNS, true);
 }
 
 void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
@@ -403,7 +388,7 @@ void _read_led_temps_batch_unsafe(led_temps_batch batch) {
 		uint8_t rs8;
 		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
-		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_LED_TEMP_LOW, B_LED_TEMP_HIGH, true);
+		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], S_LED_TEMP, true);
 		batch[i - 4] = rs8;
 	}
 }
@@ -439,25 +424,18 @@ void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
 		// TODO: define different 'on' range?
-		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
+		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], S_L_TEMP, true);
 		batch[i] = rs8;
 	}
 }
 
 // TODO: only reason the second argument exists right now is because of system_test
 void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing_now) {
-	uint low_limit, high_limit;
-	if (flashing_now) {
-		low_limit = B_LF_CUR_REG_LOW;
-		high_limit = B_LF_CUR_REG_HIGH;
-	} else {
-		low_limit = B_LF_CUR_FLASH_LOW;
-		high_limit = B_LF_CUR_FLASH_HIGH;
-	}
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, low_limit, high_limit, true);
+	uint sig = flashing_now ? S_LF_CUR_FLASH : S_LF_CUR_REG;
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, sig, true);
 }
 
 // TODO: may be unused, in favor of verify_flash_readings (currently is)
@@ -489,10 +467,10 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			#ifndef EQUISIM_SIMULATE_BATTERIES
-				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, B_LF_CUR_REG_LOW, B_LF_CUR_REG_HIGH, true);
+				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_CUR_REG, true);
+				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_CUR_REG, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_CUR_REG, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_CUR_REG, true);
 			#else
 				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
 			#endif
@@ -511,10 +489,10 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	#ifndef EQUISIM_SIMULATE_BATTERIES
 		// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
-		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-		commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-		commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
-		commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, B_LF_VOLT_LOW, B_LF_VOLT_HIGH, true);
+		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, S_LF_VOLT, true);
+		commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, S_LF_VOLT, true);
+		commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, S_LF_VOLT, true);
+		commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, S_LF_VOLT, true);
 
 		*val_2 = *val_2 * 195 / 100;
 		*val_4 = *val_4 * 195 / 100;
@@ -550,10 +528,10 @@ void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 
 	read_lifepo_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
 
-	batch[0] = truncate_u16t(val_1_precise);
-	batch[1] = truncate_u16t(val_2_precise);
-	batch[2] = truncate_u16t(val_3_precise);
-	batch[3] = truncate_u16t(val_4_precise);
+	batch[0] = truncate_u16t(val_1_precise, S_LF_VOLT);
+	batch[1] = truncate_u16t(val_2_precise, S_LF_VOLT);
+	batch[2] = truncate_u16t(val_3_precise, S_LF_VOLT);
+	batch[3] = truncate_u16t(val_4_precise, S_LF_VOLT);
 }
 
 // reads truncated batch; mutex safe
@@ -570,18 +548,11 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 
 // TODO: only reason the second argument exists right now is because of system_test
 void _read_led_current_batch_unsafe(led_current_batch batch, bool flashing_now) {
-	uint low_limit, high_limit;
-	if (flashing_now) { // protected by i2c_irpower_mutex (and processor_adc_mutex)
-		low_limit = B_LED_CUR_REG_LOW;
-		high_limit = B_LED_CUR_REG_HIGH;
-	} else {
-		low_limit = B_LED_CUR_FLASH_LOW;
-		high_limit = B_LED_CUR_FLASH_HIGH;
-	}
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, low_limit, high_limit, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, low_limit, high_limit, true);
+	uint sig = flashing_now ? S_LED_CUR_FLASH : S_LED_CUR_REG;
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LED1SNS, ELOC_LED1SNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LED2SNS, ELOC_LED2SNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LED3SNS, ELOC_LED3SNS, sig, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LED4SNS, ELOC_LED4SNS, sig, true);
 }
 
 void verify_flash_readings(bool flashing_now) {
@@ -653,7 +624,7 @@ void read_pdiode_batch(pdiode_batch* batch) {
 					// TODO: Log error for unexpected pdiode case
 				} else {
 					*batch |= (two_bit_range << (i*2));
-				}				
+				}
 			}
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
@@ -679,7 +650,7 @@ void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 				uint8_t rs8;
 				status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 				log_if_error(TEMP_ELOCS[i], sc, true);
-				commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], B_L_TEMP_LOW, B_L_TEMP_HIGH, true);
+				commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], S_L_TEMP, true);
 				batch[i - 2] = rs8;
 			}
 
@@ -712,7 +683,7 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 
 	log_if_error(ELOC_IMU_ACC, sc, false);
 	for (int i = 0; i < 3; i++) {
-		accel_batch[i] = truncate_u16t(rs[i]);
+		accel_batch[i] = truncate_u16t(rs[i], S_ACCEL);
 	}
 }
 
@@ -722,8 +693,8 @@ void _read_gyro_batch_unsafe(gyro_batch gyr_batch) {
 
 	log_if_error(ELOC_IMU_GYRO, sc, false);
 	for (int i = 0; i < 3; i++) {
-		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
-		gyr_batch[i] = truncate_u16t(rs[i]);
+		log_if_out_of_bounds(rs[i], S_GYRO, ELOC_IMU_GYRO, false);
+		gyr_batch[i] = truncate_u16t(rs[i], S_GYRO);
 	}
 }
 
@@ -743,8 +714,8 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 
 	log_if_error(ELOC_IMU_GYRO, sc, false);
 	for (int i = 0; i < 3; i++) {
-		log_if_out_of_bounds(rs[i], B_GYRO_LOW, B_GYRO_HIGH, ELOC_IMU_GYRO, false);
-		gyr_batch[i] = truncate_u16t(rs[i]);
+		log_if_out_of_bounds(rs[i], S_GYRO, ELOC_IMU_GYRO, false);
+		gyr_batch[i] = truncate_u16t(rs[i], S_GYRO);
 	}
 }
 
@@ -765,7 +736,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 
 	log_if_error(ELOC_IMU_MAG, sc, false);
 	for (int i = 0; i < 3; i++) {
-		batch[i] = truncate_u16t(rs[i]);
+		batch[i] = truncate_u16t(rs[i], S_MAG);
 	}
 }
 
@@ -804,8 +775,8 @@ void read_imu_temp_batch(imu_temp_batch* batch) {
 		int16_t buf;
 		enum status_code sc = MPU9250_read_temp(&buf);
 		log_if_error(ELOC_IMU_TEMP, sc, false);
-		log_if_out_of_bounds(buf, B_IMU_TEMP_LOW, B_IMU_TEMP_HIGH, ELOC_IMU_TEMP, false);
-		*batch = truncate_u16t(buf);
+		log_if_out_of_bounds(buf, S_IMU_TEMP, ELOC_IMU_TEMP, false);
+		*batch = truncate_u16t(buf, S_IMU_TEMP);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_TEMP, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -814,7 +785,7 @@ void read_imu_temp_batch(imu_temp_batch* batch) {
 }
 
 void read_radio_temp_batch(radio_temp_batch* batch) {
-	*batch = truncate_u16t(get_radio_temp_cached());
+	*batch = truncate_u16t(get_radio_temp_cached(), S_RAD_TEMP);
 }
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {

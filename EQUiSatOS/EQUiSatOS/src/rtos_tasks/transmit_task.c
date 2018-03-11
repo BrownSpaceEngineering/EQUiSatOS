@@ -222,7 +222,7 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_typ
 	if (default_msg_type_equistack != NULL && default_msg_type_equistack->cur_size > 0) {
 		return default_msg_type;
 	} else {
-		return get_next_highest_pri_msg_type(default_msg_type);
+		return get_next_highest_pri_msg_type(default_msg_type); // might say not transmit if all empty
 	}
 }
 

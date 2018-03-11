@@ -190,7 +190,8 @@ enum error_codes {
 	ECODE_RECOMMISSION =                59,
 	ECODE_ALL_SAME_VAL =				60,
 	ECODE_CORRUPTED =					61,
-	ECODE_INVALID_STATE_CHANGE =		62
+	ECODE_INVALID_STATE_CHANGE =		62,
+	ECODE_TIMESTAMP_WRAPAROUND =		63
 };
 
 /************************************************************************/

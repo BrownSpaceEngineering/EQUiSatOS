@@ -20,7 +20,7 @@ static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
 	}
 }
 
-bool get_antenna_deployed(void) {
+bool antenna_did_deploy(void) {
 	// if we fail to get the mutex, continue on and mess with anything reading sensors
 	// (we don't care about sensors much relative to antenna deployment)
 	bool got_mutex = false;
@@ -55,9 +55,10 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		hardware_state_mutex_give();
 	
 		//delay_ms(ms); // for testing only
-		vTaskDelay(ms);
+		vTaskDelay(ms / portTICK_PERIOD_MS);
 		
 		// read current (both just in case) so we can shut it down if we need
+		// TODO: depend on pin
 		uint16_t li1, li2, lf1, lf2, lf3, lf4;
 		read_lion_current_precise(&li1, &li2);
 		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
@@ -70,6 +71,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		bool can_cont = true;
 		if (p_ant == 1) {
 			print("PWM was on LiON\nCurrent on 1: %d\nCurrent on 2: %d\n", li1, li2);
+			// TODO: if current is too low log an error
 			if (li1 > PWM_MAX_CUR || li2 > PWM_MAX_CUR) {
 				can_cont = false;
 			}

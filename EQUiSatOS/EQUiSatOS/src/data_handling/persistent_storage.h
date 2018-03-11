@@ -77,6 +77,11 @@ struct persistent_data {
 	uint32_t radio_revive_timestamp;
 	persistent_charging_data_t persistent_charging_data;
 	
+	// the seconds since launch when we booted; add xTaskGetTickCount()/1000 to get current timestamp
+	// note: not actually written to MRAM, just used as a basis for the timestamp during
+	// this boot of the OS (updated on every reboot and then kept constant)
+	uint32_t _secs_since_launch_at_boot;
+	
 } cached_state;
 
 /* 
@@ -90,13 +95,6 @@ SemaphoreHandle_t mram_spi_cache_mutex;
 
 // dispersed!
 struct persistent_data cached_state_2;
-
-// variable to be updated on each data read so we know how current the MRAM
-// data is (only for computing timestamps) 
-// (measured relative to start of current RTOS tick count)
-uint32_t last_data_write_ms;
-
-// dispersed!
 struct persistent_data cached_state_3;
 
 /* memory interface / action functions */

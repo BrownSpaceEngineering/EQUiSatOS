@@ -10,16 +10,12 @@
 #include "../processor_drivers/PWM_Commands.h"
 #include "../runnable_configurations/antenna_pwm.h"
 
-#define ANTENNA_DEPLOY_MAX_TRIES	25
+#define ANTENNA_DEPLOY_MAX_TRIES	26
 static int num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
-	return (get_antenna_deployed() && num_tries_ant_deploy() > 0) // must try at least once
-		|| num_tries_ant_deploy() >= ANTENNA_DEPLOY_MAX_TRIES;
-}
-
-int num_tries_ant_deploy(void) {
-	return num_tries;
+	return (antenna_did_deploy() && num_tries > 0) // must try at least once
+		|| num_tries >= ANTENNA_DEPLOY_MAX_TRIES;
 }
 
 void antenna_deploy_task(void *pvParameters) {
@@ -44,15 +40,13 @@ void antenna_deploy_task(void *pvParameters) {
 		// report to watchdog (again)
 		report_task_running(ANTENNA_DEPLOY_TASK);
 		
-		bool did_deploy = get_antenna_deployed();
+		bool did_deploy = antenna_did_deploy();
 		if (num_tries == 0 && did_deploy) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
 		} else if (did_deploy) {
 			// then the antenna should actually be deployed
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
-		} else {
-			int a = 1;
-			// victory
+			continue;
 		}
 		
 		int current_pwm_pin = get_current_pwm_pin();
@@ -70,6 +64,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
+				// TODO: #define
 				vTaskDelay(1800000 / portTICK_PERIOD_MS);
 			}
 		} else {
@@ -79,7 +74,9 @@ void antenna_deploy_task(void *pvParameters) {
 				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;
 					int mux = current_pwm_pin == 2 ? P_ANT_DRV2_MUX : P_ANT_DRV3_MUX;
+					set_output(true, P_LF_B1_OUTEN);
 					try_pwm_deploy(pin, mux, PWM_LENGTH_MS, current_pwm_pin);
+					set_output(false, P_LF_B1_OUTEN);
 					
 					xSemaphoreGive(critical_action_mutex);
 				} else {
@@ -87,7 +84,7 @@ void antenna_deploy_task(void *pvParameters) {
 				}
 				num_tries++;
 			} else {
-				vTaskDelay(1000 / portTICK_PERIOD_MS); // TODO make 3600000
+				vTaskDelay(3600000 / portTICK_PERIOD_MS);
 			}
 		}
 	}

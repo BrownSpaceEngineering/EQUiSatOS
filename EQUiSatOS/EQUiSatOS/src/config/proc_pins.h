@@ -54,7 +54,7 @@
 //GPIO Input
 #define P_DET_RTN		PIN_PB14
 
-// TODO: fill in PB or PA pins
+// These are for shifts for bat_charge_dig_sigs
 #define P_L1_FAULTN		5
 #define P_L1_CHGN		4
 #define P_L1_ST			1

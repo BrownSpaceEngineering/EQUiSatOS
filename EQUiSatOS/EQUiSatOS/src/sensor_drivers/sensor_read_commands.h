@@ -14,11 +14,13 @@
 
 #include "../global.h"
 #include "../testing_functions/equisim_simulated_data.h"
+#include "sensor_def.h"
 
 // TODO: all of these
 /************************************************************************/
 /* CRITICAL HARDWARE TIMINGS                                            */
 /************************************************************************/
+<<<<<<< HEAD
 #define EN_5V_POWER_UP_DELAY_MS			10  // note we hold a mutex for this time
 #define IR_WAKE_DELAY					300
 
@@ -82,6 +84,10 @@
 #define B_5VREF_OFF_HIGH				400
 #define B_5VREF_ON_LOW					4800
 #define B_5VREF_ON_HIGH					5200
+=======
+#define EN_5V_POWER_UP_DELAY_MS		10  // note we hold a mutex for this time
+#define IR_WAKE_DELAY				300 // TODO: add unit
+>>>>>>> 84830eb97f621eb7cf559d57acda75d370265015
 
 typedef enum {
 	BCDS_LF_B1_BT,

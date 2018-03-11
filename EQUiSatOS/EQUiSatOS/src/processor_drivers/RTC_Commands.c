@@ -31,10 +31,8 @@ void init_rtc(void)
 	
 	if (status_code != STATUS_OK)
 	{
-		// TODO: kick watchdog
-	}
-	else
-	{
+		system_reset();
+	} else {
 		rtc_count_enable(&rtc_instance);
 	}
 }

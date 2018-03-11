@@ -17,7 +17,7 @@
 // TODO: figure out these thresholds fully and deal with scaling
 
 // #define BAT_TESTING
-#define WITHOUT_DECOMMISION
+// #define WITHOUT_DECOMMISION
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -27,7 +27,7 @@
 #define LI_LOW_POWER_MV            			3900
 #define LI_CRITICAL_MV             			2750
 
-#define LF_FULL_MAX_MV             			3500
+#define LF_FULL_MAX_MV             			3500 // what here?
 #define LF_FULL_SANITY_MV               3000
 #define LF_FLASH_AVG_MV            			3250
 
@@ -166,7 +166,7 @@ int is_lion(battery_t bat);
 void init_charging_data(void);
 void set_li_to_discharge(int bat, int discharge);
 void set_bat_to_charge(int bat, int charge);
-int battery_logic(void);
+void battery_logic(void);
 void decommission(battery_t bat);
 int time_for_recomission(battery_t bat);
 void check_for_recomission(battery_t bat);

@@ -16,7 +16,7 @@
 #define PWM_LIFEPO_MIN_V	5600 // TODO: set back to 6600
 #define PWM_MAX_CUR			2000
 
-bool get_antenna_deployed(void);
+bool antenna_did_deploy(void);
 void pwm_test(void);
 void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant);
 int get_current_pwm_pin(void);
