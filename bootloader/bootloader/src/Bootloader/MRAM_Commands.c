@@ -11,6 +11,13 @@
 uint8_t control_temp[NUM_CONTROL_BYTES];
 uint8_t control_rx_temp[NUM_CONTROL_BYTES];
 
+// make crucial fields RAD-safe
+RAD_SAFE_FIELD_INIT(uint8_t, num_control_bytes,			NUM_CONTROL_BYTES);
+RAD_SAFE_FIELD_INIT(uint8_t, read_command,				READ_COMMAND);
+RAD_SAFE_FIELD_INIT(uint8_t, read_status_reg_command,	READ_STATUS_REG_COMMAND);
+RAD_SAFE_FIELD_INIT(uint8_t, write_command,				WRITE_COMMAND);
+RAD_SAFE_FIELD_INIT(uint8_t, enable_command,			ENABLE_COMMAND);
+
 void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
 	buffer[0] = command;
 	buffer[1] = address >> 16;		// upper byte (only 3 bits are actually decoded)
@@ -45,7 +52,7 @@ void mram_reset(struct spi_module *spi_master_instance) {
 }
 
 status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave) {
-	uint8_t enable = ENABLE_COMMAND;
+	uint8_t enable = RAD_SAFE_FIELD_GET(enable_command);
 	spi_select_slave(spi_master_instance, slave, true);
 	// make sure to transceive data so we don't have RX data waiting (overflowed)
 	enum status_code code_1 = spi_transceive_buffer_wait(spi_master_instance, &enable, control_rx_temp, 1);
@@ -71,8 +78,8 @@ status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, st
 	
 	// write our 4-byte write command to the MRAM with the address
 	// (storing trash in rx buffer in a dummy temp variable while doing so)
-	copy_control_data(control_temp, address, WRITE_COMMAND);
-	s = spi_transceive_buffer_wait(spi_master_instance, control_temp, control_rx_temp, NUM_CONTROL_BYTES);
+	copy_control_data(control_temp, address, RAD_SAFE_FIELD_GET(write_command));
+	s = spi_transceive_buffer_wait(spi_master_instance, control_temp, control_rx_temp, RAD_SAFE_FIELD_GET(num_control_bytes));
 	if (!status_ok(s)) return s;
 	
 	// write the number of bytes specified into the MRAM
@@ -95,8 +102,8 @@ status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, str
 	// (storing trash in rx buffer in a dummy temp variable while doing so)
 	// for some reason we have to suck up a byte before we get to the start of the data 
 	// at the address we specified, so read an extra control byte
-	copy_control_data(control_temp, address, READ_COMMAND);
-	s = spi_transceive_buffer_wait(spi_master_instance, control_temp, control_rx_temp, NUM_CONTROL_BYTES);
+	copy_control_data(control_temp, address, RAD_SAFE_FIELD_GET(read_command));
+	s = spi_transceive_buffer_wait(spi_master_instance, control_temp, control_rx_temp, RAD_SAFE_FIELD_GET(num_control_bytes));
 	if (!status_ok(s)) return s;
 	
 	// read the number of bytes specified coming from the MRAM
@@ -110,7 +117,7 @@ status_code_genare_t mram_read_bytes(struct spi_module *spi_master_instance, str
 
 status_code_genare_t mram_read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out) {
 	uint8_t data_tx_temp;
-	uint8_t read_control = READ_STATUS_REG_COMMAND;
+	uint8_t read_control = RAD_SAFE_FIELD_GET(read_status_reg_command);
 	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
 	if (!status_ok(s)) return s;
 

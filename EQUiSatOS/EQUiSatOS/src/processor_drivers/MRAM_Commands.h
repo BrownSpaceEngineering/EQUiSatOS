@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 #include <spi.h>
+#include <assert.h>
 
 // NOTE: looking at initialize_master in mram.c, the PADX must correspond to the PADX on these
 // signals, but the mux setting (a letter) DOES NOT have to correspond with the function of
@@ -62,5 +63,32 @@ status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, st
 /* will be written				                                        */
 /************************************************************************/
 status_code_genare_t mram_read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out);
+
+/************************************************************************/
+/* Rad-safe field helpers                                               */
+// Usage:
+// /* defines three redundant variables; 
+//    type can be anything assignable by = and comparable by == */
+// RAD_SAFE_FIELD_DEFINE(uint8_t, cats);
+// RAD_SAFE_FIELD_INIT(uint8_t, cats, 55);
+// /* careful if this value is a function call! It will be called thrice */
+// RAD_SAFE_FIELD_SET(cats, 55); 
+// /* Top-voted field chosen; errors will be corrected after read */
+// uint8_t cats_res = RAD_SAFE_FIELD_GET(cats)
+// foo(RAD_SAFE_FIELD_GET(cats))
+/************************************************************************/
+#define RAD_SAFE_FIELD_DEFINE(type, field_name)		type field_name[3]
+#define RAD_SAFE_FIELD_INIT(type, field_name, val)	type field_name[3] = {val, val, val}
+#define RAD_SAFE_FIELD_SET(field_name, val)			field_name[0] = val; field_name[1] = val; field_name[2] = val
+// TODO: 
+// #define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; }; \
+// 													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; }; \
+// 													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; }#define RAD_SAFE_FIELD_GET(field_name)				({ /* correct fields by voting, then return first */ \
+														RAD_SAFE_FIELD_CORRECT(field_name); \
+														field_name[0]; \
+													})
+#define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; assert(false); }; \
+													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; assert(false); }; \
+													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; assert(false); }
 
 #endif /* MRAM_COMMANDS_H_ */

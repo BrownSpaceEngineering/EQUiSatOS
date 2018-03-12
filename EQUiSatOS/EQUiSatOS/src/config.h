@@ -43,11 +43,11 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
-#define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
+#define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define ONLY_RUN_TESTING_TASKS	// doesn't run normal EQUISAT tasks
@@ -61,7 +61,7 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-//#define WRITE_DEFAULT_MRAM_VALS
+#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
