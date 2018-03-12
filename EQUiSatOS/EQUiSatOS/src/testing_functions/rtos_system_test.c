@@ -222,8 +222,13 @@ void print_low_power_data(low_power_data_t* data, int i) {
 }
 
 void print_sat_error(sat_error_t* err, int i) {
-	print("%2d: error (%s): loc=%3d code=%3d @ %d\n", i, 
-		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode & 0b01111111, err->timestamp);
+	print("%2d: error (%s): loc=%s (%d)\t code=%s (%d)\t @ %d\n", i, 
+		is_priority_error(*err) ? "priority" : "normal  ", 
+		get_eloc_str(err), 
+		err->eloc, 
+		get_ecode_str(err), 
+		err->ecode & 0b01111111,
+		err->timestamp);
 }
 
 
@@ -310,6 +315,195 @@ uint32_t get_task_freq(task_type_t task) {
 		case ATTITUDE_DATA_TASK: return ATTITUDE_DATA_TASK_FREQ;
 		case PERSISTENT_DATA_BACKUP_TASK: return PERSISTENT_DATA_BACKUP_TASK_FREQ;
 		default: return -1;
+	}
+}
+
+const char* get_eloc_str(sat_error_t* err) {
+	// regex to generate: (ELOC_\w+)\s=\s+(\d+). -> case $2: return "$1";
+	switch (err->eloc) {
+	case 0: return "ELOC_NO_ERROR";
+
+	case 1: return "ELOC_IR_FLASH";
+	case 2: return "ELOC_IR_SIDE1";
+	case 3: return "ELOC_IR_SIDE2";
+	case 4: return "ELOC_IR_RBF";
+	case 5: return "ELOC_IR_ACCESS";
+	case 6: return "ELOC_IR_TOP1";
+
+	case 7: return "ELOC_PD_FLASH";
+	case 8: return "ELOC_PD_SIDE1";
+	case 9: return "ELOC_PD_SIDE2";
+	case 10: return "ELOC_PD_RBF";
+	case 11: return "ELOC_PD_ACCESS";
+	case 12: return "ELOC_PD_TOP1";
+
+	case 13: return "ELOC_TEMP_LF_1";
+	case 14: return "ELOC_TEMP_LF_2";
+	case 15: return "ELOC_TEMP_L_1";
+	case 16: return "ELOC_TEMP_L_2";
+	case 17: return "ELOC_TEMP_LED_1";
+	case 18: return "ELOC_TEMP_LED_2";
+	case 19: return "ELOC_TEMP_LED_3";
+	case 20: return "ELOC_TEMP_LED_4";
+
+	case 21: return "ELOC_RADIO_TEMP";
+
+	case 22: return "ELOC_IMU_ACC";
+	case 23: return "ELOC_IMU_GYRO";
+	case 24: return "ELOC_IMU_MAG";
+
+	case 25: return "ELOC_LED1SNS";
+	case 26: return "ELOC_LED2SNS";
+	case 27: return "ELOC_LED3SNS";
+	case 28: return "ELOC_LED4SNS";
+	case 29: return "ELOC_LFB1OSNS";
+	case 30: return "ELOC_LFB1SNS";
+	case 31: return "ELOC_LFB2OSNS";
+	case 32: return "ELOC_LFB2SNS";
+	case 33: return "ELOC_LF1REF";
+	case 34: return "ELOC_LF2REF";
+	case 35: return "ELOC_LF3REF";
+	case 36: return "ELOC_LF4REF";
+	case 37: return "ELOC_L1_REF";
+	case 38: return "ELOC_L2_REF";
+
+	case 39: return "ELOC_DET_RTN";
+	case 40: return "ELOC_RADIO";
+
+	case 41: return "ELOC_AD7991_BBRD";
+	case 42: return "ELOC_AD7991_BBRD_L2_SNS";
+	case 43: return "ELOC_AD7991_BBRD_L1_SNS";
+	case 44: return "ELOC_AD7991_BBRD_L_REF";
+	case 45: return "ELOC_AD7991_BBRD_PANEL_REF";
+	case 46: return "ELOC_AD7991_CBRD";
+	case 47: return "ELOC_AD7991_CBRD_3V6_REF";
+	case 48: return "ELOC_AD7991_CBRD_3V6_SNS";
+	case 49: return "ELOC_AD7991_CBRD_5V_REF";
+	case 50: return "ELOC_AD7991_CBRD_3V3_REF";
+
+	case 51: return "ELOC_TCA";
+	case 52: return "ELOC_CACHED_PERSISTENT_STATE";
+	case 53: return "ELOC_MRAM1_READ";
+	case 54: return "ELOC_MRAM2_READ";
+	case 55: return "ELOC_MRAM_READ";
+	case 56: return "ELOC_MRAM1_WRITE";
+	case 57: return "ELOC_MRAM2_WRITE";
+	case 58: return "ELOC_MRAM_WRITE";
+	case 59: return "ELOC_5V_REF";
+	case 60: return "ELOC_STATE_HANDLING";
+	case 61: return "ELOC_BAT_CHARGING";
+	case 62: return "ELOC_ANTENNA_DEPLOY";
+	case 63: return "ELOC_ERROR_STACK";
+	case 64: return "ELOC_WATCHDOG";
+	case 65: return "ELOC_IMU_TEMP";
+	case 66: return "ELOC_VERIFY_REGS";
+
+	case 67: return "ELOC_IDLE_DATA";
+	case 68: return "ELOC_ATTITUDE_DATA";
+	case 69: return "ELOC_FLASH"; // both flash and flash_cmp (for now)
+	case 70: return "ELOC_LOW_POWER_DATA";
+	case 71: return "ELOC_EQUISTACK_GET";
+	case 72: return "ELOC_EQUISTACK_PUT";
+
+	case 73: return "ELOC_BOOTLOADER";
+	case 74: return "ELOC_RTOS";
+
+	case 75: return "ELOC_BAT_L1";
+	case 76: return "ELOC_BAT_L2";
+	case 77: return "ELOC_BAT_LFB1";
+	case 78: return "ELOC_BAT_LFB2";
+	case 79: return "ELOC_BAT_CHARGING_SWITCH_1";
+	case 80: return "ELOC_BAT_CHARGING_SWITCH_2";
+	case 81: return "ELOC_BAT_CHARGING_SWITCH_3";
+	case 82: return "ELOC_BAT_CHARGING_SWITCH_4";
+	case 83: return "ELOC_BAT_CHARGING_SWITCH_5";
+	case 84: return "ELOC_BAT_CHARGING_SWITCH_6";
+	case 85: return "ELOC_BAT_CHARGING_SWITCH_7";
+	case 86: return "ELOC_BAT_CHARGING_SWITCH_8";
+	case 87: return "ELOC_BAT_CHARGING_SWITCH_9";
+	case 88: return "ELOC_IR_POW";
+	case 89: return "ELOC_RADIO_KILLTIME";	
+	}
+}
+
+const char* get_ecode_str(sat_error_t* err) {
+	// regex to generate: (ECODE_\w+)\s=\s+(\d+). -> case $2: return "$1";
+	switch (err->ecode & 0b01111111) {
+	case 0: return "ECODE_OK";
+	case 1: return "ECODE_VALID_DATA";
+	case 2: return "ECODE_NO_CHANGE";
+	case 3: return "ECODE_ABORTED";
+	case 4: return "ECODE_BUSY";
+	case 5: return "ECODE_SUSPEND";
+	case 6: return "ECODE_IO";
+	case 7: return "ECODE_REQ_FLUSHED";
+	case 8: return "ECODE_TIMEOUT";
+	case 9: return "ECODE_BAD_DATA";
+	case 10: return "ECODE_NOT_FOUND";
+	case 11: return "ECODE_UNSUPPORTED_DEV";
+	case 12: return "ECODE_NO_MEMORY";
+	case 13: return "ECODE_INVALID_ARG";
+	case 14: return "ECODE_BAD_ADDRESS";
+	case 15: return "ECODE_BAD_FORMAT";
+	case 16: return "ECODE_BAD_FRQ";
+	case 17: return "ECODE_DENIED";
+	case 18: return "ECODE_ALREADY_INITIALIZED";
+	case 19: return "ECODE_OVERFLOW";
+	case 20: return "ECODE_NOT_INITIALIZED";
+	case 21: return "ECODE_SAMPLERATE_UNAVAILABLE";
+	case 22: return "ECODE_RESOLUTION_UNAVAILABLE";
+	case 23: return "ECODE_BAUDRATE_UNAVAILABLE";
+	case 24: return "ECODE_PACKET_COLLISION";
+	case 25: return "ECODE_PROTOCOL";
+	case 26: return "ECODE_PIN_MUX_INVALID";
+
+	/**** CUSTOM ****/
+	case 27: return "ECODE_READING_HIGH";
+	case 28: return "ECODE_READING_LOW";
+	case 29: return "ECODE_OUT_OF_BOUNDS";
+	case 30: return "ECODE_SIGNAL_LOST";
+
+	case 31: return "ECODE_CONFIRM_TIMEOUT";
+	case 32: return "ECODE_INCONSISTENT_DATA";
+	case 33: return "ECODE_UNEXPECTED_CASE";
+	case 34: return "ECODE_WATCHDOG_EARLY_WARNING";
+	case 35: return "ECODE_WATCHDOG_RESET";
+	case 36: return "ECODE_WATCHDOG_DID_KICK";
+	case 37: return "ECODE_EXCESSIVE_SUSPENSION";
+
+	case 38: return "ECODE_CRIT_ACTION_MUTEX_TIMEOUT";
+	case 39: return "ECODE_I2C_MUTEX_TIMEOUT";
+	case 40: return "ECODE_PROC_ADC_MUTEX_TIMEOUT";
+	case 41: return "ECODE_HW_STATE_MUTEX_TIMEOUT";
+	case 42: return "ECODE_USART_MUTEX_TIMEOUT";
+	case 43: return "ECODE_SPI_MUTEX_TIMEOUT";
+	case 44: return "ECODE_BAT_CHARGING_MUTEX_TIMEOUT";
+	case 45: return "ECODE_WATCHDOG_MUTEX_TIMEOUT";
+	case 46: return "ECODE_EQUISTACK_MUTEX_TIMEOUT";
+	case 47: return "ECODE_IRPOW_MUTEX_TIMEOUT";
+
+	case 48: return "ECODE_REWROTE_PROG_MEM";
+	case 49: return "ECODE_STACK_OVERFLOW";
+	case 50: return "ECODE_DET_ALREADY_HIGH";
+
+	case 51: return "ECODE_BAT_NOT_DISCHARGING";
+	case 52: return "ECODE_BAT_NOT_NOT_DISCHARGING";
+	case 53: return "ECODE_BAT_NOT_CHARGING";
+	case 54: return "ECODE_BAT_NOT_NOT_CHARGING";
+	case 55: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
+	case 56: return "ECODE_BAT_FAULT";
+	case 57: return "ECODE_NOT_FULL_FOR_WHILE";
+	case 58: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
+	case 59: return "ECODE_RECOMMISSION";
+	case 60: return "ECODE_ALL_SAME_VAL";
+	case 61: return "ECODE_CORRUPTED";
+	case 62: return "ECODE_INVALID_STATE_CHANGE";
+	case 63: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 64: return "ECODE_INCONSISTENT_STATE";
+	case 65: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
 	}
 }
 

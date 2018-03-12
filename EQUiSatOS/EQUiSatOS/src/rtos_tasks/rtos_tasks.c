@@ -81,6 +81,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) 
 	// if this happens for real, log error, write persistent state, and reset processor
 	log_error(ELOC_RTOS, ECODE_STACK_OVERFLOW, true);
 	write_state_to_storage_emergency(false); // NOT from ISR; do this to minimize stack usage
+	print("STACK OVERFLOW RESET -- RESETTING SATELLITE");
 	#ifdef WATCHDOG_RESET_ACTIVE
 		system_reset();
 	#endif

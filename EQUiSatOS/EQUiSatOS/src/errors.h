@@ -238,6 +238,9 @@ void log_error(uint8_t loc, uint8_t err, bool priority);
 void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
+// defined in rtos_system_test.c
 void print_sat_error(sat_error_t* data, int i);
+const char* get_eloc_str(sat_error_t* err);
+const char* get_ecode_str(sat_error_t* err);
 
 #endif /* ERRORS_H_ */

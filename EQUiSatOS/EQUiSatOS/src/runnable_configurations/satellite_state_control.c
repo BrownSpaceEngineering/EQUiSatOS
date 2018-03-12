@@ -30,6 +30,8 @@ void startup_task(void* pvParameters);
 // starts RTOS scheduler
 void run_rtos()
 {
+	pet_watchdog(); // pet during initialization
+	
 	// create first init task to start RTOS and other tasks
 	xTaskCreateStatic(startup_task,
 		"initializer task",

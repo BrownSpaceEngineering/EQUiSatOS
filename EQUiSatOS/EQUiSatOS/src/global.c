@@ -81,6 +81,8 @@ void global_init(void) {
 	init_persistent_storage();
 	init_errors();
 	watchdog_init();
+	pet_watchdog(); // pet during initialization
+	
 	#ifdef USE_REED_SOLOMON
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
 	#endif
@@ -88,8 +90,7 @@ void global_init(void) {
 		equisim_init();
 	#endif
 	
-	// pet watchdog here in case of long initialization
-	pet_watchdog();
+	pet_watchdog(); // pet during initialization
 }
 
 // initialization that can only be done with RTOS started
