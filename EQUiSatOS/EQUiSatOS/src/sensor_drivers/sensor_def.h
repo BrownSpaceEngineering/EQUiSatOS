@@ -9,7 +9,7 @@
 #ifndef SENSOR_DEF_H_
 #define SENSOR_DEF_H_
 
-#include "../global.h"
+#include <inttypes.h>
 
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
@@ -17,37 +17,37 @@
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
 #define A_LED_TEMP_M				0
 #define A_LED_TEMP_B				~0
-#define A_LED_SNS_M					3/100
+#define A_LED_SNS_M					1
 #define A_LED_SNS_B					0
 #define A_LF_TEMP_M					0
 #define A_LF_TEMP_B					~0
-#define A_LF_SNS_M					17/88
+#define A_LF_SNS_M					197/4
 #define A_LF_SNS_B					-960
-#define A_LF_OSNS_M					51/182
+#define A_LF_OSNS_M					500/7
 #define A_LF_OSNS_B					0
-#define A_LF_VOLT_M					17/300
+#define A_LF_VOLT_M					130/9
 #define A_LF_VOLT_B					0
 #define A_L_TEMP_M					0
 #define A_L_TEMP_B					~0
-#define A_L_SNS_M					51/650
+#define A_L_SNS_M					20
 #define A_L_SNS_B					150
-#define A_L_VOLT_M					17/300
+#define A_L_VOLT_M					130/9
 #define A_L_VOLT_B					0
-#define A_LREF_M					17/300
+#define A_LREF_M					130/9
 #define A_LREF_B					0
-#define A_PANELREF_M				14/549
+#define A_PANELREF_M				13/2
 #define A_PANELREF_B				0
-#define A_IR_AMB_M					14/453
+#define A_IR_AMB_M					63/8
 #define A_IR_AMB_B					-11657
-#define A_GYRO_M					1/257
+#define A_GYRO_M					1
 #define A_GYRO_B					32750
-#define A_ACCEL_M					1/257
+#define A_ACCEL_M					1
 #define A_ACCEL_B					32768
-#define A_MAG_M						26/571
+#define A_MAG_M						58/5
 #define A_MAG_B						2800
-#define A_RAD_TEMP_M				51/800
+#define A_RAD_TEMP_M				65/4
 #define A_RAD_TEMP_B				2000
-#define A_IMU_TEMP_M				4/655
+#define A_IMU_TEMP_M				14/9
 #define A_IMU_TEMP_B				20374
 
 /************************************************************************/

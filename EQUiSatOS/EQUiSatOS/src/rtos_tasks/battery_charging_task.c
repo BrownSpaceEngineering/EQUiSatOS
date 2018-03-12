@@ -22,6 +22,7 @@
 //   - error priorities
 //   - everything is okay coming back from a boot
 //   - warnings
+//   - flow through the discharging section on the first time through
 
 li_discharging_t get_li_discharging(void)
 {
@@ -399,12 +400,28 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 	}
 }
 
-void charge_lower_lf_bank(void)
+void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 {
-	if (charging_data.bat_voltages[LFB1] <= charging_data.bat_voltages[LFB2])
-		charging_data.bat_charging = LFB1;
+	int8_t lf_charging = -1;
+
+	// NOTE: it shouldn't be the case that both are full -- we'd be charging LI's
+	if (get_lf_full(LFB1, lfb1_max_cell_mv))
+	{
+		lf_charging = LFB2;
+	}
+	else if (get_lf_full(LFB2, lfb2_max_cell_mv))
+	{
+		lf_charging = LFB1;
+	}
 	else
-		charging_data.bat_charging = LFB2;
+	{
+		if (charging_data.bat_voltages[LFB1] <= charging_data.bat_voltages[LFB2])
+			lf_charging = LFB1;
+		else
+			lf_charging = LFB2;
+	}
+
+	charging_data.bat_charging = lf_charging;
 }
 
 // NOTE: subtle case when the voltages are equivalent for LI1 and LI2
@@ -454,6 +471,28 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
+bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
+{
+	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
+		   max_cell_mv > LF_FULL_MAX_MV;
+}
+
+bool get_lfs_both_full(
+	uint8_t num_lf_down,
+	int8_t good_lf,
+	uint16_t lfb1_max_cell_mv,
+	uint16_t lfb2_max_cell_mv)
+{
+	if (num_lf_down == 0)
+		return get_lf_full(LFB1, lfb1_max_cell_mv) ||
+			   get_lf_full(LFB2, lfb2_max_cell_mv);
+
+	if (num_lf_down == 1)
+		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv);
+
+	return true;
+}
+
 void battery_logic()
 {
 	print("entering battery logic\n");
@@ -476,34 +515,13 @@ void battery_logic()
 	uint16_t lf4_mv;
 	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
-	// considering the voltage of the life po banks to be the max of the cells for
+	// considering the voltage of the life po banks to be the sum of the cells for
 	// our purposes
-	// TODO*: stop charging a lifepo bank if the max > ~3800 or the sum > 7100
-	// TODO*: discharge the bank with the lower sum, not the lower max
-	charging_data.bat_voltages[LFB1] = Max(lf1_mv, lf2_mv);
-	charging_data.bat_voltages[LFB2] = Max(lf3_mv, lf4_mv);
+	charging_data.bat_voltages[LFB1] = lf1_mv + lf2_mv;
+	charging_data.bat_voltages[LFB2] = lf3_mv + lf4_mv;
 
-	// we're only interested in the charging battery filling up if it's a lion
-	bool curr_charging_filled_up = false;
-	if (is_lion(charging_data.bat_charging))
-	{
-		bat_charge_dig_sigs_batch batch;
-		read_bat_charge_dig_sigs_batch(&batch);
-
-		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
-									charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
-									(get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
-									charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
-
-		if (curr_charging_filled_up)
-			charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging] = get_current_timestamp_wrapped();
-	}
-	#endif
-
-	// reading simulated values -- some of the simulated values will already
-	// have been put into the charging_data struct
-	#ifdef BAT_TESTING
-	bool curr_charging_filled_up = simulated_curr_charging_filled_up;
+	uint16_t lfb1_max_cell_mv = Max(lf1_mv, lf2_mv);
+	uint16_t lfb2_max_cell_mv = Max(lf3_mv, lf4_mv);
 	#endif
 
 	/////
@@ -586,11 +604,34 @@ void battery_logic()
 
 	print("currently have %d bad li and %d bad lf\n", num_li_down, num_lf_down);
 
-	// we often want to know whether the higher cells within the life po banks have filled up
-	bool life_po_full = (num_lf_down == 0 && charging_data.bat_voltages[LFB1] > LF_FULL_MAX_MV && charging_data.bat_voltages[LFB2] > LF_FULL_MAX_MV) ||
-						(num_lf_down == 1 && charging_data.bat_voltages[good_lf] > LF_FULL_MAX_MV);
+	#ifndef BAT_TESTING
+	// we're interested in the charging battery filling up if it's a lion
+	bool curr_charging_filled_up = false;
+	if (is_lion(charging_data.bat_charging))
+	{
+		bat_charge_dig_sigs_batch batch;
+		read_bat_charge_dig_sigs_batch(&batch);
 
-  // updating externally facing variables
+		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
+								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
+								  (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
+								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
+
+		if (curr_charging_filled_up)
+			charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging] = get_current_timestamp_wrapped();
+	}
+	#endif
+
+	// reading simulated values -- some of the simulated values will already
+	// have been put into the charging_data struct
+	#ifdef BAT_TESTING
+	bool curr_charging_filled_up = simulated_curr_charging_filled_up;
+	#endif
+
+	// we also want to know whether the life po banks have filled up
+	bool life_pos_filled_up = get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
+
+	// updating externally facing variables
 	if (num_li_down == 0)
 	{
 		if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
@@ -720,85 +761,70 @@ void battery_logic()
 	// meta-state
 	else if (charging_data.curr_meta_charge_state == ALL_GOOD)
 	{
-			// TODO*: get rid of this (because charge lifepo)
-			if (!(sat_state == IDLE_FLASH || sat_state == IDLE_NO_FLASH) || life_po_full)
-			{
-				charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
-			}
-			else
-			{
-				switch (charging_data.curr_charge_state)
-				{
-					// NOTE: the battery that's currently charging has filled up if the charging
-					// isn't running -- when the charge pin is inactive
-					// on the first time through, curr_charging_filled_up will be false, so all good!
+		switch (charging_data.curr_charge_state)
+		{
+			// NOTE: the battery that's currently charging has filled up if the charging
+			// isn't running -- when the charge pin is inactive
+			// on the first time through, curr_charging_filled_up will be false, so all good!
 
-					// TODO*: add bools for recently full. Charge both to full once then lf
-					case FILL_LI_NEITHER_FULL_A:
-						if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
-							charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
-						else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
-							charging_data.curr_charge_state = FILL_LI_LI2_FULL_A;
-						break;
+			// TODO*: add bools for recently full. Charge both to full once then lf
+			case FILL_LI_NEITHER_FULL_A:
+				if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
+					charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
+				else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
+					charging_data.curr_charge_state = FILL_LI_LI2_FULL_A;
+				break;
 
-					case FILL_LI_LI1_FULL_A:
-						// going back takes precedence
-						if (charging_data.bat_voltages[LI1] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI2] <= LI_LOW_POWER_MV)
-							charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
-						else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
-							charging_data.curr_charge_state = FILL_LF_A;
-						break;
+			case FILL_LI_LI1_FULL_A:
+				// going back takes precedence
+				if (charging_data.bat_voltages[LI1] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI2] <= LI_DOWN_MV)
+					charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
+				else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
+					charging_data.curr_charge_state = FILL_LF_A;
+				break;
 
-					case FILL_LI_LI2_FULL_A:
-						// going back takes precedence
-						if (charging_data.bat_voltages[LI2] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI1] <= LI_LOW_POWER_MV)
-							charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
-						else if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
-							charging_data.curr_charge_state = FILL_LF_A;
-						break;
+			case FILL_LI_LI2_FULL_A:
+				// going back takes precedence
+				if (charging_data.bat_voltages[LI2] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI1] <= LI_DOWN_MV)
+					charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
+				else if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
+					charging_data.curr_charge_state = FILL_LF_A;
+				break;
 
-					case FILL_LF_A:
-						if (charging_data.bat_voltages[LI1] <= LI_DOWN_MV ||
-								charging_data.bat_voltages[LI2] <= LI_DOWN_MV)
-							charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
-						break;
+			case FILL_LF_A:
+				if ((charging_data.bat_voltages[LI1] <= LI_DOWN_MV ||
+					charging_data.bat_voltages[LI2] <= LI_DOWN_MV) ||
+					life_pos_filled_up)
+					charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
+				break;
 
-					default:
-						// trying to get past -Wswitch
-						configASSERT(false);
-						log_error(ELOC_BAT_CHARGING_SWITCH_6, ECODE_UNEXPECTED_CASE, 1);
-						break;
-				}
-			}
+			default:
+				// trying to get past -Wswitch
+				configASSERT(false);
+				log_error(ELOC_BAT_CHARGING_SWITCH_6, ECODE_UNEXPECTED_CASE, 1);
+				break;
+		}
 	}
 	else if (charging_data.curr_meta_charge_state == ONE_LI_DOWN)
 	{
-		if (!(sat_state == IDLE_FLASH || sat_state == IDLE_NO_FLASH) || life_po_full)
+		switch (charging_data.curr_charge_state)
 		{
-			charging_data.curr_charge_state = FILL_LI_B;
-		}
-		else
-		{
-			switch (charging_data.curr_charge_state)
-			{
-				// TODO*: add strike case if lifepos aren't charging for a long time
-				// TODO*: define full for lifepos more complexly
-				case FILL_LI_B:
-					if (charging_data.bat_charging == good_li && curr_charging_filled_up)
-						charging_data.curr_charge_state = FILL_LF_B;
-					break;
+			// TODO*: add strike case if lifepos aren't charging for a long time
+			case FILL_LI_B:
+				if (charging_data.bat_charging == good_li && curr_charging_filled_up)
+					charging_data.curr_charge_state = FILL_LF_B;
+				break;
 
-				case FILL_LF_B:
-					if (charging_data.bat_voltages[good_li] <= LI_DOWN_MV)
-						charging_data.curr_charge_state = FILL_LI_B;
-					break;
+			case FILL_LF_B:
+				if (charging_data.bat_voltages[good_li] <= LI_DOWN_MV || life_pos_filled_up)
+					charging_data.curr_charge_state = FILL_LI_B;
+				break;
 
-				default:
-					// trying to get past -Wswitch
-					configASSERT(false);
-					log_error(ELOC_BAT_CHARGING_SWITCH_7, ECODE_UNEXPECTED_CASE, 1);
-					break;
-			}
+			default:
+				// trying to get past -Wswitch
+				configASSERT(false);
+				log_error(ELOC_BAT_CHARGING_SWITCH_7, ECODE_UNEXPECTED_CASE, 1);
+				break;
 		}
 	}
 
@@ -852,7 +878,7 @@ void battery_logic()
 				}
 				else
 				{
-					charge_lower_lf_bank();
+					charge_lower_lf_bank(lfb1_max_cell_mv, lfb2_max_cell_mv);
 				}
 
 				// discharge the lion with the higher voltage
@@ -885,7 +911,7 @@ void battery_logic()
 				}
 				else
 				{
-					charge_lower_lf_bank();
+					charge_lower_lf_bank(lfb1_max_cell_mv, lfb2_max_cell_mv);
 				}
 
 				charging_data.lion_discharging = good_li;
@@ -912,7 +938,7 @@ void battery_logic()
 			charging_data.lion_discharging = good_li;
 		}
 	}
-	else // if (charging_data.curr_meta_charge_state == TWO_LI_DOWN) // TODO*: deal with bit flips (yay!)
+	else // if (charging_data.curr_meta_charge_state == TWO_LI_DOWN)
 	{
 		if (charging_data.charging_parity)
 		{
@@ -955,7 +981,6 @@ void battery_logic()
 		set_li_to_discharge(LI1, 1);
 		set_li_to_discharge(LI2, 1);
 	}
-	// TODO: get the flow right on the first time through here
 	else if (charging_data.lion_discharging != old_li_discharging)
 	{
 		// we also need to make changes with respect to lion that isn't discharging
@@ -993,7 +1018,7 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: check this flow with Mckenna -- enough delay
+		// TODO: check this flow with Mckenna -- enough delay?
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
 		// reset our emergency write to the MRAM

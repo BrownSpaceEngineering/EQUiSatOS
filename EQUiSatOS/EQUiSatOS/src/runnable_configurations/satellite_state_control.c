@@ -235,7 +235,7 @@ void configure_state_from_reboot(void) {
 	// right now (RTOS isn't even running yet). So, we configure what
 	// needs to be done and configure tasks as they boot up and report
 	// to the function below that they're ready)
-	sat_state_t state_at_reboot = cache_get_sat_state(false); // no one will be writing so don't wait
+	sat_state_t state_at_reboot = cache_get_sat_state();
 	if (state_at_reboot == INITIAL
 		|| state_at_reboot == ANTENNA_DEPLOY
 		|| state_at_reboot == HELLO_WORLD) {

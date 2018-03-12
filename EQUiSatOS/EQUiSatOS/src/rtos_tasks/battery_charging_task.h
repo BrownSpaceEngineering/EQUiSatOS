@@ -28,8 +28,9 @@
 #define LI_LOW_POWER_MV            		3900
 #define LI_CRITICAL_MV             		2750
 
-#define LF_FULL_MAX_MV             		3500 // what here?
-#define LF_FULL_SANITY_MV               3000
+#define LF_FULL_SUM_MV             		7100 // what here?
+#define LF_FULL_MAX_MV                  3800
+#define LF_FULL_SANITY_MV               6000
 #define LF_FLASH_AVG_MV            		3250
 
 // thresholds for error checking and the strikes system
@@ -136,9 +137,6 @@ typedef struct charging_data
 	// voltage data
 	uint16_t bat_voltages[4];
 
-	// old voltage data
-	uint16_t old_bat_voltages[4];
-
 	// whether or not the batteries are decommissioned
 	bool decommissioned[4];
 
@@ -174,12 +172,15 @@ void battery_logic(void);
 void decommission(int8_t bat);
 uint32_t time_for_recommission(int8_t bat);
 bool check_for_recommission(int8_t bat);
-void charge_lower_lf_bank(void);
+void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
 void charge_lower_li(void);
 void discharge_higher_li(void);
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging);
 void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
 void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch);
+bool get_lf_full(int8_t lf, uint16_t max_cell_mv);
+bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
+void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
 
 void run_unit_tests(void);
 void run_simulations(void);

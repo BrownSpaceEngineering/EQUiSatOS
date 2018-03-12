@@ -21,16 +21,49 @@
 #define STORAGE_PROG_MEM_REWRITTEN_ADDR			42
 #define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		46
 #define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	50
-#define STORAGE_PROG_MEMORY_ADDR				60
+// prog memory address not used here
 #define STORAGE_ERR_NUM_ADDR					175080
 #define STORAGE_ERR_LIST_ADDR					175084
+
+/* cached state (known) field sizes */
+#define STORAGE_SECS_SINCE_LAUNCH_SIZE			 4
+#define STORAGE_REBOOT_CNT_SIZE					 1
+#define STORAGE_SAT_STATE_SIZE					 1
+#define STORAGE_SAT_EVENT_HIST_SIZE				 1
+#define STORAGE_PROG_MEM_REWRITTEN_SIZE			 1
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_SIZE		 4
+#define STORAGE_PERSISTENT_CHARGING_DATA_SIZE	 1
+#define STORAGE_ERR_NUM_SIZE					 1
 
 // maximum size of a single MRAM "field," used for global buffers
 #define STORAGE_MAX_FIELD_SIZE				400 // error list
 
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
-#define MAX_STORED_ERRORS					ERROR_STACK_MAX
+// note: not made rad-safe bcs. the probability of being corrupted + being needed is VERY small
+#define MAX_STORED_ERRORS					ERROR_STACK_MAX 
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
+
+/* rad-safe triple-redundant variables used to weather bit flips in crucial fields */
+// addresses
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_secs_since_lauch_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_reboot_cnt_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_state_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_event_hist_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_prog_mem_rewritten_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_persistent_charging_data_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_list_addr);
+// field sizes
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_secs_since_lauch_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_reboot_cnt_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_state_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_event_hist_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_prog_mem_rewritten_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_persistent_charging_data_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_size);
+
 
 /* battery-specific state cache (put here for #include reasons) */
 typedef struct persistent_charging_data_t {
@@ -55,9 +88,7 @@ typedef struct persistent_charging_data_t {
 persistent. That is, a bit flip here is permanent, while elsewhere
 the watchdog will hopefully reset if something goes wrong and we'll be 
 on a clean slate.
-To provide redundancy, we simply keep 3 copies of this struct in RAM
-(slightly dispersed as you'll see below so they're not quite in the same
-region; though a large swath of bit flips is incredibly unlikely),
+To provide redundancy, we simply keep 3 copies of this struct in RAM,
 and we simply have two vote against any one, assuming (justifiably) that
 the chance of all three being different is minuscule. 
 NOTE: this one is the one we refer to, but before using it the 
@@ -82,6 +113,8 @@ struct persistent_data {
 	uint32_t _secs_since_launch_at_boot;
 	
 } cached_state;
+struct persistent_data cached_state_2;
+struct persistent_data cached_state_3;
 
 /* 
 	mutex for locking SPI lines and MRAM drivers 
@@ -91,10 +124,6 @@ struct persistent_data {
 */
 StaticSemaphore_t _mram_spi_cache_mutex_d;
 SemaphoreHandle_t mram_spi_cache_mutex;
-
-// dispersed!
-struct persistent_data cached_state_2;
-struct persistent_data cached_state_3;
 
 /* memory interface / action functions */
 void init_persistent_storage(void);
