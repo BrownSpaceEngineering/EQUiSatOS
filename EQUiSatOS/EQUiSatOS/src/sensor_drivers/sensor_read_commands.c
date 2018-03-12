@@ -320,9 +320,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-			} else if (states->radio_transmitting) {
+			} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_state) {
+			} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
@@ -386,9 +386,9 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-			} else if (states->radio_transmitting) {
+			} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_state) {
+			} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;

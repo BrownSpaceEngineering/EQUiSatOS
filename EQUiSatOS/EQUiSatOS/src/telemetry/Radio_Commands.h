@@ -56,12 +56,6 @@ typedef enum {
 	CMD_KILL_FOREVER,
 	
 } rx_cmd_type_t;
-				
-typedef enum {	
-	RADIO_OFF,
-	RADIO_IDLE,
-	RADIO_TRANSMITTING,
-} radio_state_t;
 
 rx_cmd_type_t check_rx_received(void);
 bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index);

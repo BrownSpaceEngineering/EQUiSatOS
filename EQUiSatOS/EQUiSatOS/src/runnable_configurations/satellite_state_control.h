@@ -10,7 +10,6 @@
 
 #include "rtos_tasks/rtos_tasks.h"
 #include "data_handling/equistack.h"
-#include "telemetry/Radio_Commands.h"
 
 #include "testing_tasks.h"
 #include "testing_functions/struct_tests.h"
@@ -58,6 +57,12 @@ typedef struct task_states {
 	   1. Validation of regulator voltages
 	   2. Measuring battery currents									*/
 /************************************************************************/ 
+typedef enum {
+	RADIO_OFF,
+	RADIO_IDLE,
+	RADIO_TRANSMITTING,
+} radio_state_t;
+
 struct hw_states {
 	/* locked by peripheral mutexes - mainly done to simplify function arguments */
 	bool rail_5v_enabled : 1;
