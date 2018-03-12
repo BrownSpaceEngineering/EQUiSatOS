@@ -938,7 +938,7 @@ void battery_logic()
 			charging_data.lion_discharging = good_li;
 		}
 	}
-	else // if (charging_data.curr_meta_charge_state == TWO_LI_DOWN) // TODO*: deal with bit flips (yay!)
+	else // if (charging_data.curr_meta_charge_state == TWO_LI_DOWN)
 	{
 		if (charging_data.charging_parity)
 		{
@@ -1018,7 +1018,7 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: check this flow with Mckenna -- enough delay
+		// TODO: check this flow with Mckenna -- enough delay?
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
 		// reset our emergency write to the MRAM
