@@ -58,6 +58,10 @@ void print(const char *format, ...);
 #endif
 
 #if configUSE_TRACE_FACILITY == 1
+	traceString global_trace_channel;
+#endif
+
+#if configUSE_TRACE_FACILITY == 1
 	// http://www.delorie.com/gnu/docs/gcc/gcc_44.html
 	#define trace_print(format, ...) vTracePrintF(global_trace_channel, format, ##__VA_ARGS__);
 #else

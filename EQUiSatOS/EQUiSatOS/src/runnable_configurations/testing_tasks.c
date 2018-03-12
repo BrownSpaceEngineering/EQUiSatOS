@@ -157,8 +157,8 @@ void system_test_task(void *pvParameters)
 	
 	for ( ;; )
 	{
-		vTaskDelayUntil( &xNextWakeTime, SYSTEM_TEST_TASK_FREQ / portTICK_PERIOD_MS);
 		rtos_system_test();
+		vTaskDelayUntil( &xNextWakeTime, SYSTEM_TEST_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );
