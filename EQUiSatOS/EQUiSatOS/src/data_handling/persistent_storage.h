@@ -55,9 +55,7 @@ typedef struct persistent_charging_data_t {
 persistent. That is, a bit flip here is permanent, while elsewhere
 the watchdog will hopefully reset if something goes wrong and we'll be 
 on a clean slate.
-To provide redundancy, we simply keep 3 copies of this struct in RAM
-(slightly dispersed as you'll see below so they're not quite in the same
-region; though a large swath of bit flips is incredibly unlikely),
+To provide redundancy, we simply keep 3 copies of this struct in RAM,
 and we simply have two vote against any one, assuming (justifiably) that
 the chance of all three being different is minuscule. 
 NOTE: this one is the one we refer to, but before using it the 
@@ -82,6 +80,8 @@ struct persistent_data {
 	uint32_t _secs_since_launch_at_boot;
 	
 } cached_state;
+struct persistent_data cached_state_2;
+struct persistent_data cached_state_3;
 
 /* 
 	mutex for locking SPI lines and MRAM drivers 
@@ -91,10 +91,6 @@ struct persistent_data {
 */
 StaticSemaphore_t _mram_spi_cache_mutex_d;
 SemaphoreHandle_t mram_spi_cache_mutex;
-
-// dispersed!
-struct persistent_data cached_state_2;
-struct persistent_data cached_state_3;
 
 /* memory interface / action functions */
 void init_persistent_storage(void);

@@ -241,9 +241,9 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 		} else {
 			// otherwise, the stack is not formatted as it should be 
 			// (though this may be due to an emergency reboot) 
-			//#ifdef USE_STRICT_ASSERTIONS
+			#ifdef USE_STRICT_ASSERTIONS
 				configASSERT(false);
-			//#endif
+			#endif
 		}
 	}
 	if (got_mutex) xSemaphoreGive(stack->mutex);

@@ -61,7 +61,7 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-#define WRITE_DEFAULT_MRAM_VALS
+//#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
