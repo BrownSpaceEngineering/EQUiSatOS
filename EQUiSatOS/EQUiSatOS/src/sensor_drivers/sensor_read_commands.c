@@ -127,6 +127,10 @@ bool enable_ir_pow_if_necessary(void) {
 		// no matter if we got the mutex, still turn it on (we won't turn it OFF)
 		set_output(true, P_IR_PWR_CMD);
 		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
+		
+		#ifdef USE_STRICT_ASSERTIONS
+			configASSERT(false);
+		#endif
 	}
 	// if it's already enabled, carry on!
 	return got_mutex;

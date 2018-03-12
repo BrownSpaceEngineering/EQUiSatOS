@@ -32,7 +32,7 @@ void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 }
 void print_pdiode_batch(pdiode_batch batch) {
 	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, (uint16_t)(batch<<i)<<8);
+		print("pdiode %d: %d\n",i, (uint16_t)(batch>>(i*2))&0b11);
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {

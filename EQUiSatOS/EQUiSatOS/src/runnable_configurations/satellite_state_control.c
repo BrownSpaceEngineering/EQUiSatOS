@@ -671,7 +671,8 @@ void task_resume(task_type_t task_id)
 /* suspends or resumes the given task, safely pausing the watchdog 
    NOTE: CURRENTLY SHOULD ONLY BE CALLED ON THE ANTENNA_DEPLOY_TASK */
 void set_task_state_safe(task_type_t task_id, bool run) {
-	if (!xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+	bool got_mutex;
+	if (!(got_mutex = xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS))) {
 		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 	}
 	if (run) {
@@ -679,7 +680,7 @@ void set_task_state_safe(task_type_t task_id, bool run) {
 	} else {
 		task_suspend(task_id);
 	}
-	xSemaphoreGive(watchdog_mutex);
+	if (got_mutex) xSemaphoreGive(watchdog_mutex);
 }
 
 /************************************************************************/

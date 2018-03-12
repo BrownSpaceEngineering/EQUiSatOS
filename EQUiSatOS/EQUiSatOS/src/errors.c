@@ -257,4 +257,5 @@ void hang_on_bad_error(sat_error_t* full_error) {
 	uint8_t actual_code = full_error->ecode & 0b01111111;
 	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_IRPOW_MUTEX_TIMEOUT);
 	configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
+	configASSERT(actual_code != ECODE_CORRUPTED);
 };

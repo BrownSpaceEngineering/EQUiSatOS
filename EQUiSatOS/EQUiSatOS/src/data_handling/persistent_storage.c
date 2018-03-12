@@ -426,7 +426,7 @@ void write_state_to_storage_safety(bool safe) {
 			system_reset();
 		}
 		
-		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
+		if (safe) xSemaphoreGive(mram_spi_cache_mutex); // we got the mutex if safe is true
 		
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);

@@ -208,7 +208,7 @@ void flash_activate_task(void *pvParameters)
 	
 		// store cmp data in flash equistack, but distribute over orbit
 		uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
-		if (time_since_last_log_s >= FLASH_CMP_DATA_LOG_FREQ) {
+		if (time_since_last_log_s >= FLASH_CMP_DATA_LOG_FREQ_S) {
 			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_cmp_readings_equistack);
 			time_of_last_log_s = get_current_timestamp();
 		}

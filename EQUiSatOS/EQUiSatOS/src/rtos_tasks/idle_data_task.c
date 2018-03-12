@@ -60,7 +60,7 @@ void idle_data_task(void *pvParameters)
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= IDLE_DATA_MAX_READ_TIME) {
 			uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
-			if (time_since_last_log_s >= IDLE_DATA_LOG_FREQ) {
+			if (time_since_last_log_s >= IDLE_DATA_LOG_FREQ_S) {
 				// validate previous stored value in stack, getting back the next staged address we can start adding to
 				current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
 				time_of_last_log_s = get_current_timestamp();
