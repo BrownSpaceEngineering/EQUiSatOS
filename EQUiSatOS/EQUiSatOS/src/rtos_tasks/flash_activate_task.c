@@ -250,7 +250,11 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_bank_temps_data_sums, *lifepo_bank_temps, 2);
 	
 	lifepo_current_batch* lifepo_current = &burst_struct->lifepo_current_data[*data_arrays_tail];
-	_read_lifepo_current_batch_unsafe(*lifepo_current, true);
+	#ifdef FLASH_ACTIVE
+		_read_lifepo_current_batch_unsafe(*lifepo_current, true);
+	#else
+		_read_lifepo_current_batch_unsafe(*lifepo_current, false);
+	#endif
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_current_data_sums, *lifepo_current, 4);
 
 	lifepo_volts_batch* lifepo_volts = &burst_struct->lifepo_volts_data[*data_arrays_tail];
@@ -258,7 +262,11 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_volts_data_sums, *lifepo_volts, 4);
 
 	led_current_batch* led_current = &burst_struct->led_current_data[*data_arrays_tail];
-	_read_led_current_batch_unsafe(*led_current, true);
+	#ifdef FLASH_ACTIVE
+		_read_led_current_batch_unsafe(*led_current, true);
+	#else 
+		_read_led_current_batch_unsafe(*led_current, false);
+	#endif
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->led_current_data_sums, *led_current, 4);
 
 	gyro_batch* gyro = &burst_struct->gyro_data[*data_arrays_tail];
