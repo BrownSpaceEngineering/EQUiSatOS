@@ -93,38 +93,15 @@ static void start_application(void)
 	asm("bx %0"::"r"(reset_handler_address));
 }
 
-/*
-	Checks whether the program memory located at flash_addr in the flash memory
-	matches the data in the given buffer (read from the MRAM).
-	Returns whether it matches.
-*/
-bool check_prog_mem_integrity(uint32_t flash_addr, uint8_t* mram_buffer, size_t buf_size) {
-	// simply compare program memory at address with mram_buffer
-	return memcmp((uint8_t*) flash_addr, mram_buffer, buf_size) == 0;
-}
-
-// Returns the length of the longest subsequence of the same byte in data,
-// stopping at size "length." Returns 1 if no character matches the first,
-// and 0 if len was 0.
-// NOTE: this is use in bootloader too so if there's a bug fix it there too!!
-size_t longest_same_seq_len(uint8_t* data, size_t len) {
-	uint8_t same_byte = data[0];
-	size_t longest_seq_len = 0;
-	size_t cur_seq_len = 0;
-	// always look at the first byte as an easy way of returning 0 by default
+// Returns the number of matching bytes in the two buffers up to len.
+size_t num_similar(uint8_t* data1, uint8_t* data2, size_t len) {
+	size_t num_same = 0;
 	for (size_t i = 0; i < len; i++) {
-		if (data[i] == same_byte) {
-			cur_seq_len++;
-			} else {
-			same_byte = data[i];
-			cur_seq_len = 1;
-		}
-		
-		if (cur_seq_len > longest_seq_len) {
-			longest_seq_len = cur_seq_len;
+		if (data1[i] == data2[i]) {
+			num_same++;
 		}
 	}
-	return longest_seq_len;
+	return num_same;
 }
 
 /*
@@ -150,27 +127,16 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 		// check that the buffers copied from the MRAM match
 		if (memcmp(buffer_mram1, buffer_mram2, buf_size) != 0) {
 			// if they don't, see if either matches the program memory
-			bool buffer_mram1_matched_flash = check_prog_mem_integrity(flash_addr, buffer_mram1, buf_size);
-			bool buffer_mram2_matched_flash = check_prog_mem_integrity(flash_addr, buffer_mram2, buf_size);
+			bool buffer_mram1_matched_flash = memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) == 0;
+			bool buffer_mram2_matched_flash = memcmp((uint8_t*) flash_addr, buffer_mram2, buf_size) == 0;
 
 			// if both failed to match, we're pretty screwed, but take the copy in the MRAM because
 			// our most likely cause of failure is radiation bit flips...
 			if (!buffer_mram1_matched_flash && !buffer_mram2_matched_flash) {
-				// Take the one with the shortest section of same bytes
+				// Take the one most similar to our "third buffer," the flash
 				// (if it's an MRAM failure, it's likely to be a line either pulled HIGH (all 0xff) or LOW (all 0x00))
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				size_t mram1_same_seq_len = longest_same_seq_len(buffer_mram1, buf_size);
-				size_t mram2_same_seq_len = longest_same_seq_len(buffer_mram2, buf_size);
+				size_t mram1_same_seq_len = num_similar((uint8_t*) flash_addr, buffer_mram1, buf_size);
+				size_t mram2_same_seq_len = num_similar((uint8_t*) flash_addr, buffer_mram2, buf_size);
 				
 				if (mram1_same_seq_len <= mram2_same_seq_len) {
 					flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
@@ -186,7 +152,7 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 		} else {
 			// compare this current batch to the actual data stored in the program memory,
 			// to determine whether it must be rewritten
-			if (!check_prog_mem_integrity(flash_addr, buffer_mram1, buf_size)) {
+			if (memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) != 0) {
 				// if comparison failed, copy the buffer from mram to the flash memory
 				flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
 				corrections_made++;
