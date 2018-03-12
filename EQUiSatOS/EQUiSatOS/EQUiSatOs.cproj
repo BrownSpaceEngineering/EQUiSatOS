@@ -1218,6 +1218,12 @@
     <Compile Include="src\testing_functions\os_system_tests.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\testing_functions\sensor_def_tester.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\testing_functions\sensor_def_tester.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\testing_functions\struct_tests.c">
       <SubType>compile</SubType>
     </Compile>

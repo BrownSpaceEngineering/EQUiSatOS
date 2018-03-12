@@ -60,7 +60,7 @@ void init_sensor_read_commands(void) {
 
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
-static uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
+uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
 	uint16_t m = get_line_m_from_signal(sig);
 	int16_t b = get_line_b_from_signal(sig);
 	return (((uint16_t)(src + b)) * m) >> 8;
