@@ -9,7 +9,7 @@
 #ifndef SENSOR_DEF_H_
 #define SENSOR_DEF_H_
 
-#include "../global.h"
+#include <inttypes.h>
 
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
