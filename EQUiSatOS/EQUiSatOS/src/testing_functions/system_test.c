@@ -393,7 +393,7 @@ static float TEMD6200_test(void){
 			strcpy(test_str,"PD_POS_X");
 			break;
 		}
-		print("%s \t %s \t %d \n",test_str, buffer, pd_mV);
+		print("%s \t %s \t %d mV \t %d \n",test_str, buffer, pd_mV, get_pdiode_two_bit_range(pd_mV));
 	}
 	
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	

@@ -612,7 +612,7 @@ void verify_flash_readings(bool flashing_now) {
 /************************************************************************/
 
 //raw is in mV
-static uint8_t get_pdiode_two_bit_range(uint16_t raw) {
+uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 	if (raw < PDIODE_00_01) {
 		return 0;
 	} else if (raw >= PDIODE_00_01 && raw < PDIODE_01_10) {
