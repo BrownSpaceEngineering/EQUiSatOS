@@ -53,7 +53,6 @@ void test_init(void)
 	for (int i = 0; i < 4; i++)
 	{
 		assert(charging_data.bat_voltages[i] == -1);
-		assert(charging_data.old_bat_voltages[i] == -1);
 		assert(charging_data.decommissioned[i] == 0);
 		assert(charging_data.decommissioned_timestamp[i] == -1);
 		assert(charging_data.decommissioned_count[i] == 0);
