@@ -8,21 +8,21 @@
 #include "sensor_read_commands.h"
 
 static uint8_t IR_ADDS[6] = {
-	IR_FLASH,
-	IR_SIDE1,
-	IR_SIDE2,
-	IR_RBF,
-	IR_ACCESS,
-	IR_TOP1
+	IR_POS_Y,
+	IR_NEG_X,
+	IR_NEG_Y,
+	IR_POS_X,
+	IR_NEG_Z,
+	IR_POS_Z
 };
 
 static uint8_t IR_ELOCS[6] = {
-	ELOC_IR_FLASH,
-	ELOC_IR_SIDE1,
-	ELOC_IR_SIDE2,
-	ELOC_IR_RBF,
-	ELOC_IR_ACCESS,
-	ELOC_IR_TOP1
+	ELOC_IR_POS_Y,
+	ELOC_IR_NEG_X,
+	ELOC_IR_NEG_Y,
+	ELOC_IR_POS_X,
+	ELOC_IR_NEG_Z,
+	ELOC_IR_POS_Z
 };
 
 static uint8_t TEMP_ELOCS[8] = {
@@ -37,12 +37,12 @@ static uint8_t TEMP_ELOCS[8] = {
 };
 
 static uint8_t PD_ELOCS[6] = {
-	ELOC_PD_FLASH,
-	ELOC_PD_SIDE1,
-	ELOC_PD_SIDE2,
-	ELOC_PD_RBF,
-	ELOC_PD_ACCESS,
-	ELOC_PD_TOP1,
+	ELOC_PD_POS_Y,
+	ELOC_PD_NEG_X,
+	ELOC_PD_NEG_Y,
+	ELOC_PD_POS_X,
+	ELOC_PD_NEG_Z,
+	ELOC_PD_POS_Z,
 };
 
 static struct adc_module adc_instance; // global is allowed because we always lock the processor ADC
@@ -244,7 +244,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_IR_TOP1, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Z, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(ir_object_temps_batch));
 	}
 }
@@ -265,7 +265,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_IR_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Y, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(ir_ambient_temps_batch));
 	}
 }
@@ -646,19 +646,19 @@ void read_pdiode_batch(pdiode_batch* batch) {
 				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
 				if (two_bit_range == 4) {
 					// PD_ACCESS used as general photo diode indicator
-					log_error(ELOC_PD_ACCESS, ECODE_UNEXPECTED_CASE, false);
+					log_error(ELOC_PD_NEG_Z, ECODE_UNEXPECTED_CASE, false);
 				} else {
 					*batch |= (two_bit_range << (i*2));
 				}
 			}
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_PD_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_PD_POS_Y, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_PD_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_PD_POS_Y, ECODE_I2C_MUTEX_TIMEOUT, true);
 	}
 }
 
