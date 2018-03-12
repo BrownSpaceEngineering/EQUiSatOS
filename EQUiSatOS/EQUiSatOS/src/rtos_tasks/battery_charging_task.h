@@ -180,7 +180,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch);
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv);
 bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
-void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
+void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
 
 void run_unit_tests(void);
 void run_simulations(void);
