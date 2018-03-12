@@ -237,7 +237,7 @@
       <ToolName>EDBG MSD</ToolName>
     </com_atmel_avrdbg_tool_edbg>
     <ExternalProgrammingToolCommand />
-    <avrtoolserialnumber>J41800056157</avrtoolserialnumber>
+    <avrtoolserialnumber>J41800025475</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x10010000</avrdeviceexpectedsignature>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <com_atmel_avrdbg_tool_atmelice>
@@ -248,7 +248,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800056157</ToolNumber>
+      <ToolNumber>J41800025475</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
   </PropertyGroup>

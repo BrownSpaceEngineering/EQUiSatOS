@@ -9,7 +9,7 @@
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-//#define DISABLE_REWRITE_FROM_MRAM
+#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
@@ -22,21 +22,25 @@
 // NOTE: must be a multiple of NVMCTRL_PAGE_SIZE                                                            
 /************************************************************************/
 #define APP_START_ADDRESS                 ((uint8_t *) 0x00006000)
-#define APP_START_RESET_VEC_ADDRESS (APP_START_ADDRESS+(uint32_t)0x04)
+
+// rad-safe triple-redundant versions (plus other crucial constants)
+RAD_SAFE_FIELD_INIT(uint8_t*, app_start_address, APP_START_ADDRESS);
+RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 
 /************************************************************************/
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-#define PROG_MEM_SIZE						147740
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					174892);
 // address at which binary is stored in mram
-#define MRAM_APP_ADDRESS					60
+RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				60);
 // address at which prog mem rewritten boolean is stored in mram
-#define MRAM_PROG_MEM_REWRITTEN_ADDR		42
+RAD_SAFE_FIELD_INIT(uint32_t, mram_prog_mem_rewritten_addr, 42);
 // size of buffer to use when copying data from mram to flash
 // IMPORTANT NOTE: MUST be multiple of NVM page size, i.e. NVMCTRL_PAGE_SIZE = 64
 // (use powers of two and you'll be fine)
-#define MRAM_COPY_BUFFER_SIZE				5120
+#define MRAM_COPY_BUFFER_SIZE								5120
+RAD_SAFE_FIELD_INIT(size_t, mram_copy_buffer_size, MRAM_COPY_BUFFER_SIZE);
 
 // MRAM compare buffers
 // note: these are big buffers, so we make sure to stored them in the BSS
@@ -63,30 +67,30 @@ static void start_application(void);
  */
 static void start_application(void)
 {
-	uint32_t app_start_address;
+	uint32_t reset_handler_address;
 
 	/* Load the Reset Handler address of the application */
-	app_start_address = *(uint32_t *)(APP_START_ADDRESS + 4);
+	reset_handler_address = *(uint32_t *)(RAD_SAFE_FIELD_GET(app_start_address) + 4);
 
 	/**
 	 * Test reset vector of application @APP_START_ADDRESS+4
 	 * (check if application was erased)
 	 * Stay in SAM-BA if *(APP_START+0x4) == 0xFFFFFFFF
 	 */
-	if (app_start_address == 0xFFFFFFFF) {
+	if (reset_handler_address == 0xFFFFFFFF) {
 		// try again...
 		system_reset();
 		return;
 	}
 
 	/* Rebase the Stack Pointer */
-	__set_MSP(*(uint32_t *) APP_START_ADDRESS);
+	__set_MSP(*(uint32_t *) RAD_SAFE_FIELD_GET(app_start_address));
 
 	/* Rebase the vector table base address */
-	SCB->VTOR = ((uint32_t) APP_START_ADDRESS & SCB_VTOR_TBLOFF_Msk);
+	SCB->VTOR = ((uint32_t) RAD_SAFE_FIELD_GET(app_start_address) & RAD_SAFE_FIELD_GET(scb_vtor_tbloff_msk));
 
 	/* Jump to user Reset Handler in the application */
-	asm("bx %0"::"r"(app_start_address));
+	asm("bx %0"::"r"(reset_handler_address));
 }
 
 /*
@@ -132,12 +136,12 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 
 	int num_copied = 0;
-	uint32_t mram_addr = MRAM_APP_ADDRESS;
-	uint32_t flash_addr = (uint32_t) APP_START_ADDRESS;
+	uint32_t mram_addr = RAD_SAFE_FIELD_GET(mram_app_address);
+	uint32_t flash_addr = (uint32_t) RAD_SAFE_FIELD_GET(app_start_address);
 	int corrections_made = 0;
 
-	while (num_copied < PROG_MEM_SIZE) {
-		size_t buf_size = min(PROG_MEM_SIZE - num_copied, MRAM_COPY_BUFFER_SIZE);
+	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
+		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
 
 		// read the same data from both MRAMs (to compare them)
 		mram_read_bytes(spi_master_instance, mram_slave1, buffer_mram1, buf_size, mram_addr);
@@ -154,6 +158,17 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 			if (!buffer_mram1_matched_flash && !buffer_mram2_matched_flash) {
 				// Take the one with the shortest section of same bytes
 				// (if it's an MRAM failure, it's likely to be a line either pulled HIGH (all 0xff) or LOW (all 0x00))
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
 				size_t mram1_same_seq_len = longest_same_seq_len(buffer_mram1, buf_size);
 				size_t mram2_same_seq_len = longest_same_seq_len(buffer_mram2, buf_size);
 				
@@ -191,10 +206,10 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 void set_prog_memory_rewritten(uint8_t was_rewritten, struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write duplicate fields to both mrams (no spacing)
-	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, MRAM_PROG_MEM_REWRITTEN_ADDR);
-	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, MRAM_PROG_MEM_REWRITTEN_ADDR + 1);
-	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, MRAM_PROG_MEM_REWRITTEN_ADDR);
-	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, MRAM_PROG_MEM_REWRITTEN_ADDR + 1);
+	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
+	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + 1);
+	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
+	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + 1);
 	// note: don't bother to read it back and confirm because there's nothing we can do and it doesn't really matter
 }
 
@@ -250,11 +265,11 @@ int main(void)
 void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	size_t num_copied = 0;
-	uint32_t flash_addr = (uint32_t) APP_START_ADDRESS;
-	uint32_t mram_addr = MRAM_APP_ADDRESS;
+	uint32_t flash_addr = (uint32_t) RAD_SAFE_FIELD_GET(app_start_address);
+	uint32_t mram_addr = RAD_SAFE_FIELD_GET(mram_app_address);
 
-	while (num_copied < PROG_MEM_SIZE) {
-		size_t buf_size = min(PROG_MEM_SIZE - num_copied, MRAM_COPY_BUFFER_SIZE);
+	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
+		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
 		
 		// write this buffer section directly from the flash (program memory) address space into both MRAMs
 		mram_write_bytes(spi_master_instance, mram_slave1, (uint8_t*) flash_addr, buf_size, mram_addr);
@@ -314,9 +329,9 @@ void set_random_bytes(uint8_t* start, size_t num) {
 void corrupt_prog_mem(void) {
 	#define NUM_RAND_SEQS			3
 	#define RAND_SEQ_LEN			1
-	#define INSERT_POINT_STEP_AVG	(PROG_MEM_SIZE / NUM_RAND_SEQS)
+	#define INSERT_POINT_STEP_AVG	(RAD_SAFE_FIELD_GET(prog_mem_size) / NUM_RAND_SEQS)
 
-	uint32_t insert_ptr = (uint32_t) APP_START_ADDRESS;
+	uint32_t insert_ptr = (uint32_t) RAD_SAFE_FIELD_GET(app_start_address);
 	while (true) {
 		// randomly shift sequence insertion pointer
 		// (between 0x and 2x increase relative to INSERT_POINT_STEP_AVG)
@@ -327,7 +342,7 @@ void corrupt_prog_mem(void) {
 		insert_ptr -= insert_ptr % NVMCTRL_PAGE_SIZE;
 
 		// make sure not overflowing
-		if (insert_ptr > (uint32_t) (APP_START_ADDRESS + PROG_MEM_SIZE)) {
+		if (insert_ptr > (uint32_t) (RAD_SAFE_FIELD_GET(app_start_address) + RAD_SAFE_FIELD_GET(prog_mem_size))) {
 			break;
 		}
 
