@@ -28,19 +28,19 @@ li_discharging_t get_li_discharging(void)
 {
 	bat_charge_dig_sigs_batch batch;
 	read_bat_charge_dig_sigs_batch(&batch);
-	
+
 	bool li1_st_active = st_pin_active(LI1, batch);
 	bool li2_st_active = st_pin_active(LI2, batch);
-	
+
 	if (li1_st_active && !li2_st_active)
 		return LI1_DISG;
-	
+
 	if (li2_st_active && !li1_st_active)
 		return LI2_DISG;
-	
+
 	if (li1_st_active && li2_st_active)
 		return BOTH_DISG;
-		
+
 	return NONE_DISG;
 }
 
@@ -313,17 +313,17 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
 	bat_charge_dig_sigs_batch batch;
 	read_bat_charge_dig_sigs_batch(&batch);
-	
+
 	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
 	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
-	
+
 	if (!bat_discharging_st_pin_active)
 	{
 		log_error(get_error_loc(bat_discharging), ECODE_BAT_NOT_DISCHARGING, true);
 		print("bat %d not discharging -- decommissioning\n", bat_discharging);
 		decommission(bat_discharging);
 	}
-	
+
 	if (bat_not_discharging_st_pin_active)
 	{
 		log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
@@ -379,7 +379,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 {
 	bat_charge_dig_sigs_batch batch;
 	read_bat_charge_dig_sigs_batch(&batch);
-	
+
 	// NOTE: on the first time through, we want to check each of the batteries
 	bool first_time_through = (old_bat_charging == -1);
 	if (first_time_through)
@@ -394,7 +394,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 	{
 		check_fault(bat_charging, batch);
 		check_chg(bat_charging, true, batch);
-		
+
 		check_fault(old_bat_charging, batch);
 		check_chg(bat_charging, false, batch);
 	}
@@ -403,7 +403,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 {
 	int8_t lf_charging = -1;
-	
+
 	// NOTE: it shouldn't be the case that both are full -- we'd be charging LI's
 	if (get_lf_full(LFB1, lfb1_max_cell_mv))
 	{
@@ -413,14 +413,14 @@ void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 	{
 		lf_charging = LFB1;
 	}
-	else 
+	else
 	{
 		if (charging_data.bat_voltages[LFB1] <= charging_data.bat_voltages[LFB2])
 			lf_charging = LFB1;
 		else
 			lf_charging = LFB2;
 	}
-	
+
 	charging_data.bat_charging = lf_charging;
 }
 
@@ -478,9 +478,9 @@ bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
 }
 
 bool get_lfs_both_full(
-	uint8_t num_lf_down, 
-	int8_t good_lf, 
-	uint16_t lfb1_max_cell_mv, 
+	uint8_t num_lf_down,
+	int8_t good_lf,
+	uint16_t lfb1_max_cell_mv,
 	uint16_t lfb2_max_cell_mv)
 {
 	if (num_lf_down == 0)
@@ -489,7 +489,7 @@ bool get_lfs_both_full(
 
 	if (num_lf_down == 1)
 		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv);
-		
+
 	return true;
 }
 
@@ -519,9 +519,10 @@ void battery_logic()
 	// our purposes
 	charging_data.bat_voltages[LFB1] = lf1_mv + lf2_mv;
 	charging_data.bat_voltages[LFB2] = lf3_mv + lf4_mv;
-	
+
 	uint16_t lfb1_max_cell_mv = Max(lf1_mv, lf2_mv);
 	uint16_t lfb2_max_cell_mv = Max(lf3_mv, lf4_mv);
+	#endif
 
 	/////
 	// phase 0: determine whether any batteries should be decommissioned or
@@ -602,14 +603,15 @@ void battery_logic()
 		good_lf = charging_data.decommissioned[LFB1] ? LFB2 : LFB1;
 
 	print("currently have %d bad li and %d bad lf\n", num_li_down, num_lf_down);
-	
+
+	#ifndef BAT_TESTING
 	// we're interested in the charging battery filling up if it's a lion
 	bool curr_charging_filled_up = false;
 	if (is_lion(charging_data.bat_charging))
 	{
 		bat_charge_dig_sigs_batch batch;
 		read_bat_charge_dig_sigs_batch(&batch);
-			
+
 		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
 								  (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
@@ -625,7 +627,7 @@ void battery_logic()
 	#ifdef BAT_TESTING
 	bool curr_charging_filled_up = simulated_curr_charging_filled_up;
 	#endif
-		
+
 	// we also want to know whether the life po banks have filled up
 	bool life_pos_filled_up = get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
 
@@ -988,15 +990,22 @@ void battery_logic()
 		// the other to inactive
 		set_li_to_discharge(charging_data.lion_discharging, 1);
 
-		// take the SPI mutex (we'll be using it), and then suspend the scheduler
-		// because we don't want this operation to be interrupted
-		// (if it fails, continue on, but just don't write to MRAM)
+		// take the SPI mutex because we'll be using it AND we don't
+		// want the satellite to reboot from power failure while writing to the MRAM
+		// elsewhere. We increase the timeout hear to be more confident we get it.
+		// (if it fails, continue on, and don't write to the MRAM)
 		bool got_mutex_spi = false;
-		if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
+		if (xSemaphoreTake(mram_spi_cache_mutex, 2 * MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
 			got_mutex_spi = true;
 		} else {
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
+
+
+
+		// TODO: maybe give up on this check if we fail to get the mutex?? ROHAN??
+
+
 
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
@@ -1005,15 +1014,10 @@ void battery_logic()
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		set_li_to_discharge(lion_not_discharging, 0);
-		
-		// suspend scheduler to make sure the satellite is in a good
-		// state if it reboots (we would do it earlier but we need to
-		// read sensors, etc. and it's hard to suspend the scheduler)
-		pet_watchdog(); // in case this takes a bit and we're close
-		vTaskSuspendAll();
-		delay_ms(SAT_NO_POWER_TURN_OFF_T_MS); // TODO: must be shorter than watchdog timeout
-		xTaskResumeAll();
-		
+		// wait a sufficiently long time that we think the satellite would've rebooted
+		// if this battery had failed
+		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
+
 		// TODO: check this flow with Mckenna -- enough delay
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
@@ -1043,9 +1047,9 @@ void battery_logic()
 		set_bat_to_charge(old_bat_charging, 0);
 		set_bat_to_charge(charging_data.bat_charging, 1);
 	}
-	
+
 	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 	check_after_charging(charging_data.bat_charging, old_bat_charging);
-	
+
 	print("leaving battery charging\n");
 }

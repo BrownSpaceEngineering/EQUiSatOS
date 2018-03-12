@@ -19,16 +19,17 @@
 #define SET_CMD_MODE_WAIT_AFTER_MS	300
 #define MAX_RADIO_CMD_TIME			200 // 20 ms inner delay * 20
 #define WARM_RESET_REBOOT_TIME		1000
-#define WARM_RESET_WAIT_AFTER_MS	100 // TODO: necessary / what value?
+#define WARM_RESET_WAIT_AFTER_MS	500 // TODO: necessary / what value?
 
 #define LEN_GROUND_CALLSIGN			4
 extern char ground_callsign_buf[LEN_GROUND_CALLSIGN];
-#define LEN_ECHOBUF					4
-extern char echo_buf[LEN_ECHOBUF];
-#define LEN_KILLBUF					4
-extern char kill_buf[LEN_KILLBUF];
-#define LEN_FLASHBUF				5
-extern char flash_buf[LEN_FLASHBUF];
+#define LEN_UPLINK_BUF				2
+extern char echo_buf[LEN_UPLINK_BUF];
+extern char kill_3days_buf[LEN_UPLINK_BUF];
+extern char kill_week_buf[LEN_UPLINK_BUF];
+extern char kill_forever_buf[LEN_UPLINK_BUF];
+extern char flash_buf[LEN_UPLINK_BUF];
+extern char reboot_buf[LEN_UPLINK_BUF];
 
 bool check_checksum(char* data, int dataLen, uint8_t actualChecksum);
 
@@ -47,8 +48,12 @@ void setRadioPower(bool on);
 
 typedef enum {	CMD_NONE = 0,
 				CMD_ECHO = 1,
-				CMD_KILL = 2,
-				CMD_FLASH = 3
+				CMD_REBOOT = 2,				
+				CMD_FLASH = 3,
+				CMD_KILL_3DAYS = 4,
+				CMD_KILL_WEEK = 5,
+				CMD_KILL_FOREVER = 6,
+				
 				} rx_cmd_type_t;
 
 rx_cmd_type_t check_rx_received(void);

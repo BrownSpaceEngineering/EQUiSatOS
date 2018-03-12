@@ -117,7 +117,6 @@ enum error_locations {
 	ELOC_BAT_L2 =						76,
 	ELOC_BAT_LFB1 =						77,
 	ELOC_BAT_LFB2 =						78,
-	
 	ELOC_BAT_CHARGING_SWITCH_1 =        79,
 	ELOC_BAT_CHARGING_SWITCH_2 =        80,
 	ELOC_BAT_CHARGING_SWITCH_3 =        81,
@@ -126,7 +125,9 @@ enum error_locations {
 	ELOC_BAT_CHARGING_SWITCH_6 =        84,
 	ELOC_BAT_CHARGING_SWITCH_7 =        85,
 	ELOC_BAT_CHARGING_SWITCH_8 =        86,
-	ELOC_BAT_CHARGING_SWITCH_9 =        87
+	ELOC_BAT_CHARGING_SWITCH_9 =        87,
+	ELOC_IR_POW =						88,
+	ELOC_RADIO_KILLTIME =				89
 };
 
 /******************** PROBLEM CODES ********************/
@@ -201,7 +202,12 @@ enum error_codes {
 	ECODE_ALL_SAME_VAL =				60,
 	ECODE_CORRUPTED =					61,
 	ECODE_INVALID_STATE_CHANGE =		62,
-	ECODE_TIMESTAMP_WRAPAROUND =		63
+	ECODE_TIMESTAMP_WRAPAROUND =		63,
+	ECODE_INCONSISTENT_STATE =			64,
+	ECODE_PWM_CUR_LOW_ON_DEPLOY =		65,
+	ECODE_PWM_CUR_LOW_ON_MAX_CYCLE =	66,
+	ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY =	67,
+	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 68,
 };
 
 /************************************************************************/

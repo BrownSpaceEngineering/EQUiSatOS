@@ -390,3 +390,72 @@ void pointer_typecast_test(void) {
 	write_uint8_buf_deref((uint8_t*) &recieve_buf_4);
 	configASSERT((recieve_buf_4 & 0xff) == 0xcd && ((recieve_buf_4 >> 8) & 0xff) == 0xab); // little endian
 }
+
+void rx_pointer_test(void) {
+	char* cmd_test_buf;
+	rx_cmd_type_t test;
+	cmd_test_buf = "K1ADFLGHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_FLASH);
+	
+	cmd_test_buf = "K1ADFJGHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_NONE);
+	
+	cmd_test_buf = "K1ADECGHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "K1ADK1GHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_KILL_3DAYS);
+	
+	cmd_test_buf = "K1ADK2GHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_KILL_WEEK);
+	
+	cmd_test_buf = "K1ADK3GHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_KILL_FOREVER);
+	
+	cmd_test_buf = "K1ADREGHIJKLMNOP";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_REBOOT);
+	
+	cmd_test_buf = "0000000000K1ADEC";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "C0000000000K1ADE";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "1ADEC0000000000K";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "DEC0000000000K1A";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "00000K1ADEC00000";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_ECHO);
+	
+	cmd_test_buf = "00000K1AD0EC0000";
+	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
+	test = check_rx_received();
+	assert(test == CMD_NONE);
+}

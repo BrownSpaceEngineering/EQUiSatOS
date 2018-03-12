@@ -66,12 +66,12 @@ struct hw_states {
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
-#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	500
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(500 / portTICK_PERIOD_MS)
 
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			2000 // these can take a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(2000 / portTICK_PERIOD_MS) // these can take a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 

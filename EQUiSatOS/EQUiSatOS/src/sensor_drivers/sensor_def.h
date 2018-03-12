@@ -14,64 +14,41 @@
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
 /************************************************************************/
-#define A_IR_OBJ_M					0
-#define A_IR_OBJ_B					~0
-#define A_IR_AMB_M					0
-#define A_IR_AMB_B					~0
-#define A_PD_M						0
-#define A_PD_B						~0
+ // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
 #define A_LED_TEMP_M				0
 #define A_LED_TEMP_B				~0
-#define A_LED_CUR_REG_M				0
-#define A_LED_CUR_REG_B				~0
-#define A_LED_CUR_FLASH_M			0
-#define A_LED_CUR_FLASH_B			~0
-#define A_L_TEMP_M					0
-#define A_L_TEMP_B					~0
+#define A_LED_SNS_M					3/100
+#define A_LED_SNS_B					0
 #define A_LF_TEMP_M					0
 #define A_LF_TEMP_B					~0
-#define A_LF_CUR_REG_M				0
-#define A_LF_CUR_REG_B				~0
-#define A_LF_CUR_FLASH_M			0
-#define A_LF_CUR_FLASH_B			~0
-#define A_L_CUR_REG_M				0
-#define A_L_CUR_REG_B				~0
-#define A_L_CUR_HIGH_M				0
-#define A_L_CUR_HIGH_B				~0
-#define A_LF_VOLT_M					0
-#define A_LF_VOLT_B					~0
-#define A_L_VOLT_M					0
-#define A_L_VOLT_B					~0
-#define A_LREF_M					0
-#define A_LREF_B					~0
-#define A_PANELREF_M				0
-#define A_PANELREF_B				~0
-#define A_CHARGE_M					0
-#define A_CHARGE_B					~0
-#define A_GYRO_M					0
-#define A_GYRO_B					~0
-#define A_ACCEL_M					0
-#define A_ACCEL_B					~0
-#define A_MAG_M						0
-#define A_MAG_B						~0
-#define A_RAD_TEMP_M				0
-#define A_RAD_TEMP_B				~0
-#define A_IMU_TEMP_M				0
-#define A_IMU_TEMP_B				~0
-#define A_3V3_REF_M					0
-#define A_3V3_REF_B					~0
-#define A_3V6_REF_OFF_M				0
-#define A_3V6_REF_OFF_B				~0
-#define A_3V6_REF_ON_M				0
-#define A_3V6_REF_ON_B				~0
-#define A_3V6_SNS_OFF_M				0
-#define A_3V6_SNS_OFF_B				~0
-#define A_3V6_SNS_ON_M				0
-#define A_3V6_SNS_ON_B				~0
-#define A_5VREF_OFF_M				0
-#define A_5VREF_OFF_B				~0
-#define A_5VREF_ON_M				0
-#define A_5VREF_ON_B				~0
+#define A_LF_SNS_M					17/88
+#define A_LF_SNS_B					-960
+#define A_LF_OSNS_M					51/182
+#define A_LF_OSNS_B					0
+#define A_LF_VOLT_M					17/300
+#define A_LF_VOLT_B					0
+#define A_L_TEMP_M					0
+#define A_L_TEMP_B					~0
+#define A_L_SNS_M					51/650
+#define A_L_SNS_B					150
+#define A_L_VOLT_M					17/300
+#define A_L_VOLT_B					0
+#define A_LREF_M					17/300
+#define A_LREF_B					0
+#define A_PANELREF_M				14/549
+#define A_PANELREF_B				0
+#define A_IR_AMB_M					14/453
+#define A_IR_AMB_B					-11657
+#define A_GYRO_M					1/257
+#define A_GYRO_B					32750
+#define A_ACCEL_M					1/257
+#define A_ACCEL_B					32768
+#define A_MAG_M						26/571
+#define A_MAG_B						2800
+#define A_RAD_TEMP_M				51/800
+#define A_RAD_TEMP_B				2000
+#define A_IMU_TEMP_M				4/655
+#define A_IMU_TEMP_B				20374
 
 /************************************************************************/
 /* ERROR BOUNDS                                                         */
@@ -84,32 +61,38 @@
 #define B_PD_HIGH						~0
 #define B_LED_TEMP_LOW					0
 #define B_LED_TEMP_HIGH					~0
-#define B_LED_CUR_REG_LOW				0
-#define B_LED_CUR_REG_HIGH				~0
-#define B_LED_CUR_FLASH_LOW				0
-#define B_LED_CUR_FLASH_HIGH			~0
-#define B_L_TEMP_LOW					0
-#define B_L_TEMP_HIGH					~0
+#define B_LED_SNS_REG_LOW				0
+#define B_LED_SNS_REG_HIGH				5
+#define B_LED_SNS_FLASH_LOW				166
+#define B_LED_SNS_FLASH_HIGH			2000
 #define B_LF_TEMP_LOW					0
 #define B_LF_TEMP_HIGH					~0
-#define B_LF_CUR_REG_LOW				0
-#define B_LF_CUR_REG_HIGH				~0
-#define B_LF_CUR_FLASH_LOW				0
-#define B_LF_CUR_FLASH_HIGH				~0
-#define B_L_CUR_REG_LOW					0
-#define B_L_CUR_REG_HIGH				~0
-#define B_L_CUR_HIGH_LOW				0
-#define B_L_CUR_HIGH_HIGH				~0
+#define B_LF_SNS_REG_LOW				0
+#define B_LF_SNS_REG_HIGH				~0
+#define B_LF_SNS_FLASH_LOW				0
+#define B_LF_SNS_FLASH_HIGH				~0
+#define B_LF_OSNS_REG_LOW				0
+#define B_LF_OSNS_REG_HIGH				~0
+#define B_LF_OSNS_FLASH_LOW				0
+#define B_LF_OSNS_FLASH_HIGH			~0
 #define B_LF_VOLT_LOW					0
-#define B_LF_VOLT_HIGH					~0
+#define B_LF_VOLT_HIGH					4000
+#define B_L_TEMP_LOW					0
+#define B_L_TEMP_HIGH					~0
+#define B_L_SNS_IDLE_RAD_OFF_LOW		10
+#define B_L_SNS_IDLE_RAD_OFF_HIGH		150
+#define B_L_SNS_IDLE_RAD_ON_LOW			100
+#define B_L_SNS_IDLE_RAD_ON_HIGH		400
+#define B_L_SNS_TRANSMIT_LOW			800
+#define B_L_SNS_TRANSMIT_HIGH			1500
+#define B_L_SNS_ANT_DEPLOY_LOW			200
+#define B_L_SNS_ANT_DEPLOY_HIGH			3100
 #define B_L_VOLT_LOW					0
-#define B_L_VOLT_HIGH					~0
+#define B_L_VOLT_HIGH					4220
 #define B_LREF_LOW						0
-#define B_LREF_HIGH						~0
+#define B_LREF_HIGH						4220
 #define B_PANELREF_LOW					0
-#define B_PANELREF_HIGH					~0
-#define B_CHARGE_LOW					0
-#define B_CHARGE_HIGH					~0
+#define B_PANELREF_HIGH					9000
 #define B_GYRO_LOW						0
 #define B_GYRO_HIGH						~0
 #define B_IMU_TEMP_LOW					0
@@ -119,34 +102,41 @@
 #define B_3V6_REF_OFF_LOW				0
 #define B_3V6_REF_OFF_HIGH				400
 #define B_3V6_REF_ON_LOW				3400
-#define B_3V6_REF_ON_HIGH				3800
+#define B_3V6_REF_ON_HIGH				3700
 #define B_3V6_SNS_OFF_LOW				0
-#define B_3V6_SNS_OFF_HIGH				10
+#define B_3V6_SNS_OFF_HIGH				50
 #define B_3V6_SNS_ON_LOW				50
-#define B_3V6_SNS_ON_HIGH				2000
+#define B_3V6_SNS_ON_HIGH				120
+#define B_3V6_SNS_TRANSMIT_LOW			700
+#define B_3V6_SNS_TRANSMIT_HIGH			1100
 #define B_5VREF_OFF_LOW					0
 #define B_5VREF_OFF_HIGH				400
 #define B_5VREF_ON_LOW					4800
-#define B_5VREF_ON_HIGH					5200
+#define B_5VREF_ON_HIGH					5100
 
 typedef enum {
 	S_IR_OBJ,
 	S_IR_AMB,
 	S_PD,
 	S_LED_TEMP,
-	S_LED_CUR_REG,
-	S_LED_CUR_FLASH,
-	S_L_TEMP,
+	S_LED_SNS,
+	S_LED_SNS_REG,
+	S_LED_SNS_FLASH,
 	S_LF_TEMP,
-	S_LF_CUR_REG,
-	S_LF_CUR_FLASH,
-	S_L_CUR_REG,
-	S_L_CUR_HIGH,
+	S_LF_SNS_REG,
+	S_LF_SNS_FLASH,
+	S_LF_OSNS_REG,
+	S_LF_OSNS_FLASH,
 	S_LF_VOLT,
+	S_L_TEMP,
+	S_L_SNS, // ONLY USE TO TRUNCATE, NOT LOG_IF_OUT_OF_BOUNDS
+	S_L_SNS_IDLE_RAD_OFF,
+	S_L_SNS_IDLE_RAD_ON,
+	S_L_SNS_TRANSMIT,
+	S_L_SNS_ANT_DEPLOY,
 	S_L_VOLT,
 	S_LREF,
 	S_PANELREF,
-	S_CHARGE,
 	S_GYRO,
 	S_ACCEL,
 	S_MAG,
@@ -157,8 +147,9 @@ typedef enum {
 	S_3V6_REF_ON,
 	S_3V6_SNS_OFF,
 	S_3V6_SNS_ON,
-	S_5VREF_OFF,
-	S_5VREF_ON
+	S_3V6_SNS_TRANSMIT,
+	S_5VREF_ON,
+	S_5VREF_OFF
 } sig_id_t;
 
 uint16_t get_low_bound_from_signal(sig_id_t sig);

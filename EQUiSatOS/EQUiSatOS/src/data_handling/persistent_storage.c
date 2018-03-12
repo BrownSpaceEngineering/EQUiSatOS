@@ -88,7 +88,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	// helpful constants
 	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
 	bool success_mram2 = success_mram2_data1 && success_mram2_data2;
-	bool mram1_data_matches = memcmp(mram1_data1,		  mram1_data2, num_bytes) == 0;
+	bool mram1_data_matches = memcmp(mram1_data1, mram1_data2, num_bytes) == 0;
 	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
 	
 	/* if both sets of data match, do an additional comparison between them to determine our confidence */
@@ -98,6 +98,8 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 			// return data in data
 			return true;
 		} else {
+			configASSERT(false); // don't want this to happen before launch
+			
 			log_error(ELOC_MRAM_READ, ECODE_INCONSISTENT_DATA, true);
 			// if one has failed, definitely take the other one
 			if (!success_mram2) {
@@ -141,10 +143,12 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	   can really occur with the SPI driver that might mean something is an overflow--
 	   and the MRAM's wouldn't likely match if only one of them overflowed)) */
 	if (mram1_data_matches && !mram2_data_matches) {
+		configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		return success_mram1;
 	}
 	if (!mram1_data_matches && mram2_data_matches) {
+		configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
 		memcpy(mram1_data1, mram2_data1, num_bytes);
@@ -159,6 +163,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	1_2 _ 2_2
 	*/
 	if (!mram1_data_matches && !mram2_data_matches) {
+		//configASSERT(false);
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		
@@ -220,7 +225,7 @@ void read_state_from_storage(void) {
 			cached_state.secs_since_launch = 0;
 			cached_state.sat_state = INITIAL; // signifies initial boot
 			cached_state.reboot_count = 0;
-			memset(cached_state.sat_event_history, 0, sizeof(satellite_history_batch))
+			memset(&cached_state.sat_event_history, 0, sizeof(satellite_history_batch));
 			cached_state.prog_mem_rewritten = false;
 			cached_state.radio_revive_timestamp = 0;
 			cached_state.persistent_charging_data.li_caused_reboot = -1;
@@ -257,6 +262,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	
 	uint8_t num_errors = stack->cur_size;
 	if (num_errors >= ERROR_STACK_MAX) {
+		#ifdef USE_STRICT_ASSERTIONS
+			configASSERT(false);
+		#endif
 		// watch for radiation bit flips, because this could overwrite part of the MRAM
 		log_error(ELOC_MRAM_WRITE, ECODE_OUT_OF_BOUNDS, true);
 		num_errors = ERROR_STACK_MAX;
@@ -289,6 +297,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 		uint8_t temp_num_errors;
 		storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
 		if (temp_num_errors != num_errors) {
+			#ifdef USE_STRICT_ASSERTIONS
+				configASSERT(false);
+			#endif
 			return false;
 		}
 	
@@ -297,6 +308,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 			storage_read_field_unsafe((uint8_t*) temp_error_buf,
 				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
+				#ifdef USE_STRICT_ASSERTIONS
+					configASSERT(false);
+				#endif
 				return false;
 			}
 		}
@@ -320,6 +334,7 @@ bool update_cache_fields(void) {
 	TickType_t cur_ticks = xTaskGetTickCount();
 	if (cur_ticks < prev_write_ticks) {
 		should_reboot = true;
+		configASSERT(false); // we generally don't run for 50 days...
 		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
 		
 	} else {
@@ -411,7 +426,7 @@ void write_state_to_storage_safety(bool safe) {
 			system_reset();
 		}
 		
-		if (safe) xSemaphoreGive(mram_spi_cache_mutex);
+		if (safe) xSemaphoreGive(mram_spi_cache_mutex); // we got the mutex if safe is true
 		
 	} else {
 		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
@@ -662,6 +677,7 @@ void populate_error_stacks(equistack* error_stack) {
 		}
 		
 		if (error_num_too_long) {
+			configASSERT(false);
 			// log this after we've populated, making sure it's priority
 			// so it overwrites any garbage errors we may have gotten
 			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, true);

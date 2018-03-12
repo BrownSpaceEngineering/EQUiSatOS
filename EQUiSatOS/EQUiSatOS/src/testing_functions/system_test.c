@@ -632,7 +632,7 @@ void readLEDCurrent(bool printFloats){
 			strcpy(test_str,"LED3SNS");			
 			break;
 			case 3:
-			strcpy(test_str,"LFB4SNS");			
+			strcpy(test_str,"LED4SNS");			
 			break;			
 		}
 		currentReadings[i] = voltage_readings[i]*1000/30;

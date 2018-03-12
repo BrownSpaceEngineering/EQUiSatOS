@@ -10,20 +10,10 @@
 #include "antenna_pwm.h"
 
 /************************************************************************/
-/* State variables                                                      */
-/************************************************************************/
-// vector of ir pow states (note that "off" doesn't enforce off, it's just not state-controlled)
-//								LIIHAI (must be in REVERSE order of states in rtos_task_config.h - see above)
-const uint16_t IRPOW_STATES = 0b011111;
-
-/************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
 /************************************************************************/ 
 sat_state_t current_sat_state = INITIAL;
 task_states current_task_states;
-
-// specific state for radio, IR pow (set to OFF initially to ensure they'll be turned on)
-bool current_irpow_state = false;
 
 /************************************************************************/
 /* global states for hardware + mutex                                   */
@@ -351,19 +341,30 @@ bool low_power_active(void) {
 /************************************************************************/
 /* wrapper for setting IR power state */
 void set_irpow_by_sat_state(sat_state_t state) {
-	bool new_state = IRPOW_STATES & 1 << state;
-	if (new_state) {
-		// don't re-enable, because this entails waiting to confirm power on
-		if (current_irpow_state != new_state) {
-			set_output(true, P_IR_PWR_CMD);
-			vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
-		}
-	} else {
-		// note: we should be in a high enough priority task when this changes 
-		// that nothing should be cut off that wouldn't be anyways by a state change
-		set_output(false, P_IR_PWR_CMD);
+	switch (state) {
+		// if coming into any state besides low power,
+		// enable IR power if necessary 
+		case INITIAL:
+		case ANTENNA_DEPLOY:
+		case HELLO_WORLD:
+		case IDLE_NO_FLASH:
+		case IDLE_FLASH:
+			if (!get_output(P_IR_PWR_CMD)) {
+				set_output(true, P_IR_PWR_CMD);
+				vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
+			}
+			break;
+			
+		case LOW_POWER:
+			// disable on entry into LOW_POWER (it is enabled when requried in this state)
+			disable_ir_pow_if_should_be_off(true);
+			break;
+			
+		default:
+			configASSERT(false); // bad state ID or bit flip
+			log_error(ELOC_IR_POW, ECODE_UNEXPECTED_CASE, false);
+			break;
 	}
-	current_irpow_state = new_state;
 }
 
 /* Sets the current satellite state to the given state, if a transition from
@@ -512,8 +513,8 @@ bool take_all_mutexes(void) {
 	bool got_all = true;
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	got_all = got_all && xSemaphoreTake(critical_action_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(irpow_mutex,				TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
 	got_all = got_all && xSemaphoreTake(i2c_mutex,					TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
+	got_all = got_all && xSemaphoreTake(irpow_mutex,				TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
 	got_all = got_all && xSemaphoreTake(processor_adc_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
 	got_all = got_all && xSemaphoreTake(hardware_state_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS); // note: usually wrapper is used
 	got_all = got_all && xSemaphoreTake(watchdog_mutex,				TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
@@ -536,8 +537,8 @@ bool take_all_mutexes(void) {
 void give_all_mutexes() {
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	xSemaphoreGive(critical_action_mutex);
-	xSemaphoreGive(irpow_mutex);
 	xSemaphoreGive(i2c_mutex);
+	xSemaphoreGive(irpow_mutex);
 	xSemaphoreGive(processor_adc_mutex);
 	xSemaphoreGive(hardware_state_mutex);
 	xSemaphoreGive(watchdog_mutex);
@@ -670,7 +671,8 @@ void task_resume(task_type_t task_id)
 /* suspends or resumes the given task, safely pausing the watchdog 
    NOTE: CURRENTLY SHOULD ONLY BE CALLED ON THE ANTENNA_DEPLOY_TASK */
 void set_task_state_safe(task_type_t task_id, bool run) {
-	if (!xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+	bool got_mutex;
+	if (!(got_mutex = xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS))) {
 		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 	}
 	if (run) {
@@ -678,7 +680,7 @@ void set_task_state_safe(task_type_t task_id, bool run) {
 	} else {
 		task_suspend(task_id);
 	}
-	xSemaphoreGive(watchdog_mutex);
+	if (got_mutex) xSemaphoreGive(watchdog_mutex);
 }
 
 /************************************************************************/

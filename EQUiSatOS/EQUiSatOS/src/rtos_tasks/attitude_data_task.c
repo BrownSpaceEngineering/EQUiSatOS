@@ -54,16 +54,12 @@ void attitude_data_task(void *pvParameters)
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= ATTITUDE_DATA_MAX_READ_TIME) {
 			uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
-			if (time_since_last_log_s >= ATTITUDE_DATA_LOG_FREQ) {
+			if (time_since_last_log_s >= ATTITUDE_DATA_LOG_FREQ_S) {
 				// validate previous stored value in stack, getting back the next staged address we can start adding to
 				current_struct = (attitude_data_t*) equistack_Stage(&attitude_readings_equistack);
 				time_of_last_log_s = get_current_timestamp();
 			}
 		} else {
-			#ifdef USE_STRICT_ASSERTIONS
-				configASSERT(false);
-			#endif
-			
 			// log error if the data read took too long
 			log_error(ELOC_ATTITUDE_DATA, ECODE_EXCESSIVE_SUSPENSION, false);
 		}
