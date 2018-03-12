@@ -24,15 +24,18 @@ void USART_init() {
 //Receive handler
 void SERCOM3_Handler(void)
 {
-	if (SERCOM3->USART.INTFLAG.bit.RXC){		
-		receivebuffer[receiveIndex] = SERCOM3->USART.DATA.reg;		
+	if (SERCOM3->USART.INTFLAG.bit.RXC) {
+		radio_receive_buffer[receiveIndex] = SERCOM3->USART.DATA.reg;
 		receiveIndex++;
 		check_rx_received();
+		if (receiveIndex >= LEN_RECEIVEBUFFER - 1) {
+			receiveIndex = 0;
+		}
 	}
 }
 
 void clear_USART_rx_buffer(void) {
-	memset(receivebuffer, 0, LEN_RECEIVEBUFFER);
+	memset(radio_receive_buffer, 0, LEN_RECEIVEBUFFER);
 	receiveIndex = 0;
 }
 

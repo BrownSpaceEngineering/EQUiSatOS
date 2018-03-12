@@ -116,7 +116,8 @@ enum error_locations {
 	ELOC_BAT_L1 =						75,
 	ELOC_BAT_L2 =						76,
 	ELOC_BAT_LFB1 =						77,
-	ELOC_BAT_LFB2 =						78
+	ELOC_BAT_LFB2 =						78,
+	ELOC_RADIO_KILLTIME =				79
 };
 
 /******************** PROBLEM CODES ********************/

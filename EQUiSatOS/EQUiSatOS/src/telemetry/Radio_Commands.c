@@ -1,9 +1,12 @@
 #include "Radio_Commands.h"
 
 char ground_callsign_buf[] = {'K', '1', 'A', 'D'};
-char echo_buf[] = {'E', 'C', 'H', 'O'};
-char kill_buf[] = {'K', 'I', 'L', 'L'};
-char flash_buf[] = {'F', 'L', 'A', 'S', 'H'};
+char echo_buf[] = {'E', 'C'};
+char kill_3days_buf[] = {'K', '1'};
+char kill_week_buf[] = {'K', '2'};
+char kill_forever_buf[] = {'K', '3'};
+char flash_buf[] = {'F', 'L'};
+char reboot_buf[] = {'R', 'E'};
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -37,10 +40,9 @@ void set_command_mode(bool delay) {
 
 bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index) {
 	for (int i = 0; i < len; i++) {
-		if (rx_buf_index == (LEN_SENDBUFFER - 1) || buf[i] != sendbuffer[rx_buf_index]) {
+		if (buf[i] != radio_receive_buffer[rx_buf_index % LEN_RECEIVEBUFFER]) {
 			return false;
-		}
-		i++;
+		}		
 		rx_buf_index++;
 	}
 	return true;
@@ -50,39 +52,48 @@ bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index) {
 // task if so. MUST be called from an interrupt while doing so.
 rx_cmd_type_t check_rx_received(void) {
 	//checking for callsign
-	for (int i = 0; i < (LEN_RECEIVEBUFFER - LEN_GROUND_CALLSIGN); i++) {
+	rx_cmd_type_t command = CMD_NONE;
+	uint8_t i = 0;	
+	while (i < LEN_RECEIVEBUFFER) {
 		bool callsign_valid = true;
 		for (int j = 0; j < LEN_GROUND_CALLSIGN; j++) {
-			if (receivebuffer[i+j] != ground_callsign_buf[j]) {
+			if (radio_receive_buffer[(i+j) % LEN_RECEIVEBUFFER] != ground_callsign_buf[j]) {
 				callsign_valid = false;
 				break;
 			}
 		}
 		if (callsign_valid) {
-			uint8_t rxbuf_cmd_start_index = i+4;
-			// if valid command, send to transmit task to handle when ready
-			rx_cmd_type_t command;
-			if (check_if_rx_matches(echo_buf, LEN_ECHOBUF, rxbuf_cmd_start_index)) {
+			uint8_t rxbuf_cmd_start_index = (i+4) % LEN_RECEIVEBUFFER;
+			// if valid command, send to transmit task to handle when ready			
+			if (check_if_rx_matches(echo_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//ECHO
 				command = CMD_ECHO;
-				xQueueSendFromISR(rx_command_queue, &command, NULL);
-				return CMD_ECHO;
-				
-			} else if (check_if_rx_matches(kill_buf, LEN_KILLBUF, rxbuf_cmd_start_index)) {
-				//KILL
-				command = CMD_KILL;
-				xQueueSendFromISR(rx_command_queue, &command, NULL);
-				return CMD_KILL;
-				
-			} else if (check_if_rx_matches(flash_buf, LEN_FLASHBUF, rxbuf_cmd_start_index)) {
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);								
+			} else if (check_if_rx_matches(flash_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//FLASH
 				command = CMD_FLASH;
-				xQueueSendFromISR(rx_command_queue, &command, NULL);
-				return CMD_FLASH;
-			}
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+			} else if (check_if_rx_matches(reboot_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//REBOOT
+				command = CMD_REBOOT;
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+			}  else if (check_if_rx_matches(kill_3days_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//KILL FOR 3 DAYS
+				command = CMD_KILL_3DAYS;
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);					
+			} else if (check_if_rx_matches(kill_week_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//KILL FOR 1 WEEK
+				command = CMD_KILL_WEEK;
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+			} else if (check_if_rx_matches(kill_forever_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//KILL FOREVER :'(
+				command = CMD_KILL_FOREVER;
+				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+			}			
 		}
+		i++;
 	}
-	return CMD_NONE;
+	return command;
 }
 
 /*bool send_command(int numBytesReceiving) {
@@ -97,7 +108,7 @@ rx_cmd_type_t check_rx_received(void) {
 		i++;
 	}
 	return receiveDataReady;
-}*/
+}
 
 void set_dealer_mode(void) {
 	sendbuffer[0] = 0x01;
@@ -144,7 +155,7 @@ void set_channel(void) {
 	sendbuffer[3] = 0xFB;
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
-}*/
+}
 
 void cold_reset(void){
 	sendbuffer[0] = 0x01;
@@ -156,26 +167,7 @@ void cold_reset(void){
 	delay_ms(200);
 }
 
-bool warm_reset(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x1d;
-	sendbuffer[2] = 0x01; //warm
-	sendbuffer[3] = ~0x1E;
-	sendbuffer[4] = '\0';
-	/*if (send_command(3)) {
-		if ((check_checksum(receivebuffer+1, 1, receivebuffer[2])) && (receivebuffer[1] == 0)) {
-			return true;
-		}
-	} else {
-		//power cycle radio
-		setRadioPower(false);
-		delay_ms(WARM_RESET_REBOOT_TIME);
-		setRadioPower(true);
-		return false;
-	}*/
-}
-
-/*void set_modulation_format(void){
+void set_modulation_format(void){
 	sendbuffer[0] = 0x01;
 	sendbuffer[1] = 0x2B;
 	sendbuffer[2] = 0x01;
@@ -191,7 +183,7 @@ void set_link_speed(void){
 	sendbuffer[3] = ~0x08;
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
-}*/
+}
 
 
 int response_check(char arr[]){
@@ -201,14 +193,22 @@ int response_check(char arr[]){
 		if(receivebuffer[i]!=arr[i]) return 0;
 	}
 	return 1;
-}
+}*/
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
 bool XDL_prepare_get_temp() {
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x50;
-	sendbuffer[2] = ~0x50;
-	sendbuffer[3] = '\0';
+	radio_send_buffer[0] = 0x01;
+	radio_send_buffer[1] = 0x50;
+	radio_send_buffer[2] = ~0x50;
+	radio_send_buffer[3] = '\0';
+}
+
+bool warm_reset(void){
+	radio_send_buffer[0] = 0x01;
+	radio_send_buffer[1] = 0x1d;
+	radio_send_buffer[2] = 0x01; //warm
+	radio_send_buffer[3] = ~0x1E;
+	radio_send_buffer[4] = '\0';
 }
 
 /*Controls TX buffer between proc TX and radio.*/

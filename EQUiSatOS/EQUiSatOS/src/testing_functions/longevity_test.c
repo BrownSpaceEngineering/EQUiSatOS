@@ -35,7 +35,7 @@ const char* Photodiode_format = "TEMD6200: %f\n";
    TODO: This should probably be integrated with Tyler's USART stuff?
 */
 void usart_send_string(Sercom* sercom, const char *str_buf) {
-  memset(receivebuffer, 0, 16);
+  memset(radio_receive_buffer, 0, 16);
   receiveIndex = 0;
   while (*str_buf != '\0') {
     while(!sercom->USART.INTFLAG.bit.DRE);

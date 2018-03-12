@@ -18,5 +18,6 @@ void actuallyFlashingFlashBurstTest(void);
 void flashTest(void);
 void mram_test(void);
 void pointer_typecast_test(void);
+void rx_pointer_test(void);
 
 #endif /* SCRATCH_TESTING_H_ */

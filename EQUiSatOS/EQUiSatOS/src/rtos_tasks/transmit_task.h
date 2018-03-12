@@ -18,13 +18,11 @@
 #define EXPECTED_TRANSMISSION_TIME	(3*(TRANSMIT_TIME_MS(MSG_SIZE) + TIME_BTWN_MSGS_MS))
 #define RX_READY_PERIOD_MS			2000
 #define FLASH_CMD_PREFLASH_DELAY_MS 1500
+#define REBOOT_CMD_DELAY_MS			2000
 #define CMD_RESPONSE_SIZE			9
 
-// TODO: radio kill time increments
-// #define RADIO_KILL_1_DUR_S			259200		// 3 days
-// #define RADIO_KILL_2_DUR_S			1296000		// 15 days
-// #define RADIO_KILL_3_DUR_S			5184000		// 60 days
-// #define RADIO_KILL_SUBS_DUR_S		15552000	// 180 days
+#define RADIO_KILL_DUR_3DAYS_S		259200		// 3 days
+#define RADIO_KILL_DUR_WEEK_S		604800		// 7 days
 
 // packet sequencing
 // TODO: is there an optimal order?

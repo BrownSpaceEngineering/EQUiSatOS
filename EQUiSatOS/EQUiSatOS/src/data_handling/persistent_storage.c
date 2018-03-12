@@ -220,7 +220,7 @@ void read_state_from_storage(void) {
 			cached_state.secs_since_launch = 0;
 			cached_state.sat_state = INITIAL; // signifies initial boot
 			cached_state.reboot_count = 0;
-			memset(cached_state.sat_event_history, 0, sizeof(satellite_history_batch))
+			memset(&cached_state.sat_event_history, 0, sizeof(satellite_history_batch));
 			cached_state.prog_mem_rewritten = false;
 			cached_state.radio_revive_timestamp = 0;
 			cached_state.persistent_charging_data.li_caused_reboot = -1;
