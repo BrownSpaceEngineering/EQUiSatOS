@@ -466,11 +466,12 @@ void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 
 // TODO: only reason the second argument exists right now is because of system_test
 void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing_now) {
-	uint sig = flashing_now ? S_LF_SNS_FLASH : S_LF_SNS_REG;
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, sig, true);
+	uint sns_sig = flashing_now ? S_LF_SNS_FLASH : S_LF_SNS_REG;
+	uint o_sig = flashing_now ? S_LF_OSNS_FLASH : S_LF_OSNS_REG;
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, sns_sig, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, o_sig, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, sns_sig, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, o_sig, true);
 }
 
 // only used in antenna deploy task
@@ -484,9 +485,9 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		{
 			#ifndef EQUISIM_SIMULATE_BATTERIES
 				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_SNS_REG, true);
+				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_OSNS_REG, true);
 				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_SNS_REG, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true);
 			#else
 				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
 			#endif
