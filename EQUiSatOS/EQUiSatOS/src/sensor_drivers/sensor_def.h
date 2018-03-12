@@ -154,7 +154,7 @@ typedef enum {
 
 uint16_t get_low_bound_from_signal(sig_id_t sig);
 uint16_t get_high_bound_from_signal(sig_id_t sig);
-uint16_t get_line_m_from_signal(sig_id_t sig); // TODO: adjust the math and function definitions to reflect this
+uint16_t get_line_m_from_signal(sig_id_t sig);
 int16_t get_line_b_from_signal(sig_id_t sig);
 
 #endif /* SENSOR_DEF_H_ */
