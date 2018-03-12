@@ -15,49 +15,92 @@
 /************************************************************************/
 /* Sensor type printing methods                                         */
 /************************************************************************/
+static uint16_t untruncate(uint8_t val, sig_id_t sig) {
+	uint16_t u16 = ((uint8_t)val) << 8;
+	return u16 / get_line_m_from_signal(sig) - get_line_b_from_signal(sig);
+}
+
 void print_accel_batch(accelerometer_batch batch) {
-	print("accel: x: %d y: %d z: %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("accel\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_ACCEL));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_ACCEL));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_ACCEL));
 }
 void print_gyro_batch(gyro_batch batch) {
-	print("gyro: x: %d y: %d z: %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("gyro\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_GYRO));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_GYRO));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_GYRO));
 }
 void print_magnetometer_batch(magnetometer_batch batch) {
-	print("mag: %d %d %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("mag\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_MAG));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_MAG));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_MAG));
 }
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
-	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(batch[0] << 8), (uint16_t)dataToTemp(batch[1] << 8), (uint16_t)dataToTemp(batch[2] << 8), (uint16_t)dataToTemp(batch[3] << 8), (uint16_t)dataToTemp(batch[4] << 8), (uint16_t)dataToTemp(batch[5] << 8));
+	print("ir ambs\n");
+	for (int i = 0; i < 6; i++) {
+		print("\t%d: %d\t%d C\n", i+1, batch[i], dataToTemp(untruncate(batch[i], S_IR_AMB)));
+	}
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
-	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(batch[0]), (uint16_t)dataToTemp(batch[1]), (uint16_t)dataToTemp(batch[2]), (uint16_t)dataToTemp(batch[3]), (uint16_t)dataToTemp(batch[4]), (uint16_t)dataToTemp(batch[5]));
-}
-void print_pdiode_batch(pdiode_batch batch) {
-	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, (uint16_t)(batch>>(i*2))&0b11);
+	print("ir objs\n");
+	for (int i = 0; i < 6; i++) {
+		print("\t%d: %d\t%d C\n", i+1, batch[i], dataToTemp(batch[i]));
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {
-	print("lion volts: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion volts 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
+	print("lion volts 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
 void print_lion_current_batch(lion_current_batch batch) {
-	print("lion current: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion SNS 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
+	print("lion SNS 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("lion temps: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion temps 1: %d %d C\n", batch[0], dataToTemp(untruncate(batch[0], S_L_TEMP)));
+	print("lion temps 2: %d %d C\n", batch[1], dataToTemp(untruncate(batch[1], S_L_TEMP)));
 }
 void print_led_temps_batch(led_temps_batch batch) {
-	print("led temps: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("led temps\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\t%d\n", i+1, batch[i], dataToTemp(untruncate(batch[i], S_LED_TEMP)));
+	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	print("lifepo bank temps: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lifepo bank temps\n");
+	print("\t1: %d\t%d C\n", batch[0], dataToTemp(untruncate(batch[0], S_LF_TEMP)));
+	print("\t2: %d\t%d C\n", batch[1], dataToTemp(untruncate(batch[1], S_LF_TEMP)));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
-	print("lifepo volts: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("lifepo volts\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\t%d mv\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
+	}
 }
 void print_lifepo_current_batch(lifepo_current_batch batch) {
-	print("lifepo current: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("lifepo SNS\n");
+	print("\tbank1: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
+	print("\tbank2: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
+	print("lifepo OSNS\n");
+	print("\tbank1: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
+	print("\tbank2: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
 }
 void print_led_current_batch(led_current_batch batch) {
-	print("led current: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("led current\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
+	}
+}
+void print_panelref_lref_batch(panelref_lref_batch batch) {
+	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
+}
+void print_radio_temp_batch(radio_temp_batch batch) {
+	print("radio temp: %d\t%d C\n", batch, dataToTemp(untruncate(batch, S_RAD_TEMP)));
+}
+void print_imu_temp_batch(imu_temp_batch batch) {
+	print("imu temp: %d\t%d C\n", batch, dataToTemp(untruncate(batch, S_IMU_TEMP)));
 }
 void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("---Satellite History Batch---\n");
@@ -68,9 +111,6 @@ void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("lifepo b2 charged:  %d\n", batch.lifepo_b2_charged);
 	print("first flash:        %d\n", batch.lifepo_b2_charged);
 	print("prog_mem_rewritten: %d\n", batch.prog_mem_rewritten);
-}
-void print_panelref_lref_batch(panelref_lref_batch batch) {
-	print("refs: PANELREF: %d L_REF: %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
 }
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	print("---Battery Charging Digital Signals---\n");
@@ -91,11 +131,10 @@ void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	print("L2_CHGN:        %d\n", (batch >> 14) & 0x1);
 	print("L2_FAULTN:      %d\n", (batch >> 15) & 0x1);
 }
-void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\n", (uint16_t)batch<<8);
-}
-void print_imu_temp_batch(imu_temp_batch batch) {
-	print("imu temp: %d\n", (uint16_t)batch<<8);
+void print_pdiode_batch(pdiode_batch batch) {
+	for (int i = 0; i < 6; i++){
+		print("pdiode %d: %d\n",i, (uint16_t)(batch>>(i*2))&0b11);
+	}
 }
 
 /************************************************************************/
