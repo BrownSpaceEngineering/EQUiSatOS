@@ -15,7 +15,6 @@ struct spi_slave_inst mram2_slave;
 /* log of last known tick count to detect overflows */
 TickType_t prev_write_ticks = 0;
 
-void write_state_to_storage(void);
 void write_state_to_storage_safety(bool safe);
 void cached_state_sync_redundancy(void);
 uint32_t get_current_timestamp_safety(bool safe);
@@ -89,7 +88,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	// helpful constants
 	bool success_mram1 = success_mram1_data1 && success_mram1_data2;
 	bool success_mram2 = success_mram2_data1 && success_mram2_data2;
-	bool mram1_data_matches = memcmp(mram1_data1,		  mram1_data2, num_bytes) == 0;
+	bool mram1_data_matches = memcmp(mram1_data1, mram1_data2, num_bytes) == 0;
 	bool mram2_data_matches = memcmp(mram2_data1, mram2_data2, num_bytes) == 0;
 	
 	/* if both sets of data match, do an additional comparison between them to determine our confidence */
@@ -99,6 +98,8 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 			// return data in data
 			return true;
 		} else {
+			configASSERT(false); // don't want this to happen before launch
+			
 			log_error(ELOC_MRAM_READ, ECODE_INCONSISTENT_DATA, true);
 			// if one has failed, definitely take the other one
 			if (!success_mram2) {
@@ -142,10 +143,12 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	   can really occur with the SPI driver that might mean something is an overflow--
 	   and the MRAM's wouldn't likely match if only one of them overflowed)) */
 	if (mram1_data_matches && !mram2_data_matches) {
+		configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		return success_mram1;
 	}
 	if (!mram1_data_matches && mram2_data_matches) {
+		configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
 		memcpy(mram1_data1, mram2_data1, num_bytes);
@@ -160,6 +163,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	1_2 _ 2_2
 	*/
 	if (!mram1_data_matches && !mram2_data_matches) {
+		//configASSERT(false);
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		
@@ -190,6 +194,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 			return false;
 		}
 	}
+	return false; // should never happen but compiler warnings...
 }
 
 // wrapper for writing a field to MRAM
@@ -257,6 +262,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	
 	uint8_t num_errors = stack->cur_size;
 	if (num_errors >= ERROR_STACK_MAX) {
+		#ifdef USE_STRICT_ASSERTIONS
+			configASSERT(false);
+		#endif
 		// watch for radiation bit flips, because this could overwrite part of the MRAM
 		log_error(ELOC_MRAM_WRITE, ECODE_OUT_OF_BOUNDS, true);
 		num_errors = ERROR_STACK_MAX;
@@ -289,6 +297,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 		uint8_t temp_num_errors;
 		storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
 		if (temp_num_errors != num_errors) {
+			#ifdef USE_STRICT_ASSERTIONS
+				configASSERT(false);
+			#endif
 			return false;
 		}
 	
@@ -297,6 +308,9 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 			storage_read_field_unsafe((uint8_t*) temp_error_buf,
 				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
 			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
+				#ifdef USE_STRICT_ASSERTIONS
+					configASSERT(false);
+				#endif
 				return false;
 			}
 		}
@@ -320,6 +334,7 @@ bool update_cache_fields(void) {
 	TickType_t cur_ticks = xTaskGetTickCount();
 	if (cur_ticks < prev_write_ticks) {
 		should_reboot = true;
+		configASSERT(false); // we generally don't run for 50 days...
 		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
 		
 	} else {
@@ -581,7 +596,7 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 			cached_state.sat_event_history.prog_mem_rewritten = true;
 
 		cached_state_sync_redundancy();
-		write_state_to_storage();
+		write_state_to_storage_safety(false);
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 		return true;
@@ -662,6 +677,7 @@ void populate_error_stacks(equistack* error_stack) {
 		}
 		
 		if (error_num_too_long) {
+			configASSERT(false);
 			// log this after we've populated, making sure it's priority
 			// so it overwrites any garbage errors we may have gotten
 			log_error(ELOC_MRAM_READ, ECODE_OUT_OF_BOUNDS, true);
@@ -717,47 +733,6 @@ uint64_t get_current_timestamp_ms(void) {
 /* returns truncated number or orbits since first boot */
 uint16_t get_orbits_since_launch(void) {
 	return get_current_timestamp() / ORBITAL_PERIOD_S;
-}
-
-/**
- * Returns whether we're currently at or above
- * (*prev_orbit_numerator / orbit_fraction_denominator) percent through an orbit,
- * where prev_orbit_fraction is the last known orbit fraction (set by this function)
- * and 1 / orbit_fraction_denominator is a fraction ("bucket") to divide an orbit by such that
- * this function will return true after each such fraction of orbital time passes.
- * This function is designed specifically to be used to time actions according
- * to fractions of the current orbit, and ensures this function will return true
- * orbit_fraction_denominator times during an orbit as long as it is called at least
- * that many times during the orbit.
- *
- * Test cases (with implicit argument of current orbit percentage):
- *		at_orbit_fraction(0, 2, .1) = false
- */
-bool passed_orbit_fraction(uint8_t* prev_orbit_numerator, uint8_t orbit_fraction_denominator) {
-	#ifdef TESTING_SPEEDUP
-		return true;
-	#else
-		// TODO: Does this work??
-		// first, we scale up by the denominator to bring our integer precision up to the
-		// fractional (bucket) size. Thus, we will truncate all bits that determine how
-		// far we are inside a fractional bucket, and it will give us only the current one
-		// we're in
-		// TODO: Will the calculations stay in the 32 bit registers? I.e. will they overflow?
-		// (use 64 bit for now to be safe)
-		uint64_t cur_orbit_fraction = (get_current_timestamp() * orbit_fraction_denominator) /
-										(ORBITAL_PERIOD_S * orbit_fraction_denominator);
-
-		// strictly not equal to (really greater than) because we only want
-		// this to return true on a CHANGE,
-		// i.e. when the fraction moves from one "bucket" or
-		// fraction component to the next we set prev_orbit_fraction
-		// so that we wait the fractional amount before returning true again
-		if (cur_orbit_fraction != *prev_orbit_numerator) {
-			*prev_orbit_numerator = cur_orbit_fraction;
-			return true;
-		}
-		return false;
-	#endif
 }
 
 /************************************************************************/

@@ -27,63 +27,6 @@
 #define PDIODE_01_10					505
 #define PDIODE_10_11					550
 
-/************************************************************************/
-/* ERROR BOUNDS                                                         */
-/************************************************************************/
-// TODO: all of these
-#define B_IR_OBJ_LOW					0
-#define B_IR_OBJ_HIGH					~0
-#define B_IR_AMB_LOW					0
-#define B_IR_AMB_HIGH					~0
-#define B_PD_LOW						0
-#define B_PD_HIGH						~0
-#define B_LED_TEMP_LOW					0
-#define B_LED_TEMP_HIGH					~0
-#define B_LED_CUR_REG_LOW				0
-#define B_LED_CUR_REG_HIGH				~0
-#define B_LED_CUR_FLASH_LOW				0
-#define B_LED_CUR_FLASH_HIGH			~0
-#define B_L_TEMP_LOW					0
-#define B_L_TEMP_HIGH					~0
-#define B_LF_TEMP_LOW					0
-#define B_LF_TEMP_HIGH					~0
-#define B_LF_CUR_REG_LOW				0
-#define B_LF_CUR_REG_HIGH				~0
-#define B_LF_CUR_FLASH_LOW				0
-#define B_LF_CUR_FLASH_HIGH				~0
-#define B_L_CUR_REG_LOW					0
-#define B_L_CUR_REG_HIGH				~0
-#define B_L_CUR_HIGH_LOW				0
-#define B_L_CUR_HIGH_HIGH				~0
-#define B_LF_VOLT_LOW					0
-#define B_LF_VOLT_HIGH					~0
-#define B_L_VOLT_LOW					0
-#define B_L_VOLT_HIGH					~0
-#define B_LREF_LOW						0
-#define B_LREF_HIGH						~0
-#define B_PANELREF_LOW					0
-#define B_PANELREF_HIGH					~0
-#define B_CHARGE_LOW					0
-#define B_CHARGE_HIGH					~0
-#define B_GYRO_LOW						0
-#define B_GYRO_HIGH						~0
-#define B_IMU_TEMP_LOW					0
-#define B_IMU_TEMP_HIGH					~0
-#define B_3V3_REF_LOW					3000
-#define B_3V3_REF_HIGH					3600
-#define B_3V6_REF_OFF_LOW				0
-#define B_3V6_REF_OFF_HIGH				400
-#define B_3V6_REF_ON_LOW				3400
-#define B_3V6_REF_ON_HIGH				3800
-#define B_3V6_SNS_OFF_LOW				0
-#define B_3V6_SNS_OFF_HIGH				10
-#define B_3V6_SNS_ON_LOW				50
-#define B_3V6_SNS_ON_HIGH				2000
-#define B_5VREF_OFF_LOW					0
-#define B_5VREF_OFF_HIGH				400
-#define B_5VREF_ON_LOW					4800
-#define B_5VREF_ON_HIGH					5200
-
 typedef enum {
 	BCDS_LF_B1_BT,
 	BCDS_LF_B1_TT,
@@ -110,10 +53,13 @@ typedef enum {
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _i2c_mutex_d;
 SemaphoreHandle_t i2c_mutex;
-StaticSemaphore_t _irpow_mutex_d;
-SemaphoreHandle_t irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
+// NOTE: this mutex is only used in LOW_POWER, otherwise IR power is kept on constantly
+// (anyone can enable it, no one can disable it). Tasks using it in low power:
+// LOW_POWER_DATA_TASK, TRANSMIT_TASK, BATTERY_CHARGING_TASK, 
+StaticSemaphore_t _irpow_mutex_d;
+SemaphoreHandle_t irpow_mutex;
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -152,8 +98,10 @@ void read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3
 void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
-void _enable_ir_pow_if_necessary(void);
-bool _set_5v_enable(bool on);
+bool enable_ir_pow_if_necessary(void); // ONLY used in flash task
+void disable_ir_pow_if_necessary(bool got_mutex_on_en);
+void disable_ir_pow_if_should_be_off(bool expected_on);
+bool _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);
 

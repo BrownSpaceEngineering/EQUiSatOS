@@ -11,22 +11,6 @@
 #endif
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
 
-/* controls antenna deploy task state based on whether the antenna was deployed */
-void handle_antenna_deploy_task(void) {
-	if (should_exit_antenna_deploy()) {
-		// if the antenna has been deployed, suspend the task and note it occurred
-		update_sat_event_history(antenna_did_deploy(), 0, 0, 0, 0, 0, 0);
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, false); // we're the only task that can suspend a task explicitly
-
-	} else if (get_sat_state() != INITIAL
-				&& get_sat_state() != ANTENNA_DEPLOY
-				&& get_sat_state() != LOW_POWER) {
-		// alternatively, if it is not deployed, start the task again to deploy it
-		// (ignoring any sat states where it MUST be running or suspended)
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, true);
-	}
-}
-
 void decide_next_state(sat_state_t current_state);
 
 void state_handling_task(void *pvParameters)
@@ -70,9 +54,28 @@ void state_handling_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
+/* function called periodically to check if we need to resume trying to deploy the antenna */
+void emergency_resume_antenna_deploy(void) {
+	// if the antenna still hasn't technically deployed, we should keep trying
+	if (!antenna_did_deploy()
+	&& get_sat_state() != INITIAL
+	&& get_sat_state() != ANTENNA_DEPLOY
+	&& get_sat_state() != LOW_POWER) {
+		// if the antenna has not been deployed, start the task again to deploy it
+		// (ignoring any sat states where it MUST be running or suspended)
+		set_task_state_safe(ANTENNA_DEPLOY_TASK, true);
+	}
+}
+
+// Decides next state based on the criteria that dictate
+// state changes. Delegates the actions required on a state
+// change to the logic in satellite_state_control.c
 void decide_next_state(sat_state_t current_state) {
 	// handle antenna deploy task separately
-	handle_antenna_deploy_task();
+	emergency_resume_antenna_deploy();
+	
+	// shutdown IR power if it's on when it shouldn't be
+	disable_ir_pow_if_should_be_off(false);
 	
 	///
 	// the state decision will be predicated on the current battery levels and
@@ -135,11 +138,9 @@ void decide_next_state(sat_state_t current_state) {
 			if (low_power_entry_criteria) {
 				set_sat_state(LOW_POWER);
 
-			// if the antenna is open kill the task because the antenna has been deployed
-			// or kill it if it's run more than 5 times because it's a lost cause
-			} else if (sat_history.antenna_deployed && should_exit_antenna_deploy()) {
-				// switch state to hello world, then determine whether we should keep trying
-				// (we WON'T be suspended on state change)
+			// otherwise if the antenna deploy task says we should move on
+			// from deployment, do so
+			} else if (should_exit_antenna_deploy()) {
 				set_sat_state(HELLO_WORLD);
 			}
 			break;

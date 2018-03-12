@@ -51,19 +51,11 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 	
 	// for the next couple we need to make sure IR power is on,
 	// but only if we're in low power mode (otherwise it's always on)
-	bool got_mutex = false; // indicates whether timed out OR not gotten because low power wasn't active
 	if (low_power_active()) {
-		got_mutex = true;
-		if (!xSemaphoreTake(irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-			log_error(ELOC_RADIO, ECODE_IRPOW_MUTEX_TIMEOUT, true);
-			got_mutex = false;
-		}
-		// no matter whether we get the mutex, power IR power on so we can try to use it
-		// (it may get shut down but it's worth a try)
-		// TODO: the issue with this is that, if something has gone wrong, we'll be leaving
-		// the IR power on forever (might be watchdog reset...)
+		// power on IR power so that the sensor reads in here
+		// don't have to wait on it (they won't shut if off if they didn't power it on)
 		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY_MS);
+		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 	}
 	{
 		// we read all battery board inputs at once,
@@ -83,11 +75,8 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 		read_bat_charge_dig_sigs_batch(&dig_sigs);
 		write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
 	}
-	if (got_mutex) { // might not have gotten if weren't in low power above
-		// only power off IR power if we DID get the mutex (to avoid shutting people down while reading)
-		set_output(false, P_IR_PWR_CMD);
-		xSemaphoreGive(irpow_mutex);
-	}
+	// in low power disable IR power, but only if we get the mutex (we expect it to be on so no errors)
+	disable_ir_pow_if_should_be_off(true);
 
 	read_lifepo_volts_batch((uint8_t*) (cur_data_buf + buf_index));
 }

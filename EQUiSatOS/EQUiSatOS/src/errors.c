@@ -9,6 +9,7 @@
 
 void log_error_stack_error(uint8_t ecode);
 void add_error_to_equistack(equistack* stack, sat_error_t* error);
+void hang_on_bad_error(sat_error_t* full_error);
 
 void init_errors(void) {
 	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
@@ -147,6 +148,10 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 	#ifdef PRINT_NEW_ERRORS
 		print_sat_error(&full_error, 0);
 	#endif
+	
+	#ifdef USE_STRICT_ASSERTIONS
+		hang_on_bad_error(&full_error);
+	#endif
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
@@ -161,20 +166,10 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 	// in this case, just push it right onto the stack and ignore conventions...
 	// don't want to spend to much time on it (or write more ISR alternative functions :P)
 	equistack_Push_from_isr(&error_equistack, &full_error);
-}
-
-// should only be called while scheduler suspended
-void log_error_unsafe(uint8_t loc, uint8_t err, bool priority) {
-	configASSERT(err <= 127); // only 7 bits
-
-	sat_error_t full_error;
-	full_error.timestamp = get_current_timestamp(); // NOTE: xTaskGetTickCount shouldn't hang
-	full_error.eloc = loc;
-	full_error.ecode = priority << 7 | (0b01111111 & err); // priority bit at MSB
-
-	// in this case, just push it right onto the stack and ignore conventions...
-	// this should be rare and it's not worth completely rewriting the adding function
-	equistack_Push_Unsafe(&error_equistack, &full_error);
+	
+	#ifdef USE_STRICT_ASSERTIONS
+		hang_on_bad_error(&full_error);
+	#endif
 }
 
 /* adds the given error to the given error equistack, in such a way 
@@ -196,12 +191,12 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	{
 		sat_error_t* newest_same_error = NULL;
 		int num_same_errors = 0;
-		for (int i = 0; i < stack->cur_size; i++) {
+		for (uint8_t i = 0; i < stack->cur_size; i++) {
 			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(stack, i);
 		
 			if (err != NULL &&
 				err->eloc == new_error->eloc &&
-				err->ecode == new_error->ecode) {
+				err->ecode == new_error->ecode) { // includes priority bit comparison
 				num_same_errors++;
 			
 				// find newest error for later use (there should only be a max of two)
@@ -246,8 +241,20 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 		} else {
 			// otherwise, the stack is not formatted as it should be 
 			// (though this may be due to an emergency reboot) 
-			configASSERT(false);
+			//#ifdef USE_STRICT_ASSERTIONS
+				configASSERT(false);
+			//#endif
 		}
 	}
 	if (got_mutex) xSemaphoreGive(stack->mutex);
 }
+
+
+// hangs on the given error if it's a "bad/rare" one as defined in this function
+// ONLY called if USE_STRICT_ASSERTIONS enabled
+void hang_on_bad_error(sat_error_t* full_error) {
+	// NOT a mutex timeout
+	uint8_t actual_code = full_error->ecode & 0b01111111;
+	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_IRPOW_MUTEX_TIMEOUT);
+	configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
+};

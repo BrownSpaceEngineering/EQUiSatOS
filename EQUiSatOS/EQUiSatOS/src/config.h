@@ -23,7 +23,7 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 //#define RADIO_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 //#define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 //#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
@@ -43,10 +43,10 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
-//													WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
-//#define OVERRIDE_INIT_TASK_STATES	((task_states){{T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED}})
+#define OVERRIDE_INIT_SAT_STATE		LOW_POWER
+#define OVERRIDE_INIT_TASK_STATES	LOW_POWER_TASK_STATES
+//													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
+//#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
@@ -61,11 +61,11 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-//#define WRITE_DEFAULT_MRAM_VALS
+#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES
+#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 // debug print control; set to:

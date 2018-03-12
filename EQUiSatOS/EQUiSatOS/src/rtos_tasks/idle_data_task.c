@@ -20,12 +20,9 @@ void idle_data_task(void *pvParameters)
 	// variable for timing data reads (which may include task suspensions)
 	TickType_t time_before_data_read;
 	
-	// variable for keeping track of our current progress through an orbit
-	// (= numerator of (x / IDLE_DATA_LOGS_PER_ORBIT) of an orbit)
-	// we set this to the max because we want it to think we've wrapped around
-	// an orbit on boot (log immediately)
-	uint8_t prev_orbit_fraction = IDLE_DATA_LOGS_PER_ORBIT; 
-
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
+	
 	init_task_state(IDLE_DATA_TASK); // suspend or run on boot
 
 	for( ;; )
@@ -51,7 +48,9 @@ void idle_data_task(void *pvParameters)
 		read_radio_temp_batch(			&(current_struct->radio_temp_data));
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		
-		// TODO: DO CHECKS FOR ERRORS (TO GENERATE ERRORS) HERE
+		// verify readings (without storing) at regular intervals in this task
+		lion_temps_batch garbage;
+		en_and_read_lion_temps_batch(garbage);
 		verify_regulators();
 		verify_flash_readings(false); // not flashing (function is thread-safe)
 
@@ -60,9 +59,11 @@ void idle_data_task(void *pvParameters)
 		// DON'T add it and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= IDLE_DATA_MAX_READ_TIME) {
-			if (passed_orbit_fraction(&prev_orbit_fraction, IDLE_DATA_LOGS_PER_ORBIT)) {
+			uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
+			if (time_since_last_log_s >= IDLE_DATA_LOG_FREQ) {
 				// validate previous stored value in stack, getting back the next staged address we can start adding to
 				current_struct = (idle_data_t*) equistack_Stage(&idle_readings_equistack);
+				time_of_last_log_s = get_current_timestamp();
 			}
 		} else {
 			// log error if the data read took too long

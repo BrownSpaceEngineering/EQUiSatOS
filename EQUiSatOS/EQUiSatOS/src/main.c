@@ -51,7 +51,7 @@ int main(void)
 {
 	global_init();
 	system_test(false);
-	set_charging_states(true, false, false, false); // WARNING: try to only charge one at a time
+	set_charging_states(false, true, false, false); // WARNING: try to only charge one at a time
 	run_tests();
 
 	run_rtos();

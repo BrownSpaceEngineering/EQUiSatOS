@@ -73,12 +73,9 @@ void flash_activate_task(void *pvParameters)
 	TickType_t prev_wake_time = xTaskGetTickCount();	
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 	
-	// variable for keeping track of our current progress through an orbit
-	// (= numerator of (x / FLASH_CMP_DATA_LOGS_PER_ORBIT) of an orbit)
-	// we set this to the max because we want it to think we've wrapped around
-	// an orbit on boot (log immediately)
-	uint8_t prev_orbit_fraction = FLASH_CMP_DATA_LOGS_PER_ORBIT;
-
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
+	
 	// data storage variables for flash data
 	uint8_t data_arrays_tail = 0;
 	flash_data_t *current_burst_struct = (flash_data_t*) equistack_Initial_Stage(&flash_readings_equistack);
@@ -120,10 +117,13 @@ void flash_activate_task(void *pvParameters)
 			{
 				if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
-					_enable_ir_pow_if_necessary();
+					// note: IR power will always be enabled if necessary but we can't
+					// give an un-taken mutex
+					bool got_irpow_mutex = enable_ir_pow_if_necessary();
+					configASSERT(!got_irpow_mutex);
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
-						_set_5v_enable(true);
+						_set_5v_enable_unsafe(true);
 				
 						// enable lifepo output (before first data read to give a time buffer before flashing),
 						// and make sure the flash enable pin is high
@@ -155,12 +155,14 @@ void flash_activate_task(void *pvParameters)
 						
 						actually_flashed = true;
 				
+						// disable sensor regulators and free up mutexes
+						_set_5v_enable_unsafe(false);
 						xSemaphoreGive(processor_adc_mutex);
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
-					}	
-					// disable sensor regulators and free up mutexes
-					_set_5v_enable(false);
+					}
+					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
+					disable_ir_pow_if_necessary(got_irpow_mutex); 
 					xSemaphoreGive(i2c_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -205,8 +207,10 @@ void flash_activate_task(void *pvParameters)
 			NUM_FLASHES * BATCH_READS_DURING, 4);
 	
 		// store cmp data in flash equistack, but distribute over orbit
-		if (passed_orbit_fraction(&prev_orbit_fraction, FLASH_CMP_DATA_LOGS_PER_ORBIT)) {
+		uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;
+		if (time_since_last_log_s >= FLASH_CMP_DATA_LOG_FREQ) {
 			current_cmp_struct = (flash_cmp_data_t*) equistack_Stage(&flash_cmp_readings_equistack);
+			time_of_last_log_s = get_current_timestamp();
 		}
 	}
 	// delete this task if it ever breaks out

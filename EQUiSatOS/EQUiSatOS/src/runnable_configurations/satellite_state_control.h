@@ -18,33 +18,30 @@
 /************************************************************************/
 /* Satellite state constructs                                           */
 /************************************************************************/
-enum task_state {
-	T_STATE_SUSPENDED = false,	// MUST be suspended
-	T_STATE_RUNNING = true,		// MUST be running
-	T_STATE_ANY					// can be either, not controlled in current state
-};
-
 // array wrapped in struct to allow easy copying specification in #defines
 typedef struct task_states {
-	uint8_t states[NUM_TASKS];
+	bool states[NUM_TASKS];
 } task_states;
-
-
-#if PRINT_DEBUG != 0
-	bool rtos_started;
-#endif
 
 /************************************************************************/
 /* Defined task state sets - order must match enum in rtos_tasks_config.h: */
 /************************************************************************/
-//														WATCHDOG,			STATE,				ANTENNA,			BAT,				TRANS,				FLASH,				IDLE,  				LOWP,				ATTI,				PERSIST
-#define INITIAL_TASK_STATES				((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING}})
-#define ANTENNA_DEPLOY_TASK_STATES		((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING}})
-#define HELLO_WORLD_TASK_STATES			((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_ANY,		T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING}})
-#define IDLE_NO_FLASH_TASK_STATES 		HELLO_WORLD_TASK_STATES
-#define IDLE_FLASH_TASK_STATES 			((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_ANY,		T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,    T_STATE_RUNNING}})
-#define LOW_POWER_TASK_STATES 			((task_states){{T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_RUNNING,	T_STATE_SUSPENDED,	T_STATE_SUSPENDED,	T_STATE_RUNNING,	T_STATE_SUSPENDED, 	T_STATE_RUNNING}})
-// **see .c file for radio, ir power states**
+//													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
+#define INITIAL_TASK_STATES			((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
+#define ANTENNA_DEPLOY_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
+#define HELLO_WORLD_TASK_STATES		((task_states){{true,	true,	false,	true,	true,	false,	true,	false,	true,   true}})
+#define IDLE_NO_FLASH_TASK_STATES	HELLO_WORLD_TASK_STATES
+#define IDLE_FLASH_TASK_STATES 		((task_states){{true,	true,	false,	true,	true,	true,	true,	false,	true,   true}})
+#define LOW_POWER_TASK_STATES 		((task_states){{true,	true,	false,	true,	true,	false,	false,	true,	false, 	true}})
+// **see .c file for ir power states**
+
+// duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
+#define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(5000 / portTICK_PERIOD_MS)
+#define TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES		5
+
+#if PRINT_DEBUG != 0
+	bool rtos_started;
+#endif
 
 /************************************************************************/
 /* global hardware states												
@@ -69,12 +66,12 @@ struct hw_states {
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
-#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	500
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(500 / portTICK_PERIOD_MS)
 
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			2000 // these can take a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(2000 / portTICK_PERIOD_MS) // these can take a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 
@@ -98,7 +95,7 @@ void init_task_state(task_type_t task);
 
 /* TEMPORARY GLOBAL SET STATE FUNCTIONS FOR TESTING - DONT YOU DARE USE THESE */
 bool set_sat_state_helper(sat_state_t state);
-void set_all_task_states(task_states states, sat_state_t state);
+void set_all_task_states(const task_states states, sat_state_t state, sat_state_t prev_sat_state);
 void task_suspend(task_type_t task_id);
 void task_resume(task_type_t task_id);
 

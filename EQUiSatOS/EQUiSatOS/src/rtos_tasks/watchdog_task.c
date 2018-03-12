@@ -13,7 +13,7 @@ uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 	STATE_HANDLING_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	ANTENNA_DEPLOY_TASK_LESS_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER, // TODO: this won't monitor very tightly during ANTENNA_DEPLOY
 	BATTERY_CHARGING_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
-	TRANSMIT_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
+	TRANSMIT_TASK_LESS_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	FLASH_ACTIVATE_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	IDLE_DATA_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	LOW_POWER_DATA_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
@@ -25,21 +25,19 @@ static bool check_ins[NUM_TASKS];
 static uint32_t running_times[NUM_TASKS];
 static uint32_t prev_time;
 
-SemaphoreHandle_t mutex;
-
 void watchdog_init(void) {
 	configASSERT(WATCHDOG_TASK == 0);
 	configure_watchdog();
 	memset(&check_ins, 0, sizeof(bool) * NUM_TASKS);
 	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
-	mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
+	watchdog_mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);
 	prev_time = xTaskGetTickCount();
 }
 
 static void task_pet_watchdog(bool got_mutex) {
 	pet_watchdog();
 	print("Pet watchdog");
-	if (got_mutex) xSemaphoreGive(mutex);
+	if (got_mutex) xSemaphoreGive(watchdog_mutex);
 }
 
 void watchdog_task(void *pvParameters) {
@@ -59,7 +57,7 @@ void watchdog_task(void *pvParameters) {
 
 bool watchdog_as_function(void) {
 	bool got_mutex = true;
-	if (!xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
 		// this is an error but the watchdog is so critical we'll keep running
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 		got_mutex = false;
@@ -72,7 +70,7 @@ bool watchdog_as_function(void) {
 	// and wait for the next call of the task
 	if (curr_time < prev_time) {
 		task_pet_watchdog(got_mutex);
-		if (got_mutex) xSemaphoreGive(mutex);
+		if (got_mutex) xSemaphoreGive(watchdog_mutex);
 		return true;
 	}
 	prev_time = curr_time;
@@ -95,7 +93,7 @@ bool watchdog_as_function(void) {
 	if (watch_block) {
 		// "kick" watchdog; RESTART SATELLITE
 		print("Watchdog kicked - RESTARTING Satellite");
-		if (got_mutex) xSemaphoreGive(mutex);
+		if (got_mutex) xSemaphoreGive(watchdog_mutex);
 
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_RESET, true);
 		write_state_to_storage();
@@ -125,15 +123,6 @@ bool watchdog_as_function(void) {
 // overwrite what was done)
 /************************************************************************/
 
-// These MUST be called when using check_in_task_unsafe and check_out_take_unsafe
-BaseType_t watchdog_mutex_take(void) {
-	return xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS);
-}
-
-void watchdog_mutex_give(void) {
-	xSemaphoreGive(mutex);
-}
-
 // tasks must check in when resuming from suspension or launching
 // NOTE: not safe to call without having gotten mutex
 void check_in_task_unsafe(task_type_t task_ind) {
@@ -147,13 +136,13 @@ void check_in_task_unsafe(task_type_t task_ind) {
 // (we'll set 'im loose on that task if it doesn't!)
 void report_task_running(task_type_t task_ind) {
 	bool got_mutex = true;
-	if (!xSemaphoreTake(mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue becasue this is crucial 
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 		got_mutex = false;
 	}
 	running_times[task_ind] = xTaskGetTickCount();
-	if (got_mutex) xSemaphoreGive(mutex);
+	if (got_mutex) xSemaphoreGive(watchdog_mutex);
 }
 
 // tasks must check out when suspending so they don't trip the watchdog
