@@ -10,6 +10,7 @@
 
 #include "rtos_tasks/rtos_tasks.h"
 #include "data_handling/equistack.h"
+#include "telemetry/Radio_Commands.h"
 
 #include "testing_tasks.h"
 #include "testing_functions/struct_tests.h"
@@ -61,8 +62,7 @@ struct hw_states {
 	/* locked by peripheral mutexes - mainly done to simplify function arguments */
 	bool rail_5v_enabled : 1;
 	/* locked by hardware state mutex */
-	bool radio_powered : 1; // if true, both 3V6 regulator and radio power pin are on
-	bool radio_transmitting : 1;
+	radio_state_t radio_state : 2; // if >0, both 3V6 regulator and radio power pin are on	
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };

@@ -84,7 +84,7 @@
 #define B_L_SNS_IDLE_RAD_ON_LOW			100
 #define B_L_SNS_IDLE_RAD_ON_HIGH		400
 #define B_L_SNS_TRANSMIT_LOW			800
-#define B_L_SNS_TRANSMIT_HIGH			1500
+#define B_L_SNS_TRANSMIT_HIGH			2000
 #define B_L_SNS_ANT_DEPLOY_LOW			200
 #define B_L_SNS_ANT_DEPLOY_HIGH			3100
 #define B_L_VOLT_LOW					0
@@ -104,11 +104,11 @@
 #define B_3V6_REF_ON_LOW				3400
 #define B_3V6_REF_ON_HIGH				3700
 #define B_3V6_SNS_OFF_LOW				0
-#define B_3V6_SNS_OFF_HIGH				50
+#define B_3V6_SNS_OFF_HIGH				20
 #define B_3V6_SNS_ON_LOW				50
-#define B_3V6_SNS_ON_HIGH				120
-#define B_3V6_SNS_TRANSMIT_LOW			700
-#define B_3V6_SNS_TRANSMIT_HIGH			1100
+#define B_3V6_SNS_ON_HIGH				200
+#define B_3V6_SNS_TRANSMIT_LOW			600
+#define B_3V6_SNS_TRANSMIT_HIGH			2000
 #define B_5VREF_OFF_LOW					0
 #define B_5VREF_OFF_HIGH				400
 #define B_5VREF_ON_LOW					4800

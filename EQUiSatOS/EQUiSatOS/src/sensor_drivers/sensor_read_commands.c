@@ -178,8 +178,7 @@ static void verify_regulators_unsafe(void) {
 
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
-	if (hardware_state_mutex_take())
-	{
+	if (hardware_state_mutex_take()) {
 		read_ad7991_ctrlbrd_unsafe(batch);
 		states = get_hw_states();
 		hardware_state_mutex_give();
@@ -189,9 +188,21 @@ static void verify_regulators_unsafe(void) {
 	}
 
 	// 3V6_REF is index 0
-	log_if_out_of_bounds(batch[0], states->radio_powered ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
+	log_if_out_of_bounds(batch[0], states->radio_state ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
 	// 3V6_SNS is index 1
-	log_if_out_of_bounds(batch[1], states->radio_powered ? S_3V6_SNS_ON : S_3V6_SNS_OFF, ELOC_AD7991_CBRD_3V6_SNS, true);
+	sig_id_t state_3v6_sns;
+	switch(states->radio_state) {
+		case RADIO_OFF:
+			state_3v6_sns = S_3V6_SNS_OFF;
+			break;
+		case RADIO_IDLE:
+			state_3v6_sns = S_3V6_SNS_ON;
+			break;
+		case RADIO_TRANSMITTING:
+			state_3v6_sns = S_3V6_SNS_TRANSMIT;
+			break;
+	}
+	log_if_out_of_bounds(batch[1], state_3v6_sns, ELOC_AD7991_CBRD_3V6_SNS, true);
 	// 5VREF is index 2
 	log_if_out_of_bounds(batch[2], states->rail_5v_enabled ? S_5VREF_ON : S_5VREF_OFF, ELOC_AD7991_CBRD_5V_REF, true);
 	// 3V3REF current is index 3
@@ -207,8 +218,8 @@ void verify_regulators(void) {
 		verify_regulators_unsafe();
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
-	} else {
-		log_error(ELOC_AD7991_BBRD_L2_SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+	} else {		
+		log_error(ELOC_AD7991_CBRD_3V3_REF, ECODE_I2C_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -311,7 +322,7 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 				sig = S_L_SNS_ANT_DEPLOY;
 			} else if (states->radio_transmitting) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_powered) {
+			} else if (states->radio_state) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
@@ -377,7 +388,7 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 				sig = S_L_SNS_ANT_DEPLOY;
 			} else if (states->radio_transmitting) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_powered) {
+			} else if (states->radio_state) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
@@ -609,9 +620,7 @@ static uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 		return 2;
 	} else if (raw >= PDIODE_10_11) {
 		return 3;
-	} else {
-		// PD_ACCESS used as general photo diode indicator
-		log_error(ELOC_PD_ACCESS, ECODE_UNEXPECTED_CASE, false);
+	} else {		
 		return 4;
 	}
 }
@@ -631,16 +640,12 @@ void read_pdiode_batch(pdiode_batch* batch) {
 
 				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 				log_if_error(PD_ELOCS[i], sc, false);
-
-
-
-
-
-				// TODO: someone check this I had to fix a build error
+				
 				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], S_PD, false);
 				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
 				if (two_bit_range == 4) {
-					// TODO: Log error for unexpected pdiode case
+					// PD_ACCESS used as general photo diode indicator
+					log_error(ELOC_PD_ACCESS, ECODE_UNEXPECTED_CASE, false);
 				} else {
 					*batch |= (two_bit_range << (i*2));
 				}
