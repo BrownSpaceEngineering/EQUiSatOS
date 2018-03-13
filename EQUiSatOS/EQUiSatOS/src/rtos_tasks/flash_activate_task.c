@@ -73,9 +73,6 @@ void flash_activate_task(void *pvParameters)
 	TickType_t prev_wake_time = xTaskGetTickCount();	
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 	
-	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
-	
 	// data storage variables for flash data
 	uint8_t data_arrays_tail = 0;
 	flash_data_t *current_burst_struct = (flash_data_t*) equistack_Initial_Stage(&flash_readings_equistack);
@@ -83,6 +80,9 @@ void flash_activate_task(void *pvParameters)
 	flash_cmp_data_t *current_cmp_struct = (flash_cmp_data_t*) equistack_Initial_Stage(&flash_cmp_readings_equistack);
 	
 	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
+	
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
 	
 	for ( ;; )
 	{	

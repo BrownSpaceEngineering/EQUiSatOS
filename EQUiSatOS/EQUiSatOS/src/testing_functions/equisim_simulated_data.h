@@ -18,7 +18,10 @@ extern int simulated_curr_charging_filled_up;
 /************************************************************************/
 /* CONFIG                                                               */
 /************************************************************************/
-#define EQUISIM_TIMESTAMP_SCALING	1
+#define EQUISIM_TIMESTAMP_SCALING		1
+#define LI_CHARGING_MV_PER_MS			0.005
+#define LI_DISCHARGING_MV_PER_MS		-0.003
+#define LF_CHARGING_MV_PER_MS			0.005
 
 /************************************************************************/
 /* Battery charging sim states                                          */

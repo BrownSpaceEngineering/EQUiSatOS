@@ -80,8 +80,6 @@ void global_init(void) {
 	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
-	watchdog_init();
-	pet_watchdog(); // pet during initialization
 	
 	#ifdef USE_REED_SOLOMON
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
@@ -89,12 +87,12 @@ void global_init(void) {
 	#ifdef EQUISIM_SIMULATE_BATTERIES
 		equisim_init();
 	#endif
-	
-	pet_watchdog(); // pet during initialization
 }
 
 // initialization that can only be done with RTOS started
 void global_init_post_rtos(void) {
+	// initialize watchdog in RTOS because it's callback requires RTOS
+	watchdog_init();
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);

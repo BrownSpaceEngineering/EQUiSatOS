@@ -423,6 +423,7 @@ const char* get_eloc_str(sat_error_t* err) {
 	case 87: return "ELOC_BAT_CHARGING_SWITCH_9";
 	case 88: return "ELOC_IR_POW";
 	case 89: return "ELOC_RADIO_KILLTIME";	
+	default: return "[error loc not added to sys test]";
 	}
 }
 
@@ -504,6 +505,7 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
 	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
 	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	default: return "[error code not added to sys test]";
 	}
 }
 
@@ -551,7 +553,8 @@ void print_task_info(void) {
 		uint16_t stack_space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
 		uint16_t stack_size = get_task_stack_size(task);
 		uint16_t stack_space_available = stack_size * sizeof(portSTACK_TYPE);
-		bool checked_in = _get_task_checked_in(task);
+		// note watchdog task as checked out in sys test so it doesn't look like something's up
+		bool checked_in = (task == WATCHDOG_TASK) ? false : _get_task_checked_in(task);
 		uint32_t last_check_in = _get_task_checked_in_time(task);
 		uint32_t task_freq = get_task_freq(task);
 		

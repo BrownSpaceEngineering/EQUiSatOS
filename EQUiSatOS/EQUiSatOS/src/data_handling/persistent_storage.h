@@ -19,8 +19,8 @@
 #define STORAGE_SAT_STATE_ADDR					34
 #define STORAGE_SAT_EVENT_HIST_ADDR				38
 #define STORAGE_PROG_MEM_REWRITTEN_ADDR			42
-#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		46
-#define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	50
+#define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	46
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		50
 // prog memory address not used here
 #define STORAGE_ERR_NUM_ADDR					175080
 #define STORAGE_ERR_LIST_ADDR					175084
@@ -31,8 +31,8 @@
 #define STORAGE_SAT_STATE_SIZE					 1
 #define STORAGE_SAT_EVENT_HIST_SIZE				 1
 #define STORAGE_PROG_MEM_REWRITTEN_SIZE			 1
-#define STORAGE_RADIO_REVIVE_TIMESTAMP_SIZE		 4
 #define STORAGE_PERSISTENT_CHARGING_DATA_SIZE	 1
+#define STORAGE_RADIO_REVIVE_TIMESTAMP_SIZE		 4
 #define STORAGE_ERR_NUM_SIZE					 1
 
 // maximum size of a single MRAM "field," used for global buffers
@@ -50,8 +50,8 @@ RAD_SAFE_FIELD_DEFINE(uint32_t, storage_reboot_cnt_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_state_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_event_hist_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_prog_mem_rewritten_addr);
-RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_persistent_charging_data_addr);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_addr);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_list_addr);
 // field sizes
@@ -60,8 +60,8 @@ RAD_SAFE_FIELD_DEFINE(uint32_t, storage_reboot_cnt_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_state_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_sat_event_hist_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_prog_mem_rewritten_size);
-RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_persistent_charging_data_size);
+RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_size);
 
 

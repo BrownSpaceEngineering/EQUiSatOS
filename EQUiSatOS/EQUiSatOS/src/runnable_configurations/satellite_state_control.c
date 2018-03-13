@@ -30,8 +30,6 @@ void startup_task(void* pvParameters);
 // starts RTOS scheduler
 void run_rtos()
 {
-	pet_watchdog(); // pet during initialization
-	
 	// create first init task to start RTOS and other tasks
 	xTaskCreateStatic(startup_task,
 		"initializer task",
@@ -635,6 +633,11 @@ void set_single_task_state(bool running, task_type_t task_id) {
 void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend THIS task
+
+	configASSERT(task_id != BATTERY_CHARGING_TASK 
+				&& task_id != STATE_HANDLING_TASK 
+				&& task_id != WATCHDOG_TASK 
+				&& task_id != PERSISTENT_DATA_BACKUP_TASK);
 
 	// always check out of watchdog when called (to be double-sure)
 	// this is only called here so doesn't need to be safe
