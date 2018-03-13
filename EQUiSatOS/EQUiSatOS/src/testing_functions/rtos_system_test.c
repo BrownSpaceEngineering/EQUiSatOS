@@ -16,7 +16,7 @@
 /* Sensor type printing methods                                         */
 /************************************************************************/
 static uint16_t untruncate(uint8_t val, sig_id_t sig) {
-	uint16_t u16 = ((uint8_t)val) << 8;
+	uint16_t u16 = ((uint16_t)val) << 8;
 	return u16 / get_line_m_from_signal(sig) - get_line_b_from_signal(sig);
 }
 
