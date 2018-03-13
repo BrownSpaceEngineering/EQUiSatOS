@@ -251,14 +251,12 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	pet_watchdog(); // in case this takes a bit and we're close to reset
 	vTaskSuspendAll();
 	#ifndef DONT_PRINT_RAW_TRANSMISSIONS
-		// TODO: this is safe bc scheduler is suspended right?
 		get_hw_states()->radio_state = RADIO_TRANSMITTING;
 		usart_send_buf(buf, size);		
 	#endif
 	xTaskResumeAll();
-	verify_regulators();		
-	
 	if (got_mutex) hardware_state_mutex_give();
+	verify_regulators();
 
 	// delay during transmission
 	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	

@@ -26,10 +26,10 @@ extern int simulated_curr_charging_filled_up;
 #endif
 #define LI_CHARGING_MV_PER_MS				0.005
 #define LI_DISCHARGING_MV_PER_MS			0.003
-#define LI_DISCHARGING_MV_PER_MS_SEEP		0.00001
+#define LI_DISCHARGING_MV_PER_MS_SEEP		0.000001
 #define LF_CHARGING_MV_PER_MS				0.005
-#define LF_DISCHARGING_MV_PER_MS_FLASHING	0.02
-#define LF_DISCHARGING_MV_PER_MS_SEEP		0.00001
+#define LF_DISCHARGING_MV_PER_MS_FLASHING	0.01
+#define LF_DISCHARGING_MV_PER_MS_SEEP		0.000001
 
 /************************************************************************/
 /* Battery charging sim states                                          */

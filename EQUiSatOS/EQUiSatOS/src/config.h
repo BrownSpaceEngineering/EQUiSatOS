@@ -31,7 +31,7 @@
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
-//#define TESTING_SPEEDUP
+#define TESTING_SPEEDUP
 
 // reduces the stack size of some tasks to a workable but risky level
 //#define RISKY_STACK_SIZES
@@ -53,7 +53,7 @@
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		600000 // ms
+	#define SYSTEM_TEST_TASK_FREQ		120000 // 600000 // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -61,8 +61,8 @@
 //#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
-#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
+//#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
+#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 /** Debug **/

@@ -522,7 +522,7 @@ void print_errors(int max_num) {
 void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header, int max_num) {
 	print("\n==============%s==============\n", header);
 	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
-		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
+		stack->cur_size, stack->max_size - 1, stack->top_index, stack->bottom_index); // -1 for staged area
 	print("data (max n=%d):\n", max_num);
 	if (max_num == -1) 
 		max_num = stack->cur_size;
