@@ -135,7 +135,8 @@ void cached_state_correct_errors(void);
 bool increment_reboot_count(void);
 bool set_radio_revive_timestamp(uint32_t radio_revive_timestamp);
 void set_persistent_charging_data_unsafe(persistent_charging_data_t data);
-bool update_sat_event_history(uint8_t antenna_deployed,
+bool update_sat_event_history(bool write_through,
+								uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,

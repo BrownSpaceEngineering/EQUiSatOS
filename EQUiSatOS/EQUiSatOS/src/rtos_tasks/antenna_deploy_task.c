@@ -46,7 +46,7 @@ void antenna_deploy_task(void *pvParameters) {
 		} else if (did_deploy) {
 			// then the antenna should actually be deployed
 			// (update the event history and then delay until the state handling task suspends us)
-			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+			update_sat_event_history(true, 1, 0, 0, 0, 0, 0, 0); // DO write-through here
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 			// report to watchdog (again)
 			report_task_running(ANTENNA_DEPLOY_TASK);

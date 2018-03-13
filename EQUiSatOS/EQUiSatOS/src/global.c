@@ -73,7 +73,7 @@ void global_init(void) {
 	HMC5883L_init();
 	delay_init();
 	
-	#if PRINT_DEBUG != 0
+	#if PRINT_DEBUG != 0 && defined(SAFE_PRINT)
 		print_mutex = xSemaphoreCreateRecursiveMutexStatic(&_print_mutex_d);
 	#endif
 	
@@ -102,7 +102,7 @@ void global_init_post_rtos(void) {
 // in order to print without being disturbed, and then CALL IT AGAIN to deactivate 
 // and allow other tasks to print again
 void suppress_other_prints(bool on) {
-	#if PRINT_DEBUG > 0 // if debug mode
+	#if PRINT_DEBUG > 0 && defined(SAFE_PRINT) // if debug mode
 		if (on) {
 			xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 			} else {

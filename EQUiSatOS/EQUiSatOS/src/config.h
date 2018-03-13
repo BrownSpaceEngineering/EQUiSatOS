@@ -31,7 +31,7 @@
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
-#define TESTING_SPEEDUP
+//#define TESTING_SPEEDUP
 
 // reduces the stack size of some tasks to a workable but risky level
 //#define RISKY_STACK_SIZES
@@ -40,8 +40,8 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
@@ -52,13 +52,13 @@
 	// less data
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
-	#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		60000//600000 // ms
+	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
+	#define SYSTEM_TEST_TASK_FREQ		600000 // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-#define WRITE_DEFAULT_MRAM_VALS		0
+//#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 #define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
@@ -70,7 +70,7 @@
 #define USE_TRACELYZER				1
 
 // whether to configASSERTs (and other asserts) should hang
-#define USE_ASSERTIONS
+//#define USE_ASSERTIONS
 
 // add strict asserts to notify of events that we want to be rare
 //#define USE_STRICT_ASSERTIONS

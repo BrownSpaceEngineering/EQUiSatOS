@@ -18,9 +18,36 @@ task_states current_task_states;
 /************************************************************************/
 /* global states for hardware + mutex                                   */
 /************************************************************************/ 
-struct hw_states hardware_states = {false, false, false, false};
+struct hw_states hardware_states = {false, 0, false};
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
+
+/************************************************************************/
+/* List of mutexes for massive take of all of them during a task state change */
+/************************************************************************/
+// note; all are statically defined so have predetermined addresses
+SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
+	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
+	&critical_action_mutex,
+	&i2c_mutex,
+	&irpow_mutex,
+	&processor_adc_mutex,
+	&hardware_state_mutex,
+	&watchdog_mutex,
+	&mram_spi_cache_mutex,
+	#if (PRINT_DEBUG == 1 || PRINT_DEBUG == 3) && defined(SAFE_PRINT)
+		// to be technically correct with prints
+		&print_mutex,
+	#endif
+	// equistack mutexes
+	&_idle_equistack_mutex,
+	&_attitude_equistack_mutex,
+	&_flash_equistack_mutex,
+	&_flash_cmp_equistack_mutex,
+	&_low_power_equistack_mutex,
+	// error equistack mutex last just because it follows the calls structure
+	&_error_equistack_mutex
+};
 
 void configure_state_from_reboot(void);
 void set_single_task_state(bool running, task_type_t task_id);
@@ -57,7 +84,7 @@ void startup_task(void* pvParameters) {
 	
 	print("RTOS starting... ");
 	
-	#if WRITE_DEFAULT_MRAM_VALS == 1
+	#ifdef WRITE_DEFAULT_MRAM_VALS
 		// utility function to write initial state to MRAM (ONCE before launch)
 		write_custom_state();
 	#endif
@@ -275,7 +302,7 @@ void configure_state_from_reboot(void) {
 	// if we had to rewrite program memory due to corruption, log a low-pri error
 	if (cache_get_prog_mem_rewritten()) {
 		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
-		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
+		update_sat_event_history(false, 0, 0, 0, 0, 0, 0, 1); // don't write through because it will be done just below
 	}
 
 	// note we've rebooted
@@ -507,54 +534,49 @@ void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t nex
 void task_suspend(task_type_t task_id);
 void task_resume(task_type_t task_id);
 
-// Takes all mutexes which _any_ task that can _ever_ be suspended holds.
+// Takes all mutexes in RTOS, in particular those that a task could hold.
 // This is done because these mutexes would be inaccessible on that task's suspension.
+// Returns whether all were obtained. If they weren't, NO mutexes will be held.
 bool take_all_mutexes(void) {
-	bool got_all = true;
-	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
-	got_all = got_all && xSemaphoreTake(critical_action_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(i2c_mutex,					TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(irpow_mutex,				TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(processor_adc_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(hardware_state_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS); // note: usually wrapper is used
-	got_all = got_all && xSemaphoreTake(watchdog_mutex,				TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(mram_spi_cache_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		// to be technically correct with prints
-		xSemaphoreTake(print_mutex, TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	#endif
-	// equistack mutexes (sigh)
-	got_all = got_all && xSemaphoreTake(_idle_equistack_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(_attitude_equistack_mutex,	TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(_flash_equistack_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(_flash_cmp_equistack_mutex, TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	got_all = got_all && xSemaphoreTake(_low_power_equistack_mutex, TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	// error equistack mutex last just because it follows the calls structure
-	got_all = got_all && xSemaphoreTake(_error_equistack_mutex,		TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-	return got_all;
+	// starting from the top (first-taken mutex), try to take ALL the mutexes
+	int8_t i = 0;
+	while (i < NUM_MUTEXES) {
+		configASSERT(all_mutexes_ordered[i] != NULL);
+		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog
+			bool got_mutex = xSemaphoreTake(*(all_mutexes_ordered[i]), TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
+			if (!got_mutex) {
+				break; // start unraveling taken mutexes
+			}
+		}
+		i++;
+	}
+
+	// if we got all, we're good
+	if (i == NUM_MUTEXES) {
+		return true;
+	} else {
+		// don't try and give the mutex we couldn't get
+		i--;
+		
+		// if any cannot be obtained in their timeout, we have to unroll all our
+		// previous takings so we're not holding any mutexes, and THEN try again.
+		while (i >= 0) {
+			// (assume null check above worked for real satellite)
+			xSemaphoreGive(*(all_mutexes_ordered[i]));
+			i--;
+		}
+		return false;
+	}
 }
 
-void give_all_mutexes() {
-	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
-	xSemaphoreGive(critical_action_mutex);
-	xSemaphoreGive(i2c_mutex);
-	xSemaphoreGive(irpow_mutex);
-	xSemaphoreGive(processor_adc_mutex);
-	xSemaphoreGive(hardware_state_mutex);
-	xSemaphoreGive(watchdog_mutex);
-	xSemaphoreGive(mram_spi_cache_mutex);
-	#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-		// to be technically correct with prints
-		xSemaphoreGive(print_mutex);
-	#endif
-	// equistack mutexes (sigh)
-	xSemaphoreGive(_idle_equistack_mutex);
-	xSemaphoreGive(_attitude_equistack_mutex);
-	xSemaphoreGive(_flash_equistack_mutex);
-	xSemaphoreGive(_flash_cmp_equistack_mutex);
-	xSemaphoreGive(_low_power_equistack_mutex);
-	// error equistack mutex last just because it follows the calls structure
-	xSemaphoreGive(_error_equistack_mutex);
+// Gives all mutexes that were taken above
+void give_all_mutexes(void) {
+	for (int8_t i = 0; i < NUM_MUTEXES; i++) {
+		configASSERT(all_mutexes_ordered[i] != NULL);
+		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog
+			xSemaphoreGive(*(all_mutexes_ordered[i]));
+		}
+	}
 }
 
 /* 
@@ -575,15 +597,9 @@ void set_all_task_states(const task_states states, sat_state_t state, sat_state_
 	bool got_all = true;
 	uint8_t num_retries = 0;
 	do {
-		if (!got_all) {
-			configASSERT(got_all);
-			// WARNING: this will result in an assertion hang in debug RTOS
-			// but it's necessary to do if this actually happens.
-			// TODO: hope this never happens... I don't actually know if it's okay, it might segfault in RTOS
-			give_all_mutexes();
-		}
-		
+		// take all mutexes, but give them back if any fails and try again
 		got_all = take_all_mutexes();
+		configASSERT(got_all);
 		num_retries++;
 		
 	} while (!got_all && num_retries < TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES);
@@ -594,7 +610,7 @@ void set_all_task_states(const task_states states, sat_state_t state, sat_state_
 	// it's probably deadlock, so continue with the state change) (log error of course)
 	if (!got_all) {
 		// (use watchdog to represent this crazy failure)
-		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+		log_error(ELOC_STATE_HANDLING, ECODE_ALL_MUTEX_TIMEOUT, true);
 	}
 	{
 		// NOTE we have the watchdog mutex as required for calling set_single_task_state
@@ -673,19 +689,15 @@ void task_resume(task_type_t task_id)
 	// which is what we want because somethings very wrong
 }
 
-/* suspends or resumes the given task, safely pausing the watchdog 
+/* Resumes the given task, safely pausing the watchdog
    NOTE: CURRENTLY SHOULD ONLY BE CALLED ON THE ANTENNA_DEPLOY_TASK */
-void set_task_state_safe(task_type_t task_id, bool run) {
-	bool got_mutex;
-	if (!(got_mutex = xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS))) {
+void task_resume_safe(task_type_t task_id) {
+	if (xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
+		task_resume(task_id);
+		xSemaphoreGive(watchdog_mutex);
+	} else {
 		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 	}
-	if (run) {
-		task_resume(task_id);
-	} else {
-		task_suspend(task_id);
-	}
-	if (got_mutex) xSemaphoreGive(watchdog_mutex);
 }
 
 /************************************************************************/

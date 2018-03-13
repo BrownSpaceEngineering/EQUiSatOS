@@ -589,8 +589,8 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
    Should really be called periodically for these crucial things */
-// TODO: change this so not all params have to be passed in?
-bool update_sat_event_history(uint8_t antenna_deployed,
+bool update_sat_event_history(bool write_through,
+								uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
@@ -617,7 +617,9 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 			cached_state.sat_event_history.prog_mem_rewritten = true;
 
 		cached_state_sync_redundancy();
-		write_state_to_storage_safety(false);
+		if (write_through) {
+			write_state_to_storage_safety(false);
+		}
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 		return true;

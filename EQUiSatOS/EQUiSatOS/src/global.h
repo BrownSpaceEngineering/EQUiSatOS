@@ -51,7 +51,7 @@ void global_init_post_rtos(void);
 void suppress_other_prints(bool on);
 void print(const char *format, ...);
 
-#if PRINT_DEBUG > 0
+#if PRINT_DEBUG > 0 && defined(SAFE_PRINT)
 	// print mutex; used to both lock the print buffer and prevent USART contention while printing
 	#define PRINT_MUTEX_WAIT_TIME_TICKS				((TickType_t) 2000 / portTICK_PERIOD_MS) // prints (or print batches) can take a while
 	SemaphoreHandle_t print_mutex;

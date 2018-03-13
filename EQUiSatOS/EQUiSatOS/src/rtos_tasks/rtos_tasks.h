@@ -91,6 +91,14 @@ flash_data_t _flash_equistack_arr		[FLASH_STACK_MAX];
 flash_cmp_data_t _flash_cmp_equistack_arr	[FLASH_CMP_STACK_MAX];
 idle_data_t _low_power_equistack_arr	[LOW_POWER_STACK_MAX];
 
+/* # of mutexes (for sat state handling) */
+#if (PRINT_DEBUG == 1 || PRINT_DEBUG == 3) && defined(SAFE_PRINT)
+	// to be technically correct with prints
+	#define NUM_MUTEXES			14
+#else 
+	#define NUM_MUTEXES			13
+#endif
+
 /* Global (but don't use them!) mutex data and mutex handles used inside equistacks (alt. to malloc) */
 StaticSemaphore_t _idle_equistack_mutex_d;
 SemaphoreHandle_t _idle_equistack_mutex;

@@ -63,7 +63,7 @@ void emergency_resume_antenna_deploy(void) {
 	&& get_sat_state() != LOW_POWER) {
 		// if the antenna has not been deployed, start the task again to deploy it
 		// (ignoring any sat states where it MUST be running or suspended)
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, true);
+		task_resume_safe(ANTENNA_DEPLOY_TASK);
 	}
 }
 

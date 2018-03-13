@@ -333,7 +333,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 			memset(batch1, 0, sizeof(lion_current_batch));
 			memset(batch2, 0, sizeof(panelref_lref_batch));
-			xSemaphoreGive(i2c_mutex); // outer mutex
+			// give outer mutexes
+			disable_ir_pow_if_necessary(got_irpow_mutex);
+			xSemaphoreGive(i2c_mutex); 
 			return;
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
@@ -397,7 +399,11 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 			hardware_state_mutex_give();
 		} else {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			xSemaphoreGive(i2c_mutex); // outer mutex
+			memset(val_1, 0, sizeof(uint16_t));
+			memset(val_2, 0, sizeof(uint16_t));
+			// give outer mutexes
+			disable_ir_pow_if_necessary(got_irpow_mutex);
+			xSemaphoreGive(i2c_mutex);
 			return;
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
@@ -495,11 +501,19 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
 			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			memset(val_1, 0, sizeof(uint16_t));
+			memset(val_2, 0, sizeof(uint16_t));
+			memset(val_3, 0, sizeof(uint16_t));
+			memset(val_4, 0, sizeof(uint16_t));
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+		memset(val_1, 0, sizeof(uint16_t));
+		memset(val_2, 0, sizeof(uint16_t));
+		memset(val_3, 0, sizeof(uint16_t));
+		memset(val_4, 0, sizeof(uint16_t));
 	}
 }
 
@@ -654,11 +668,13 @@ void read_pdiode_batch(pdiode_batch* batch) {
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
 			log_error(ELOC_PD_POS_Y, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			memset(batch, 0, sizeof(pdiode_batch));
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_PD_POS_Y, ECODE_I2C_MUTEX_TIMEOUT, true);
+		memset(batch, 0, sizeof(pdiode_batch));
 	}
 }
 
@@ -758,9 +774,10 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		enable_ir_pow_if_necessary();
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		//sc = MPU9250_read_mag(rs);
 		sc = HMC5883L_readXYZ(rs);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_MAG, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -775,7 +792,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	status_code_genare_t sc;
+	status_code_genare_t sc = STATUS_OK; // initialize!
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		// note: IR power will always be enabled if necessary but we can't

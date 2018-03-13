@@ -179,7 +179,7 @@ void flash_activate_task(void *pvParameters)
 			
 			// update sat event history if we flashed and it wasn't noted
 			if (!cache_get_sat_event_history().first_flash) {
-				update_sat_event_history(0, 0, 0, 0, 0, 1, 0);
+				update_sat_event_history(false, 0, 0, 0, 0, 0, 1, 0); // don't write through on every flash
 			}
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);

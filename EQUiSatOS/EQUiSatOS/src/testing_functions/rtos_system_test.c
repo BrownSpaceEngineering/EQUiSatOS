@@ -306,9 +306,9 @@ uint32_t get_task_freq(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return WATCHDOG_TASK_FREQ;
 		case STATE_HANDLING_TASK: return STATE_HANDLING_TASK_FREQ;
-		case ANTENNA_DEPLOY_TASK: return ANTENNA_DEPLOY_TASK_FREQ;
+		case ANTENNA_DEPLOY_TASK: return (get_sat_state() != ANTENNA_DEPLOY) ? ANTENNA_DEPLOY_TASK_LESS_FREQ : ANTENNA_DEPLOY_TASK_FREQ;
 		case BATTERY_CHARGING_TASK: return BATTERY_CHARGING_TASK_FREQ;
-		case TRANSMIT_TASK: return TRANSMIT_TASK_FREQ;
+		case TRANSMIT_TASK: return low_power_active() ? TRANSMIT_TASK_LESS_FREQ : TRANSMIT_TASK_FREQ;
 		case FLASH_ACTIVATE_TASK: return FLASH_ACTIVATE_TASK_FREQ;
 		case IDLE_DATA_TASK: return IDLE_DATA_TASK_FREQ;
 		case LOW_POWER_DATA_TASK: return LOW_POWER_DATA_TASK_FREQ;
@@ -482,29 +482,30 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 45: return "ECODE_WATCHDOG_MUTEX_TIMEOUT";
 	case 46: return "ECODE_EQUISTACK_MUTEX_TIMEOUT";
 	case 47: return "ECODE_IRPOW_MUTEX_TIMEOUT";
+	case 48: return "ECODE_ALL_MUTEX_TIMEOUT";
 
-	case 48: return "ECODE_REWROTE_PROG_MEM";
-	case 49: return "ECODE_STACK_OVERFLOW";
-	case 50: return "ECODE_DET_ALREADY_HIGH";
+	case 49: return "ECODE_REWROTE_PROG_MEM";
+	case 50: return "ECODE_STACK_OVERFLOW";
+	case 51: return "ECODE_DET_ALREADY_HIGH";
 
-	case 51: return "ECODE_BAT_NOT_DISCHARGING";
-	case 52: return "ECODE_BAT_NOT_NOT_DISCHARGING";
-	case 53: return "ECODE_BAT_NOT_CHARGING";
-	case 54: return "ECODE_BAT_NOT_NOT_CHARGING";
-	case 55: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
-	case 56: return "ECODE_BAT_FAULT";
-	case 57: return "ECODE_NOT_FULL_FOR_WHILE";
-	case 58: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
-	case 59: return "ECODE_RECOMMISSION";
-	case 60: return "ECODE_ALL_SAME_VAL";
-	case 61: return "ECODE_CORRUPTED";
-	case 62: return "ECODE_INVALID_STATE_CHANGE";
-	case 63: return "ECODE_TIMESTAMP_WRAPAROUND";
-	case 64: return "ECODE_INCONSISTENT_STATE";
-	case 65: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
-	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
-	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
-	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	case 52: return "ECODE_BAT_NOT_DISCHARGING";
+	case 53: return "ECODE_BAT_NOT_NOT_DISCHARGING";
+	case 54: return "ECODE_BAT_NOT_CHARGING";
+	case 55: return "ECODE_BAT_NOT_NOT_CHARGING";
+	case 56: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
+	case 57: return "ECODE_BAT_FAULT";
+	case 58: return "ECODE_NOT_FULL_FOR_WHILE";
+	case 59: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
+	case 60: return "ECODE_RECOMMISSION";
+	case 61: return "ECODE_ALL_SAME_VAL";
+	case 62: return "ECODE_CORRUPTED";
+	case 63: return "ECODE_INVALID_STATE_CHANGE";
+	case 64: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 65: return "ECODE_INCONSISTENT_STATE";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
 	default: return "[error code not added to sys test]";
 	}
 }

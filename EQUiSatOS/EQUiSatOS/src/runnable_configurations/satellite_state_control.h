@@ -76,7 +76,7 @@ struct hw_states {
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(2000 / portTICK_PERIOD_MS) // these can take a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(5000 / portTICK_PERIOD_MS) // these can take quite a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 
@@ -86,7 +86,7 @@ SemaphoreHandle_t critical_action_mutex;
 sat_state_t get_sat_state(void);
 bool set_sat_state(sat_state_t state);
 task_states get_sat_task_states(void);
-void set_task_state_safe(task_type_t task_id, bool run);
+void task_resume_safe(task_type_t task_id);
 bool check_task_state_consistency(void);
 bool low_power_active(void);
 
