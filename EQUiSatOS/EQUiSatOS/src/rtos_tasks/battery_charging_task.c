@@ -284,6 +284,7 @@ void init_charging_data()
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
 	if (persist_data.li_caused_reboot != -1)
 	{
+		print("mram has battery %d as having caused a reboot -- decommissioning");
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
 
@@ -327,7 +328,7 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 	if (bat_not_discharging_st_pin_active)
 	{
 		log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
-		print("bat %d not discharging -- decommissioning\n", bat_discharging);
+		print("bat %d not not discharging -- decommissioning\n", bat_discharging);
 		decommission(bat_not_discharging);
 	}
 }
@@ -522,6 +523,14 @@ void battery_logic()
 
 	uint16_t lfb1_max_cell_mv = Max(lf1_mv, lf2_mv);
 	uint16_t lfb2_max_cell_mv = Max(lf3_mv, lf4_mv);
+
+	print("voltage data:\n");
+	print("li1: %d\n", charging_data.bat_voltages[LI1]);
+	print("li2: %d\n", charging_data.bat_voltages[LI2]);
+	print("lf1: %d\n", lf1_mv);
+	print("lf2: %d\n", lf2_mv);
+	print("lf3: %d\n", lf3_mv);
+	print("lf4: %d\n", lf4_mv);
 	#endif
 
 	/////
