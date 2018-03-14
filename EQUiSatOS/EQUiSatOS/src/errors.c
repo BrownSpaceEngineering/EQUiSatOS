@@ -241,9 +241,9 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 		} else {
 			// otherwise, the stack is not formatted as it should be 
 			// (though this may be due to an emergency reboot) 
-			//#ifdef USE_STRICT_ASSERTIONS
+			#ifdef USE_STRICT_ASSERTIONS
 				configASSERT(false);
-			//#endif
+			#endif
 		}
 	}
 	if (got_mutex) xSemaphoreGive(stack->mutex);
@@ -255,7 +255,7 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 void hang_on_bad_error(sat_error_t* full_error) {
 	// NOT a mutex timeout
 	uint8_t actual_code = full_error->ecode & 0b01111111;
-	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_IRPOW_MUTEX_TIMEOUT);
+	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
 	configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 	configASSERT(actual_code != ECODE_CORRUPTED);
 };

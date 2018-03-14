@@ -11,7 +11,7 @@
 #define TICKS_IN_EACH_VALID_STATE				11000
 
 // determines how long we spend in each state
-#define LOWEST_TASK_FREQ			15000 //BATTERY_CHARGING_TASK_FREQ
+#define LOWEST_TASK_FREQ			20000//60000 //BATTERY_CHARGING_TASK_FREQ
 #define IN_STATE_TIME_MS			(LOWEST_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME)
 
 void test_all_state_transitions(void) 
@@ -46,54 +46,53 @@ void test_normal_satellite_state_sequence(void) {
 	if (state_num == 0) {
 		// start out in initial
 		set_sat_state_helper(INITIAL);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	
 	if (state_num < 1) {
 		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	
 	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
 	if (state_num < 2) {
 		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	
 	if (state_num < 3) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 4) {
 		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	
 	if (state_num < 5) {
 		check_set_sat_state(IDLE_FLASH, LOW_POWER);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	
 	if (state_num < 6) {
 		check_set_sat_state(LOW_POWER, IDLE_NO_FLASH);
+		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
 		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
-	report_task_running(STATE_HANDLING_TASK);
 	vTaskDelay(LOWEST_TASK_FREQ * 10);
-	report_task_running(STATE_HANDLING_TASK);
 }
 
 void test_error_case_satellite_state_sequence(void)

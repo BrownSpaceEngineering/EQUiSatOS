@@ -4,11 +4,12 @@
  * Created: 2/10/2018 12:40:32 AM
  *  Author: rjha
  */
-#include "rtos_tasks/rtos_tasks.h"
-#include "../rtos_tasks/battery_charging_task.h"
 
 #ifndef BATTERY_CHARGING_SIMULATED_DATA_H_
 #define BATTERY_CHARGING_SIMULATED_DATA_H_
+
+#include "rtos_tasks/rtos_tasks.h"
+#include "../rtos_tasks/battery_charging_task.h"
 
 // NOTE: for battery charging unit tests, not the simulator!
 extern int simulated_timestamp;
@@ -18,7 +19,17 @@ extern int simulated_curr_charging_filled_up;
 /************************************************************************/
 /* CONFIG                                                               */
 /************************************************************************/
-#define EQUISIM_TIMESTAMP_SCALING	1
+#ifdef TESTING_SPEEDUP
+	#define EQUISIM_TIMESTAMP_SCALING		3
+#else
+	#define EQUISIM_TIMESTAMP_SCALING		1
+#endif
+#define LI_CHARGING_MV_PER_MS				0.005
+#define LI_DISCHARGING_MV_PER_MS			0.003
+#define LI_DISCHARGING_MV_PER_MS_SEEP		0.000001
+#define LF_CHARGING_MV_PER_MS				0.005
+#define LF_DISCHARGING_MV_PER_MS_FLASHING	0.01
+#define LF_DISCHARGING_MV_PER_MS_SEEP		0.000001
 
 /************************************************************************/
 /* Battery charging sim states                                          */

@@ -55,6 +55,12 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_LF_VOLT:
 			return B_LF_VOLT_LOW;
 			break;
+		case S_LF_OSNS_FLASH:
+			return B_LF_OSNS_FLASH_LOW;
+			break;
+		case S_LF_OSNS_REG:
+			return B_LF_OSNS_REG_LOW;
+			break;
 		case S_L_VOLT:
 			return B_L_VOLT_LOW;
 			break;
@@ -148,6 +154,12 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_LF_VOLT:
 			return B_LF_VOLT_HIGH;
 			break;
+		case S_LF_OSNS_FLASH:
+			return B_LF_OSNS_FLASH_HIGH;
+			break;
+		case S_LF_OSNS_REG:
+			return B_LF_OSNS_REG_HIGH;
+			break;
 		case S_L_VOLT:
 			return B_L_VOLT_HIGH;
 			break;
@@ -202,6 +214,9 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_LED_TEMP:
 			return A_LED_TEMP_M;
 			break;
+		case S_LED_SNS:
+			return A_LED_SNS_M;
+			break;
 		case S_LED_SNS_REG:
 			return A_LED_SNS_M;
 			break;
@@ -237,6 +252,12 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			break;
 		case S_LF_VOLT:
 			return A_LF_VOLT_M;
+			break;
+		case S_LF_OSNS_FLASH:
+			return A_LF_OSNS_M;
+			break;
+		case S_LF_OSNS_REG:
+			return A_LF_OSNS_M;
 			break;
 		case S_L_VOLT:
 			return A_L_VOLT_M;
@@ -277,6 +298,9 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_LED_TEMP:
 			return A_LED_TEMP_B;
 			break;
+		case S_LED_SNS:
+			return A_LED_SNS_B;
+			break;
 		case S_LED_SNS_REG:
 			return A_LED_SNS_B;
 			break;
@@ -293,7 +317,7 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			return A_LF_SNS_B;
 			break;
 		case S_LF_SNS_FLASH:
-			return A_LF_OSNS_B;
+			return A_LF_SNS_B;
 			break;
 		case S_L_SNS:
 			return A_L_SNS_B;
@@ -312,6 +336,12 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			break;
 		case S_LF_VOLT:
 			return A_LF_VOLT_B;
+			break;
+		case S_LF_OSNS_FLASH:
+			return A_LF_OSNS_B;
+			break;
+		case S_LF_OSNS_REG:
+			return A_LF_OSNS_B;
 			break;
 		case S_L_VOLT:
 			return A_L_VOLT_B;

@@ -29,6 +29,27 @@ void init_persistent_storage(void) {
 	// to avoid undefined behavior if someone accidentally uses the cache
 	memset(&cached_state, 0, sizeof(cached_state)); 
 	cached_state_sync_redundancy(); // sync to others
+	
+	/* initialize rad-safe fields; note that the values #defined will be stored thrice in prog mem! */
+	// addresses
+	RAD_SAFE_FIELD_SET(storage_secs_since_lauch_addr, STORAGE_SECS_SINCE_LAUNCH_ADDR);
+	RAD_SAFE_FIELD_SET(storage_reboot_cnt_addr, STORAGE_REBOOT_CNT_ADDR);
+	RAD_SAFE_FIELD_SET(storage_sat_state_addr, STORAGE_SAT_STATE_ADDR);
+	RAD_SAFE_FIELD_SET(storage_sat_event_hist_addr, STORAGE_SAT_EVENT_HIST_ADDR);
+	RAD_SAFE_FIELD_SET(storage_prog_mem_rewritten_addr, STORAGE_PROG_MEM_REWRITTEN_ADDR);
+	RAD_SAFE_FIELD_SET(storage_persistent_charging_data_addr, STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	RAD_SAFE_FIELD_SET(storage_radio_revive_timestamp_addr, STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
+	RAD_SAFE_FIELD_SET(storage_err_num_addr, STORAGE_ERR_NUM_ADDR);
+	RAD_SAFE_FIELD_SET(storage_err_list_addr, STORAGE_ERR_LIST_ADDR);
+	// field sizes
+	RAD_SAFE_FIELD_SET(storage_secs_since_lauch_size, STORAGE_SECS_SINCE_LAUNCH_SIZE);
+	RAD_SAFE_FIELD_SET(storage_reboot_cnt_size, STORAGE_REBOOT_CNT_SIZE);
+	RAD_SAFE_FIELD_SET(storage_sat_state_size, STORAGE_SAT_STATE_SIZE);
+	RAD_SAFE_FIELD_SET(storage_sat_event_hist_size, STORAGE_SAT_EVENT_HIST_SIZE);
+	RAD_SAFE_FIELD_SET(storage_prog_mem_rewritten_size, STORAGE_PROG_MEM_REWRITTEN_SIZE);
+	RAD_SAFE_FIELD_SET(storage_persistent_charging_data_size, STORAGE_PERSISTENT_CHARGING_DATA_SIZE);
+	RAD_SAFE_FIELD_SET(storage_radio_revive_timestamp_size, STORAGE_RADIO_REVIVE_TIMESTAMP_SIZE);
+	RAD_SAFE_FIELD_SET(storage_err_num_size, STORAGE_ERR_NUM_SIZE);
 
 	mram_spi_cache_mutex = xSemaphoreCreateMutexStatic(&_mram_spi_cache_mutex_d);
 
@@ -143,12 +164,12 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	   can really occur with the SPI driver that might mean something is an overflow--
 	   and the MRAM's wouldn't likely match if only one of them overflowed)) */
 	if (mram1_data_matches && !mram2_data_matches) {
-		configASSERT(false); // don't want this to happen before launch
+		//configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		return success_mram1;
 	}
 	if (!mram1_data_matches && mram2_data_matches) {
-		configASSERT(false); // don't want this to happen before launch
+		//configASSERT(false); // don't want this to happen before launch
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		// need to copy over (which data # shouldn't matter)
 		memcpy(mram1_data1, mram2_data1, num_bytes);
@@ -163,7 +184,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 	1_2 _ 2_2
 	*/
 	if (!mram1_data_matches && !mram2_data_matches) {
-		//configASSERT(false);
+		configASSERT(false);
 		log_error(ELOC_MRAM1_READ, ECODE_INCONSISTENT_DATA, true);
 		log_error(ELOC_MRAM2_READ, ECODE_INCONSISTENT_DATA, true);
 		
@@ -227,16 +248,16 @@ void read_state_from_storage(void) {
 			cached_state.reboot_count = 0;
 			memset(&cached_state.sat_event_history, 0, sizeof(satellite_history_batch));
 			cached_state.prog_mem_rewritten = false;
-			cached_state.radio_revive_timestamp = 0;
 			cached_state.persistent_charging_data.li_caused_reboot = -1;
+			cached_state.radio_revive_timestamp = 0;
 		#else
-			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-			storage_read_field_unsafe(&cached_state.reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-			storage_read_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-			storage_read_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-			storage_read_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-			storage_read_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
+			storage_read_field_unsafe(&cached_state.reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
+			storage_read_field_unsafe((uint8_t*) &cached_state.sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
+			storage_read_field_unsafe((uint8_t*) &cached_state.sat_event_history,		RAD_SAFE_FIELD_GET(storage_sat_event_hist_size),			RAD_SAFE_FIELD_GET(storage_sat_event_hist_addr));
+			storage_read_field_unsafe(&cached_state.prog_mem_rewritten,					RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_size),		RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_addr));
+			storage_read_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,RAD_SAFE_FIELD_GET(storage_persistent_charging_data_size),	RAD_SAFE_FIELD_GET(storage_persistent_charging_data_addr));
+			storage_read_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_size),	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_addr));
 		#endif
 		
 		// set initial _secs_since_launch_at_boot based on the last stored timestamp in the MRAM
@@ -286,16 +307,16 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	if (got_mutex) xSemaphoreGive(stack->mutex);
 	
 	// write size and error data to storage
-	storage_write_field_unsafe(&num_errors,	1, STORAGE_ERR_NUM_ADDR);
+	storage_write_field_unsafe(&num_errors,	RAD_SAFE_FIELD_GET(storage_err_num_size), RAD_SAFE_FIELD_GET(storage_err_num_addr));
 	if (num_errors > 0) {
 		storage_write_field_unsafe((uint8_t*) error_buf,
-			num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+			num_errors * sizeof(sat_error_t), RAD_SAFE_FIELD_GET(storage_err_list_addr));
 	}
 	
 	if (confirm) {
 		// check if stored # of errors matches
 		uint8_t temp_num_errors;
-		storage_read_field_unsafe(&temp_num_errors,	1, STORAGE_ERR_NUM_ADDR);
+		storage_read_field_unsafe(&temp_num_errors,	RAD_SAFE_FIELD_GET(storage_err_num_size), RAD_SAFE_FIELD_GET(storage_err_num_addr));
 		if (temp_num_errors != num_errors) {
 			#ifdef USE_STRICT_ASSERTIONS
 				configASSERT(false);
@@ -306,7 +327,7 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 		// check if actual stored errors match (if necessary)
 		if (num_errors > 0) {
 			storage_read_field_unsafe((uint8_t*) temp_error_buf,
-				num_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+				num_errors * sizeof(sat_error_t),  RAD_SAFE_FIELD_GET(storage_err_list_addr));
 			if (memcmp(error_buf, temp_error_buf, num_errors * sizeof(sat_error_t)) != 0) {
 				#ifdef USE_STRICT_ASSERTIONS
 					configASSERT(false);
@@ -361,13 +382,13 @@ bool update_cache_fields(void) {
 // Returns whether error writes were correctly confirmed,
 // if confirm_errors was true (otherwise true)
 bool write_cache_fields_to_storage(bool confirm_errors) {
-	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-	storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
+	storage_write_field_unsafe(&cached_state.reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
+	storage_write_field_unsafe((uint8_t*) &cached_state.sat_event_history,		RAD_SAFE_FIELD_GET(storage_sat_event_hist_size),			RAD_SAFE_FIELD_GET(storage_sat_event_hist_addr));
+	storage_write_field_unsafe(&cached_state.prog_mem_rewritten,				RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_size),		RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_addr));
+	storage_write_field_unsafe((uint8_t*) &cached_state.persistent_charging_data,RAD_SAFE_FIELD_GET(storage_persistent_charging_data_size),	RAD_SAFE_FIELD_GET(storage_persistent_charging_data_addr));
+	storage_write_field_unsafe((uint8_t*) &cached_state.radio_revive_timestamp,	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_size),	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_addr));
 	return storage_write_check_errors_unsafe(&error_equistack, confirm_errors);
 }
 
@@ -388,20 +409,20 @@ void write_state_to_storage_safety(bool safe) {
 		uint8_t temp_reboot_count, temp_sat_state;
 		satellite_history_batch temp_sat_event_history;
 		uint8_t temp_prog_mem_rewritten;
-		uint32_t temp_radio_revive_timestamp;
 		persistent_charging_data_t temp_persistent_charging_data;
+		uint32_t temp_radio_revive_timestamp;
 	
 		// actually perform writes (DO check that errors wrote)
 		bool errors_write_confirmed = write_cache_fields_to_storage(true);
 
 		// read it right back to confirm validity
-		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-		storage_read_field_unsafe(&temp_reboot_count,					1,		STORAGE_REBOOT_CNT_ADDR);
-		storage_read_field_unsafe(&temp_sat_state,						1,		STORAGE_SAT_STATE_ADDR);
-		storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-		storage_read_field_unsafe(&temp_prog_mem_rewritten,				1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-		storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data,1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+		storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
+		storage_read_field_unsafe(&temp_reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
+		storage_read_field_unsafe((uint8_t*) &temp_sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
+		storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,		RAD_SAFE_FIELD_GET(storage_sat_event_hist_size),			RAD_SAFE_FIELD_GET(storage_sat_event_hist_addr));
+		storage_read_field_unsafe(&temp_prog_mem_rewritten,					RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_size),		RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_addr));
+		storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data,RAD_SAFE_FIELD_GET(storage_persistent_charging_data_size),	RAD_SAFE_FIELD_GET(storage_persistent_charging_data_addr));
+		storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_size),	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_addr));
 		
 		// log error if the stored data was not consistent with what was just written
 		// note we have the mutex so no one should be able to write to these
@@ -568,8 +589,8 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
    Should really be called periodically for these crucial things */
-// TODO: change this so not all params have to be passed in?
-bool update_sat_event_history(uint8_t antenna_deployed,
+bool update_sat_event_history(bool write_through,
+								uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
@@ -596,7 +617,9 @@ bool update_sat_event_history(uint8_t antenna_deployed,
 			cached_state.sat_event_history.prog_mem_rewritten = true;
 
 		cached_state_sync_redundancy();
-		write_state_to_storage_safety(false);
+		if (write_through) {
+			write_state_to_storage_safety(false);
+		}
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 		return true;
@@ -654,7 +677,7 @@ void populate_error_stacks(equistack* error_stack) {
 	{
 		// read in errors from MRAM
 		uint8_t num_stored_errors;
-		storage_read_field_unsafe(&num_stored_errors,	1, STORAGE_ERR_NUM_ADDR);
+		storage_read_field_unsafe(&num_stored_errors, RAD_SAFE_FIELD_GET(storage_err_num_size), RAD_SAFE_FIELD_GET(storage_err_num_addr));
 		// make sure number of errors is in a reasonable bound (note we're using a uint)
 		// it may be a larger issue if this is wrong, but read in errors anyway (we
 		// wouldn't want to miss anything - but we'll add this error at the end so we
@@ -668,7 +691,7 @@ void populate_error_stacks(equistack* error_stack) {
 		// special case; we can't read in 0 bytes (invalid arg)
 		if (num_stored_errors > 0) {
 			storage_read_field_unsafe((uint8_t*) error_buf,
-			num_stored_errors * sizeof(sat_error_t), STORAGE_ERR_LIST_ADDR);
+			num_stored_errors * sizeof(sat_error_t), RAD_SAFE_FIELD_GET(storage_err_list_addr));
 
 			// read all errors that we have stored in MRAM in
 			for (int i = 0; i < num_stored_errors; i++) {
@@ -752,8 +775,8 @@ void write_custom_state(void) {
 	sat_event_history.lion_2_charged =			false;
 	sat_event_history.prog_mem_rewritten =		false;
 	uint8_t prog_mem_rewritten =				false;
-	uint32_t radio_revive_timestamp =				0;
 	persistent_charging_data_t persistent_charging_data;
+	uint32_t radio_revive_timestamp =				0;
 	persistent_charging_data.li_caused_reboot = -1;
 
 	#define NUM_ERRS	0
@@ -766,14 +789,13 @@ void write_custom_state(void) {
 // 	};
 
 	/*** WRITING ***/
-
-	storage_write_field_unsafe((uint8_t*) &secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_write_field_unsafe((uint8_t*) &reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_write_field_unsafe((uint8_t*) &sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_write_field_unsafe((uint8_t*) &sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-	storage_write_field_unsafe((uint8_t*) &prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_write_field_unsafe((uint8_t*) &radio_revive_timestamp, 4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-	storage_write_field_unsafe((uint8_t*) &persistent_charging_data, 1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	storage_write_field_unsafe((uint8_t*) &secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
+	storage_write_field_unsafe(&reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
+	storage_write_field_unsafe((uint8_t*) &sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
+	storage_write_field_unsafe((uint8_t*) &sat_event_history,		RAD_SAFE_FIELD_GET(storage_sat_event_hist_size),			RAD_SAFE_FIELD_GET(storage_sat_event_hist_addr));
+	storage_write_field_unsafe(&prog_mem_rewritten,					RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_size),		RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_addr));
+	storage_write_field_unsafe((uint8_t*) &persistent_charging_data,RAD_SAFE_FIELD_GET(storage_persistent_charging_data_size),	RAD_SAFE_FIELD_GET(storage_persistent_charging_data_addr));
+	storage_write_field_unsafe((uint8_t*) &radio_revive_timestamp,	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_size),	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_addr));
 
 	// write errors
 	storage_write_field_unsafe((uint8_t*) &num_errs,		1, STORAGE_ERR_NUM_ADDR);
@@ -793,13 +815,13 @@ void write_custom_state(void) {
 	uint8_t temp_num_errs;
 	sat_error_t temp_error_buf[num_errs];
 
-	storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,	4,		STORAGE_SECS_SINCE_LAUNCH_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_reboot_count,		1,		STORAGE_REBOOT_CNT_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_sat_state,			1,		STORAGE_SAT_STATE_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,	1,		STORAGE_SAT_EVENT_HIST_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_prog_mem_rewritten,	1,		STORAGE_PROG_MEM_REWRITTEN_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	4,	STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR);
-	storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data, 1,	STORAGE_PERSISTENT_CHARGING_DATA_ADDR);
+	storage_read_field_unsafe((uint8_t*) &temp_secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
+	storage_read_field_unsafe(&temp_reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
+	storage_read_field_unsafe((uint8_t*) &temp_sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
+	storage_read_field_unsafe((uint8_t*) &temp_sat_event_history,		RAD_SAFE_FIELD_GET(storage_sat_event_hist_size),			RAD_SAFE_FIELD_GET(storage_sat_event_hist_addr));
+	storage_read_field_unsafe(&temp_prog_mem_rewritten,					RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_size),		RAD_SAFE_FIELD_GET(storage_prog_mem_rewritten_addr));
+	storage_read_field_unsafe((uint8_t*) &temp_persistent_charging_data,RAD_SAFE_FIELD_GET(storage_persistent_charging_data_size),	RAD_SAFE_FIELD_GET(storage_persistent_charging_data_addr));
+	storage_read_field_unsafe((uint8_t*) &temp_radio_revive_timestamp,	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_size),	RAD_SAFE_FIELD_GET(storage_radio_revive_timestamp_addr));
 
 	storage_read_field_unsafe((uint8_t*) &temp_num_errs,	1, STORAGE_ERR_NUM_ADDR);
 	configASSERT(temp_num_errs == num_errs);
@@ -813,8 +835,8 @@ void write_custom_state(void) {
 	configASSERT(temp_sat_state == sat_state);
 	configASSERT(compare_sat_event_history(&temp_sat_event_history, &sat_event_history));
 	configASSERT(temp_prog_mem_rewritten == prog_mem_rewritten);
+	configASSERT(compare_persistent_charging_data(&temp_persistent_charging_data, &persistent_charging_data));
 	configASSERT(temp_radio_revive_timestamp == radio_revive_timestamp);
-	configASSERT(compare_persistent_charging_data(&temp_persistent_charging_data, &persistent_charging_data))
 
 	configASSERT(memcmp(error_buf, temp_error_buf, num_errs * sizeof(sat_error_t)) == 0);
 }

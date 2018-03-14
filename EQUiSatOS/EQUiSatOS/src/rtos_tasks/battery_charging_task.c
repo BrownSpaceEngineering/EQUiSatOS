@@ -670,19 +670,19 @@ void battery_logic()
 				switch (bat)
 				{
 					case LI1:
-						update_sat_event_history(false, true, false, false, false, false, false);
+						update_sat_event_history(false, 0, 1, 0, 0, 0, 0, 0); // don't write through right here
 						break;
 
 					case LI2:
-						update_sat_event_history(false, false, true, false, false, false, false);
+						update_sat_event_history(false, 0, 0, 1, 0, 0, 0, 0); // don't write through right here
 						break;
 
 					case LFB1:
-						update_sat_event_history(false, false, false, true, false, false, false);
+						update_sat_event_history(false, 0, 0, 0, 1, 0, 0, 0); // don't write through right here
 						break;
 
 					case LFB2:
-						update_sat_event_history(false, false, false, false, true, false, false);
+						update_sat_event_history(false, 0, 0, 0, 0, 1, 0, 0); // don't write through right here
 						break;
 
 					default:

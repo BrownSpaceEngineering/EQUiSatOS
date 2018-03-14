@@ -4,7 +4,7 @@
 
 #ifndef TESTING_SPEEDUP
 	#define MIN_TIME_IN_INITIAL_S		(30*60)
-	#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
+	#define MIN_TIME_IN_BOOT_S			ORBITAL_PERIOD_S//(26*ORBITAL_PERIOD_S)
 #else
 	#define MIN_TIME_IN_INITIAL_S		(15*60)
 	#define MIN_TIME_IN_BOOT_S			(ORBITAL_PERIOD_S / 2)
@@ -63,7 +63,7 @@ void emergency_resume_antenna_deploy(void) {
 	&& get_sat_state() != LOW_POWER) {
 		// if the antenna has not been deployed, start the task again to deploy it
 		// (ignoring any sat states where it MUST be running or suspended)
-		set_task_state_safe(ANTENNA_DEPLOY_TASK, true);
+		task_resume_safe(ANTENNA_DEPLOY_TASK);
 	}
 }
 

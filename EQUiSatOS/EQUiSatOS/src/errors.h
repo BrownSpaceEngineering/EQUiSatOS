@@ -28,19 +28,19 @@
 enum error_locations {
 	ELOC_NO_ERROR =						0,
 
-	ELOC_IR_FLASH = 					1,
-	ELOC_IR_SIDE1 = 					2,
-	ELOC_IR_SIDE2 = 					3,
-	ELOC_IR_RBF = 						4,
-	ELOC_IR_ACCESS = 					5,
-	ELOC_IR_TOP1 = 						6,
+	ELOC_IR_POS_Y = 					1,
+	ELOC_IR_NEG_X = 					2,
+	ELOC_IR_NEG_Y = 					3,
+	ELOC_IR_POS_X = 						4,
+	ELOC_IR_NEG_Z = 					5,
+	ELOC_IR_POS_Z = 						6,
 
-	ELOC_PD_FLASH = 					7,
-	ELOC_PD_SIDE1 = 					8,
-	ELOC_PD_SIDE2 = 					9,
-	ELOC_PD_RBF = 						10,
-	ELOC_PD_ACCESS = 					11,
-	ELOC_PD_TOP1 = 						12,
+	ELOC_PD_POS_Y = 					7,
+	ELOC_PD_NEG_X = 					8,
+	ELOC_PD_NEG_Y = 					9,
+	ELOC_PD_POS_X = 						10,
+	ELOC_PD_NEG_Z = 					11,
+	ELOC_PD_POS_Z = 						12,
 
 	ELOC_TEMP_LF_1 = 					13,
 	ELOC_TEMP_LF_2 = 					14,
@@ -185,29 +185,32 @@ enum error_codes {
 	ECODE_WATCHDOG_MUTEX_TIMEOUT =		45,
 	ECODE_EQUISTACK_MUTEX_TIMEOUT =		46,
 	ECODE_IRPOW_MUTEX_TIMEOUT =			47,
+	ECODE_ALL_MUTEX_TIMEOUT =			48,
 
-	ECODE_REWROTE_PROG_MEM =			48,
-	ECODE_STACK_OVERFLOW =				49,
-	ECODE_DET_ALREADY_HIGH =			50,
+	ECODE_REWROTE_PROG_MEM =			49,
+	ECODE_STACK_OVERFLOW =				50,
+	ECODE_DET_ALREADY_HIGH =			51,
 
-	ECODE_BAT_NOT_DISCHARGING =         51,
-	ECODE_BAT_NOT_NOT_DISCHARGING =     52,
-	ECODE_BAT_NOT_CHARGING =			53,
-	ECODE_BAT_NOT_NOT_CHARGING =		54,
-	ECODE_BAT_NOT_DISCHARGING_RESTART = 55,
-	ECODE_BAT_FAULT =                   56,
-	ECODE_NOT_FULL_FOR_WHILE =          57,
-	ECODE_LOW_VOLTAGE_FOR_WHILE =       58,
-	ECODE_RECOMMISSION =                59,
-	ECODE_ALL_SAME_VAL =				60,
-	ECODE_CORRUPTED =					61,
-	ECODE_INVALID_STATE_CHANGE =		62,
-	ECODE_TIMESTAMP_WRAPAROUND =		63,
-	ECODE_INCONSISTENT_STATE =			64,
-	ECODE_PWM_CUR_LOW_ON_DEPLOY =		65,
-	ECODE_PWM_CUR_LOW_ON_MAX_CYCLE =	66,
-	ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY =	67,
-	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 68,
+	ECODE_BAT_NOT_DISCHARGING =         52,
+	ECODE_BAT_NOT_NOT_DISCHARGING =     53,
+	ECODE_BAT_NOT_CHARGING =			54,
+	ECODE_BAT_NOT_NOT_CHARGING =		55,
+	ECODE_BAT_NOT_DISCHARGING_RESTART = 56,
+	ECODE_BAT_FAULT =                   57,
+	ECODE_NOT_FULL_FOR_WHILE =          58,
+	ECODE_LOW_VOLTAGE_FOR_WHILE =       59,
+	ECODE_RECOMMISSION =                60,
+	ECODE_ALL_SAME_VAL =				61,
+	ECODE_CORRUPTED =					62,
+	ECODE_INVALID_STATE_CHANGE =		63,
+	ECODE_TIMESTAMP_WRAPAROUND =		64,
+	ECODE_INCONSISTENT_STATE =			65,
+	ECODE_PWM_CUR_LOW_ON_DEPLOY =		66,
+	ECODE_PWM_CUR_LOW_ON_MAX_CYCLE =	67,
+	ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY =	68,
+	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 69,
+	ECODE_SOFTWARE_RESET =				70,
+	ECODE_SAT_RESET =					71
 };
 
 /************************************************************************/
@@ -238,6 +241,9 @@ void log_error(uint8_t loc, uint8_t err, bool priority);
 void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
+// defined in rtos_system_test.c
 void print_sat_error(sat_error_t* data, int i);
+const char* get_eloc_str(sat_error_t* err);
+const char* get_ecode_str(sat_error_t* err);
 
 #endif /* ERRORS_H_ */

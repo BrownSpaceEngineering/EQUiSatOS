@@ -57,12 +57,17 @@ typedef struct task_states {
 	   1. Validation of regulator voltages
 	   2. Measuring battery currents									*/
 /************************************************************************/ 
+typedef enum {
+	RADIO_OFF,
+	RADIO_IDLE,
+	RADIO_TRANSMITTING,
+} radio_state_t;
+
 struct hw_states {
 	/* locked by peripheral mutexes - mainly done to simplify function arguments */
 	bool rail_5v_enabled : 1;
 	/* locked by hardware state mutex */
-	bool radio_powered : 1; // if true, both 3V6 regulator and radio power pin are on
-	bool radio_transmitting : 1;
+	radio_state_t radio_state : 2; // if >0, both 3V6 regulator and radio power pin are on	
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
@@ -71,7 +76,7 @@ struct hw_states {
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(2000 / portTICK_PERIOD_MS) // these can take a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(5000 / portTICK_PERIOD_MS) // these can take quite a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 
@@ -81,7 +86,7 @@ SemaphoreHandle_t critical_action_mutex;
 sat_state_t get_sat_state(void);
 bool set_sat_state(sat_state_t state);
 task_states get_sat_task_states(void);
-void set_task_state_safe(task_type_t task_id, bool run);
+void task_resume_safe(task_type_t task_id);
 bool check_task_state_consistency(void);
 bool low_power_active(void);
 

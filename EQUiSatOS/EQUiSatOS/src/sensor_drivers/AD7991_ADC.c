@@ -20,7 +20,7 @@ enum status_code AD7991_init(uint8_t board){
 //results should be of length 4
 enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
 	// Initialize
-	int num_samples = 4;
+	uint8_t num_samples = 4;
 	uint8_t buffer[8*num_samples];
 	uint16_t results0, results1, results2, results3;
 	results0 = 0;
@@ -29,7 +29,7 @@ enum status_code AD7991_read_all(uint16_t *results, uint8_t addr){
 	results3 = 0;
 	// I2C transaction
 	enum status_code read = readFromAddress(buffer,8*num_samples,addr,false);
-	//TODO verify that each pair of bytes is the signal we think it is
+	
 	//Software averaging
 	for (int i=0; i<num_samples; i++){
 		results0 = results0 + (((buffer[(8*i)] & 0b00001111) << 8) + buffer[(8*i+1)]);

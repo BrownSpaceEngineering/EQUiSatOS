@@ -140,28 +140,28 @@ static void get_ir_panel(int panel_addr, char* buffer){
 
 	switch (panel_addr){
 
-		case IR_FLASH:
-		strcpy(buffer,"IR_FLASH +Y");
+		case IR_POS_Y:
+		strcpy(buffer,"IR_POS_Y");
 		break;
 
-		case IR_TOP1:
-		strcpy(buffer,"IR_TOP1 +Z");
+		case IR_POS_Z:
+		strcpy(buffer,"IR_POS_Z");
 		break;
 
-		case IR_RBF:
-		strcpy(buffer,"IR_RBF +X");
+		case IR_POS_X:
+		strcpy(buffer,"IR_POS_X");
 		break;
 
-		case IR_ACCESS:
-		strcpy(buffer,"IR_ACCESS -Z");
+		case IR_NEG_Z:
+		strcpy(buffer,"IR_NEG_Z");
 		break;
 
-		case IR_SIDE1:
-		strcpy(buffer,"IR_SIDE1 -X");
+		case IR_NEG_X:
+		strcpy(buffer,"IR_NEG_X");
 		break;
 
-		case IR_SIDE2:
-		strcpy(buffer,"IR_SIDE2 -Y");
+		case IR_NEG_Y:
+		strcpy(buffer,"IR_NEG_Y");
 		break;
 		
 		default:
@@ -180,7 +180,7 @@ static void MLX90614_test(bool printFloats){
 	uint16_t buf;
 	char buffer[40];
 	enum status_code sc;
-	uint8_t addr[] = {IR_TOP1, IR_SIDE1, IR_SIDE2, IR_FLASH, IR_ACCESS, IR_RBF};
+	uint8_t addr[] = {IR_POS_Z, IR_NEG_X, IR_NEG_Y, IR_POS_Y, IR_NEG_Z, IR_POS_X};
 
 	for (int i = 0; i < 6; i++){
 		sc = MLX90614_read_all_obj(addr[i],&buf);
@@ -375,25 +375,25 @@ static float TEMD6200_test(void){
 		read_adc_mV(pd_instance, &pd_mV);
 		switch (i) {
 			case 0:
-			strcpy(test_str,"PD_TOP1 +Z");
+			strcpy(test_str,"PD_POS_Z");
 			break;
 			case 1:
-			strcpy(test_str,"PD_SIDE1 -X");
+			strcpy(test_str,"PD_NEG_X");
 			break;
 			case 2:
-			strcpy(test_str,"PD_SIDE2 -Y");
+			strcpy(test_str,"PD_NEG_Y");
 			break;
 			case 3:
-			strcpy(test_str,"PD_FLASH +Y");
+			strcpy(test_str,"PD_POS_Y");
 			break;
 			case 4:
-			strcpy(test_str,"PD_ACCESS -Z");
+			strcpy(test_str,"PD_NEG_Z");
 			break;
 			case 5:
-			strcpy(test_str,"PD_RBF +X");
+			strcpy(test_str,"PD_POS_X");
 			break;
 		}
-		print("%s \t %s \t %d \n",test_str, buffer, pd_mV);
+		print("%s \t %s \t %d mV \t %d \n",test_str, buffer, pd_mV, get_pdiode_two_bit_range(pd_mV));
 	}
 	
 	//pdBuffer[i] =(readVoltagemV(pd_instance));//-6.5105)/0.3708; // I = exp((V-6.5105/0.3708)) in uA	

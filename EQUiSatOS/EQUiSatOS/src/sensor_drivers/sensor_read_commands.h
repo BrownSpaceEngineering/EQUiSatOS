@@ -64,6 +64,7 @@ SemaphoreHandle_t irpow_mutex;
 /************************************************************************/
 /* FUNCTIONS                                                            */
 /************************************************************************/
+uint8_t truncate_16t(uint16_t src, sig_id_t sig);
 void init_sensor_read_commands(void);
 
 /* primary */
@@ -104,5 +105,6 @@ void disable_ir_pow_if_should_be_off(bool expected_on);
 bool _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);
 void verify_flash_readings(bool flashing);
+uint8_t get_pdiode_two_bit_range(uint16_t raw);
 
 #endif

@@ -15,7 +15,7 @@ void panel_to_default(void);
 void currents_to_default(void);
 void st_normal(void);
 void chgn_normal(void);
-void normal_charge_discharge(uint64_t timestamp_ms);
+void normal_charge_discharge(uint64_t timestamp_ms, sat_state_t sat_state);
 
 /************************************************************************/
 /* Battery charging action setting interfaces                           */
@@ -52,7 +52,7 @@ uint32_t equisim_get_current_timestamp_ms() {
 }
 
 void update_bat_state_from_actions(void) {
-	normal_charge_discharge(equisim_get_current_timestamp_ms());
+	normal_charge_discharge(equisim_get_current_timestamp_ms(), get_sat_state());
 }
 
 /************************************************************************/
@@ -65,7 +65,7 @@ void init_charging_actions(void) {
 	cur_actions.l2_disg		= false;
 	cur_actions.lf_b1_runchg= false;
 	cur_actions.lf_b2_runchg= false;
-	cur_actions.last_setting_time_ms = get_current_timestamp_ms();
+	cur_actions.last_setting_time_ms = equisim_get_current_timestamp_ms();
 }
 
 void init_charging_state(void) {
@@ -190,34 +190,42 @@ void chgn_normal()
 	cur_state.lf_b2_chgn_inv = !cur_actions.lf_b2_runchg;
 }
 
-void voltages_normal(uint64_t timestamp_ms)
+void voltages_normal(uint64_t timestamp_ms, sat_state_t sat_state)
 {
-	uint64_t time_since_last_update = timestamp_ms - cur_actions.last_setting_time_ms;
+	uint64_t time_since_last_update_ms = timestamp_ms - cur_actions.last_setting_time_ms;
 	cur_actions.last_setting_time_ms = timestamp_ms;
 
 	// starting with linear for now
-	float li_charging_mv_per_ms = 0.005;
-	float li_discharging_mv_per_ms = -0.003;
-	float lf_charging_mv_per_ms = 0.005;
+	float li_charging_delta =		time_since_last_update_ms * LI_CHARGING_MV_PER_MS;
+	float li_discharging_delta =	time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS;
+	float lf_charging_delta =		time_since_last_update_ms * LF_CHARGING_MV_PER_MS;
+	float lf_discharging_delta = time_since_last_update_ms * ((sat_state == IDLE_FLASH) ? LF_DISCHARGING_MV_PER_MS_FLASHING : LF_DISCHARGING_MV_PER_MS_SEEP);
+	
 
 	// discharging
 	if (cur_actions.l1_disg && cur_actions.l2_disg)
 	{
-		cur_state.li1_volts -= (li_discharging_mv_per_ms / 2);
-		cur_state.li2_volts -= (li_discharging_mv_per_ms / 2);
+		cur_state.li1_volts -= (li_discharging_delta / 2);
+		cur_state.li2_volts -= (li_discharging_delta / 2);
 	}
 	else
 	{
-		cur_state.li1_volts -= cur_actions.l1_disg ? (li_discharging_mv_per_ms / 2) : 0;
-		cur_state.li2_volts -= cur_actions.l2_disg ? (li_discharging_mv_per_ms / 2) : 0;
+		cur_state.li1_volts -= cur_actions.l1_disg ? (li_discharging_delta / 2) : time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS_SEEP;
+		cur_state.li2_volts -= cur_actions.l2_disg ? (li_discharging_delta / 2) : time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS_SEEP;
 	}
+	
+	cur_state.lf1_volts -= lf_discharging_delta;
+	cur_state.lf2_volts -= lf_discharging_delta;
+	cur_state.lf3_volts -= lf_discharging_delta;
+	cur_state.lf4_volts -= lf_discharging_delta;
 
-	cur_state.li1_volts += cur_actions.l1_run_chg ? li_charging_mv_per_ms : 0;
-	cur_state.li2_volts += cur_actions.l2_run_chg ? li_charging_mv_per_ms : 0;
-	cur_state.lf1_volts += cur_actions.lf_b1_runchg ? lf_charging_mv_per_ms : 0;
-	cur_state.lf2_volts += cur_actions.lf_b1_runchg ? lf_charging_mv_per_ms : 0;
-	cur_state.lf3_volts += cur_actions.lf_b2_runchg ? lf_charging_mv_per_ms : 0;
-	cur_state.lf4_volts += cur_actions.lf_b2_runchg ? lf_charging_mv_per_ms : 0;
+	// TODO: why is LF charging delta distributed across batteries??
+	cur_state.li1_volts += cur_actions.l1_run_chg ? li_charging_delta : 0;
+	cur_state.li2_volts += cur_actions.l2_run_chg ? li_charging_delta : 0;
+	cur_state.lf1_volts += cur_actions.lf_b1_runchg ? lf_charging_delta : 0;
+	cur_state.lf2_volts += cur_actions.lf_b1_runchg ? lf_charging_delta : 0;
+	cur_state.lf3_volts += cur_actions.lf_b2_runchg ? lf_charging_delta : 0;
+	cur_state.lf4_volts += cur_actions.lf_b2_runchg ? lf_charging_delta : 0;
 
 	// can't be negative
 	cur_state.li1_volts = Max(cur_state.li1_volts, 0);
@@ -228,7 +236,7 @@ void voltages_normal(uint64_t timestamp_ms)
 	cur_state.lf4_volts = Max(cur_state.lf4_volts, 0);
 }
 
-void normal_charge_discharge(uint64_t timestamp_ms) {
+void normal_charge_discharge(uint64_t timestamp_ms, sat_state_t sat_state) {
 		// takes the information from the action struct and updates the state
 		// struct
 
@@ -237,5 +245,5 @@ void normal_charge_discharge(uint64_t timestamp_ms) {
 		fault_to_default(); // FAULTN pins
 		panel_to_default(); // PANEL_REF
 		currents_to_default(); // currents
-		voltages_normal(timestamp_ms);
+		voltages_normal(timestamp_ms, sat_state);
 }

@@ -39,7 +39,3 @@ static void watchdog_early_warning_callback_xplained(void) {
 void pet_watchdog(void){
 	wdt_reset_count();
 }
-
-bool did_watchdog_kick(void){
-	return (system_get_reset_cause() == SYSTEM_RESET_CAUSE_WDT || system_get_reset_cause() == SYSTEM_RESET_CAUSE_SOFTWARE);
-}

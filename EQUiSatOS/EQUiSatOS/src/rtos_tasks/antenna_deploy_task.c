@@ -46,8 +46,10 @@ void antenna_deploy_task(void *pvParameters) {
 		} else if (did_deploy) {
 			// then the antenna should actually be deployed
 			// (update the event history and then delay until the state handling task suspends us)
-			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+			update_sat_event_history(true, 1, 0, 0, 0, 0, 0, 0); // DO write-through here
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+			// report to watchdog (again)
+			report_task_running(ANTENNA_DEPLOY_TASK);
 			continue;
 		}
 		
@@ -66,6 +68,10 @@ void antenna_deploy_task(void *pvParameters) {
 				} else {
 					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 				}
+				
+				// report to watchdog (again)
+				report_task_running(ANTENNA_DEPLOY_TASK);
+				
 				num_tries++;
 			} else {
 				vTaskDelay(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT / portTICK_PERIOD_MS);
@@ -82,6 +88,10 @@ void antenna_deploy_task(void *pvParameters) {
 					set_output(false, P_LF_B1_OUTEN);
 					
 					xSemaphoreGive(critical_action_mutex);
+					
+					// report to watchdog (again)
+					report_task_running(ANTENNA_DEPLOY_TASK);
+					
 				} else {
 					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 				}

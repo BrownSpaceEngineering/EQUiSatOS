@@ -20,10 +20,10 @@ void idle_data_task(void *pvParameters)
 	// variable for timing data reads (which may include task suspensions)
 	TickType_t time_before_data_read;
 	
-	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
-	
 	init_task_state(IDLE_DATA_TASK); // suspend or run on boot
+	
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
 
 	for( ;; )
 	{
@@ -49,8 +49,6 @@ void idle_data_task(void *pvParameters)
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		
 		// verify readings (without storing) at regular intervals in this task
-		lion_temps_batch garbage;
-		en_and_read_lion_temps_batch(garbage);
 		verify_regulators();
 		verify_flash_readings(false); // not flashing (function is thread-safe)
 

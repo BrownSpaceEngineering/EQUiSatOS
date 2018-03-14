@@ -9,6 +9,7 @@
 /* Important: put #includes here unless they are also meant for the assembler.
  */
 #include <stdint.h>
+#include "config.h"
 void assert_triggered( const char * file, uint32_t line );
 #endif
 
@@ -26,7 +27,7 @@ void assert_triggered( const char * file, uint32_t line );
 #define configSUPPORT_DYNAMIC_ALLOCATION		0
 #define configAPPLICATION_ALLOCATED_HEAP		0 // no need if no heap
 #define configMAX_TASK_NAME_LEN                 ( 8 )
-#define configUSE_TRACE_FACILITY                1			// SET to 1 to use Tracelyzer; 0 to free up the RAM space
+#define configUSE_TRACE_FACILITY                USE_TRACELYZER		// SET to 1 to use Tracelyzer; 0 to free up the RAM space
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_MUTEXES                       1
@@ -71,8 +72,12 @@ to exclude the API function. */
 
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
-#define configASSERT( x ) \
-        if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+#ifdef USE_ASSERTIONS
+	#define configASSERT( x ) \
+			 if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+#else
+	#define configASSERT(x) do {} while(false);
+#endif
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
 standard names - or at least those used in the unmodified vector table. */

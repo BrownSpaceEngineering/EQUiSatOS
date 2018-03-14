@@ -46,15 +46,16 @@ void setRXEnable(bool enable);
 void set3V6Power(bool on);
 void setRadioPower(bool on);
 
-typedef enum {	CMD_NONE = 0,
-				CMD_ECHO = 1,
-				CMD_REBOOT = 2,				
-				CMD_FLASH = 3,
-				CMD_KILL_3DAYS = 4,
-				CMD_KILL_WEEK = 5,
-				CMD_KILL_FOREVER = 6,
-				
-				} rx_cmd_type_t;
+typedef enum {	
+	CMD_NONE,
+	CMD_ECHO,
+	CMD_REBOOT,
+	CMD_FLASH,
+	CMD_KILL_3DAYS,
+	CMD_KILL_WEEK,
+	CMD_KILL_FOREVER,
+	
+} rx_cmd_type_t;
 
 rx_cmd_type_t check_rx_received(void);
 bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index);

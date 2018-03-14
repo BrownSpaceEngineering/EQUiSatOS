@@ -15,49 +15,92 @@
 /************************************************************************/
 /* Sensor type printing methods                                         */
 /************************************************************************/
+static uint16_t untruncate(uint8_t val, sig_id_t sig) {
+	uint16_t u16 = ((uint16_t)val) << 8;
+	return u16 / get_line_m_from_signal(sig) - get_line_b_from_signal(sig);
+}
+
 void print_accel_batch(accelerometer_batch batch) {
-	print("accel: x: %d y: %d z: %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("accel\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_ACCEL));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_ACCEL));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_ACCEL));
 }
 void print_gyro_batch(gyro_batch batch) {
-	print("gyro: x: %d y: %d z: %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("gyro\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_GYRO));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_GYRO));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_GYRO));
 }
 void print_magnetometer_batch(magnetometer_batch batch) {
-	print("mag: %d %d %d\n", (int16_t)((int8_t) batch[0]) << 8, (int16_t)((int8_t) batch[1]) << 8, (int16_t)((int8_t) batch[2]) << 8);
+	print("mag\n");
+	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_MAG));
+	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_MAG));
+	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_MAG));
 }
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
-	print("ir ambs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(batch[0] << 8), (uint16_t)dataToTemp(batch[1] << 8), (uint16_t)dataToTemp(batch[2] << 8), (uint16_t)dataToTemp(batch[3] << 8), (uint16_t)dataToTemp(batch[4] << 8), (uint16_t)dataToTemp(batch[5] << 8));
+	print("ir ambs\n");
+	for (int i = 0; i < 6; i++) {
+		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
+	}
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
-	print("ir objs: %d %d %d %d %d %d\n", (uint16_t)dataToTemp(batch[0]), (uint16_t)dataToTemp(batch[1]), (uint16_t)dataToTemp(batch[2]), (uint16_t)dataToTemp(batch[3]), (uint16_t)dataToTemp(batch[4]), (uint16_t)dataToTemp(batch[5]));
-}
-void print_pdiode_batch(pdiode_batch batch) {
-	for (int i = 0; i < 6; i++){
-		print("pdiode %d: %d\n",i, (uint16_t)(batch>>(i*2))&0b11);
+	print("ir objs\n");
+	for (int i = 0; i < 6; i++) {
+		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(batch[i]));
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {
-	print("lion volts: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion volts 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
+	print("lion volts 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
 void print_lion_current_batch(lion_current_batch batch) {
-	print("lion current: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion SNS 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
+	print("lion SNS 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("lion temps: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lion temps 1: %d BAD: %d C\n", batch[0], untruncate(batch[0], S_L_TEMP));
+	print("lion temps 2: %d BAD: %d C\n", batch[1], untruncate(batch[1], S_L_TEMP));
 }
 void print_led_temps_batch(led_temps_batch batch) {
-	print("led temps: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("led temps\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP));
+	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	print("lifepo bank temps: %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
+	print("lifepo bank temps\n");
+	print("\t1: %d\tBAD: %d C\n", batch[0], untruncate(batch[0], S_LF_TEMP));
+	print("\t2: %d\tBAD: %d C\n", batch[1], untruncate(batch[1], S_LF_TEMP));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
-	print("lifepo volts: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("lifepo volts\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\t%d mv\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
+	}
 }
 void print_lifepo_current_batch(lifepo_current_batch batch) {
-	print("lifepo current: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("lifepo SNS\n");
+	print("\tbank1: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
+	print("\tbank2: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
+	print("lifepo OSNS\n");
+	print("\tbank1: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
+	print("\tbank2: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
 }
 void print_led_current_batch(led_current_batch batch) {
-	print("led current: %d %d %d %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8, (uint16_t)batch[2]<<8, (uint16_t)batch[3]<<8);
+	print("led current\n");
+	for (int i = 0; i < 4; i++) {
+		print("\t%d: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
+	}
+}
+void print_panelref_lref_batch(panelref_lref_batch batch) {
+	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
+}
+void print_radio_temp_batch(radio_temp_batch batch) {
+	print("radio temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_RAD_TEMP));
+}
+void print_imu_temp_batch(imu_temp_batch batch) {
+	print("imu temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_IMU_TEMP));
 }
 void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("---Satellite History Batch---\n");
@@ -68,9 +111,6 @@ void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("lifepo b2 charged:  %d\n", batch.lifepo_b2_charged);
 	print("first flash:        %d\n", batch.lifepo_b2_charged);
 	print("prog_mem_rewritten: %d\n", batch.prog_mem_rewritten);
-}
-void print_panelref_lref_batch(panelref_lref_batch batch) {
-	print("refs: PANELREF: %d L_REF: %d\n", (uint16_t)batch[0]<<8, (uint16_t)batch[1]<<8);
 }
 void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	print("---Battery Charging Digital Signals---\n");
@@ -91,11 +131,10 @@ void print_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch batch) {
 	print("L2_CHGN:        %d\n", (batch >> 14) & 0x1);
 	print("L2_FAULTN:      %d\n", (batch >> 15) & 0x1);
 }
-void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\n", (uint16_t)batch<<8);
-}
-void print_imu_temp_batch(imu_temp_batch batch) {
-	print("imu temp: %d\n", (uint16_t)batch<<8);
+void print_pdiode_batch(pdiode_batch batch) {
+	for (int i = 0; i < 6; i++){
+		print("pdiode %d: %d\n",i, (uint16_t)(batch>>(i*2))&0b11);
+	}
 }
 
 /************************************************************************/
@@ -183,8 +222,13 @@ void print_low_power_data(low_power_data_t* data, int i) {
 }
 
 void print_sat_error(sat_error_t* err, int i) {
-	print("%2d: error (%s): loc=%3d code=%3d @ %d\n", i, 
-		is_priority_error(*err) ? "priority" : "normal  ", err->eloc, err->ecode & 0b01111111, err->timestamp);
+	print("%2d: error (%s): loc=%s (%d)\t code=%s (%d)\t @ %d\n", i, 
+		is_priority_error(*err) ? "priority" : "normal  ", 
+		get_eloc_str(err), 
+		err->eloc, 
+		get_ecode_str(err), 
+		err->ecode & 0b01111111,
+		err->timestamp);
 }
 
 
@@ -262,15 +306,207 @@ uint32_t get_task_freq(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return WATCHDOG_TASK_FREQ;
 		case STATE_HANDLING_TASK: return STATE_HANDLING_TASK_FREQ;
-		case ANTENNA_DEPLOY_TASK: return ANTENNA_DEPLOY_TASK_FREQ;
+		case ANTENNA_DEPLOY_TASK: return (get_sat_state() != ANTENNA_DEPLOY) ? ANTENNA_DEPLOY_TASK_LESS_FREQ : ANTENNA_DEPLOY_TASK_FREQ;
 		case BATTERY_CHARGING_TASK: return BATTERY_CHARGING_TASK_FREQ;
-		case TRANSMIT_TASK: return TRANSMIT_TASK_FREQ;
+		case TRANSMIT_TASK: return low_power_active() ? TRANSMIT_TASK_LESS_FREQ : TRANSMIT_TASK_FREQ;
 		case FLASH_ACTIVATE_TASK: return FLASH_ACTIVATE_TASK_FREQ;
 		case IDLE_DATA_TASK: return IDLE_DATA_TASK_FREQ;
 		case LOW_POWER_DATA_TASK: return LOW_POWER_DATA_TASK_FREQ;
 		case ATTITUDE_DATA_TASK: return ATTITUDE_DATA_TASK_FREQ;
 		case PERSISTENT_DATA_BACKUP_TASK: return PERSISTENT_DATA_BACKUP_TASK_FREQ;
 		default: return -1;
+	}
+}
+
+const char* get_eloc_str(sat_error_t* err) {
+	// regex to generate: (ELOC_\w+)\s=\s+(\d+). -> case $2: return "$1";
+	switch (err->eloc) {
+	case 0: return "ELOC_NO_ERROR";
+
+	case 1: return "ELOC_IR_FLASH";
+	case 2: return "ELOC_IR_SIDE1";
+	case 3: return "ELOC_IR_SIDE2";
+	case 4: return "ELOC_IR_RBF";
+	case 5: return "ELOC_IR_ACCESS";
+	case 6: return "ELOC_IR_TOP1";
+
+	case 7: return "ELOC_PD_FLASH";
+	case 8: return "ELOC_PD_SIDE1";
+	case 9: return "ELOC_PD_SIDE2";
+	case 10: return "ELOC_PD_RBF";
+	case 11: return "ELOC_PD_ACCESS";
+	case 12: return "ELOC_PD_TOP1";
+
+	case 13: return "ELOC_TEMP_LF_1";
+	case 14: return "ELOC_TEMP_LF_2";
+	case 15: return "ELOC_TEMP_L_1";
+	case 16: return "ELOC_TEMP_L_2";
+	case 17: return "ELOC_TEMP_LED_1";
+	case 18: return "ELOC_TEMP_LED_2";
+	case 19: return "ELOC_TEMP_LED_3";
+	case 20: return "ELOC_TEMP_LED_4";
+
+	case 21: return "ELOC_RADIO_TEMP";
+
+	case 22: return "ELOC_IMU_ACC";
+	case 23: return "ELOC_IMU_GYRO";
+	case 24: return "ELOC_IMU_MAG";
+
+	case 25: return "ELOC_LED1SNS";
+	case 26: return "ELOC_LED2SNS";
+	case 27: return "ELOC_LED3SNS";
+	case 28: return "ELOC_LED4SNS";
+	case 29: return "ELOC_LFB1OSNS";
+	case 30: return "ELOC_LFB1SNS";
+	case 31: return "ELOC_LFB2OSNS";
+	case 32: return "ELOC_LFB2SNS";
+	case 33: return "ELOC_LF1REF";
+	case 34: return "ELOC_LF2REF";
+	case 35: return "ELOC_LF3REF";
+	case 36: return "ELOC_LF4REF";
+	case 37: return "ELOC_L1_REF";
+	case 38: return "ELOC_L2_REF";
+
+	case 39: return "ELOC_DET_RTN";
+	case 40: return "ELOC_RADIO";
+
+	case 41: return "ELOC_AD7991_BBRD";
+	case 42: return "ELOC_AD7991_BBRD_L2_SNS";
+	case 43: return "ELOC_AD7991_BBRD_L1_SNS";
+	case 44: return "ELOC_AD7991_BBRD_L_REF";
+	case 45: return "ELOC_AD7991_BBRD_PANEL_REF";
+	case 46: return "ELOC_AD7991_CBRD";
+	case 47: return "ELOC_AD7991_CBRD_3V6_REF";
+	case 48: return "ELOC_AD7991_CBRD_3V6_SNS";
+	case 49: return "ELOC_AD7991_CBRD_5V_REF";
+	case 50: return "ELOC_AD7991_CBRD_3V3_REF";
+
+	case 51: return "ELOC_TCA";
+	case 52: return "ELOC_CACHED_PERSISTENT_STATE";
+	case 53: return "ELOC_MRAM1_READ";
+	case 54: return "ELOC_MRAM2_READ";
+	case 55: return "ELOC_MRAM_READ";
+	case 56: return "ELOC_MRAM1_WRITE";
+	case 57: return "ELOC_MRAM2_WRITE";
+	case 58: return "ELOC_MRAM_WRITE";
+	case 59: return "ELOC_5V_REF";
+	case 60: return "ELOC_STATE_HANDLING";
+	case 61: return "ELOC_BAT_CHARGING";
+	case 62: return "ELOC_ANTENNA_DEPLOY";
+	case 63: return "ELOC_ERROR_STACK";
+	case 64: return "ELOC_WATCHDOG";
+	case 65: return "ELOC_IMU_TEMP";
+	case 66: return "ELOC_VERIFY_REGS";
+
+	case 67: return "ELOC_IDLE_DATA";
+	case 68: return "ELOC_ATTITUDE_DATA";
+	case 69: return "ELOC_FLASH"; // both flash and flash_cmp (for now)
+	case 70: return "ELOC_LOW_POWER_DATA";
+	case 71: return "ELOC_EQUISTACK_GET";
+	case 72: return "ELOC_EQUISTACK_PUT";
+
+	case 73: return "ELOC_BOOTLOADER";
+	case 74: return "ELOC_RTOS";
+
+	case 75: return "ELOC_BAT_L1";
+	case 76: return "ELOC_BAT_L2";
+	case 77: return "ELOC_BAT_LFB1";
+	case 78: return "ELOC_BAT_LFB2";
+	case 79: return "ELOC_BAT_CHARGING_SWITCH_1";
+	case 80: return "ELOC_BAT_CHARGING_SWITCH_2";
+	case 81: return "ELOC_BAT_CHARGING_SWITCH_3";
+	case 82: return "ELOC_BAT_CHARGING_SWITCH_4";
+	case 83: return "ELOC_BAT_CHARGING_SWITCH_5";
+	case 84: return "ELOC_BAT_CHARGING_SWITCH_6";
+	case 85: return "ELOC_BAT_CHARGING_SWITCH_7";
+	case 86: return "ELOC_BAT_CHARGING_SWITCH_8";
+	case 87: return "ELOC_BAT_CHARGING_SWITCH_9";
+	case 88: return "ELOC_IR_POW";
+	case 89: return "ELOC_RADIO_KILLTIME";	
+	default: return "[error loc not added to sys test]";
+	}
+}
+
+const char* get_ecode_str(sat_error_t* err) {
+	// regex to generate: (ECODE_\w+)\s=\s+(\d+). -> case $2: return "$1";
+	switch (err->ecode & 0b01111111) {
+	case 0: return "ECODE_OK";
+	case 1: return "ECODE_VALID_DATA";
+	case 2: return "ECODE_NO_CHANGE";
+	case 3: return "ECODE_ABORTED";
+	case 4: return "ECODE_BUSY";
+	case 5: return "ECODE_SUSPEND";
+	case 6: return "ECODE_IO";
+	case 7: return "ECODE_REQ_FLUSHED";
+	case 8: return "ECODE_TIMEOUT";
+	case 9: return "ECODE_BAD_DATA";
+	case 10: return "ECODE_NOT_FOUND";
+	case 11: return "ECODE_UNSUPPORTED_DEV";
+	case 12: return "ECODE_NO_MEMORY";
+	case 13: return "ECODE_INVALID_ARG";
+	case 14: return "ECODE_BAD_ADDRESS";
+	case 15: return "ECODE_BAD_FORMAT";
+	case 16: return "ECODE_BAD_FRQ";
+	case 17: return "ECODE_DENIED";
+	case 18: return "ECODE_ALREADY_INITIALIZED";
+	case 19: return "ECODE_OVERFLOW";
+	case 20: return "ECODE_NOT_INITIALIZED";
+	case 21: return "ECODE_SAMPLERATE_UNAVAILABLE";
+	case 22: return "ECODE_RESOLUTION_UNAVAILABLE";
+	case 23: return "ECODE_BAUDRATE_UNAVAILABLE";
+	case 24: return "ECODE_PACKET_COLLISION";
+	case 25: return "ECODE_PROTOCOL";
+	case 26: return "ECODE_PIN_MUX_INVALID";
+
+	/**** CUSTOM ****/
+	case 27: return "ECODE_READING_HIGH";
+	case 28: return "ECODE_READING_LOW";
+	case 29: return "ECODE_OUT_OF_BOUNDS";
+	case 30: return "ECODE_SIGNAL_LOST";
+
+	case 31: return "ECODE_CONFIRM_TIMEOUT";
+	case 32: return "ECODE_INCONSISTENT_DATA";
+	case 33: return "ECODE_UNEXPECTED_CASE";
+	case 34: return "ECODE_WATCHDOG_EARLY_WARNING";
+	case 35: return "ECODE_WATCHDOG_RESET";
+	case 36: return "ECODE_WATCHDOG_DID_KICK";
+	case 37: return "ECODE_EXCESSIVE_SUSPENSION";
+
+	case 38: return "ECODE_CRIT_ACTION_MUTEX_TIMEOUT";
+	case 39: return "ECODE_I2C_MUTEX_TIMEOUT";
+	case 40: return "ECODE_PROC_ADC_MUTEX_TIMEOUT";
+	case 41: return "ECODE_HW_STATE_MUTEX_TIMEOUT";
+	case 42: return "ECODE_USART_MUTEX_TIMEOUT";
+	case 43: return "ECODE_SPI_MUTEX_TIMEOUT";
+	case 44: return "ECODE_BAT_CHARGING_MUTEX_TIMEOUT";
+	case 45: return "ECODE_WATCHDOG_MUTEX_TIMEOUT";
+	case 46: return "ECODE_EQUISTACK_MUTEX_TIMEOUT";
+	case 47: return "ECODE_IRPOW_MUTEX_TIMEOUT";
+	case 48: return "ECODE_ALL_MUTEX_TIMEOUT";
+
+	case 49: return "ECODE_REWROTE_PROG_MEM";
+	case 50: return "ECODE_STACK_OVERFLOW";
+	case 51: return "ECODE_DET_ALREADY_HIGH";
+
+	case 52: return "ECODE_BAT_NOT_DISCHARGING";
+	case 53: return "ECODE_BAT_NOT_NOT_DISCHARGING";
+	case 54: return "ECODE_BAT_NOT_CHARGING";
+	case 55: return "ECODE_BAT_NOT_NOT_CHARGING";
+	case 56: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
+	case 57: return "ECODE_BAT_FAULT";
+	case 58: return "ECODE_NOT_FULL_FOR_WHILE";
+	case 59: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
+	case 60: return "ECODE_RECOMMISSION";
+	case 61: return "ECODE_ALL_SAME_VAL";
+	case 62: return "ECODE_CORRUPTED";
+	case 63: return "ECODE_INVALID_STATE_CHANGE";
+	case 64: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 65: return "ECODE_INCONSISTENT_STATE";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	default: return "[error code not added to sys test]";
 	}
 }
 
@@ -286,7 +522,7 @@ void print_errors(int max_num) {
 void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char* header, int max_num) {
 	print("\n==============%s==============\n", header);
 	print("size: %d/%d \t top: %d \t bottom: %d\n" ,
-		stack->cur_size, stack->max_size, stack->top_index, stack->bottom_index);
+		stack->cur_size, stack->max_size - 1, stack->top_index, stack->bottom_index); // -1 for staged area
 	print("data (max n=%d):\n", max_num);
 	if (max_num == -1) 
 		max_num = stack->cur_size;
@@ -318,7 +554,8 @@ void print_task_info(void) {
 		uint16_t stack_space_left = uxTaskGetStackHighWaterMark(*task_handles[task]) * sizeof(portSTACK_TYPE);
 		uint16_t stack_size = get_task_stack_size(task);
 		uint16_t stack_space_available = stack_size * sizeof(portSTACK_TYPE);
-		bool checked_in = _get_task_checked_in(task);
+		// note watchdog task as checked out in sys test so it doesn't look like something's up
+		bool checked_in = (task == WATCHDOG_TASK) ? false : _get_task_checked_in(task);
 		uint32_t last_check_in = _get_task_checked_in_time(task);
 		uint32_t task_freq = get_task_freq(task);
 		

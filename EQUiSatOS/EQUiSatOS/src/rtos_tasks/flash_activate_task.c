@@ -73,9 +73,6 @@ void flash_activate_task(void *pvParameters)
 	TickType_t prev_wake_time = xTaskGetTickCount();	
 	TickType_t prev_data_read_time = xTaskGetTickCount();
 	
-	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP
-	
 	// data storage variables for flash data
 	uint8_t data_arrays_tail = 0;
 	flash_data_t *current_burst_struct = (flash_data_t*) equistack_Initial_Stage(&flash_readings_equistack);
@@ -83,6 +80,9 @@ void flash_activate_task(void *pvParameters)
 	flash_cmp_data_t *current_cmp_struct = (flash_cmp_data_t*) equistack_Initial_Stage(&flash_cmp_readings_equistack);
 	
 	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
+	
+	// variable for keeping track of data logging to distribute over orbit
+	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
 	
 	for ( ;; )
 	{	
@@ -179,7 +179,7 @@ void flash_activate_task(void *pvParameters)
 			
 			// update sat event history if we flashed and it wasn't noted
 			if (!cache_get_sat_event_history().first_flash) {
-				update_sat_event_history(0, 0, 0, 0, 0, 1, 0);
+				update_sat_event_history(false, 0, 0, 0, 0, 0, 1, 0); // don't write through on every flash
 			}
 			
 			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
@@ -250,7 +250,11 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_bank_temps_data_sums, *lifepo_bank_temps, 2);
 	
 	lifepo_current_batch* lifepo_current = &burst_struct->lifepo_current_data[*data_arrays_tail];
-	_read_lifepo_current_batch_unsafe(*lifepo_current, true);
+	#ifdef FLASH_ACTIVE
+		_read_lifepo_current_batch_unsafe(*lifepo_current, true);
+	#else
+		_read_lifepo_current_batch_unsafe(*lifepo_current, false);
+	#endif
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_current_data_sums, *lifepo_current, 4);
 
 	lifepo_volts_batch* lifepo_volts = &burst_struct->lifepo_volts_data[*data_arrays_tail];
@@ -258,7 +262,11 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->lifepo_volts_data_sums, *lifepo_volts, 4);
 
 	led_current_batch* led_current = &burst_struct->led_current_data[*data_arrays_tail];
-	_read_led_current_batch_unsafe(*led_current, true);
+	#ifdef FLASH_ACTIVE
+		_read_led_current_batch_unsafe(*led_current, true);
+	#else 
+		_read_led_current_batch_unsafe(*led_current, false);
+	#endif
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->led_current_data_sums, *led_current, 4);
 
 	gyro_batch* gyro = &burst_struct->gyro_data[*data_arrays_tail];

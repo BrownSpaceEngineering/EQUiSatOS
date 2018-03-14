@@ -17,6 +17,7 @@ struct i2c_master_module i2c_master_instance;
 struct i2c_master_config config_i2c_master;
 void configure_i2c_master(Sercom* sercom);
 void configure_i2c_standard(Sercom* sercom);
+void i2c_send_stop(void);
 enum status_code i2c_read_command(struct i2c_master_packet* packet_address);
 enum status_code i2c_read_command_nostop(struct i2c_master_packet* packet_address);
 enum status_code i2c_write_command(struct i2c_master_packet* packet_address);

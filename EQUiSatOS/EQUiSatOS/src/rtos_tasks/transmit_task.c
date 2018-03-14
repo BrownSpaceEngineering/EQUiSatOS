@@ -331,22 +331,6 @@ void attempt_transmission(void) {
 	} else {
 		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
 	}
-
-	// TODO:::
-//	bool transmission_in_progress = true;
-// 	TickType_t start_tick = xTaskGetTickCount();
-// 	while (transmission_in_progress) {
-// 		// give control back to RTOS to let transmit data task read info
-// 		vTaskDelayUntil( prev_wake_time, TRANSMIT_TASK_TRANS_MONITOR_FREQ / portTICK_PERIOD_MS);
-// 
-// 		transmission_in_progress = false; // TODO: query radio state / current
-// 
-// 		// if MS equivalent of # of ticks since start exceeds timeout, quit and note error
-// 		if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS > TRANSMIT_TASK_CONFIRM_TIMEOUT) {
-// 			log_error(ELOC_RADIO, ECODE_CONFIRM_TIMEOUT, TRUE); // TODO: not the best error location
-// 			return;
-// 		}
-// 	}
 }
 
 /************************************************************************/

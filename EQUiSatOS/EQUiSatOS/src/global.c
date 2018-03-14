@@ -73,27 +73,26 @@ void global_init(void) {
 	HMC5883L_init();
 	delay_init();
 	
-	#if PRINT_DEBUG != 0
+	#if PRINT_DEBUG != 0 && defined(SAFE_PRINT)
 		print_mutex = xSemaphoreCreateRecursiveMutexStatic(&_print_mutex_d);
 	#endif
 	
 	init_sensor_read_commands();
 	init_persistent_storage();
 	init_errors();
-	watchdog_init();
+	
 	#ifdef USE_REED_SOLOMON
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
 	#endif
 	#ifdef EQUISIM_SIMULATE_BATTERIES
 		equisim_init();
 	#endif
-	
-	// pet watchdog here in case of long initialization
-	pet_watchdog();
 }
 
 // initialization that can only be done with RTOS started
 void global_init_post_rtos(void) {
+	// initialize watchdog in RTOS because it's callback requires RTOS
+	watchdog_init();
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
@@ -103,7 +102,7 @@ void global_init_post_rtos(void) {
 // in order to print without being disturbed, and then CALL IT AGAIN to deactivate 
 // and allow other tasks to print again
 void suppress_other_prints(bool on) {
-	#if PRINT_DEBUG > 0 // if debug mode
+	#if PRINT_DEBUG > 0 && defined(SAFE_PRINT) // if debug mode
 		if (on) {
 			xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 			} else {

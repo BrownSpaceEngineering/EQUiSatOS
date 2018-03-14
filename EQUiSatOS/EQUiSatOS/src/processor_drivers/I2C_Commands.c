@@ -46,6 +46,13 @@ void configure_i2c_standard(Sercom* sercom)
 	configure_i2c_master(sercom);
 }
 
+/* 
+	Sends a stop condition on the I2C bus
+ */
+void i2c_send_stop(void) {
+	i2c_master_send_stop(&i2c_master_instance);
+}
+
 /*
 	Given a pointer to a packet, perform a read over I2C following the information
 	detailed in the packet

@@ -8,21 +8,21 @@
 #include "sensor_read_commands.h"
 
 static uint8_t IR_ADDS[6] = {
-	IR_FLASH,
-	IR_SIDE1,
-	IR_SIDE2,
-	IR_RBF,
-	IR_ACCESS,
-	IR_TOP1
+	IR_POS_Y,
+	IR_NEG_X,
+	IR_NEG_Y,
+	IR_POS_X,
+	IR_NEG_Z,
+	IR_POS_Z
 };
 
 static uint8_t IR_ELOCS[6] = {
-	ELOC_IR_FLASH,
-	ELOC_IR_SIDE1,
-	ELOC_IR_SIDE2,
-	ELOC_IR_RBF,
-	ELOC_IR_ACCESS,
-	ELOC_IR_TOP1
+	ELOC_IR_POS_Y,
+	ELOC_IR_NEG_X,
+	ELOC_IR_NEG_Y,
+	ELOC_IR_POS_X,
+	ELOC_IR_NEG_Z,
+	ELOC_IR_POS_Z
 };
 
 static uint8_t TEMP_ELOCS[8] = {
@@ -37,12 +37,12 @@ static uint8_t TEMP_ELOCS[8] = {
 };
 
 static uint8_t PD_ELOCS[6] = {
-	ELOC_PD_FLASH,
-	ELOC_PD_SIDE1,
-	ELOC_PD_SIDE2,
-	ELOC_PD_RBF,
-	ELOC_PD_ACCESS,
-	ELOC_PD_TOP1,
+	ELOC_PD_POS_Y,
+	ELOC_PD_NEG_X,
+	ELOC_PD_NEG_Y,
+	ELOC_PD_POS_X,
+	ELOC_PD_NEG_Z,
+	ELOC_PD_POS_Z,
 };
 
 static struct adc_module adc_instance; // global is allowed because we always lock the processor ADC
@@ -60,7 +60,7 @@ void init_sensor_read_commands(void) {
 
 void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
 
-static uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
+uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
 	uint16_t m = get_line_m_from_signal(sig);
 	int16_t b = get_line_b_from_signal(sig);
 	return (((uint16_t)(src + b)) * m) >> 8;
@@ -178,8 +178,7 @@ static void verify_regulators_unsafe(void) {
 
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
-	if (hardware_state_mutex_take())
-	{
+	if (hardware_state_mutex_take()) {
 		read_ad7991_ctrlbrd_unsafe(batch);
 		states = get_hw_states();
 		hardware_state_mutex_give();
@@ -189,9 +188,21 @@ static void verify_regulators_unsafe(void) {
 	}
 
 	// 3V6_REF is index 0
-	log_if_out_of_bounds(batch[0], states->radio_powered ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
+	log_if_out_of_bounds(batch[0], states->radio_state ? S_3V6_REF_ON : S_3V6_REF_OFF, ELOC_AD7991_CBRD_3V6_REF, true);
 	// 3V6_SNS is index 1
-	log_if_out_of_bounds(batch[1], states->radio_powered ? S_3V6_SNS_ON : S_3V6_SNS_OFF, ELOC_AD7991_CBRD_3V6_SNS, true);
+	sig_id_t state_3v6_sns;
+	switch(states->radio_state) {
+		case RADIO_OFF:
+			state_3v6_sns = S_3V6_SNS_OFF;
+			break;
+		case RADIO_IDLE:
+			state_3v6_sns = S_3V6_SNS_ON;
+			break;
+		case RADIO_TRANSMITTING:
+			state_3v6_sns = S_3V6_SNS_TRANSMIT;
+			break;
+	}
+	log_if_out_of_bounds(batch[1], state_3v6_sns, ELOC_AD7991_CBRD_3V6_SNS, true);
 	// 5VREF is index 2
 	log_if_out_of_bounds(batch[2], states->rail_5v_enabled ? S_5VREF_ON : S_5VREF_OFF, ELOC_AD7991_CBRD_5V_REF, true);
 	// 3V3REF current is index 3
@@ -207,8 +218,8 @@ void verify_regulators(void) {
 		verify_regulators_unsafe();
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
-	} else {
-		log_error(ELOC_AD7991_BBRD_L2_SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+	} else {		
+		log_error(ELOC_AD7991_CBRD_3V3_REF, ECODE_I2C_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -221,7 +232,10 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 	{
 		// note: IR power will always be enabled if necessary but we can't
 		// give an un-taken mutex
-		bool got_irpow_mutex = enable_ir_pow_if_necessary();
+ 		bool got_irpow_mutex = enable_ir_pow_if_necessary();
+		// send stop because the IR sensors need it before processing commands
+		// after the line has been busy
+		i2c_send_stop();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
@@ -233,7 +247,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_IR_TOP1, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Z, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(ir_object_temps_batch));
 	}
 }
@@ -254,7 +268,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_IR_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Y, ECODE_I2C_MUTEX_TIMEOUT, true);
 		memset(batch, 0, sizeof(ir_ambient_temps_batch));
 	}
 }
@@ -309,9 +323,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-			} else if (states->radio_transmitting) {
+			} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_powered) {
+			} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
@@ -322,7 +336,9 @@ void read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 			memset(batch1, 0, sizeof(lion_current_batch));
 			memset(batch2, 0, sizeof(panelref_lref_batch));
-			xSemaphoreGive(i2c_mutex); // outer mutex
+			// give outer mutexes
+			disable_ir_pow_if_necessary(got_irpow_mutex);
+			xSemaphoreGive(i2c_mutex); 
 			return;
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
@@ -375,9 +391,9 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-			} else if (states->radio_transmitting) {
+			} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_powered) {
+			} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
 			} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
@@ -386,7 +402,11 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 			hardware_state_mutex_give();
 		} else {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			xSemaphoreGive(i2c_mutex); // outer mutex
+			memset(val_1, 0, sizeof(uint16_t));
+			memset(val_2, 0, sizeof(uint16_t));
+			// give outer mutexes
+			disable_ir_pow_if_necessary(got_irpow_mutex);
+			xSemaphoreGive(i2c_mutex);
 			return;
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
@@ -455,11 +475,12 @@ void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 
 // TODO: only reason the second argument exists right now is because of system_test
 void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing_now) {
-	uint sig = flashing_now ? S_LF_SNS_FLASH : S_LF_SNS_REG;
-	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, sig, true);
-	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, sig, true);
+	uint sns_sig = flashing_now ? S_LF_SNS_FLASH : S_LF_SNS_REG;
+	uint o_sig = flashing_now ? S_LF_OSNS_FLASH : S_LF_OSNS_REG;
+	commands_read_adc_mV_truncate(&batch[0], P_AI_LFB1SNS, ELOC_LFB1SNS, sns_sig, true);
+	commands_read_adc_mV_truncate(&batch[1], P_AI_LFB1OSNS, ELOC_LFB1OSNS, o_sig, true);
+	commands_read_adc_mV_truncate(&batch[2], P_AI_LFB2SNS, ELOC_LFB2SNS, sns_sig, true);
+	commands_read_adc_mV_truncate(&batch[3], P_AI_LFB2OSNS, ELOC_LFB2OSNS, o_sig, true);
 }
 
 // only used in antenna deploy task
@@ -473,9 +494,9 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		{
 			#ifndef EQUISIM_SIMULATE_BATTERIES
 				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_SNS_REG, true);
+				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_OSNS_REG, true);
 				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_SNS_REG, true);
+				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true);
 			#else
 				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
 			#endif
@@ -483,11 +504,19 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
 			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			memset(val_1, 0, sizeof(uint16_t));
+			memset(val_2, 0, sizeof(uint16_t));
+			memset(val_3, 0, sizeof(uint16_t));
+			memset(val_4, 0, sizeof(uint16_t));
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_LFB1SNS, ECODE_I2C_MUTEX_TIMEOUT, true);
+		memset(val_1, 0, sizeof(uint16_t));
+		memset(val_2, 0, sizeof(uint16_t));
+		memset(val_3, 0, sizeof(uint16_t));
+		memset(val_4, 0, sizeof(uint16_t));
 	}
 }
 
@@ -600,7 +629,7 @@ void verify_flash_readings(bool flashing_now) {
 /************************************************************************/
 
 //raw is in mV
-static uint8_t get_pdiode_two_bit_range(uint16_t raw) {
+uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 	if (raw < PDIODE_00_01) {
 		return 0;
 	} else if (raw >= PDIODE_00_01 && raw < PDIODE_01_10) {
@@ -609,9 +638,7 @@ static uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 		return 2;
 	} else if (raw >= PDIODE_10_11) {
 		return 3;
-	} else {
-		// PD_ACCESS used as general photo diode indicator
-		log_error(ELOC_PD_ACCESS, ECODE_UNEXPECTED_CASE, false);
+	} else {		
 		return 4;
 	}
 }
@@ -631,28 +658,26 @@ void read_pdiode_batch(pdiode_batch* batch) {
 
 				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 				log_if_error(PD_ELOCS[i], sc, false);
-
-
-
-
-
-				// TODO: someone check this I had to fix a build error
+				
 				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], S_PD, false);
 				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
 				if (two_bit_range == 4) {
-					// TODO: Log error for unexpected pdiode case
+					// PD_ACCESS used as general photo diode indicator
+					log_error(ELOC_PD_NEG_Z, ECODE_UNEXPECTED_CASE, false);
 				} else {
 					*batch |= (two_bit_range << (i*2));
 				}
 			}
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_PD_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_PD_POS_Y, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			memset(batch, 0, sizeof(pdiode_batch));
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
-		log_error(ELOC_PD_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+		log_error(ELOC_PD_POS_Y, ECODE_I2C_MUTEX_TIMEOUT, true);
+		memset(batch, 0, sizeof(pdiode_batch));
 	}
 }
 
@@ -752,9 +777,10 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		enable_ir_pow_if_necessary();
+		bool got_irpow_mutex = enable_ir_pow_if_necessary();
 		//sc = MPU9250_read_mag(rs);
 		sc = HMC5883L_readXYZ(rs);
+		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
 	} else {
 		log_error(ELOC_IMU_MAG, ECODE_I2C_MUTEX_TIMEOUT, true);
@@ -769,7 +795,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	status_code_genare_t sc;
+	status_code_genare_t sc = STATUS_OK; // initialize!
 	if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		// note: IR power will always be enabled if necessary but we can't

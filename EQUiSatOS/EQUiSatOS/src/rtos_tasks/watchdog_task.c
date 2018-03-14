@@ -137,7 +137,7 @@ void check_in_task_unsafe(task_type_t task_ind) {
 void report_task_running(task_type_t task_ind) {
 	bool got_mutex = true;
 	if (!xSemaphoreTake(watchdog_mutex, WATCHDOG_MUTEX_WAIT_TIME_TICKS)) {
-		// log error, but continue becasue this is crucial 
+		// log error, but continue becasue this is crucial
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
 		got_mutex = false;
 	}

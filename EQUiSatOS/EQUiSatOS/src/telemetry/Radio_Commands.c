@@ -251,15 +251,15 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	pet_watchdog(); // in case this takes a bit and we're close to reset
 	vTaskSuspendAll();
 	#ifndef DONT_PRINT_RAW_TRANSMISSIONS
-		usart_send_buf(buf, size);
+		get_hw_states()->radio_state = RADIO_TRANSMITTING;
+		usart_send_buf(buf, size);		
 	#endif
 	xTaskResumeAll();
-	get_hw_states()->radio_transmitting = true;
-	
 	if (got_mutex) hardware_state_mutex_give();
+	verify_regulators();
 
 	// delay during transmission
-	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);
+	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	
 
 	got_mutex = true;
 	if (!hardware_state_mutex_take()) {
@@ -267,7 +267,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		got_mutex = false;
 	}
 	
-	get_hw_states()->radio_transmitting = false;
+	get_hw_states()->radio_state = RADIO_IDLE;
 	
 	if (got_mutex) hardware_state_mutex_give();
 	
@@ -302,6 +302,6 @@ void setRadioPower(bool on) {
 	// enable / disable 3V6 regulator and radio power at the same time
 	set_output(on, P_RAD_PWR_RUN);
 	set_output(on, P_RAD_SHDN);
-	get_hw_states()->radio_powered = on;
+	get_hw_states()->radio_state = RADIO_IDLE;
 	hardware_state_mutex_give();
 }
