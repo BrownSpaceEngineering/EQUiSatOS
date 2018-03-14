@@ -52,7 +52,7 @@
 #define INITIAL_RECOMMISSION_TIME_S     500
 #define RECOMMISSION_TIME_INCREASE      2
 
-#define PANEL_REF_SUN_MV                7500
+#define PANEL_REF_SUN_MV                1474	// 7500 mv
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank

@@ -181,6 +181,7 @@ bool fault_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
 	uint8_t st_position = (bat == LI1) ? 9 : 8;
+	print("\tbat: %d, value: %d\n", bat, (batch>>st_position)&0x01);
 	return (batch>>st_position)&0x01;
 }
 
@@ -215,6 +216,9 @@ uint32_t time_for_recommission(int8_t bat)
 bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
+	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
+	print("\t%d total decomissions for this bat\n");
+	print("\tthis battery should be decomissioned for\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
 		charging_data.decommissioned[bat] = 0;
@@ -284,7 +288,7 @@ void init_charging_data()
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
 	if (persist_data.li_caused_reboot != -1)
 	{
-		print("mram has battery %d as having caused a reboot -- decommissioning");
+		print("mram has battery %d as having caused a reboot -- decommissioning\n");
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
 
@@ -308,10 +312,14 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 	#else
 		equisim_set_action_by_pin(!discharge, discharge_pin);
 	#endif
+
+	print("set li %d to discharge: %d\n", bat, discharge);
 }
 
+// TODO: retry after seeing problems?
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
+	print("checking after discharge:\n");
 	bat_charge_dig_sigs_batch batch;
 	read_bat_charge_dig_sigs_batch(&batch);
 
@@ -321,14 +329,14 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 	if (!bat_discharging_st_pin_active)
 	{
 		log_error(get_error_loc(bat_discharging), ECODE_BAT_NOT_DISCHARGING, true);
-		print("bat %d not discharging -- decommissioning\n", bat_discharging);
+		print("\tbat %d not discharging -- decommissioning\n", bat_discharging);
 		decommission(bat_discharging);
 	}
 
 	if (bat_not_discharging_st_pin_active)
 	{
 		log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
-		print("bat %d not not discharging -- decommissioning\n", bat_discharging);
+		print("\tbat %d not not discharging -- decommissioning\n", bat_not_discharging);
 		decommission(bat_not_discharging);
 	}
 }
@@ -343,7 +351,8 @@ void set_bat_to_charge(int8_t bat, bool charge)
 	#else
 		equisim_set_action_by_pin(charge, chg_pin);
 	#endif
-	print("set bat %d to charge\n", bat);
+
+	print("set bat %d to charge: %d\n", bat, charge);
 }
 
 void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch)
@@ -361,13 +370,21 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	bool charge_running = chg_pin_active(bat, batch);
 	if (should_be_charging)
 	{
+		print("checking is bat %d is charging:\n");
+		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
+		print("\tpanel ref: %d\n", get_panel_ref_val());
+
 		if (!charge_running &&
 			get_panel_ref_val() > PANEL_REF_SUN_MV &&
-			charging_data.bat_voltages[bat] >= MIGHT_BE_FULL)
+			charging_data.bat_voltages[bat] < MIGHT_BE_FULL)
 		{
-			print("not charging for bat %d -- decommissioning\n", bat);
+			print("\tnot charging for bat %d -- decommissioning\n", bat);
 			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
 			decommission(bat);
+		}
+		else
+		{
+			print("\tnot decommissioning!\n");
 		}
 	}
 	else if (charge_running)
@@ -376,6 +393,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	}
 }
 
+// TODO: retry after seeing problems?
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 {
 	bat_charge_dig_sigs_batch batch;
@@ -397,7 +415,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 		check_chg(bat_charging, true, batch);
 
 		check_fault(old_bat_charging, batch);
-		check_chg(bat_charging, false, batch);
+		check_chg(old_bat_charging, false, batch);
 	}
 }
 
@@ -444,7 +462,7 @@ void discharge_higher_li(void)
 
 void battery_charging_task(void *pvParameters)
 {
-	print("starting battery charging\n");
+	print("\n\nstarting battery charging (:\n");
 
 	// delay to offset task relative to others, then start
 	vTaskDelay(BATTERY_CHARGING_TASK_FREQ_OFFSET);
@@ -496,13 +514,11 @@ bool get_lfs_both_full(
 
 void battery_logic()
 {
-	print("entering battery logic\n");
+	print("\n\nentering battery logic\n");
 
 	///
 	// phase prologue: updating relevant data in the charging data struct
 	///
-
-	sat_state_t sat_state = get_sat_state_wrapped();
 
 	#ifndef BAT_TESTING
 	read_lion_volts_precise(
@@ -525,12 +541,12 @@ void battery_logic()
 	uint16_t lfb2_max_cell_mv = Max(lf3_mv, lf4_mv);
 
 	print("voltage data:\n");
-	print("li1: %d\n", charging_data.bat_voltages[LI1]);
-	print("li2: %d\n", charging_data.bat_voltages[LI2]);
-	print("lf1: %d\n", lf1_mv);
-	print("lf2: %d\n", lf2_mv);
-	print("lf3: %d\n", lf3_mv);
-	print("lf4: %d\n", lf4_mv);
+	print("\tli1: %d\n", charging_data.bat_voltages[LI1]);
+	print("\tli2: %d\n", charging_data.bat_voltages[LI2]);
+	print("\tlf1: %d\n", lf1_mv);
+	print("\tlf2: %d\n", lf2_mv);
+	print("\tlf3: %d\n", lf3_mv);
+	print("\tlf4: %d\n", lf4_mv);
 	#endif
 
 	/////
@@ -547,7 +563,7 @@ void battery_logic()
 			print("checking whether to recommission battery: %d\n", bat);
 			bool recommissioned = check_for_recommission(bat);
 
-			print("decided: %d\n", recommissioned);
+			print("\tdecided: %d\n", recommissioned);
 			if (recommissioned)
 				log_error(get_error_loc(bat), ECODE_RECOMMISSION, 0);
 		}
@@ -561,11 +577,13 @@ void battery_logic()
 		{
 			// we have the expectation that both LI's will become full
 			// the charging loop will get stuck otherwise
+			// TODO: do we want to change this to use SNS
 			if ((get_current_timestamp_wrapped() - charging_data.li_last_full_or_recommissioned_timestamp[bat])
 					 > MAX_TIME_WITHOUT_FULL_MS)
 			{
 				print("decommissioning battery: %d because of long time without full\n", bat);
-				log_error(get_error_loc(bat), ECODE_NOT_FULL_FOR_WHILE, 1);
+				print("\twas full at %d, now %d\n", charging_data.li_last_full_or_recommissioned_timestamp[bat], get_current_timestamp_wrapped());
+				log_error(get_error_loc(bat), ECODE_BAT_NOT_FULL_FOR_WHILE, 1);
 				decommission(bat);
 				continue;
 			}
@@ -585,7 +603,8 @@ void battery_logic()
 					// next time -- this is done in the decommission function that will also take
 					// care of other things like this
 					print("decommissioning battery: %d because of long time at low voltage\n", bat);
-					log_error(get_error_loc(bat), ECODE_LOW_VOLTAGE_FOR_WHILE, 1);
+					print("\tentered low voltage at %d, now %d\n", charging_data.li_entered_low_voltage_timestamp[bat], get_current_timestamp_wrapped());
+					log_error(get_error_loc(bat), ECODE_BAT_LOW_VOLTAGE_FOR_WHILE, 1);
 					decommission(bat);
 					continue;
 				}
@@ -618,14 +637,21 @@ void battery_logic()
 	bool curr_charging_filled_up = false;
 	if (is_lion(charging_data.bat_charging))
 	{
+		print("currently charging li %d, will check to see if it's full\n");
+
 		bat_charge_dig_sigs_batch batch;
 		read_bat_charge_dig_sigs_batch(&batch);
 
+		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
+		print("\tpanel ref: %d\n", get_panel_ref_val());
+
+		// TODO: do we want this to be based on SNS
 		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
 								  (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
 
+		print("\tdecided: %d\n", curr_charging_filled_up);
 		if (curr_charging_filled_up)
 			charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging] = get_current_timestamp_wrapped();
 	}
@@ -776,17 +802,22 @@ void battery_logic()
 			// isn't running -- when the charge pin is inactive
 			// on the first time through, curr_charging_filled_up will be false, so all good!
 
-			// TODO*: add bools for recently full. Charge both to full once then lf
 			case FILL_LI_NEITHER_FULL_A:
-				if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
-					charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
-				else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
-					charging_data.curr_charge_state = FILL_LI_LI2_FULL_A;
+				// we only want to make a move when both batteries are good -- this is
+				// like our default state
+				if (charging_data.bat_voltages[LI1] > LI_DOWN_MV &&
+					  charging_data.bat_voltages[LI2] > LI_DOWN_MV)
+				{
+					if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
+						charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
+					else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
+						charging_data.curr_charge_state = FILL_LI_LI2_FULL_A;
+				}
 				break;
 
 			case FILL_LI_LI1_FULL_A:
 				// going back takes precedence
-				if (charging_data.bat_voltages[LI1] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI2] <= LI_DOWN_MV)
+				if (charging_data.bat_voltages[LI1] <= LI_DOWN_MV || charging_data.bat_voltages[LI2] <= LI_DOWN_MV)
 					charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 				else if (charging_data.bat_charging == LI2 && curr_charging_filled_up)
 					charging_data.curr_charge_state = FILL_LF_A;
@@ -794,7 +825,7 @@ void battery_logic()
 
 			case FILL_LI_LI2_FULL_A:
 				// going back takes precedence
-				if (charging_data.bat_voltages[LI2] <= LI_FULL_SANITY_MV || charging_data.bat_voltages[LI1] <= LI_DOWN_MV)
+				if (charging_data.bat_voltages[LI2] <= LI_DOWN_MV || charging_data.bat_voltages[LI1] <= LI_DOWN_MV)
 					charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 				else if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
 					charging_data.curr_charge_state = FILL_LF_A;
