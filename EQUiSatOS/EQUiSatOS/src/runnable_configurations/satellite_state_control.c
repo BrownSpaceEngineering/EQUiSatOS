@@ -82,7 +82,7 @@ void startup_task(void* pvParameters) {
 		rtos_started = true;
 	#endif
 	
-	print("RTOS starting... ");
+	print("EQUiSatOS starting... ");
 	
 	#ifdef WRITE_DEFAULT_MRAM_VALS
 		// utility function to write initial state to MRAM (ONCE before launch)

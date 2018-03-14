@@ -41,13 +41,13 @@ void print_magnetometer_batch(magnetometer_batch batch) {
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	print("ir ambs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], dataToTemp(untruncate(batch[i], S_IR_AMB)));
+		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
 	}
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 	print("ir objs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], dataToTemp(batch[i]));
+		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(batch[i]));
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {
@@ -59,19 +59,19 @@ void print_lion_current_batch(lion_current_batch batch) {
 	print("lion SNS 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("lion temps 1: %d %d C\n", batch[0], dataToTemp(untruncate(batch[0], S_L_TEMP)));
-	print("lion temps 2: %d %d C\n", batch[1], dataToTemp(untruncate(batch[1], S_L_TEMP)));
+	print("lion temps 1: %d BAD: %d C\n", batch[0], untruncate(batch[0], S_L_TEMP));
+	print("lion temps 2: %d BAD: %d C\n", batch[1], untruncate(batch[1], S_L_TEMP));
 }
 void print_led_temps_batch(led_temps_batch batch) {
 	print("led temps\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%d\n", i+1, batch[i], dataToTemp(untruncate(batch[i], S_LED_TEMP)));
+		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP));
 	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 	print("lifepo bank temps\n");
-	print("\t1: %d\t%d C\n", batch[0], dataToTemp(untruncate(batch[0], S_LF_TEMP)));
-	print("\t2: %d\t%d C\n", batch[1], dataToTemp(untruncate(batch[1], S_LF_TEMP)));
+	print("\t1: %d\tBAD: %d C\n", batch[0], untruncate(batch[0], S_LF_TEMP));
+	print("\t2: %d\tBAD: %d C\n", batch[1], untruncate(batch[1], S_LF_TEMP));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	print("lifepo volts\n");
@@ -97,10 +97,10 @@ void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\t%d C\n", batch, dataToTemp(untruncate(batch, S_RAD_TEMP)));
+	print("radio temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_RAD_TEMP));
 }
 void print_imu_temp_batch(imu_temp_batch batch) {
-	print("imu temp: %d\t%d C\n", batch, dataToTemp(untruncate(batch, S_IMU_TEMP)));
+	print("imu temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_IMU_TEMP));
 }
 void print_satellite_state_history_batch(satellite_history_batch batch) {
 	print("---Satellite History Batch---\n");

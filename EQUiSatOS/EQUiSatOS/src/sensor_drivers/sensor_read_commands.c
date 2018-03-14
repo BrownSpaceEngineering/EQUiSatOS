@@ -232,7 +232,10 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 	{
 		// note: IR power will always be enabled if necessary but we can't
 		// give an un-taken mutex
-		bool got_irpow_mutex = enable_ir_pow_if_necessary();
+ 		bool got_irpow_mutex = enable_ir_pow_if_necessary();
+		// send stop because the IR sensors need it before processing commands
+		// after the line has been busy
+		i2c_send_stop();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);

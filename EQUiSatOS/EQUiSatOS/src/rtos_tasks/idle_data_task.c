@@ -49,8 +49,6 @@ void idle_data_task(void *pvParameters)
 		read_ir_ambient_temps_batch(	current_struct->ir_amb_temps_data);
 		
 		// verify readings (without storing) at regular intervals in this task
-		lion_temps_batch garbage;
-		en_and_read_lion_temps_batch(garbage);
 		verify_regulators();
 		verify_flash_readings(false); // not flashing (function is thread-safe)
 
