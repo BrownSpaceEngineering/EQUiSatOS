@@ -242,7 +242,11 @@ void read_flash_data_batch(flash_data_t* burst_struct, uint8_t* data_arrays_tail
 	// also add it to the average
 	// (note below that we can't assign to arrays, so we have to use pointers to the arrays)
 	led_temps_batch* led_temps = &burst_struct->led_temps_data[*data_arrays_tail];
-	_read_led_temps_batch_unsafe(*led_temps);
+	#ifdef FLASH_ACTIVE
+		_read_led_temps_batch_unsafe(*led_temps, true);
+	#else
+		_read_led_temps_batch_unsafe(*led_temps, false);
+	#endif
 	if (add_to_sum) sum_piecewise_uint8(sums_struct->led_temps_data_sums, *led_temps, 4);
 	
 	lifepo_bank_temps_batch* lifepo_bank_temps = &burst_struct->lifepo_bank_temps_data[*data_arrays_tail];

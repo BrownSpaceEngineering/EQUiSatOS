@@ -57,10 +57,12 @@
 #define B_IR_OBJ_HIGH					~0
 #define B_IR_AMB_LOW					0
 #define B_IR_AMB_HIGH					~0
-#define B_PD_LOW						0
-#define B_PD_HIGH						~0
-#define B_LED_TEMP_LOW					0
-#define B_LED_TEMP_HIGH					~0
+#define B_PD_LOW						0  // TODO: remove
+#define B_PD_HIGH						~0 // TODO: remove
+#define B_LED_TEMP_REG_LOW				0
+#define B_LED_TEMP_FLASH_LOW			0
+#define B_LED_TEMP_REG_HIGH				~0
+#define B_LED_TEMP_FLASH_HIGH			~0
 #define B_LED_SNS_REG_LOW				0
 #define B_LED_SNS_REG_HIGH				5
 #define B_LED_SNS_FLASH_LOW				166
@@ -125,12 +127,15 @@
 #define B_5VREF_OFF_HIGH				120  
 #define B_5VREF_ON_LOW					1400 // 4733 mV
 #define B_5VREF_ON_HIGH					1515 // 5122 mV
+#define B_RAD_TEMP_LOW					0
+#define B_RAD_TEMP_HIGH					~0
 
 typedef enum {
 	S_IR_OBJ,
 	S_IR_AMB,
 	S_PD,
-	S_LED_TEMP,
+	S_LED_TEMP_REG,
+	S_LED_TEMP_FLASH,
 	S_LED_SNS,
 	S_LED_SNS_REG,
 	S_LED_SNS_FLASH,

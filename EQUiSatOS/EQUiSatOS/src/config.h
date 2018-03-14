@@ -20,9 +20,9 @@
  * flags to control dangerous / inconvenient functions of the satellite 
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-//#define FLASH_ACTIVE // enable flashing
+#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
-//#define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
+#define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 #define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
@@ -37,14 +37,14 @@
 //#define RISKY_STACK_SIZES
 
 // use this flag to disable reed-solomon tables (frees up memory)
-//#define USE_REED_SOLOMON
+#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		LOW_POWER
-#define OVERRIDE_INIT_TASK_STATES	LOW_POWER_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
-#define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
+#define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define ONLY_RUN_TESTING_TASKS	// doesn't run normal EQUISAT tasks
@@ -53,7 +53,7 @@
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		30000 // 600000 // ms
+	#define SYSTEM_TEST_TASK_FREQ		300000 // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -62,12 +62,12 @@
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
+//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 /** Debug **/
 // whether to include Tracelyzer tracing library
-#define USE_TRACELYZER				1
+#define USE_TRACELYZER				0
 
 // whether to configASSERTs (and other asserts) should hang
 //#define USE_ASSERTIONS

@@ -11,6 +11,7 @@
 #include "rtos_tasks.h"
 #include "data_handling/package_transmission.h"
 #include "../telemetry/Radio_Commands.h"
+#include "../sensor_drivers/sensor_read_commands.h"
 
 
 // transmission-related constants

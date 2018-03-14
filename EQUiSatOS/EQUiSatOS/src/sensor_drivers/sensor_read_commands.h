@@ -66,11 +66,12 @@ SemaphoreHandle_t irpow_mutex;
 /* FUNCTIONS                                                            */
 /************************************************************************/
 uint8_t truncate_16t(uint16_t src, sig_id_t sig);
+void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool priority);
 void init_sensor_read_commands(void);
 
 /* primary */
 void read_lion_volts_batch(			lion_volts_batch batch);
-void read_ad7991_batbrd(			lion_current_batch batch1, panelref_lref_batch batch2);
+bool read_ad7991_batbrd(			lion_current_batch batch1, panelref_lref_batch batch2);
 void en_and_read_lion_temps_batch(	lion_temps_batch batch);
 void read_lifepo_volts_batch(		lifepo_volts_batch batch);
 void read_ir_object_temps_batch(	ir_object_temps_batch batch);
@@ -82,12 +83,12 @@ void read_gyro_batch(				gyro_batch gyr_batch);
 void read_magnetometer_batch(		magnetometer_batch batch);
 void read_radio_temp_batch(			radio_temp_batch* batch);			// pointer to single value
 void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch); //TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
-void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
+bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
 bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
 void read_lifepo_current_batch(		lifepo_current_batch batch, bool flashing_now);
 
 /* non-thread safe functions that should ONLY be called from FLASH TASK */
-void _read_led_temps_batch_unsafe(			led_temps_batch batch);
+void _read_led_temps_batch_unsafe(			led_temps_batch batch, bool flashing_now);
 void _read_lifepo_temps_batch_unsafe(		lifepo_bank_temps_batch batch);
 void _read_lifepo_current_batch_unsafe(		lifepo_current_batch batch, bool flashing_now);
 void _read_lifepo_volts_batch_unsafe(		lifepo_volts_batch batch);
@@ -95,8 +96,8 @@ void _read_led_current_batch_unsafe(		led_current_batch batch, bool flashing_now
 void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 
 /* utility */
-void read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
-void read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
+bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
+bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 

@@ -76,7 +76,7 @@ header file. */
 	#define configASSERT( x ) \
 			 if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
 #else
-	#define configASSERT(x) do {} while(false);
+	#define configASSERT(x) do {} while(0);
 #endif
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS

@@ -19,8 +19,11 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_PD:
 			return B_PD_LOW;
 			break;
-		case S_LED_TEMP:
-			return B_LED_TEMP_LOW;
+		case S_LED_TEMP_REG:
+			return B_LED_TEMP_REG_LOW;
+			break;
+		case S_LED_TEMP_FLASH:
+			return B_LED_TEMP_FLASH_LOW;
 			break;
 		case S_LED_SNS_REG:
 			return B_LED_SNS_REG_LOW;
@@ -100,6 +103,8 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_5VREF_ON:
 			return B_5VREF_ON_LOW;
 			break;
+		case S_RAD_TEMP:
+			return B_RAD_TEMP_LOW;
 		default:
 			return ~0;
 			break;
@@ -118,8 +123,11 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_PD:
 			return B_PD_HIGH;
 			break;
-		case S_LED_TEMP:
-			return B_LED_TEMP_HIGH;
+		case S_LED_TEMP_REG:
+			return B_LED_TEMP_REG_HIGH;
+			break;
+		case S_LED_TEMP_FLASH:
+			return B_LED_TEMP_FLASH_HIGH;
 			break;
 		case S_LED_SNS_REG:
 			return B_LED_SNS_REG_HIGH;
@@ -199,6 +207,8 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_5VREF_ON:
 			return B_5VREF_ON_HIGH;
 			break;
+		case S_RAD_TEMP:
+			return B_RAD_TEMP_HIGH;
 		default:
 			return 0;
 			break;
@@ -211,7 +221,10 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_IR_AMB:
 			return A_IR_AMB_M;
 			break;
-		case S_LED_TEMP:
+		case S_LED_TEMP_REG:
+			return A_LED_TEMP_M;
+			break;
+		case S_LED_TEMP_FLASH:
 			return A_LED_TEMP_M;
 			break;
 		case S_LED_SNS:
@@ -295,7 +308,10 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_IR_AMB:
 			return A_IR_AMB_B;
 			break;
-		case S_LED_TEMP:
+		case S_LED_TEMP_REG:
+			return A_LED_TEMP_B;
+			break;
+		case S_LED_TEMP_FLASH:
 			return A_LED_TEMP_B;
 			break;
 		case S_LED_SNS:

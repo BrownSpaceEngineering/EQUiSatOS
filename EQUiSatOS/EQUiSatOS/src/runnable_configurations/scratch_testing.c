@@ -221,7 +221,7 @@ void flashBurstTest(void) {
 	
 	
 	//print("\n# LED Temps #\n");
-	_read_led_temps_batch_unsafe(four_buf);
+	_read_led_temps_batch_unsafe(four_buf, false);
 	//print("%d %d %d %d\n", four_buf[0], four_buf[1], four_buf[2], four_buf[3]);
 	
 	//print("\n# LiFePO4 Temps #\n");

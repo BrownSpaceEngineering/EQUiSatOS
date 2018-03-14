@@ -39,6 +39,7 @@ void read_radio_temp_mode(void) {
 	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
 	if (check_checksum(radio_receive_buffer+1, 3, radio_receive_buffer[4])) {
 		radio_temp_cached = (radio_receive_buffer[2] << 8) | radio_receive_buffer[3];
+		log_if_out_of_bounds(radio_temp_cached, S_RAD_TEMP, ELOC_RADIO_TEMP, true);
 	} else {
 		//TODO: Wait longer?
 		// log error

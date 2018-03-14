@@ -65,7 +65,7 @@ void print_lion_temps_batch(lion_temps_batch batch) {
 void print_led_temps_batch(led_temps_batch batch) {
 	print("led temps\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP));
+		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP_REG));
 	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {

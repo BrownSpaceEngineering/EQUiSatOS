@@ -260,6 +260,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			usart_send_buf(buf, size);
 		#endif
 		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+			delay_ms(100); // TODO
 			setTXEnable(false);
 		#endif
 	}
