@@ -27,7 +27,13 @@
 li_discharging_t get_li_discharging(void)
 {
 	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
+	if (!read_bat_charge_dig_sigs_batch_with_retry(&batch))
+	{
+		if (charging_data.lion_discharging == LI1 || charging_data.lion_discharging == LI2)
+			return charging_data.lion_discharging == LI1 ? LI1_DISG : LI2_DISG;
+
+		return BOTH_DISG;
+	}
 
 	bool li1_st_active = st_pin_active(LI1, batch);
 	bool li2_st_active = st_pin_active(LI2, batch);
@@ -185,11 +191,26 @@ bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 	return (batch>>st_position)&0x01;
 }
 
-uint16_t get_panel_ref_val()
+uint16_t get_panel_ref_val_with_retry()
 {
 	uint8_t four_buf[4];
-	read_ad7991_batbrd(four_buf, four_buf+2);
+	bool success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+		success = read_ad7991_batbrd(four_buf, four_buf+2);;
+
+	if (!success)
+		return -1;
+
 	return ((uint16_t)four_buf[2])<<8;
+}
+
+bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
+{
+	bool success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+		success = read_bat_charge_dig_sigs_batch(batch);
+
+	return success;
 }
 
 bool is_lion(int8_t bat)
@@ -321,7 +342,10 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
 	print("checking after discharge:\n");
 	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
+
+	// if the mutex times out, we'll just return
+	if (!read_bat_charge_dig_sigs_batch_with_retry(&batch))
+		return;
 
 	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
 	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
@@ -372,10 +396,15 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	{
 		print("checking is bat %d is charging:\n");
 		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
-		print("\tpanel ref: %d\n", get_panel_ref_val());
+		print("\tpanel ref: %d\n", get_panel_ref_val_with_retry());
+
+		// we can't make any claims if we don't know anything about PANEL_REF
+		int panel_ref_val = get_panel_ref_val_with_retry();
+		if (panel_ref_val == -1)
+			return;
 
 		if (!charge_running &&
-			get_panel_ref_val() > PANEL_REF_SUN_MV &&
+			panel_ref_val > PANEL_REF_SUN_MV &&
 			charging_data.bat_voltages[bat] < MIGHT_BE_FULL)
 		{
 			print("\tnot charging for bat %d -- decommissioning\n", bat);
@@ -397,7 +426,10 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 {
 	bat_charge_dig_sigs_batch batch;
-	read_bat_charge_dig_sigs_batch(&batch);
+
+	// if the mutex times out we'll just return
+	if (!read_bat_charge_dig_sigs_batch_with_retry(&batch))
+		return;
 
 	// NOTE: on the first time through, we want to check each of the batteries
 	bool first_time_through = (old_bat_charging == -1);
@@ -521,16 +553,33 @@ void battery_logic()
 	///
 
 	#ifndef BAT_TESTING
-	read_lion_volts_precise(
-		(uint16_t *) &(charging_data.bat_voltages[LI1]),
-		(uint16_t *) &(charging_data.bat_voltages[LI2]));
+
+	bool li_success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
+		li_success = read_lion_volts_precise(
+			(uint16_t *) &(charging_data.bat_voltages[LI1]),
+			(uint16_t *) &(charging_data.bat_voltages[LI2]));
+
+	if (!li_success)
+	{
+		// TODO: what to do here?
+		log_error(ELOC_BAT_CHARGING, ECODE_BAT_LI_TIMEOUT, true);
+	}
 
 	// individual batteries within the life po banks
 	uint16_t lf1_mv;
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	bool lf_success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !lf_success; i++)
+		lf_success = read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+
+	if (!lf_success)
+	{
+		// TODO: what to do here?
+		log_error(ELOC_BAT_CHARGING, ECODE_BAT_LF_TIMEOUT, true);
+	}
 
 	// considering the voltage of the life po banks to be the sum of the cells for
 	// our purposes
@@ -639,16 +688,21 @@ void battery_logic()
 	{
 		print("currently charging li %d, will check to see if it's full\n");
 
+		// we can't call the battery full from CHGN if we don't know CHGN
 		bat_charge_dig_sigs_batch batch;
-		read_bat_charge_dig_sigs_batch(&batch);
-
+		bool dig_sigs_read_success = read_bat_charge_dig_sigs_batch_with_retry(&batch);
 		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
-		print("\tpanel ref: %d\n", get_panel_ref_val());
+
+		// we can't call the battery full from CHGN if we don't know PANEL_REF
+		int panel_ref_val = get_panel_ref_val_with_retry();
+		print("\tpanel ref: %d\n", panel_ref_val);
 
 		// TODO: do we want this to be based on SNS
-		curr_charging_filled_up = (!chg_pin_active(charging_data.bat_charging, batch) &&
+		curr_charging_filled_up =
+									(dig_sigs_read_success && panel_ref_val != -1 &&
+									!chg_pin_active(charging_data.bat_charging, batch) &&
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
-								  (get_panel_ref_val() >= PANEL_REF_SUN_MV)) ||
+								  panel_ref_val >= PANEL_REF_SUN_MV) ||
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
 
 		print("\tdecided: %d\n", curr_charging_filled_up);

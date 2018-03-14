@@ -33,6 +33,8 @@
 #define LF_FULL_SANITY_MV               6000
 #define LF_FLASH_AVG_MV            		3250
 
+#define RETRIES_AFTER_MUTEX_TIMEOUT     3
+
 // thresholds for error checking and the strikes system
 #define MIGHT_BE_FULL                   4000
 #define MAX_TIME_WITHOUT_FULL_MS        6000
@@ -154,6 +156,7 @@ typedef struct charging_data
 // helper functions
 charging_data_t charging_data;
 
+bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch);
 li_discharging_t get_li_discharging(void);
 uint8_t get_error_loc(int8_t bat);
 uint32_t get_current_timestamp_wrapped(void);

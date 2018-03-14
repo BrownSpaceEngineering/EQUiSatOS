@@ -210,7 +210,10 @@ enum error_codes {
 	ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY =	68,
 	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 69,
 	ECODE_SOFTWARE_RESET =				70,
-	ECODE_SAT_RESET =					71
+	ECODE_SAT_RESET =					71,
+
+	ECODE_BAT_LI_TIMEOUT =        72,
+	ECODE_BAT_LF_TIMEOUT =        73
 };
 
 /************************************************************************/
