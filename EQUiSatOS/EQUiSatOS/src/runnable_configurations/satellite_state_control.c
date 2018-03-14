@@ -294,9 +294,13 @@ void configure_state_from_reboot(void) {
 	populate_error_stacks(&error_equistack);
 	
 	// if the satellite restarted because of the watchdog, log that as an error so we know
-	// TODO: Jacob add two errors instead of generalizing
-	if (did_watchdog_kick()) {
+	enum system_reset_cause cause = system_get_reset_cause();
+	if (cause == SYSTEM_RESET_CAUSE_WDT) {
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
+	} else if (cause == SYSTEM_RESET_CAUSE_SOFTWARE) {
+		log_error(ELOC_WATCHDOG, ECODE_SOFTWARE_RESET, true);
+	} else if (cause == SYSTEM_RESET_CAUSE_EXTERNAL_RESET) {
+		log_error(ELOC_WATCHDOG, ECODE_SAT_RESET, true);
 	}
 
 	// if we had to rewrite program memory due to corruption, log a low-pri error

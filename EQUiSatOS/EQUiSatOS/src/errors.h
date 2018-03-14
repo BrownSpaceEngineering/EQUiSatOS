@@ -208,7 +208,9 @@ enum error_codes {
 	ECODE_PWM_CUR_LOW_ON_DEPLOY =		66,
 	ECODE_PWM_CUR_LOW_ON_MAX_CYCLE =	67,
 	ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY =	68,
-	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 69
+	ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE = 69,
+	ECODE_SOFTWARE_RESET =				70,
+	ECODE_SAT_RESET =					71
 };
 
 /************************************************************************/

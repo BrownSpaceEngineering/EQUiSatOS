@@ -13,7 +13,6 @@
 
 void configure_watchdog(void);
 void pet_watchdog(void);
-bool did_watchdog_kick(void);
 
 #define WATCHDOG_CLOCK GCLK_GENERATOR_2
 
