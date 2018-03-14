@@ -69,9 +69,9 @@ uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
 static void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool priority) {
 	uint16_t low = get_low_bound_from_signal(sig);
 	uint16_t high = get_high_bound_from_signal(sig);
-	if (reading <= low) {
+	if (reading < low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
-	} else if (reading >= high) {
+	} else if (reading > high) {
 		log_error(eloc, ECODE_READING_HIGH, priority);
 	}
 }
@@ -100,8 +100,12 @@ bool _set_5v_enable_unsafe(bool on) {
 		set_output(on, P_5V_EN);
 		get_hw_states()->rail_5v_enabled = on;
 		hardware_state_mutex_give();
-		// allow time to power up before someone uses it
-		if (on) vTaskDelay(EN_5V_POWER_UP_DELAY_MS / portTICK_PERIOD_MS);
+		// allow time to power up/down before someone uses it
+		if (on) {
+			vTaskDelay(EN_5V_POWER_ON_DELAY_MS / portTICK_PERIOD_MS);
+		} else {
+			vTaskDelay(EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
+		}
 		return true;
 	} else {
 		log_error(ELOC_5V_REF, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
@@ -174,7 +178,7 @@ void disable_ir_pow_if_should_be_off(bool expected_on) {
 
 static void verify_regulators_unsafe(void) {
 	struct hw_states* states;
-	ad7991_ctrlbrd_batch batch;
+	ad7991_ctrlbrd_batch batch = {0,0,0,0};
 
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
@@ -805,7 +809,7 @@ void read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 			sc = TCA9535_init(batch);
 			// zero out the places we're going to overwrite
 			// see order in Message Format spreadsheet
-			*batch &= 0xF3F0;
+			*batch &= 0b1111001111110000;
 			// fill in the new values we want
 			*batch |= get_input(P_L1_RUN_CHG);
 			*batch |= (get_input(P_L2_RUN_CHG)<<1);

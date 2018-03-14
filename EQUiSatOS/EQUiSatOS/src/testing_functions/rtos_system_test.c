@@ -22,21 +22,21 @@ static uint16_t untruncate(uint8_t val, sig_id_t sig) {
 
 void print_accel_batch(accelerometer_batch batch) {
 	print("accel\n");
-	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_ACCEL));
-	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_ACCEL));
-	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_ACCEL));
+	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_ACCEL));
+	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_ACCEL));
+	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_ACCEL));
 }
 void print_gyro_batch(gyro_batch batch) {
 	print("gyro\n");
-	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_GYRO));
-	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_GYRO));
-	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_GYRO));
+	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_GYRO));
+	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_GYRO));
+	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_GYRO));
 }
 void print_magnetometer_batch(magnetometer_batch batch) {
 	print("mag\n");
-	print("\tx: %d\t%d mV\n", batch[0], untruncate(batch[0], S_MAG));
-	print("\ty: %d\t%d mV\n", batch[1], untruncate(batch[1], S_MAG));
-	print("\tz: %d\t%d mV\n", batch[2], untruncate(batch[2], S_MAG));
+	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_MAG));
+	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_MAG));
+	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_MAG));
 }
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	print("ir ambs\n");
@@ -506,6 +506,8 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
 	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
 	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	case 70: return "ECODE_SOFTWARE_RESET";
+	case 71: return "ECODE_SAT_RESET";
 	default: return "[error code not added to sys test]";
 	}
 }
@@ -579,7 +581,7 @@ void print_cur_data_buf(uint8_t* cur_data_buf) {
 	print_lion_current_batch(		&(cur_data_buf[4]));
 	print_lion_temps_batch(			&(cur_data_buf[6]));
 	print_panelref_lref_batch(		&(cur_data_buf[8]));
-	print_bat_charge_dig_sigs_batch(cur_data_buf[10]);
+	print_bat_charge_dig_sigs_batch(cur_data_buf[11]<<8 | cur_data_buf[10]);
 	print_lifepo_volts_batch(		&(cur_data_buf[12]));
 }
 

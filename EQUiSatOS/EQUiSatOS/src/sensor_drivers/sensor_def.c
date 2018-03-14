@@ -188,7 +188,7 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 			return B_3V6_SNS_OFF_HIGH;
 			break;
 		case S_3V6_SNS_ON:
-			return B_3V6_SNS_OFF_HIGH;
+			return B_3V6_SNS_ON_HIGH;
 			break;
 		case S_3V6_SNS_TRANSMIT:
 			return B_3V6_SNS_TRANSMIT_HIGH;

@@ -15,6 +15,7 @@ void run_tests(void) {
 	//assert_transmission_constants();
 	//pointer_typecast_test();
 	//longest_same_seq_len_test();
+	//radioTest();
 
 	//system_test();
 }

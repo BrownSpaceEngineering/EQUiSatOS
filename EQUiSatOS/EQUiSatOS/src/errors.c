@@ -9,7 +9,7 @@
 
 void log_error_stack_error(uint8_t ecode);
 void add_error_to_equistack(equistack* stack, sat_error_t* error);
-void hang_on_bad_error(sat_error_t* full_error);
+void check_for_bad_error(sat_error_t* full_error);
 
 void init_errors(void) {
 	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
@@ -149,9 +149,7 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 		print_sat_error(&full_error, 0);
 	#endif
 	
-	#ifdef USE_STRICT_ASSERTIONS
-		hang_on_bad_error(&full_error);
-	#endif
+	check_for_bad_error(&full_error);
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
@@ -167,9 +165,7 @@ void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
 	// don't want to spend to much time on it (or write more ISR alternative functions :P)
 	equistack_Push_from_isr(&error_equistack, &full_error);
 	
-	#ifdef USE_STRICT_ASSERTIONS
-		hang_on_bad_error(&full_error);
-	#endif
+	check_for_bad_error(&full_error);
 }
 
 /* adds the given error to the given error equistack, in such a way 
@@ -252,10 +248,17 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 
 // hangs on the given error if it's a "bad/rare" one as defined in this function
 // ONLY called if USE_STRICT_ASSERTIONS enabled
-void hang_on_bad_error(sat_error_t* full_error) {
-	// NOT a mutex timeout
-	uint8_t actual_code = full_error->ecode & 0b01111111;
-	configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
-	configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
-	configASSERT(actual_code != ECODE_CORRUPTED);
+void check_for_bad_error(sat_error_t* full_error) {
+	int actual_code = full_error->ecode & 0b01111111;
+	#ifdef USE_STRICT_ASSERTIONS
+		configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
+		configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
+		configASSERT(actual_code != ECODE_CORRUPTED);
+	#endif
+	if (actual_code == ECODE_HW_STATE_MUTEX_TIMEOUT) {
+		int a = 2;
+	}
+	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
+		bool a = actual_code == ECODE_READING_HIGH;
+	}
 };

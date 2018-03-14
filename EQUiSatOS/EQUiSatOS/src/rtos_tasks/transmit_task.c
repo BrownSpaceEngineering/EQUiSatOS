@@ -11,7 +11,7 @@
 /* RADIO CONTROL FUNCTIONS                                              */
 /************************************************************************/
 // temporary version of radio temp; set periodically (right before radio transmit)
-uint16_t radio_temp_cached;
+uint16_t radio_temp_cached = 0;
 
 uint16_t get_radio_temp_cached(void) {
 	return radio_temp_cached;

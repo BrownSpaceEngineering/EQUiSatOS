@@ -214,13 +214,13 @@ bool warm_reset(void){
 /*Controls TX buffer between proc TX and radio.*/
 void setTXEnable(bool enable) {
 	//Invert because active low to open
-	set_output(~enable, P_TX_EN);
+	set_output(!enable, P_TX_EN);
 }
 
 /*Controls TX buffer between proc TX and radio.*/
 void setRXEnable(bool enable) {
 	//Invert because active low to open
-	set_output(~enable, P_RX_EN);
+	set_output(!enable, P_RX_EN);
 }
 
 /************************************************************************/
@@ -248,12 +248,21 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	
 	// suspend the scheduler to make sure the whole buf is sent atomically
 	// (so the radio gets the full buf at once and doesn't cut out in the middle)
+	
 	pet_watchdog(); // in case this takes a bit and we're close to reset
 	vTaskSuspendAll();
-	#ifndef DONT_PRINT_RAW_TRANSMISSIONS
-		get_hw_states()->radio_state = RADIO_TRANSMITTING;
-		usart_send_buf(buf, size);		
-	#endif
+	{
+		#if defined(TRANSMIT_ACTIVE)
+			setTXEnable(true);
+		#endif
+		#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
+			get_hw_states()->radio_state = RADIO_TRANSMITTING;
+			usart_send_buf(buf, size);
+		#endif
+		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+			setTXEnable(false);
+		#endif
+	}
 	xTaskResumeAll();
 	if (got_mutex) hardware_state_mutex_give();
 	verify_regulators();
@@ -279,29 +288,24 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
-	#ifdef RADIO_ACTIVE
-		setRadioPower(enable);
-		#ifdef PRINT_DEBUG == 0
-			setTXEnable(enable);
-			setRXEnable(enable);
-		#endif
-
-		// if enabling, delay and check that the radio was enabled
-		if (confirm && enable) {
-			vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER);
-			verify_regulators(); // will log error if regulator not valid
-		}
+	setRadioPower(enable);
+	#if PRINT_DEBUG == 0
+		setTXEnable(enable);
+		setRXEnable(enable);
 	#endif
+
+	// if enabling, delay and check that the radio was enabled
+	if (confirm && enable) {
+		vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER);
+		verify_regulators(); // will log error if regulator not valid
+	}
 }
 
 void setRadioPower(bool on) {
 	hardware_state_mutex_take();
-	#ifndef RADIO_ACTIVE
-		on = false;
-	#endif
 	// enable / disable 3V6 regulator and radio power at the same time
 	set_output(on, P_RAD_PWR_RUN);
 	set_output(on, P_RAD_SHDN);
-	get_hw_states()->radio_state = RADIO_IDLE;
+	get_hw_states()->radio_state = on ? RADIO_IDLE : RADIO_OFF;
 	hardware_state_mutex_give();
 }

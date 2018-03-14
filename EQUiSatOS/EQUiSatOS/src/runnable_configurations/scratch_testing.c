@@ -144,7 +144,7 @@ void radioTest(void) {
 		
 	//char toSend[] = {0x01, 0x00, 0x08, 0x00, 0x03, 0x30, 0x31, 0x32, 0x61};				
 	while (true) {		
-		usart_send_string((uint8_t *)"EQUiSat\n");
+		usart_send_buf((uint8_t *)"EQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSatEQUiSat\n", 255);
 		delay_ms(1500);		
 	}
 	/*while (true) {

@@ -19,7 +19,8 @@
 /************************************************************************/
 /* CRITICAL HARDWARE TIMINGS                                            */
 /************************************************************************/
-#define EN_5V_POWER_UP_DELAY_MS			10  // note we hold a mutex for this time
+#define EN_5V_POWER_ON_DELAY_MS			10
+#define EN_5V_POWER_OFF_DELAY_MS		200  // note we hold a mutex for this time
 #define IR_WAKE_DELAY_MS				300
 
 /* PDIODE BOUNDS */

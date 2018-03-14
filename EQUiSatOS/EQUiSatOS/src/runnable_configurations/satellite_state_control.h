@@ -58,8 +58,8 @@ typedef struct task_states {
 	   2. Measuring battery currents									*/
 /************************************************************************/ 
 typedef enum {
-	RADIO_OFF,
-	RADIO_IDLE,
+	RADIO_OFF = 0,
+	RADIO_IDLE = 1,
 	RADIO_TRANSMITTING,
 } radio_state_t;
 

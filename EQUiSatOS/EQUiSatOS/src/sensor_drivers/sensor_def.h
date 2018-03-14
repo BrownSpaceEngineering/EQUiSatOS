@@ -97,22 +97,34 @@
 #define B_GYRO_HIGH						~0
 #define B_IMU_TEMP_LOW					0
 #define B_IMU_TEMP_HIGH					~0
-#define B_3V3_REF_LOW					3000
-#define B_3V3_REF_HIGH					3600
+#define B_3V3_REF_LOW					1500 // 3000 mV
+#define B_3V3_REF_HIGH					1800 // 3600 mV
 #define B_3V6_REF_OFF_LOW				0
-#define B_3V6_REF_OFF_HIGH				400
-#define B_3V6_REF_ON_LOW				3400
-#define B_3V6_REF_ON_HIGH				3700
+#ifdef FLIGHT
+	#define B_3V6_REF_OFF_HIGH				200
+#else
+	#define B_3V6_REF_OFF_HIGH				400
+#endif
+#define B_3V6_REF_ON_LOW				1700 // 3400 mV
+#define B_3V6_REF_ON_HIGH				1850 // 3700 mV
 #define B_3V6_SNS_OFF_LOW				0
-#define B_3V6_SNS_OFF_HIGH				20
+#ifdef FLIGHT
+	#define B_3V6_SNS_OFF_HIGH				20
+#else
+	#define B_3V6_SNS_OFF_HIGH				90
+#endif
 #define B_3V6_SNS_ON_LOW				50
-#define B_3V6_SNS_ON_HIGH				200
+#ifdef FLIGHT
+	#define B_3V6_SNS_ON_HIGH				200
+#else
+	#define B_3V6_SNS_ON_HIGH				400
+#endif
 #define B_3V6_SNS_TRANSMIT_LOW			600
 #define B_3V6_SNS_TRANSMIT_HIGH			2000
 #define B_5VREF_OFF_LOW					0
-#define B_5VREF_OFF_HIGH				400
-#define B_5VREF_ON_LOW					4800
-#define B_5VREF_ON_HIGH					5100
+#define B_5VREF_OFF_HIGH				120  
+#define B_5VREF_ON_LOW					1400 // 4733 mV
+#define B_5VREF_ON_HIGH					1515 // 5122 mV
 
 typedef enum {
 	S_IR_OBJ,
