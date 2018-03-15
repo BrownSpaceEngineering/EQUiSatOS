@@ -18,13 +18,13 @@ uint16_t get_radio_temp_cached(void) {
 }
 
 // returns we've received a kill command and that command is currently active.
-bool is_radio_killed(void) {
+static bool is_radio_killed(void) {
 	// note: the cache is the most rad-tolerant area of the memory,
 	// so we always grab the value from there
 	return cache_get_radio_revive_timestamp() >= get_current_timestamp();
 }
 
-void read_radio_temp_mode(void) {
+static void read_radio_temp_mode(void) {
 	// power on radio initially
 	setRadioState(true, true);
 	
@@ -81,7 +81,7 @@ void radio_control_init(void) {
 }
 
 //Called on a kill command; sets the duration for which the radio is killed   
-void kill_radio_for_time(rx_cmd_type_t cmd) {	
+static void kill_radio_for_time(rx_cmd_type_t cmd) {	
 	uint32_t revive_time = get_current_timestamp();
 	switch(cmd) {
 		case CMD_KILL_3DAYS:
@@ -100,7 +100,7 @@ void kill_radio_for_time(rx_cmd_type_t cmd) {
 }
 
 // listens for RX and handles uplink commands for up to RX_READY_PERIOD_MS
-void handle_uplinks(void) {
+static void handle_uplinks(void) {
 	// get ready for buffer input and enable RX mode only
 	clear_USART_rx_buffer();
 	setTXEnable(false);
@@ -190,7 +190,7 @@ uint8_t* _get_cur_data_buf(void) {
 	according to our priority list, relative to the starting_msg_type.
 	Returns the first transmittable such message type, or -1 if none are.
 */
-msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_msg_type) {
+static msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_msg_type) {
 	configASSERT(starting_msg_type != LOW_POWER_DATA);
 	msg_data_type_t new_msg_type = starting_msg_type;
 	do {
@@ -218,7 +218,7 @@ msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_msg_type)
  * NOTE: this function could lock all the equistack mutexes to be certain of sizes,
  * but it's not necessary (because they only grow)
  */
-msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_type) {
+static msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_type) {
 	// special case for LOW_POWER mode;
 	// only transmit LOW_POWER packets unless the equistack is empty
 	// (it doesn't matter whether they're transmitted)
@@ -247,7 +247,7 @@ msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_typ
  * Determines what message types (in four slots) to transmit, based on what data we have.
  * Returns whether anything should be transmitted.
  */
-bool determine_data_to_transmit(void) {
+static bool determine_data_to_transmit(void) {
 	// start out with the slot defaults and change them (based on priorities) if none are available
 	slot_1_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_1);
 	slot_2_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_2);
@@ -273,7 +273,7 @@ bool determine_data_to_transmit(void) {
 void debug_print_msg_types(void);
 
 // attempts to send transmission
-void attempt_transmission(void) {
+static void attempt_transmission(void) {
 
 	if (!determine_data_to_transmit()) {
 		// don't transmit right now

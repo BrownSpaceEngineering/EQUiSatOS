@@ -6,8 +6,6 @@
  */
 
 #include "satellite_state_control.h"
-#include "../testing_functions/os_system_tests.h"
-#include "antenna_pwm.h"
 
 /************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
@@ -332,8 +330,6 @@ void init_task_state(task_type_t task_id) {
 /************************************************************************/
 /* STATE HELPERS		                                                */
 /************************************************************************/
-void set_all_task_states(const task_states states, sat_state_t state, sat_state_t prev_sat_state);
-
 /* Getter for current global satellite state */
 sat_state_t get_sat_state(void) {
 	return current_sat_state;
@@ -345,7 +341,7 @@ task_states get_sat_task_states(void) {
 }
 
 // returns whether the given task state is consistent with its current RTOS state (given by its task handle state)
-bool task_state_consistent(bool expected_state, task_type_t task_id) {
+static bool task_state_consistent(bool expected_state, task_type_t task_id) {
 	configASSERT(task_handles[task_id] != NULL && *task_handles[task_id] != NULL);
 	eTaskState task_state_rtos = eTaskGetState(*task_handles[task_id]);
 	// a task is "running" (expected_state should be true) if it's NOT suspended
@@ -456,6 +452,7 @@ bool set_sat_state_helper(sat_state_t state)
 			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			configASSERT(false); // bad state ID
 	}
+	return false;
 }
 
 bool set_sat_state(sat_state_t state) {
@@ -475,7 +472,7 @@ bool set_sat_state(sat_state_t state) {
    which operates semi-independently of satellite state 
    (it must run in some, must not run in some, and doesn't 
     matter in others) */
-void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t next_sat_state, bool antenna_deployed) {
+static void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t next_sat_state, bool antenna_deployed) {
 	bool antenna_task_state = false;
 	switch (prev_sat_state) {
 		// coming from initial, always turn on (we only ever go to antenna deploy)
@@ -535,13 +532,10 @@ void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t nex
 // - task_suspend and task_resume are called while the scheduler
 //   is suspended and the watchdog mutex is locked so don't need to be safe
 /************************************************************************/
-void task_suspend(task_type_t task_id);
-void task_resume(task_type_t task_id);
-
 // Takes all mutexes in RTOS, in particular those that a task could hold.
 // This is done because these mutexes would be inaccessible on that task's suspension.
 // Returns whether all were obtained. If they weren't, NO mutexes will be held.
-bool take_all_mutexes(void) {
+static bool take_all_mutexes(void) {
 	// starting from the top (first-taken mutex), try to take ALL the mutexes
 	int8_t i = 0;
 	while (i < NUM_MUTEXES) {
@@ -574,7 +568,7 @@ bool take_all_mutexes(void) {
 }
 
 // Gives all mutexes that were taken above
-void give_all_mutexes(void) {
+static void give_all_mutexes(void) {
 	for (int8_t i = 0; i < NUM_MUTEXES; i++) {
 		configASSERT(all_mutexes_ordered[i] != NULL);
 		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog

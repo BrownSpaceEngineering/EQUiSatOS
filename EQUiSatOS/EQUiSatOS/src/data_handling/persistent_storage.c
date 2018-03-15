@@ -85,7 +85,7 @@ size_t longest_same_seq_len(uint8_t* data, size_t len) {
 // wrapper for reading a field from MRAM
 // handles RAIDing, error checking and correction, and field duplication
 // returns whether accurate data should be expected in data (whether error checks worked out)
-bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t address) {
+static bool storage_read_field_unsafe(uint8_t *mram1_data1, uint num_bytes, uint32_t address) {
 	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
@@ -220,7 +220,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 
 // wrapper for writing a field to MRAM
 // handles RAIDing, error checking, and field duplication
-bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
+static bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	bool success1 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
 			true); // priority
@@ -276,7 +276,7 @@ void read_state_from_storage(void) {
 }
 
 // writes error stack data to mram, and confirms it was written correctly if told to
-bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
+static bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	// (move these (big) buffers off stack)
 	static sat_error_t error_buf[ERROR_STACK_MAX]; 
 	static sat_error_t temp_error_buf[ERROR_STACK_MAX];
@@ -343,7 +343,7 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 // NOTE: must be called with the SPI mutex to protect the changes
 // in the cached state
 // Returns whether we should reboot (tick count overflowed)
-bool update_cache_fields(void) {
+static bool update_cache_fields(void) {
 	// make sure all the cached states are in sync
 	cached_state_correct_errors();
 	
@@ -381,7 +381,7 @@ bool update_cache_fields(void) {
 // helper to perform actual field writes of cache (used in two places)
 // Returns whether error writes were correctly confirmed,
 // if confirm_errors was true (otherwise true)
-bool write_cache_fields_to_storage(bool confirm_errors) {
+static bool write_cache_fields_to_storage(bool confirm_errors) {
 	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
 	storage_write_field_unsafe(&cached_state.reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
 	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
@@ -730,7 +730,7 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	return result;
 }
 bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2) {
-	return data1->li_caused_reboot == data1->li_caused_reboot;
+	return data1->li_caused_reboot == data2->li_caused_reboot;
 }
 
 /************************************************************************/

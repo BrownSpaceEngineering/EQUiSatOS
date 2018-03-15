@@ -47,18 +47,18 @@ void equisim_set_action_by_pin(bool setting, int pin) {
 	}
 }
 
-uint32_t equisim_get_current_timestamp_ms() {
+static uint32_t equisim_get_current_timestamp_ms(void) {
 	return EQUISIM_TIMESTAMP_SCALING * get_current_timestamp_ms(); 
 }
 
-void update_bat_state_from_actions(void) {
+static void update_bat_state_from_actions(void) {
 	normal_charge_discharge(equisim_get_current_timestamp_ms(), get_sat_state());
 }
 
 /************************************************************************/
 /* Initialization                                                       */
 /************************************************************************/
-void init_charging_actions(void) {
+static void init_charging_actions(void) {
 	cur_actions.l1_run_chg	= true;
 	cur_actions.l2_run_chg	= true;
 	cur_actions.l1_disg		= true;
@@ -68,7 +68,7 @@ void init_charging_actions(void) {
 	cur_actions.last_setting_time_ms = equisim_get_current_timestamp_ms();
 }
 
-void init_charging_state(void) {
+static void init_charging_state(void) {
 	st_normal(); // ST pins
 	chgn_normal(); // CHGN pins
 	fault_to_default(); // FAULTN pins
@@ -161,7 +161,7 @@ void fault_to_default()
 
 void panel_to_default()
 {
-	cur_state.panel_ref_mv = 9000;
+	cur_state.panel_ref_mv = 9000; // TODO: 9000 is way bigger than what a uint8 can hold
 	cur_state.spf_st = 1;
 }
 
@@ -190,7 +190,7 @@ void chgn_normal()
 	cur_state.lf_b2_chgn_inv = !cur_actions.lf_b2_runchg;
 }
 
-void voltages_normal(uint64_t timestamp_ms, sat_state_t sat_state)
+static void voltages_normal(uint64_t timestamp_ms, sat_state_t sat_state)
 {
 	uint64_t time_since_last_update_ms = timestamp_ms - cur_actions.last_setting_time_ms;
 	cur_actions.last_setting_time_ms = timestamp_ms;

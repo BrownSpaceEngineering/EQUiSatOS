@@ -191,7 +191,7 @@ bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 	return (batch>>st_position)&0x01;
 }
 
-uint16_t get_panel_ref_val_with_retry()
+static uint16_t get_panel_ref_val_with_retry(void)
 {
 	uint16_t four_buf[4];
 	bool success = false;
@@ -295,7 +295,7 @@ void init_charging_data()
 	}
 
 	// initializing all values relevant to batteries and decommissioning
-	for (int8_t bat = 0; bat < 4; bat++)
+	for (int8_t bat = 0; bat < 4; bat++) // TODO: can't all of these for loops be combined into one?
 	{
 		charging_data.decommissioned[bat] = 0;
 		charging_data.decommissioned_timestamp[bat] = 0;

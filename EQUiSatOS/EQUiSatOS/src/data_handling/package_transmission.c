@@ -200,7 +200,7 @@ void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uin
 	write_bytes_and_shift(buffer, buf_index,	&num_errors,		sizeof(num_errors)); // 1 byte number of errors
 }
 
-void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
+static void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
 	// we have to fill up the error section, so either write the error or NULL bytes
 	// (it should be caught above but be extra-safe)
 	if (err != NULL) {

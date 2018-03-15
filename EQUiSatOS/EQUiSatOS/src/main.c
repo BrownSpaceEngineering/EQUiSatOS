@@ -34,7 +34,7 @@ void run_rtos_tests(void) {
 	vTaskDelay(2000); // don't be a CPU hog
 }
 
-void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
+static void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {
 	setup_pin(true, P_L1_RUN_CHG);
 	set_output(lion1, P_L1_RUN_CHG);
 

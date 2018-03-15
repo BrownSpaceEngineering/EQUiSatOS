@@ -14,6 +14,8 @@
 #include "testing_tasks.h"
 #include "testing_functions/struct_tests.h"
 #include "testing_functions/sat_data_tests.h"
+#include "../testing_functions/os_system_tests.h"
+#include "antenna_pwm.h"
 
 /************************************************************************/
 /* Satellite state constructs                                           */

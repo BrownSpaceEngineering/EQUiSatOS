@@ -10,7 +10,7 @@ uint8_t msg_buffer[MSG_BUFFER_SIZE]; // don't store on stack of testing function
 
 
 // returns the hex string representation of the given nibble
-char get_hex(uint8_t nibble) {
+static char get_hex(uint8_t nibble) {
 	if (nibble < 10) {
 		return '0' + nibble;
 	} else if (nibble <= 16) {
@@ -20,15 +20,15 @@ char get_hex(uint8_t nibble) {
 	}
 }
 
-void print_buf_hex(uint8_t* buf, size_t len) {
-	for (int i = 0; i < len; i++) {
+static void print_buf_hex(uint8_t* buf, size_t len) {
+	for (uint i = 0; i < len; i++) {
 		char lsb_nibble = get_hex(buf[i] & 0xf);
 		char msg_nibble = get_hex(buf[i] >> 4);
 		print("%c%c", msg_nibble, lsb_nibble);
 	}
 }
 
-void fill_random_data(uint8_t* data, int num) {
+static void fill_random_data(uint8_t* data, int num) {
 	for (int i = 0; i < num; i++) {
 		data[i] = rand() % 256;
 	}
@@ -91,7 +91,7 @@ void stress_test_message_packaging(void) {
 	write_packet(msg_buffer, LOW_POWER_DATA, current_timestamp, cur_data_buf);
 }
 
-void print_transmission_info(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
+static void print_transmission_info(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
 	print("timestamp: \t%d\n", current_timestamp);
 	print("sat state: \t%s\n", get_sat_state_str(get_sat_state()));
 	print("reboot #:  \t%d\n", cache_get_reboot_count());
@@ -120,7 +120,7 @@ void print_transmission_info(msg_data_type_t type, uint32_t current_timestamp, u
 }
 
 // print high level information on the given message
-void print_sample_transmission(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
+static void print_sample_transmission(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
 	print("=========Sample Transmission=========\n");
 	print("type: %s\n", get_msg_type_str(type));
 	print("\n----Data Summary----\n");

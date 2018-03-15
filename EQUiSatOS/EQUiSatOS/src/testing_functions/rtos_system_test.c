@@ -45,7 +45,7 @@ void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	}
 }
 
-int16_t ad590_to_temp(uint16_t mV)  {
+static int16_t ad590_to_temp(uint16_t mV)  {
 	float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
 	float tempInC = (current)*1000000-273;// T = 454*V in C
 	return (int16_t) tempInC;
@@ -60,7 +60,7 @@ void print_lion_volts_batch(lion_volts_batch batch) {
 	print("L1_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
 	print("L2_REF: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
-void print_lion_current_batch(lion_current_batch batch) {
+static void print_lion_current_batch(lion_current_batch batch) {
 	print("L1_SNS: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
 	print("L2_SNS: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
@@ -145,7 +145,7 @@ void print_pdiode_batch(pdiode_batch batch) {
 /************************************************************************/
 /* Stack type element-printing methods                                  */
 /************************************************************************/
-void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
+static void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
 	print("%2d: ---------%s---------\n", i, header);
 	print("timestamp: %d \t %s\n", timestamp, transmitted ? "TRANSMITTED" : "not transmitted");
 }
@@ -295,7 +295,7 @@ const char* get_msg_type_str(msg_data_type_t msg_type) {
 	}
 }
 
-uint16_t get_task_stack_size(task_type_t task) {
+static uint16_t get_task_stack_size(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return TASK_WATCHDOG_STACK_SIZE;
 		case STATE_HANDLING_TASK: return TASK_STATE_HANDLING_STACK_SIZE;
@@ -311,7 +311,7 @@ uint16_t get_task_stack_size(task_type_t task) {
 	}
 }
 
-uint32_t get_task_freq(task_type_t task) {
+static uint32_t get_task_freq(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return WATCHDOG_TASK_FREQ;
 		case STATE_HANDLING_TASK: return STATE_HANDLING_TASK_FREQ;
@@ -542,7 +542,7 @@ void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char
 	}
 }
 
-void print_equistacks(void) {
+static void print_equistacks(void) {
 	print("\n==============Equistack Dump==============\n");
 	int max_size = -1;
 	if (only_print_recent_data) {

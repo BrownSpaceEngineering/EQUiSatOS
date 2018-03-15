@@ -6,8 +6,13 @@
  */ 
 
 #include "global.h"
-#include "../rtos_tasks/rtos_tasks_config.h"
-#include "../runnable_configurations/satellite_state_control.h"
+
+#define TASK_EXECUTION_WINDOW_BUFFER_TIME		1000 // how long to add to a perfectly sized window for a task to run in (buffer)
+#define TICKS_IN_EACH_VALID_STATE				11000
+
+// determines how long we spend in each state
+#define LOWEST_TASK_FREQ			20000//60000 //BATTERY_CHARGING_TASK_FREQ
+#define IN_STATE_TIME_MS			(LOWEST_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME)
 
 /**
  * These generally must be run and checked from the idle task hook

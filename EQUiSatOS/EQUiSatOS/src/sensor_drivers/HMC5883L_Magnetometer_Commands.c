@@ -67,7 +67,7 @@ enum status_code HMC5883L_read(uint8_t* read_buffer){
 
 //Converts the raw data from sensor into signed xyz coordinates
 //xyzBuffer must be of length 3 and will be populated with xyz.
-void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
+static void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 	uint16_t x = ((uint16_t)readBuffer[0] << 8) | readBuffer[1];
 	uint16_t z = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
 	uint16_t y = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];
