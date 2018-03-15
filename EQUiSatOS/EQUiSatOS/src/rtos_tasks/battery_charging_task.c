@@ -193,15 +193,15 @@ bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 
 uint16_t get_panel_ref_val_with_retry()
 {
-	uint8_t four_buf[4];
+	uint16_t four_buf[4];
 	bool success = false;
 	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
-		success = read_ad7991_batbrd(four_buf, four_buf+2);;
+		success = read_ad7991_batbrd_precise(four_buf);
 
 	if (!success)
 		return -1;
 
-	return ((uint16_t)four_buf[2])<<8;
+	return ((uint16_t)four_buf[2]);
 }
 
 bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
@@ -394,7 +394,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	bool charge_running = chg_pin_active(bat, batch);
 	if (should_be_charging)
 	{
-		print("checking is bat %d is charging:\n");
+		print("checking is bat %d is charging:\n", bat);
 		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
 		print("\tpanel ref: %d\n", get_panel_ref_val_with_retry());
 
@@ -686,7 +686,7 @@ void battery_logic()
 	bool curr_charging_filled_up = false;
 	if (is_lion(charging_data.bat_charging))
 	{
-		print("currently charging li %d, will check to see if it's full\n");
+		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
 
 		// we can't call the battery full from CHGN if we don't know CHGN
 		bat_charge_dig_sigs_batch batch;
