@@ -22,82 +22,87 @@ static uint16_t untruncate(uint8_t val, sig_id_t sig) {
 
 void print_accel_batch(accelerometer_batch batch) {
 	print("accel\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_ACCEL));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_ACCEL));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_ACCEL));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_ACCEL));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_ACCEL));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_ACCEL));
 }
 void print_gyro_batch(gyro_batch batch) {
 	print("gyro\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_GYRO));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_GYRO));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_GYRO));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_GYRO));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_GYRO));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_GYRO));
 }
 void print_magnetometer_batch(magnetometer_batch batch) {
 	print("mag\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_MAG));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_MAG));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_MAG));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_MAG));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_MAG));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_MAG));
 }
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	print("ir ambs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
+		print("\t%d: %d\t%d C\n", i+1, untruncate(batch[i], S_IR_AMB), (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
 	}
+}
+
+int16_t ad590_to_temp(uint16_t mV)  {
+	float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
+	float tempInC = (current)*1000000-273;// T = 454*V in C
+	return (int16_t) tempInC;
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 	print("ir objs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(batch[i]));
+		print("\t%d: %d\t%d C\n", i+1, batch[i]<<8, (int16_t) dataToTemp(batch[i]));
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {
-	print("lion volts 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
-	print("lion volts 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
+	print("L1_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
+	print("L2_REF: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
 void print_lion_current_batch(lion_current_batch batch) {
-	print("lion SNS 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
-	print("lion SNS 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
+	print("L1_SNS: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
+	print("L2_SNS: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("lion temps 1: %d BAD: %d C\n", batch[0], untruncate(batch[0], S_L_TEMP));
-	print("lion temps 2: %d BAD: %d C\n", batch[1], untruncate(batch[1], S_L_TEMP));
+	print("L1_TEMP: %d %d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_L_TEMP)));
+	print("L2_TEMP: %d %d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_L_TEMP)));
 }
 void print_led_temps_batch(led_temps_batch batch) {
-	print("led temps\n");
+	print("LED Temps\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP_REG));
+		print("\t%d: %d\t%dC\n", i+1, batch[i], ad590_to_temp(untruncate(batch[i], S_LED_TEMP_REG)));
 	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	print("lifepo bank temps\n");
-	print("\t1: %d\tBAD: %d C\n", batch[0], untruncate(batch[0], S_LF_TEMP));
-	print("\t2: %d\tBAD: %d C\n", batch[1], untruncate(batch[1], S_LF_TEMP));
+	print("lifepo bat temps\n");
+	print("\t1: %d\t%d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_LF_TEMP)));
+	print("\t2: %d\t%d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_LF_TEMP)));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	print("lifepo volts\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%d mv\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
+		print("\tLF%dREF: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
 	}
 }
-void print_lifepo_current_batch(lifepo_current_batch batch) {
-	print("lifepo SNS\n");
-	print("\tbank1: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
-	print("\tbank2: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
-	print("lifepo OSNS\n");
-	print("\tbank1: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
-	print("\tbank2: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
+void print_lifepo_current_batch(lifepo_current_batch batch) {	
+	print("\tLFB1SNS: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
+	print("\tLFB2SNS: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
+		
+	print("\tLFB1OSNS: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
+	print("\tLFB2OSNS: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
 }
 void print_led_current_batch(led_current_batch batch) {
 	print("led current\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
+		print("\tLED%dSNS: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
 	}
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_RAD_TEMP));
+	print("radio temp: %d\tBAD?: %d C\n", batch, untruncate(batch, S_RAD_TEMP)/10);
 }
 void print_imu_temp_batch(imu_temp_batch batch) {
 	print("imu temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_IMU_TEMP));
@@ -172,34 +177,37 @@ void print_attitude_data(attitude_data_t* data, int i) {
 }
 
 void print_flash_data(flash_data_t* data, int i_global) {
+	print("---------LED BURST Data---------\n");
 	print_stack_type_header("Flash Data Packet", i_global, data->timestamp, data->transmitted);
-	print("---LED Temp Burst Data---\n");
+	//print("---LED Temp Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_led_temps_batch(data->led_temps_data[i]);
 	}
-	print("---LiFePo Temp Burst Data---\n");
+	//print("---LiFePo Temp Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_temps_batch(data->lifepo_bank_temps_data[i]);
 	}
-	print("---LiFePo Current Burst Data---\n");
+	//print("---LiFePo Current Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_current_batch(data->lifepo_current_data[i]);
 	}
-	print("---LiFePo Volts Burst Data---\n");
+	//print("---LiFePo Volts Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_volts_batch(data->lifepo_volts_data[i]);
 	}
-	print("---Led Current Burst Data---\n");
+	//print("---Led Current Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_led_current_batch(data->led_current_data[i]);
 	}
-	print("---Gyro Burst Data---\n");
+	//print("---Gyro Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_gyro_batch(data->gyro_data[i]);
 	}
+	print("---------END LED BURST Data---------\n");
 }
 
 void print_flash_cmp_data(flash_cmp_data_t* data, int i) {
+	print("---------END LED COMPARISON Data---------\n");
 	print_stack_type_header("Flash Compare Data Packet", i, data->timestamp, data->transmitted);
 	print_led_temps_batch(data->led_temps_avg_data);
 	print_lifepo_temps_batch(data->lifepo_bank_temps_avg_data);
@@ -207,6 +215,7 @@ void print_flash_cmp_data(flash_cmp_data_t* data, int i) {
 	print_lifepo_current_batch(data->lifepo_current_avg_data);
 	print_lifepo_volts_batch(data->lifepo_volts_avg_data);
 	print_magnetometer_batch(data->mag_before_data);
+	print("---------END LED COMPARISON Data---------\n");
 }
 
 void print_low_power_data(low_power_data_t* data, int i) {
