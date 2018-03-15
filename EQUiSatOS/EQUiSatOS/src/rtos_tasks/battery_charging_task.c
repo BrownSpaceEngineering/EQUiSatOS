@@ -508,14 +508,14 @@ void battery_charging_task(void *pvParameters)
 
 	while (true)
 	{
-		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
-
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
 		battery_logic();
+		
+		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 
 	// delete this task if it ever breaks out

@@ -517,6 +517,8 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
 	case 70: return "ECODE_SOFTWARE_RESET";
 	case 71: return "ECODE_SAT_RESET";
+	case 72: return "ECODE_BAT_LI_TIMEOUT";
+	case 73: return "ECODE_BAT_LF_TIMEOUT";
 	default: return "[error code not added to sys test]";
 	}
 }
