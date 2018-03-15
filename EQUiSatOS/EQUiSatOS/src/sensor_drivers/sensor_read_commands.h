@@ -98,7 +98,8 @@ void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 /* utility */
 bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
-void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
+bool read_ad7991_batbrd_precise(uint16_t* results);
+//void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
 bool enable_ir_pow_if_necessary(void); // ONLY used in flash task

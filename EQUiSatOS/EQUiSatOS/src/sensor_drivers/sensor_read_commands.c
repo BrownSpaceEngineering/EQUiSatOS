@@ -204,6 +204,7 @@ static void verify_regulators_unsafe(void) {
 			break;
 		case RADIO_TRANSMITTING:
 			state_3v6_sns = S_3V6_SNS_TRANSMIT;
+			print("\n=======\nRADIO CURRENT: %d mA\n=======\n",batch[1]);
 			break;
 	}
 	log_if_out_of_bounds(batch[1], state_3v6_sns, ELOC_AD7991_CBRD_3V6_SNS, true);
@@ -310,8 +311,8 @@ bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 	}
 }
 
-bool read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
-	uint16_t results[4];
+//results must be length 4
+bool read_ad7991_batbrd_precise(uint16_t* results) {
 	status_code_genare_t sc;
 	sig_id_t sig;
 
@@ -329,54 +330,61 @@ bool read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-			} else if (states->radio_state == RADIO_TRANSMITTING) {
+				} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-			} else if (states->radio_state == RADIO_IDLE) {
+				} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
-			} else {
+				} else {
 				sig = S_L_SNS_IDLE_RAD_OFF;
 			}
 
 			hardware_state_mutex_give();
-		} else {
+			} else {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			memset(batch1, 0, sizeof(lion_current_batch));
-			memset(batch2, 0, sizeof(panelref_lref_batch));
+			memset(results, 0, sizeof(uint16_t)*4);
 			// give outer mutexes
 			disable_ir_pow_if_necessary(got_irpow_mutex);
-			xSemaphoreGive(i2c_mutex); 
+			xSemaphoreGive(i2c_mutex);
 			return false;
 		}
 		disable_ir_pow_if_necessary(got_irpow_mutex);
 		xSemaphoreGive(i2c_mutex);
-	} else {
+		} else {
 		log_error(ELOC_AD7991_BBRD, ECODE_I2C_MUTEX_TIMEOUT, true);
-		memset(batch1, 0, sizeof(lion_current_batch));
-		memset(batch2, 0, sizeof(panelref_lref_batch));
+		memset(results, 0, sizeof(uint16_t)*4);		
 		return false;
 	}
 
 	// results[0] = L2_SNS
-	batch1[1] = truncate_16t(results[0], S_L_SNS);
 	log_if_out_of_bounds(results[0], sig, ELOC_AD7991_BBRD_L2_SNS, true);
 	// results[1] = L1_SNS
-	batch1[0] = truncate_16t(results[1], S_L_SNS);
 	log_if_out_of_bounds(results[1], sig, ELOC_AD7991_BBRD_L1_SNS, true);
-
 	// results[2] = L_REF
-	batch2[1] = truncate_16t(results[2], S_LREF);
 	log_if_out_of_bounds(results[2], S_LREF, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[3] = PANELREF
 	#ifdef EQUISIM_SIMULATE_BATTERIES
-		results[3] = equisim_read_panelref();
-	#endif
-	batch2[0] = truncate_16t(results[3], S_PANELREF);
+	results[3] = equisim_read_panelref();
+	#endif	
 	log_if_out_of_bounds(results[3], S_PANELREF, ELOC_AD7991_BBRD_L2_SNS, true);
 	
 	return true;
 }
 
-void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
+bool read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
+	uint16_t results[4];
+	bool gotMutex = read_ad7991_batbrd_precise(results);
+	// results[0] = L2_SNS
+	batch1[1] = truncate_16t(results[0], S_L_SNS);
+	// results[1] = L1_SNS
+	batch1[0] = truncate_16t(results[1], S_L_SNS);
+	// results[2] = L_REF
+	batch2[1] = truncate_16t(results[2], S_LREF);
+	// results[3] = PANELREF
+	batch2[0] = truncate_16t(results[3], S_PANELREF);
+	return gotMutex;
+}
+
+/*void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 	uint16_t results[4];
 	sig_id_t sig;
 	status_code_genare_t sc;
@@ -432,7 +440,7 @@ void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2) {
 	*val_2 = results[0];
 	log_if_out_of_bounds(*val_2, sig, ELOC_AD7991_BBRD_L2_SNS, true);
 	#endif
-}
+}*/
 
 // TODO: why is ad7991_ctrlbrd required outside here??
 // unsafe version required for verify_regulators_unsafe
