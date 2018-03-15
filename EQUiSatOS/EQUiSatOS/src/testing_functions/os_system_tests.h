@@ -4,6 +4,8 @@
  * Created: 11/19/2017 22:42:01
  *  Author: mcken
  */ 
+#ifndef OS_SYSTEM_TESTS_H
+#define OS_SYSTEM_TESTS_H
 
 #include "global.h"
 
@@ -32,3 +34,5 @@ void test_watchdog_reset_low_power_data_task(void);
 // helpers
 bool check_set_sat_state(sat_state_t old_state, sat_state_t new_state);
 void force_set_state(sat_state_t new_state);
+
+#endif

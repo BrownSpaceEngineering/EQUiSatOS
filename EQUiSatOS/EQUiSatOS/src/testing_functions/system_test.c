@@ -333,7 +333,7 @@ static void HMC5883L_test(bool printFloats){
 }
 
 //GPIO test
-void TCA9535_test(bool printStData, bool printChargeData){
+static void TCA9535_test(bool printStData, bool printChargeData){
 	if (printStData && printChargeData) {
 		print("==============TCA9535 Test==============\n");
 	}
