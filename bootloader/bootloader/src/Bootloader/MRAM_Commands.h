@@ -81,9 +81,9 @@ status_code_genare_t mram_read_status_register(struct spi_module *spi_master_ins
 #define RAD_SAFE_FIELD_INIT(type, field_name, val)	type field_name[3] = {val, val, val}
 #define RAD_SAFE_FIELD_SET(field_name, val)			field_name[0] = val; field_name[1] = val; field_name[2] = val
 // TODO: 
-// #define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; }; \
-// 													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; }; \
-// 													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; }#define RAD_SAFE_FIELD_GET(field_name)				({ /* correct fields by voting, then return first */ \
+/* #define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; }; \
+ 													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; }; \
+ 													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; } */#define RAD_SAFE_FIELD_GET(field_name)				({ /* correct fields by voting, then return first */ \
 														RAD_SAFE_FIELD_CORRECT(field_name); \
 														field_name[0]; \
 													})
