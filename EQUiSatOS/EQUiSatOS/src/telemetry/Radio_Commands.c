@@ -266,6 +266,9 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	}
 	xTaskResumeAll();
 	if (got_mutex) hardware_state_mutex_give();
+	
+	//TODO: current for first transmission in sequence too low. rest are fine :|
+	vTaskDelay(50 / portTICK_PERIOD_MS);
 	verify_regulators();
 
 	// delay during transmission
