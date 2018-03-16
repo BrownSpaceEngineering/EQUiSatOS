@@ -255,10 +255,13 @@ void check_for_bad_error(sat_error_t* full_error) {
 		configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 		configASSERT(actual_code != ECODE_CORRUPTED);
 	#endif
-	if (actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT) {
+	if (actual_code >= ECODE_CRIT_ACTION_MUTEX_TIMEOUT && actual_code <= ECODE_ALL_MUTEX_TIMEOUT) {
 		int a = actual_code;
 	}
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
 		bool a = actual_code == ECODE_READING_HIGH;
+	}
+	if (actual_code == ECODE_BAD_ADDRESS) {
+		bool a = 1;
 	}
 };

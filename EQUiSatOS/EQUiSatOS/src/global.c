@@ -58,6 +58,9 @@ static void pin_init(void) {
 void global_init(void) {
 	// Initialize the SAM system
 	system_init();
+	
+	// start watchdog hardware ASAP
+	configure_watchdog();
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
@@ -82,6 +85,7 @@ void global_init(void) {
 	init_errors();
 	
 	#ifdef USE_REED_SOLOMON
+		pet_watchdog(); // the following takes a while so pet before
 		initialize_ecc(); // for reed-solomon lookup tables, etc.
 	#endif
 	#ifdef EQUISIM_SIMULATE_BATTERIES
@@ -92,7 +96,7 @@ void global_init(void) {
 // initialization that can only be done with RTOS started
 void global_init_post_rtos(void) {
 	// initialize watchdog in RTOS because it's callback requires RTOS
-	watchdog_init();
+	init_watchdog_task();
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);

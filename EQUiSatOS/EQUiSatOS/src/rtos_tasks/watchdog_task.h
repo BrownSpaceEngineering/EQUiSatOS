@@ -27,7 +27,7 @@
 StaticSemaphore_t _watchdog_task_mutex_d;
 SemaphoreHandle_t watchdog_mutex;
 
-void watchdog_init(void);
+void init_watchdog_task(void);
 bool watchdog_as_function(void);
 
 void check_in_task_unsafe(task_type_t task_ind);

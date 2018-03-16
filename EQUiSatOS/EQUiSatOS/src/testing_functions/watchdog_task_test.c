@@ -8,7 +8,7 @@
 #include "watchdog_task_test.h"
 
 void watch_test(void) {
-	watchdog_init();
+	init_watchdog_task();
 	
 	check_in_task_unsafe(ANTENNA_DEPLOY_TASK);
 	report_task_running(ANTENNA_DEPLOY_TASK);

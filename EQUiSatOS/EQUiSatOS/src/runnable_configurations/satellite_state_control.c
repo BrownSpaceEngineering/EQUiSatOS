@@ -14,11 +14,9 @@ sat_state_t current_sat_state = INITIAL;
 task_states current_task_states;
 
 /************************************************************************/
-/* global states for hardware + mutex                                   */
+/* global states for hardware		                                    */
 /************************************************************************/ 
 struct hw_states hardware_states = {false, 0, false};
-StaticSemaphore_t _hardware_state_mutex_d;
-SemaphoreHandle_t hardware_state_mutex;
 
 /************************************************************************/
 /* List of mutexes for massive take of all of them during a task state change */
@@ -126,6 +124,23 @@ void startup_task(void* pvParameters) {
 
 	// populate task_handles array and setup constants
 	pre_init_rtos_tasks();
+	
+	#if configUSE_TRACE_FACILITY == 1
+		// name mutexes
+		vTraceSetMutexName(critical_action_mutex, "CA");
+		vTraceSetMutexName(i2c_irpow_mutex, "I2C");
+		vTraceSetMutexName(processor_adc_mutex, "ADC");
+		vTraceSetMutexName(hardware_state_mutex, "HWST");
+		vTraceSetMutexName(watchdog_mutex, "WD");
+		vTraceSetMutexName(mram_spi_cache_mutex, "SPI");
+		
+		vTraceSetMutexName(_idle_equistack_mutex, "eqIDLE");
+		vTraceSetMutexName(_attitude_equistack_mutex, "eqATT");
+		vTraceSetMutexName(_flash_equistack_mutex , "eqF_BST");
+		vTraceSetMutexName(_flash_cmp_equistack_mutex, "eqF_CMP");
+		vTraceSetMutexName(_low_power_equistack_mutex, "eqLP");
+		vTraceSetMutexName(_error_equistack_mutex, "eqERR");
+	#endif
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */

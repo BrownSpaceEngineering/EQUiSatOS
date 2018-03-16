@@ -203,11 +203,6 @@ typedef enum
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		(1*60*1000)
 #endif
 
-/** 
- * NOTE: The idle data collection task doesn't really need these constants;
- * all sensors are being read at the same frequency, unlike below.
- */
-
 #ifndef TESTING_SPEEDUP
 #define ATTITUDE_DATA_TASK_FREQ					(1*60*1000)
 #endif
@@ -231,19 +226,19 @@ typedef enum
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
-	#define TRANSMIT_TASK_FREQ					10000
-		#define TRANSMIT_TASK_LESS_FREQ				20000
-	#define STATE_HANDLING_TASK_FREQ			15000
+	#define TRANSMIT_TASK_FREQ					(15*1000) // same
+		#define TRANSMIT_TASK_LESS_FREQ				(40*1000) // same
+	#define STATE_HANDLING_TASK_FREQ			(1*60*1000) // same
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ		1000
-	#define IDLE_DATA_TASK_FREQ					2500
+	#define IDLE_DATA_TASK_FREQ					15000
 		#define IDLE_DATA_LOG_FREQ_S				5
-	#define ATTITUDE_DATA_TASK_FREQ				5000
+	#define ATTITUDE_DATA_TASK_FREQ				15000
 		#define ATTITUDE_DATA_LOG_FREQ_S			10
-	#define FLASH_ACTIVATE_TASK_FREQ			15000
+	#define FLASH_ACTIVATE_TASK_FREQ			(1*60*1000) // same
 		#define FLASH_CMP_DATA_LOG_FREQ_S			30
-	#define LOW_POWER_DATA_TASK_FREQ			7500
-	#define BATTERY_CHARGING_TASK_FREQ			16000
-	#define PERSISTENT_DATA_BACKUP_TASK_FREQ	10000
+	#define LOW_POWER_DATA_TASK_FREQ			20000
+	#define BATTERY_CHARGING_TASK_FREQ			(2*60*1000)
+	#define PERSISTENT_DATA_BACKUP_TASK_FREQ	(30*1000)
 #endif
 
 #endif

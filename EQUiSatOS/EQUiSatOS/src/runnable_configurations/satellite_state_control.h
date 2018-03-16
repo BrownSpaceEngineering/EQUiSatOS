@@ -74,11 +74,13 @@ struct hw_states {
 	/* note: flashing state is passed down */
 };
 #define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(500 / portTICK_PERIOD_MS)
+StaticSemaphore_t _hardware_state_mutex_d;
+SemaphoreHandle_t hardware_state_mutex;
 
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(5000 / portTICK_PERIOD_MS) // these can take quite a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(6000 / portTICK_PERIOD_MS) // these can take quite a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 

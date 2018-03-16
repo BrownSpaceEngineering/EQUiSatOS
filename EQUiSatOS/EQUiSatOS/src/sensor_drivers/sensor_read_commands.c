@@ -96,14 +96,23 @@ bool _set_5v_enable_unsafe(bool on) {
 	// of the i2c bus / processor adc mutex must be above this
 	if (hardware_state_mutex_take())
 	{
+		// enable regulator (taking mutex in case anyone want's consistent state),
+		// but don't set the hardware state until after the delay
 		set_output(on, P_5V_EN);
-		get_hw_states()->rail_5v_enabled = on;
 		hardware_state_mutex_give();
 		// allow time to power up/down before someone uses it
 		if (on) {
 			vTaskDelay(EN_5V_POWER_ON_DELAY_MS / portTICK_PERIOD_MS);
 		} else {
 			vTaskDelay(EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
+		}
+		// set hardware state after sufficient time for it to be valid
+		if (hardware_state_mutex_take()) {
+			get_hw_states()->rail_5v_enabled = on;
+			hardware_state_mutex_give();
+		} else {
+			get_hw_states()->rail_5v_enabled = on;
+			log_error(ELOC_5V_REF, ECODE_HW_STATE_MUTEX_TIMEOUT, true); // TODO: finer error
 		}
 		return true;
 	} else {
@@ -116,12 +125,15 @@ bool _set_5v_enable_unsafe(bool on) {
 // NOTE: ONLY use disable_ir_pow_if_should_be_off() to turn IR power off
 void activate_ir_pow(void) {
 	set_output(true, P_IR_PWR_CMD);
+	trace_print("set ir power on"); // TODO
 	vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
+	
 }
 
 // wrapper function to handle enabling IR power; 
 // returns whether WE (this function) turned on IR power.
-// this must be called while the i2c_irpow_mutex is held!
+// this should be called while the i2c_irpow_mutex is held
+// or there is no assurance IR power will stay on!
 bool enable_ir_pow_if_necessary_unsafe(void) {
 	bool is_enabled = get_output(P_IR_PWR_CMD);
 	if (!is_enabled) {
@@ -137,7 +149,8 @@ bool enable_ir_pow_if_necessary_unsafe(void) {
 // on when we started using it, leave it on.
 void disable_ir_pow_if_necessary_unsafe(bool we_turned_ir_on) {
 	if (we_turned_ir_on) {
-		set_output(false, P_IR_PWR_CMD);
+		set_output(false, P_IR_PWR_CMD); 
+		trace_print("set ir power off"); // TODO
 	}
 }
 
@@ -150,6 +163,7 @@ void disable_ir_pow_if_should_be_off(bool expected_on) {
 			// if we have the mutex AND IR power is on, no one is using it and 
 			// it should be turned off
 			set_output(false, P_IR_PWR_CMD);
+			trace_print("set ir power off"); // TODO
 			if (!expected_on) {
 				// if it was expected to be off and it's on, this is an issue
 				log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, true);
@@ -163,7 +177,7 @@ void disable_ir_pow_if_should_be_off(bool expected_on) {
 	// if we fail to get the mutex or it's not on we can't turn it off
 }
 
-static void verify_regulators_unsafe(void) {
+void verify_regulators_unsafe(void) {
 	struct hw_states* states;
 	ad7991_ctrlbrd_batch batch = {0,0,0,0};
 
