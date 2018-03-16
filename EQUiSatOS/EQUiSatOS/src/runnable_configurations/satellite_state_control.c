@@ -27,8 +27,7 @@ SemaphoreHandle_t hardware_state_mutex;
 SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	&critical_action_mutex,
-	&i2c_mutex,
-	&irpow_mutex,
+	&i2c_irpow_mutex,
 	&processor_adc_mutex,
 	&hardware_state_mutex,
 	&watchdog_mutex,
@@ -49,7 +48,6 @@ SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 
 void configure_state_from_reboot(void);
 void set_single_task_state(bool running, task_type_t task_id);
-void set_irpow_by_sat_state(sat_state_t state);
 void startup_task(void* pvParameters);
 
 // starts RTOS scheduler
@@ -312,7 +310,6 @@ void configure_state_from_reboot(void) {
 	
 	// initial hardware settings (last because they have delays)
 	setRadioState(false, false); // turn radio off and don't confirm (won't confirm going off)
-	set_irpow_by_sat_state(current_sat_state);
 }
 
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts
@@ -366,34 +363,6 @@ bool low_power_active(void) {
 /************************************************************************/
 /* GLOBAL STATE SETTING                                                 */
 /************************************************************************/
-/* wrapper for setting IR power state */
-void set_irpow_by_sat_state(sat_state_t state) {
-	switch (state) {
-		// if coming into any state besides low power,
-		// enable IR power if necessary 
-		case INITIAL:
-		case ANTENNA_DEPLOY:
-		case HELLO_WORLD:
-		case IDLE_NO_FLASH:
-		case IDLE_FLASH:
-			if (!get_output(P_IR_PWR_CMD)) {
-				set_output(true, P_IR_PWR_CMD);
-				vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
-			}
-			break;
-			
-		case LOW_POWER:
-			// disable on entry into LOW_POWER (it is enabled when requried in this state)
-			disable_ir_pow_if_should_be_off(true);
-			break;
-			
-		default:
-			configASSERT(false); // bad state ID or bit flip
-			log_error(ELOC_IR_POW, ECODE_UNEXPECTED_CASE, false);
-			break;
-	}
-}
-
 /* Sets the current satellite state to the given state, if a transition from
    the current state is valid; returns whether the state change was made (i.e. was valid)
    CAN be called consistently (i.e. if state == CurrentState), which will ensure all correct tasks
@@ -420,31 +389,26 @@ bool set_sat_state_helper(sat_state_t state)
 			// turn radio off and don't confirm (won't confirm going off)
 			// (this is the only state that can be re-entered where the transmit task is suspended)
 			setRadioState(false, false);
-			set_irpow_by_sat_state(ANTENNA_DEPLOY);
 			return prev_sat_state == INITIAL || prev_sat_state == LOW_POWER;
 
 		case HELLO_WORLD: ;
 			print("\n\nCHANGED STATE to HELLO_WORLD\n\n");
 			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD, prev_sat_state);
-			set_irpow_by_sat_state(HELLO_WORLD);
 			return prev_sat_state == ANTENNA_DEPLOY;
 
 		case IDLE_NO_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_NO_FLASH\n\n");
 			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH, prev_sat_state);
-			set_irpow_by_sat_state(IDLE_NO_FLASH);
 			return prev_sat_state == IDLE_FLASH || prev_sat_state == HELLO_WORLD || prev_sat_state == LOW_POWER;
 
 		case IDLE_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_FLASH\n\n");
 			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH, prev_sat_state);
-			set_irpow_by_sat_state(IDLE_FLASH);
 			return prev_sat_state == IDLE_NO_FLASH;
 
 		case LOW_POWER: ;
 			print("\n\nCHANGED STATE to LOW_POWER\n\n");
 			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER, prev_sat_state);
-			set_irpow_by_sat_state(LOW_POWER);
 			return prev_sat_state == ANTENNA_DEPLOY || prev_sat_state == HELLO_WORLD || 
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 

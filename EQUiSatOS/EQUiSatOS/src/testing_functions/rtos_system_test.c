@@ -482,7 +482,7 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 37: return "ECODE_EXCESSIVE_SUSPENSION";
 
 	case 38: return "ECODE_CRIT_ACTION_MUTEX_TIMEOUT";
-	case 39: return "ECODE_I2C_MUTEX_TIMEOUT";
+	case 39: return "ECODE_I2C_IRPOW_MUTEX_TIMEOUT";
 	case 40: return "ECODE_PROC_ADC_MUTEX_TIMEOUT";
 	case 41: return "ECODE_HW_STATE_MUTEX_TIMEOUT";
 	case 42: return "ECODE_USART_MUTEX_TIMEOUT";
@@ -490,35 +490,35 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 44: return "ECODE_BAT_CHARGING_MUTEX_TIMEOUT";
 	case 45: return "ECODE_WATCHDOG_MUTEX_TIMEOUT";
 	case 46: return "ECODE_EQUISTACK_MUTEX_TIMEOUT";
-	case 47: return "ECODE_IRPOW_MUTEX_TIMEOUT";
-	case 48: return "ECODE_ALL_MUTEX_TIMEOUT";
+	case 47: return "ECODE_ALL_MUTEX_TIMEOUT";
 
-	case 49: return "ECODE_REWROTE_PROG_MEM";
-	case 50: return "ECODE_STACK_OVERFLOW";
-	case 51: return "ECODE_DET_ALREADY_HIGH";
+	case 48: return "ECODE_REWROTE_PROG_MEM";
+	case 49: return "ECODE_STACK_OVERFLOW";
+	case 50: return "ECODE_DET_ALREADY_HIGH";
 
-	case 52: return "ECODE_BAT_NOT_DISCHARGING";
-	case 53: return "ECODE_BAT_NOT_NOT_DISCHARGING";
-	case 54: return "ECODE_BAT_NOT_CHARGING";
-	case 55: return "ECODE_BAT_NOT_NOT_CHARGING";
-	case 56: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
-	case 57: return "ECODE_BAT_FAULT";
-	case 58: return "ECODE_NOT_FULL_FOR_WHILE";
-	case 59: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
-	case 60: return "ECODE_RECOMMISSION";
-	case 61: return "ECODE_ALL_SAME_VAL";
-	case 62: return "ECODE_CORRUPTED";
-	case 63: return "ECODE_INVALID_STATE_CHANGE";
-	case 64: return "ECODE_TIMESTAMP_WRAPAROUND";
-	case 65: return "ECODE_INCONSISTENT_STATE";
-	case 66: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
-	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
-	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
-	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
-	case 70: return "ECODE_SOFTWARE_RESET";
-	case 71: return "ECODE_SAT_RESET";
-	case 72: return "ECODE_BAT_LI_TIMEOUT";
-	case 73: return "ECODE_BAT_LF_TIMEOUT";
+	case 51: return "ECODE_BAT_NOT_DISCHARGING";
+	case 52: return "ECODE_BAT_NOT_NOT_DISCHARGING";
+	case 53: return "ECODE_BAT_NOT_CHARGING";
+	case 54: return "ECODE_BAT_NOT_NOT_CHARGING";
+	case 55: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
+	case 56: return "ECODE_BAT_FAULT";
+	case 57: return "ECODE_BAT_NOT_FULL_FOR_WHILE";
+	case 58: return "ECODE_BAT_LOW_VOLTAGE_FOR_WHILE";
+	case 59: return "ECODE_RECOMMISSION";
+	case 60: return "ECODE_ALL_SAME_VAL";
+	case 61: return "ECODE_CORRUPTED";
+	case 62: return "ECODE_INVALID_STATE_CHANGE";
+	case 63: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 64: return "ECODE_INCONSISTENT_STATE";
+	case 65: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	case 69: return "ECODE_SOFTWARE_RESET";
+	case 70: return "ECODE_SAT_RESET";
+
+	case 71: return "ECODE_BAT_LI_TIMEOUT";
+	case 72: return "ECODE_BAT_LF_TIMEOUT";
 	default: return "[error code not added to sys test]";
 	}
 }

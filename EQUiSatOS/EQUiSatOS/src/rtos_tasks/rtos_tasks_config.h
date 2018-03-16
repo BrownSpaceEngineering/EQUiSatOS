@@ -150,58 +150,57 @@ typedef enum
 
 // these are offsets are added to "start time" to avoid periodic contention of tasks
 // offsets should be different especially for tasks that have similar (high) frequencies/priorities
-// these are all within 1000ms because that's the highest task frequency
 #define WATCHDOG_TASK_FREQ_OFFSET				100 // high-freq; should be small
 #define STATE_HANDLING_TASK_FREQ_OFFSET			200
 #define ANTENNA_DEPLOY_TASK_FREQ_OFFSET			300 // high-freq
 #define BATTERY_CHARGING_TASK_FREQ_OFFSET		150 // should be small
-#define TRANSMIT_TASK_FREQ_OFFSET				400
-#define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600 // high-freq
-#define IDLE_DATA_TASK_FREQ_OFFSET				700 // high-freq
-#define LOW_POWER_DATA_TASK_FREQ_OFFSET			800 // high-freq
-#define ATTITUDE_DATA_TASK_FREQ_OFFSET			900 // high-freq
+#define TRANSMIT_TASK_FREQ_OFFSET				1500
+#define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600
+#define IDLE_DATA_TASK_FREQ_OFFSET				10000 // separate from attitude
+#define LOW_POWER_DATA_TASK_FREQ_OFFSET			800
+#define ATTITUDE_DATA_TASK_FREQ_OFFSET			900 
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	500	// high-freq
 
 /* action frequency periods in MS (some that actually have data collection are below) */
 #ifndef TESTING_SPEEDUP
-#define STATE_HANDLING_TASK_FREQ				60000	// ms
+#define STATE_HANDLING_TASK_FREQ				(1*60*1000)	// ms
 #endif
 
 #define WATCHDOG_TASK_FREQ						1500
 														
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #ifndef TESTING_SPEEDUP
-	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			900000	// 15 minutes; don't do it often if it seems to not be working
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			(15*60*1000)	// 15 minutes; don't do it often if it seems to not be working
 #endif
-	#define ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT		1800000 // 30 minutes
-	#define ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT		3600000 // 60 minutes
+	#define ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT		(30*60*1000) // 30 minutes
+	#define ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT		(60*60*1000) // 60 minutes
 	#define ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT	(max(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT, max(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT, ANTENNA_DEPLOY_TASK_LESS_FREQ)))
 	
 #ifndef TESTING_SPEEDUP
-#define BATTERY_CHARGING_TASK_FREQ				300000	// 5 minutes; how often run battery charging logic
+#define BATTERY_CHARGING_TASK_FREQ				(5*60*1000)	// 5 minutes; how often run battery charging logic
 #endif
 
 #ifndef TESTING_SPEEDUP
-#define TRANSMIT_TASK_FREQ						20000	// 20 secs; how often to transmit
-	#define TRANSMIT_TASK_LESS_FREQ					40000 // 40 secs; half as fast in low power
+#define TRANSMIT_TASK_FREQ						(20*60*1000)	// 20 secs; how often to transmit
+	#define TRANSMIT_TASK_LESS_FREQ					(40*60*1000) // 40 secs; half as fast in low power (also transmits half the data)
 #endif
 
 #ifndef TESTING_SPEEDUP
-#define IDLE_DATA_TASK_FREQ						10000 // ms
+#define IDLE_DATA_TASK_FREQ						(1*60*1000) // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					1000
+	#define IDLE_DATA_MAX_READ_TIME					1500 // has to turn on IR power
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	#ifndef TESTING_SPEEDUP
 	#define IDLE_DATA_LOG_FREQ_S						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
 	#endif
 	
 #ifndef TESTING_SPEEDUP
-#define LOW_POWER_DATA_TASK_FREQ				30000
+#define LOW_POWER_DATA_TASK_FREQ				(2*60*1000)
 #endif
 	#define LOW_POWER_DATA_MAX_READ_TIME			15000 // has to turn on IR power
 
 #ifndef TESTING_SPEEDUP
-#define PERSISTENT_DATA_BACKUP_TASK_FREQ		60000
+#define PERSISTENT_DATA_BACKUP_TASK_FREQ		(1*60*1000)
 #endif
 
 /** 
@@ -210,7 +209,7 @@ typedef enum
  */
 
 #ifndef TESTING_SPEEDUP
-#define ATTITUDE_DATA_TASK_FREQ					20000
+#define ATTITUDE_DATA_TASK_FREQ					(1*60*1000)
 #endif
 	#define ATTITUDE_DATA_MAX_READ_TIME				5000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			ATTITUDE_DATA_PACKETS // == 5
@@ -220,11 +219,11 @@ typedef enum
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
 #ifndef TESTING_SPEEDUP
-#define FLASH_ACTIVATE_TASK_FREQ				60000	// 1 minute; how often to flash
+#define FLASH_ACTIVATE_TASK_FREQ				(1*60*1000)	// 1 minute; how often to flash
 #endif
 	#define FLASH_DATA_READ_FREQ	20 // ms - this should be longer than 2ms because its used as a buffer for pin transitions
 	#define FLASH_DATA_ARR_LEN		7 // implies that the total data read duration is:
-	// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
+										// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 	#define FLASH_CMP_DATA_LOGS_PER_ORBIT			FLASH_CMP_DATA_PACKETS // == 6
 	#ifndef TESTING_SPEEDUP
 	#define FLASH_CMP_DATA_LOG_FREQ_S					(ORBITAL_PERIOD_S / FLASH_CMP_DATA_LOGS_PER_ORBIT)

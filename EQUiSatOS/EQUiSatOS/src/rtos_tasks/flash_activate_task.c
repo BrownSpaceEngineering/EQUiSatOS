@@ -115,12 +115,11 @@ void flash_activate_task(void *pvParameters)
 			bool actually_flashed = false;
 			if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
 			{
-				if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
 					// note: IR power will always be enabled if necessary but we can't
 					// give an un-taken mutex
-					bool got_irpow_mutex = enable_ir_pow_if_necessary();
-					configASSERT(!got_irpow_mutex);
+					bool we_turned_ir_on = enable_ir_pow_if_necessary_unsafe();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable_unsafe(true);
@@ -129,11 +128,11 @@ void flash_activate_task(void *pvParameters)
 						// and make sure the flash enable pin is high
 						flash_arm();
 
-					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
-			
 						// delays for time of FLASH_DATA_READ_FREQ, as required by flash_arm
 						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 												BATCH_READS_BEFORE, &prev_data_read_time, false);
+
+					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 
 						// send actual falling edge to flash circuitry to activate it
 						flash_activate();
@@ -162,10 +161,10 @@ void flash_activate_task(void *pvParameters)
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
 					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
-					disable_ir_pow_if_necessary(got_irpow_mutex); 
-					xSemaphoreGive(i2c_mutex);
+					disable_ir_pow_if_necessary_unsafe(we_turned_ir_on); 
+					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
-					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 				}
 				xSemaphoreGive(critical_action_mutex);
 			} else {

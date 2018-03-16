@@ -36,19 +36,26 @@ void attitude_data_task(void *pvParameters)
 		// time the data reading to make sure it doesn't exceed a maximum
 		time_before_data_read = xTaskGetTickCount() / portTICK_PERIOD_MS;
 		
-		// read all sensors first
-		read_ir_object_temps_batch(	current_struct->ir_obj_temps_data);
-		read_pdiode_batch(			&(current_struct->pdiode_data));
-		read_accel_batch(			current_struct->accelerometer_data	[0]);
-		read_gyro_batch(			current_struct->gyro_data);
-		read_magnetometer_batch(	current_struct->magnetometer_data	[0]);
+		// the next couple readings use IR power on, so turn it on for them
+		// to speed up the readings (otherwise they have to wait for it to come on each time)
+		activate_ir_pow();
+		{
+			// read all sensors first
+			read_ir_object_temps_batch(	current_struct->ir_obj_temps_data);
+			read_pdiode_batch(			&(current_struct->pdiode_data));
+			read_gyro_batch(			current_struct->gyro_data);
+			read_accel_batch(			current_struct->accelerometer_data	[0]);
+			read_magnetometer_batch(	current_struct->magnetometer_data	[0]);
 		
-		// delay a bit and take a second batch of readings to allow rate measurements
-		// TODO: may want to error if this is off (by a tighter bound than ATTITUDE_DATA_MAX_READ_TIME)
-		vTaskDelay(ATTITUDE_DATA_SECOND_SAMPLE_DELAY / portTICK_PERIOD_MS);
-		read_accel_batch(			current_struct->accelerometer_data	[1]);
-		read_magnetometer_batch(	current_struct->magnetometer_data	[1]);
-		
+			// delay a bit and take a second batch of readings to allow rate measurements
+			// TODO: may want to error if this is off (by a tighter bound than ATTITUDE_DATA_MAX_READ_TIME)
+			vTaskDelay(ATTITUDE_DATA_SECOND_SAMPLE_DELAY / portTICK_PERIOD_MS);
+			read_accel_batch(			current_struct->accelerometer_data	[1]);
+			read_magnetometer_batch(	current_struct->magnetometer_data	[1]);
+		}
+		// try to disable IR power because we're done, but only if we get the mutex (we expect it to be on so no errors)
+		disable_ir_pow_if_should_be_off(true);
+	
 		// if we were suspended in some period between start of this packet and here, DON'T add it
 		// and go on to rewrite the current one
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
