@@ -24,12 +24,17 @@ extern int simulated_curr_charging_filled_up;
 #else
 	#define EQUISIM_TIMESTAMP_SCALING		1
 #endif
-#define LI_CHARGING_MV_PER_MS				0.005
-#define LI_DISCHARGING_MV_PER_MS			0.003
-#define LI_DISCHARGING_MV_PER_MS_SEEP		0.000001
-#define LF_CHARGING_MV_PER_MS				0.005
-#define LF_DISCHARGING_MV_PER_MS_FLASHING	0.01
-#define LF_DISCHARGING_MV_PER_MS_SEEP		0.000001
+#define LI_CHARGING_MV_PER_MS_HIGH				0.005
+#define LI_CHARGING_MV_PER_MS_LOW         0.01
+#define LI_DISCHARGING_MV_PER_MS_HIGH			0.003
+#define LI_DISCHARGING_MV_PER_MS_LOW      0.006
+#define LI_HIGH_LOW_THRESHOLD             4000
+
+#define LF_CHARGING_MV_PER_MS_HIGH				         0.004
+#define LF_CHARGING_MV_PER_MS_LOW                  0.008
+#define LF_DISCHARGING_MV_PER_MS_FLASHING_HIGH		 0.0025
+#define LF_DISCHARGING_MV_PER_MS_FLASHING_LOW      0.005
+#define LF_HIGH_LOW_THRESHOLD                      3000
 
 /************************************************************************/
 /* Battery charging sim states                                          */
@@ -63,11 +68,11 @@ typedef struct equisim_bat_state_t {
 	bool lf_b2_chgn_inv;
 	bool lf_b1_faultn_inv;
 	bool lf_b2_faultn_inv;
-	
+
 	// panel-related state
 	bool spf_st;
 	uint8_t panel_ref_mv;
-	
+
 	// voltages
 	uint16_t li1_volts;
 	uint16_t li2_volts;
