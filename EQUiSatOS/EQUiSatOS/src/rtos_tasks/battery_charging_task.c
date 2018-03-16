@@ -238,8 +238,8 @@ bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
 	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
-	print("\t%d total decomissions for this bat\n");
-	print("\tthis battery should be decomissioned for\n", time_for_recommission(bat));
+	print("\t%d total decomissions for this bat\n", charging_data.decommission_count[bat]);
+	print("\tthis battery should be decomissioned for %d\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
 		charging_data.decommissioned[bat] = 0;
@@ -309,7 +309,7 @@ void init_charging_data()
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
 	if (persist_data.li_caused_reboot != -1)
 	{
-		print("mram has battery %d as having caused a reboot -- decommissioning\n");
+		print("mram has battery %d as having caused a reboot -- decommissioning\n", persist_data.li_caused_reboot);
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
 
@@ -394,7 +394,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	bool charge_running = chg_pin_active(bat, batch);
 	if (should_be_charging)
 	{
-		print("checking is bat %d is charging:\n");
+		print("checking is bat %d is charging:\n", bat);
 		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
 		print("\tpanel ref: %d\n", get_panel_ref_val_with_retry());
 
@@ -686,7 +686,7 @@ void battery_logic()
 	bool curr_charging_filled_up = false;
 	if (is_lion(charging_data.bat_charging))
 	{
-		print("currently charging li %d, will check to see if it's full\n");
+		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
 
 		// we can't call the battery full from CHGN if we don't know CHGN
 		bat_charge_dig_sigs_batch batch;
