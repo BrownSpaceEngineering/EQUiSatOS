@@ -294,7 +294,7 @@ void configure_state_from_reboot(void) {
 	if (cause == SYSTEM_RESET_CAUSE_WDT) {
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
 	} else if (cause == SYSTEM_RESET_CAUSE_SOFTWARE) {
-		log_error(ELOC_WATCHDOG, ECODE_SOFTWARE_RESET, true);
+		log_error(ELOC_WATCHDOG, ECODE_SOFTWARE_RESET, false); // mostly for debug; hopefully no aliens are hacking us
 	} else if (cause == SYSTEM_RESET_CAUSE_EXTERNAL_RESET) {
 		log_error(ELOC_WATCHDOG, ECODE_SAT_RESET, true);
 	}
@@ -302,7 +302,7 @@ void configure_state_from_reboot(void) {
 	// if we had to rewrite program memory due to corruption, log a low-pri error
 	if (cache_get_prog_mem_rewritten()) {
 		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
-		update_sat_event_history(false, 0, 0, 0, 0, 0, 0, 1); // don't write through because it will be done just below
+		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
 	}
 
 	// note we've rebooted

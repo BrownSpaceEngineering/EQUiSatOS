@@ -586,14 +586,20 @@ void print_task_info(void) {
 
 void print_cur_data_buf(uint8_t* cur_data_buf) {
 	print("\n\n============Current Data============\n");
-	print("secs to next flash: %d\n", cur_data_buf[0]);
-	print("reboot count: %d\n",		cur_data_buf[1]);
-	print_lion_volts_batch(			&(cur_data_buf[2]));
-	print_lion_current_batch(		&(cur_data_buf[4]));
-	print_lion_temps_batch(			&(cur_data_buf[6]));
-	print_panelref_lref_batch(		&(cur_data_buf[8]));
-	print_bat_charge_dig_sigs_batch(cur_data_buf[11]<<8 | cur_data_buf[10]);
-	print_lifepo_volts_batch(		&(cur_data_buf[12]));
+	static uint8_t cmp_buf[MSG_CUR_DATA_LEN];
+	memset(cmp_buf, 0, sizeof(cmp_buf));
+	if (memcmp(cur_data_buf, cmp_buf, MSG_CUR_DATA_LEN) != 0) {
+		print("secs to next flash: %d\n", cur_data_buf[0]);
+		print("reboot count: %d\n",		cur_data_buf[1]);
+		print_lion_volts_batch(			&(cur_data_buf[2]));
+		print_lion_current_batch(		&(cur_data_buf[4]));
+		print_lion_temps_batch(			&(cur_data_buf[6]));
+		print_panelref_lref_batch(		&(cur_data_buf[8]));
+		print_bat_charge_dig_sigs_batch(cur_data_buf[11]<<8 | cur_data_buf[10]);
+		print_lifepo_volts_batch(		&(cur_data_buf[12]));
+	} else {
+		print("(none available (or all zeros)");
+	}
 }
 
 void rtos_system_test(void) {

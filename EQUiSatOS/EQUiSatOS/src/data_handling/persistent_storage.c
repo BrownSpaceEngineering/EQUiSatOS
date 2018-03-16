@@ -588,9 +588,10 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
 /* Updates the sat_event_history if the given value is true, but ONLY
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
-   Should really be called periodically for these crucial things */
-bool update_sat_event_history(bool write_through,
-								uint8_t antenna_deployed,
+   Writes through if the given value is true AND different from cached state.
+   Should be called periodically for these crucial things 
+   Returns whether got mutex (i.e. whether info was written) */
+bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
@@ -601,23 +602,38 @@ bool update_sat_event_history(bool write_through,
 	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
 		cached_state_correct_errors();
 	
-		if (antenna_deployed)
+		bool hist_changed = false;
+		if (antenna_deployed) {
+			hist_changed = !cached_state.sat_event_history.antenna_deployed;
 			cached_state.sat_event_history.antenna_deployed = true;
-		if (lion_1_charged)
+		}
+		if (lion_1_charged) {
+			hist_changed = !cached_state.sat_event_history.lion_1_charged;
 			cached_state.sat_event_history.lion_1_charged = true;
-		if (lion_2_charged)
+		}
+		if (lion_2_charged) {
+			hist_changed = !cached_state.sat_event_history.lion_2_charged;
 			cached_state.sat_event_history.lion_2_charged = true;
-		if (lifepo_b1_charged)
+		}
+		if (lifepo_b1_charged) {
+			hist_changed = !cached_state.sat_event_history.lifepo_b1_charged;
 			cached_state.sat_event_history.lifepo_b1_charged = true;
-		if (lifepo_b2_charged)
+		}
+		if (lifepo_b2_charged) {
+			hist_changed = !cached_state.sat_event_history.lifepo_b2_charged;
 			cached_state.sat_event_history.lifepo_b2_charged = true;
-		if (first_flash)
+		}
+		if (first_flash) {
+			hist_changed = !cached_state.sat_event_history.first_flash;
 			cached_state.sat_event_history.first_flash = true;
-		if (prog_mem_rewritten)
+		}
+		if (prog_mem_rewritten) {
+			hist_changed = !cached_state.sat_event_history.prog_mem_rewritten;
 			cached_state.sat_event_history.prog_mem_rewritten = true;
+		}
 
 		cached_state_sync_redundancy();
-		if (write_through) {
+		if (hist_changed) {
 			write_state_to_storage_safety(false);
 		}
 		

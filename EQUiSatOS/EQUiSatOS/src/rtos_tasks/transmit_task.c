@@ -8,6 +8,13 @@
 #include "transmit_task.h"
 
 /************************************************************************/
+/* Data transmission buffers                                            */
+/************************************************************************/
+// define buffers here to keep them LOCAL
+uint8_t cur_data_buf[MSG_CUR_DATA_LEN];
+uint8_t msg_buffer[MSG_BUFFER_SIZE];
+
+/************************************************************************/
 /* RADIO CONTROL FUNCTIONS                                              */
 /************************************************************************/
 // temporary version of radio temp; set periodically (right before radio transmit)
@@ -75,9 +82,10 @@ char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N',  0,   0,   0,  0}; // last 
 void radio_control_init(void) {
 	radio_init();
 	rx_command_queue = xQueueCreateStatic(RX_CMD_QUEUE_LEN,
-	sizeof(rx_cmd_type_t),
-	_rx_command_queue_storage,
-	&_rx_command_queue_d);
+		sizeof(rx_cmd_type_t),
+		_rx_command_queue_storage,
+		&_rx_command_queue_d);
+	memset(cur_data_buf, 0, sizeof(cur_data_buf));
 }
 
 //Called on a kill command; sets the duration for which the radio is killed   
@@ -166,10 +174,6 @@ static void handle_uplinks(void) {
 /************************************************************************/
 /* DATA TRANSMISSION FUNCTIONS                                          */
 /************************************************************************/
-// define buffers here to keep them LOCAL
-uint8_t cur_data_buf[MSG_CUR_DATA_LEN];
-uint8_t msg_buffer[MSG_BUFFER_SIZE];
-
 // references to what message type each of the buffers is designated for right now
 msg_data_type_t slot_1_msg_type = DEFAULT_MSG_TYPE_SLOT_1;
 msg_data_type_t slot_2_msg_type = DEFAULT_MSG_TYPE_SLOT_2;
@@ -315,18 +319,24 @@ static void attempt_transmission(void) {
 		
 		// slot 2 transmit
 		transmit_buf_wait(msg_buffer, MSG_SIZE);
-		write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
-		vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 		
-		// slot 3 transmit
-		transmit_buf_wait(msg_buffer, MSG_SIZE);
-		write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
-		vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-		
-		// slot 4 transmit
-		transmit_buf_wait(msg_buffer, MSG_SIZE);
+		// in low power, only transmit two packets
+		if (low_power_active()) {
+			configASSERT(slot_3_msg_type == LOW_POWER_DATA && slot_4_msg_type == LOW_POWER_DATA);
+			
+			write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
+			vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			
+			// slot 3 transmit
+			transmit_buf_wait(msg_buffer, MSG_SIZE);
+			write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
+			vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			
+			// slot 4 transmit
+			transmit_buf_wait(msg_buffer, MSG_SIZE);
+		}
 		// we don't need to write a new packet because we just transmitted the last one
-		// also, no need to delay
+		// no delay after finish
 		
 		xSemaphoreGive(critical_action_mutex);
 	} else {
@@ -337,7 +347,6 @@ static void attempt_transmission(void) {
 /************************************************************************/
 /* MAIN RTOS TRANSMIT + RADIO GATEKEEPER TASK                           */
 /************************************************************************/
-
 void transmit_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
