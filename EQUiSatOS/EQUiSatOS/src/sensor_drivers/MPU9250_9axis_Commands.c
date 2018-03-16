@@ -123,7 +123,7 @@ float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z) {
 
 //Compute the biases from averaging surrounding inputs and loads them to bias registers i.e. "zeros" the IMU.
 // Should be run with the sensor flat and not moving.
-void MPU9250_computeBias(uint16_t* dest1, uint16_t* dest2){
+void MPU9250_computeBias(float* dest1, float* dest2){
 	uint8_t data[12]; // data array to hold accelerometer and gyro x, y, z, data
 	uint16_t ii, packet_count, fifo_count;
 	uint32_t gyro_bias[3]  = {0, 0, 0}, accel_bias[3] = {0, 0, 0};
@@ -281,9 +281,9 @@ void MPU9250_computeBias(uint16_t* dest1, uint16_t* dest2){
 	
 	
 	// Output scaled gyro biases for display in the main program
-	dest1[0] = gyro_bias[0]/gyrosensitivity;
-	dest1[1] = gyro_bias[1]/gyrosensitivity;
-	dest1[2] = gyro_bias[2]/gyrosensitivity;
+	dest1[0] = (float) gyro_bias[0]/gyrosensitivity;
+	dest1[1] = (float) gyro_bias[1]/gyrosensitivity;
+	dest1[2] = (float) gyro_bias[2]/gyrosensitivity;
 
 	// Construct the accelerometer biases and push to the hardware accelerometer bias registers. These registers contain
 	// factory trim values which must be added to the calculated accelerometer biases; on boot up these registers will hold
@@ -376,7 +376,7 @@ void MPU9250_computeBias(uint16_t* dest1, uint16_t* dest2){
 	//enum status_code stat6 = 
 	readFromAddressAndMemoryLocation(&check[0],2,MPU9250_ADDRESS,ZA_OFFSET_L_TC,MPU9250_SHOULD_STOP);
 	// Output scaled accelerometer biases for display in the main program
-	dest2[0] = accel_bias[0]/accelsensitivity;
-	dest2[1] = accel_bias[1]/accelsensitivity;
-	dest2[2] = accel_bias[2]/accelsensitivity;
+	dest2[0] = (float) accel_bias[0]/accelsensitivity;
+	dest2[1] = (float) accel_bias[1]/accelsensitivity;
+	dest2[2] = (float) accel_bias[2]/accelsensitivity;
 }
