@@ -50,6 +50,9 @@ static struct adc_module adc_instance; // global is allowed because we always lo
 void init_sensor_read_commands(void) {
 	i2c_irpow_mutex = xSemaphoreCreateMutexStatic(&_i2c_mutex_d);
 	processor_adc_mutex = xSemaphoreCreateMutexStatic(&_processor_adc_mutex_d);
+	// time doesn't matter because in order to turn IR power on, 
+	// someone will have to set it's initial value
+	ir_target_on_time = 0; 
 }
 
 /************************************************************************/
@@ -123,11 +126,12 @@ bool _set_5v_enable_unsafe(bool on) {
 
 // wrapper to turn on IR power that adds a delay
 // NOTE: ONLY use disable_ir_pow_if_should_be_off() to turn IR power off
+// unless you have the i2c_irpow_mutex!
 void activate_ir_pow(void) {
-	set_output(true, P_IR_PWR_CMD);
 	trace_print("set ir power on"); // TODO
+	set_output(true, P_IR_PWR_CMD);
+	ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 	vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
-	
 }
 
 // wrapper function to handle enabling IR power; 
@@ -135,13 +139,19 @@ void activate_ir_pow(void) {
 // this should be called while the i2c_irpow_mutex is held
 // or there is no assurance IR power will stay on!
 bool enable_ir_pow_if_necessary_unsafe(void) {
-	bool is_enabled = get_output(P_IR_PWR_CMD);
-	if (!is_enabled) {
-		// only enable (and delay) if IR power is not on
+	if (!get_output(P_IR_PWR_CMD)) {
+		// only enable (and do full delay) if IR power is not on
 		activate_ir_pow();
 		return true;
+	} else {
+		// if we read that someone enabled it, make sure to delay
+		// in case it was enabled less than IR_WAKE_DELAY_MS ago
+		// note wake_time is technically updated, so use a local 
+		// to avoid concurrency issues
+		TickType_t wake_time = ir_target_on_time;
+		vTaskDelayUntil(&wake_time, 0); 
+		return false;
 	}
-	return false;
 }
 
 // wrapper function to handle disabling IR power;
@@ -149,7 +159,7 @@ bool enable_ir_pow_if_necessary_unsafe(void) {
 // on when we started using it, leave it on.
 void disable_ir_pow_if_necessary_unsafe(bool we_turned_ir_on) {
 	if (we_turned_ir_on) {
-		set_output(false, P_IR_PWR_CMD); 
+		set_output(false, P_IR_PWR_CMD);
 		trace_print("set ir power off"); // TODO
 	}
 }
@@ -244,6 +254,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 		i2c_send_stop();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
+			bool irpow = get_output(P_IR_PWR_CMD);
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
 			log_if_error(IR_ELOCS[i], sc, false);
 			log_if_out_of_bounds(obj, S_IR_OBJ, IR_ELOCS[i], false);
@@ -264,6 +275,9 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 		// note: IR power will always be enabled if necessary, but if we
 		// didn't enable it, we won't turn it off
 		bool we_turned_ir_on = enable_ir_pow_if_necessary_unsafe();
+		// send stop because the IR sensors need it before processing commands
+		// after the line has been busy
+		i2c_send_stop();
 		for (int i = 0; i < 6; i++) {
 			uint16_t amb;
 			status_code_genare_t sc = MLX90614_read2ByteValue(IR_ADDS[i], AMBIENT, &amb);
@@ -340,7 +354,7 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 			}
 
 			hardware_state_mutex_give();
-			} else {
+		} else {
 			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 			memset(results, 0, sizeof(uint16_t)*4);
 			// give outer mutexes
@@ -350,7 +364,7 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 		}
 		disable_ir_pow_if_necessary_unsafe(we_turned_ir_on);
 		xSemaphoreGive(i2c_irpow_mutex);
-		} else {
+	} else {
 		log_error(ELOC_AD7991_BBRD, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 		memset(results, 0, sizeof(uint16_t)*4);		
 		return false;

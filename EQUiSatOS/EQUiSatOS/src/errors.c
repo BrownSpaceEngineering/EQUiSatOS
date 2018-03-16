@@ -261,7 +261,8 @@ void check_for_bad_error(sat_error_t* full_error) {
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
 		bool a = actual_code == ECODE_READING_HIGH;
 	}
-	if (actual_code == ECODE_BAD_ADDRESS) {
+	if (actual_code == ECODE_BAD_ADDRESS
+		 && full_error->eloc != ELOC_IR_NEG_X) {
 		bool a = 1;
 	}
 };

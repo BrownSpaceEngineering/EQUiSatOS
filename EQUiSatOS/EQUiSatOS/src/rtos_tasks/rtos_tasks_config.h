@@ -188,7 +188,7 @@ typedef enum
 #ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						(1*60*1000) // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					1500 // has to turn on IR power
+	#define IDLE_DATA_MAX_READ_TIME					2000 // has to turn on IR power
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	#ifndef TESTING_SPEEDUP
 	#define IDLE_DATA_LOG_FREQ_S						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
