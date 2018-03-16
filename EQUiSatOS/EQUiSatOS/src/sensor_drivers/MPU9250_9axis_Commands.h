@@ -73,7 +73,7 @@ enum status_code MPU9250_read_acc_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro(int16_t toFill[3]);
 enum status_code MPU9250_read_gyro_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_temp(int16_t* buf);
-void MPU9250_computeBias(uint16_t* dest1, uint16_t* dest2);
+void MPU9250_computeBias(float* dest1, float* dest2);
 float MPU9250_computeCompassDir(int16_t x, int16_t y, int16_t z);
 
 #endif
