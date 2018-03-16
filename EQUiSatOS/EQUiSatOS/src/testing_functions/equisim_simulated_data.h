@@ -29,12 +29,14 @@ extern int simulated_curr_charging_filled_up;
 #define LI_DISCHARGING_MV_PER_MS_HIGH			0.003
 #define LI_DISCHARGING_MV_PER_MS_LOW      0.006
 #define LI_HIGH_LOW_THRESHOLD             4000
+#define LI_VOLTS_CEILING				LI_MAX_MV + 20
 
 #define LF_CHARGING_MV_PER_MS_HIGH				         0.004
 #define LF_CHARGING_MV_PER_MS_LOW                  0.008
 #define LF_DISCHARGING_MV_PER_MS_FLASHING_HIGH		 0.0025
 #define LF_DISCHARGING_MV_PER_MS_FLASHING_LOW      0.005
 #define LF_HIGH_LOW_THRESHOLD                      3000
+#define LF_VOLTS_CEILING				LF_FULL_MAX_MV + 20
 
 /************************************************************************/
 /* Battery charging sim states                                          */
