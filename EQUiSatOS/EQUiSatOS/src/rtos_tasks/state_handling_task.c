@@ -55,7 +55,7 @@ void state_handling_task(void *pvParameters)
 }
 
 /* function called periodically to check if we need to resume trying to deploy the antenna */
-void emergency_resume_antenna_deploy(void) {
+static void emergency_resume_antenna_deploy(void) {
 	// if the antenna still hasn't technically deployed, we should keep trying
 	if (!antenna_did_deploy()
 	&& get_sat_state() != INITIAL

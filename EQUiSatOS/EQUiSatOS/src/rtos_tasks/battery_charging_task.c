@@ -191,17 +191,17 @@ bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 	return (batch>>st_position)&0x01;
 }
 
-uint16_t get_panel_ref_val_with_retry()
+static uint16_t get_panel_ref_val_with_retry(void)
 {
-	uint8_t four_buf[4];
+	uint16_t four_buf[4];
 	bool success = false;
 	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
-		success = read_ad7991_batbrd(four_buf, four_buf+2);;
+		success = read_ad7991_batbrd_precise(four_buf);
 
 	if (!success)
 		return -1;
 
-	return ((uint16_t)four_buf[2])<<8;
+	return ((uint16_t)four_buf[2]);
 }
 
 bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
@@ -295,7 +295,7 @@ void init_charging_data()
 	}
 
 	// initializing all values relevant to batteries and decommissioning
-	for (int8_t bat = 0; bat < 4; bat++)
+	for (int8_t bat = 0; bat < 4; bat++) // TODO: can't all of these for loops be combined into one?
 	{
 		charging_data.decommissioned[bat] = 0;
 		charging_data.decommissioned_timestamp[bat] = 0;
@@ -508,14 +508,14 @@ void battery_charging_task(void *pvParameters)
 
 	while (true)
 	{
-		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
-
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
 
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
 		battery_logic();
+		
+		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 
 	// delete this task if it ever breaks out
@@ -750,19 +750,19 @@ void battery_logic()
 				switch (bat)
 				{
 					case LI1:
-						update_sat_event_history(false, 0, 1, 0, 0, 0, 0, 0); // don't write through right here
+						update_sat_event_history(0, 1, 0, 0, 0, 0, 0);
 						break;
 
 					case LI2:
-						update_sat_event_history(false, 0, 0, 1, 0, 0, 0, 0); // don't write through right here
+						update_sat_event_history(0, 0, 1, 0, 0, 0, 0);
 						break;
 
 					case LFB1:
-						update_sat_event_history(false, 0, 0, 0, 1, 0, 0, 0); // don't write through right here
+						update_sat_event_history(0, 0, 0, 1, 0, 0, 0);
 						break;
 
 					case LFB2:
-						update_sat_event_history(false, 0, 0, 0, 0, 1, 0, 0); // don't write through right here
+						update_sat_event_history(0, 0, 0, 0, 1, 0, 0);
 						break;
 
 					default:

@@ -5,8 +5,8 @@ enum status_code HMC5883L_init(){
 	//Sets config register A to 0x70: 8 samples averaged, 15Hz data output rate, single measurement
 	static uint8_t write_buffer_1[2] = {0x00, 0x70};
 
-	//Sets config register B to 0xA0: Gain = 390 (LSB/Gauss)
-	static uint8_t write_buffer_2[2] = {0x01, 0xA0};
+	//Sets config register B to 0xA0: Range=+-4.7G Gain = 390 (LSB/Gauss) | 0x20: Range=+-1.3G Gain = 1090 (LSB/Gauss)
+	static uint8_t write_buffer_2[2] = {0x01, 0x20};
 	
 	struct i2c_master_packet write_packet_1 = {
 		.address     = HMC5883L_ADDRESS,
@@ -67,7 +67,7 @@ enum status_code HMC5883L_read(uint8_t* read_buffer){
 
 //Converts the raw data from sensor into signed xyz coordinates
 //xyzBuffer must be of length 3 and will be populated with xyz.
-void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
+static void HMC5883L_getXYZ(uint8_t* readBuffer, int16_t* xyzBuffer) {
 	uint16_t x = ((uint16_t)readBuffer[0] << 8) | readBuffer[1];
 	uint16_t z = ((uint16_t)readBuffer[2] << 8) | readBuffer[3];
 	uint16_t y = ((uint16_t)readBuffer[4] << 8) | readBuffer[5];

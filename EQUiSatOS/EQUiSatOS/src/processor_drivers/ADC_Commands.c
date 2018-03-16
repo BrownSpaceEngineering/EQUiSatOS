@@ -21,8 +21,8 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 		config_adc.reference = ADC_REFERENCE_INT1V;
 	}*/
 
-	//Hardware averaging - couldn't get this to work
-	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_16;
+	// TODO: See how high we can go for samples without slowing things down too much
+	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_128;
 	config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 
 	//Set the pin

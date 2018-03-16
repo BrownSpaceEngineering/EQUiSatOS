@@ -102,25 +102,24 @@ void flash_activate_task(void *pvParameters)
 		// clear out our average sums struct
 		memset(&current_sums_struct, 0, sizeof(struct flash_burst_data_sums));
 		
-		// actually flash leds
-		for (int i = 0; i < NUM_FLASHES; i++) {
-			// start taking data and set start timestamp
-			uint32_t cur_timestamp = get_current_timestamp();
-			current_burst_struct->timestamp = cur_timestamp;
-			current_cmp_struct->timestamp = cur_timestamp;
+		// actually flash leds (make sure we're not transmitting or deploying antenna while this is going on)
+		if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
+		{
+			for (int i = 0; i < NUM_FLASHES; i++) {
+				// start taking data and set start timestamp
+				uint32_t cur_timestamp = get_current_timestamp();
+				current_burst_struct->timestamp = cur_timestamp;
+				current_cmp_struct->timestamp = cur_timestamp;
 				
-			// obtain i2c_irpow_mutex throughout flash, to speed up sensor reads,
-			// and enable 5V regulator throughout as well
-			// NOTE: order is intentional!
-			bool actually_flashed = false;
-			if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
-			{
-				if (xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
+				// obtain i2c_irpow_mutex throughout flash, to speed up sensor reads,
+				// and enable 5V regulator throughout as well
+				// NOTE: order is intentional!
+				bool actually_flashed = false;
+				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
 					// note: IR power will always be enabled if necessary but we can't
 					// give an un-taken mutex
-					bool got_irpow_mutex = enable_ir_pow_if_necessary();
-					configASSERT(!got_irpow_mutex);
+					bool we_turned_ir_on = enable_ir_pow_if_necessary_unsafe();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable_unsafe(true);
@@ -129,11 +128,11 @@ void flash_activate_task(void *pvParameters)
 						// and make sure the flash enable pin is high
 						flash_arm();
 
-					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
-			
 						// delays for time of FLASH_DATA_READ_FREQ, as required by flash_arm
 						read_flash_data_batches(current_burst_struct, &data_arrays_tail, &current_sums_struct, 
 												BATCH_READS_BEFORE, &prev_data_read_time, false);
+
+					trace_print("Starting flash @ %d ticks", xTaskGetTickCount());
 
 						// send actual falling edge to flash circuitry to activate it
 						flash_activate();
@@ -162,36 +161,38 @@ void flash_activate_task(void *pvParameters)
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
 					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
-					disable_ir_pow_if_necessary(got_irpow_mutex); 
-					xSemaphoreGive(i2c_mutex);
+					disable_ir_pow_if_necessary_unsafe(we_turned_ir_on); 
+					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
-					log_error(ELOC_FLASH, ECODE_I2C_MUTEX_TIMEOUT, true);
+					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 				}
-				xSemaphoreGive(critical_action_mutex);
-			} else {
-				log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			
+				// in case any mutex didn't get locked
+				if (!actually_flashed) {
+					// note critical action mutex is given OUTSIDE this loop
+					continue;
+				}
+			
+				// update sat event history if we flashed and it wasn't noted
+				if (!cache_get_sat_event_history().first_flash) {
+					update_sat_event_history(0, 0, 0, 0, 0, 1, 0);
+				}
+			
+				configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
+			
+				// store burst data in equistack
+				current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
+				// reset data array tails so we're writing at the start
+				data_arrays_tail = 0;
+			
+				// delay between successive flashes
+				vTaskDelay(TIME_BTWN_FLASHES / portTICK_PERIOD_MS); // delay on last iteration as well is OK
 			}
-			
-			// in case any mutex didn't get locked
-			if (!actually_flashed) {
-				continue;
-			}
-			
-			// update sat event history if we flashed and it wasn't noted
-			if (!cache_get_sat_event_history().first_flash) {
-				update_sat_event_history(false, 0, 0, 0, 0, 0, 1, 0); // don't write through on every flash
-			}
-			
-			configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
-			
-			
-			// store burst data in equistack
-			current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
-			// reset data array tails so we're writing at the start
-			data_arrays_tail = 0;
-			
-			// delay between successive flashes
-			vTaskDelay(TIME_BTWN_FLASHES / portTICK_PERIOD_MS); // delay on last iteration as well is OK
+			xSemaphoreGive(critical_action_mutex);
+		} else {
+			log_error(ELOC_FLASH, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+			// skip logging flash cmp on failure
+			continue;
 		}
 		
 		// using the sums, compute and populate the flash compare struct corresponding to this burst

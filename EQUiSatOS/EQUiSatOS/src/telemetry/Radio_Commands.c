@@ -24,12 +24,13 @@ void radio_init(void) {
 	setup_pin(true, P_RX_EN); //init receive enable pin
 }
 
-bool check_checksum(char* data, int dataLen, uint8_t actualChecksum) {
-	unsigned char checksum = 0;
-	for (int i = 0; i<dataLen; i++) {
+bool check_checksum(char* data, uint8_t dataLen, uint8_t actualChecksum) {
+	uint8_t checksum = 0;
+	for (uint8_t i = 0; i<dataLen; i++) {
 		checksum = (checksum + data[i]) & 0xFF;
 	}
-	return (~checksum == actualChecksum);
+	checksum = ~checksum;
+	return (checksum == actualChecksum);
 }
 
 void set_command_mode(bool delay) {
@@ -118,7 +119,7 @@ void set_dealer_mode(void) {
 	sendbuffer[4] = '\0';
 	usart_send_string(sendbuffer);
 }
-/*
+
 void set_tx_freq(void) {
 	//index 3-6 is 4 byte frequency in Hz
 	sendbuffer[0] = 0x01;
@@ -196,14 +197,14 @@ int response_check(char arr[]){
 }*/
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
-bool XDL_prepare_get_temp() {
+void XDL_prepare_get_temp(void) {
 	radio_send_buffer[0] = 0x01;
 	radio_send_buffer[1] = 0x50;
 	radio_send_buffer[2] = ~0x50;
 	radio_send_buffer[3] = '\0';
 }
 
-bool warm_reset(void){
+void warm_reset(void){
 	radio_send_buffer[0] = 0x01;
 	radio_send_buffer[1] = 0x1d;
 	radio_send_buffer[2] = 0x01; //warm
@@ -235,21 +236,24 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		xSemaphoreTakeRecursive(print_mutex, 200 / portTICK_PERIOD_MS);
 	#endif
 	
+	#ifdef DONT_PRINT_RAW_TRANSMISSIONS
+		print("Transmitted %d bytes\n", size);
+	#endif
+	
+	if (!xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+		// TODO: LOG ERROR
+	}
+	
 	// we don't care too much here if the mutex times out; we gotta transmit!
 	bool got_mutex = true;
 	if (!hardware_state_mutex_take()) {
 		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 		got_mutex = false;
-	}
-	
-	#ifdef DONT_PRINT_RAW_TRANSMISSIONS
-		print("Transmitted %d bytes\n", size);
-	#endif
+	}		
 	
 	// suspend the scheduler to make sure the whole buf is sent atomically
-	// (so the radio gets the full buf at once and doesn't cut out in the middle)
-	
-	pet_watchdog(); // in case this takes a bit and we're close to reset
+	// (so the radio gets the full buf at once and doesn't cut out in the middle)	
+	pet_watchdog(); // in case this takes a bit and we're close to reset	
 	vTaskSuspendAll();
 	{
 		#if defined(TRANSMIT_ACTIVE)
@@ -260,13 +264,20 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			usart_send_buf(buf, size);
 		#endif
 		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-			delay_ms(100); // TODO
+			delay_ms(200); // TODO
 			setTXEnable(false);
 		#endif
 	}
 	xTaskResumeAll();
 	if (got_mutex) hardware_state_mutex_give();
+	
+	xSemaphoreGive(i2c_mutex);
+	
+	//TODO: current for first transmission in sequence too low. rest are fine :|
+	vTaskDelay(50 / portTICK_PERIOD_MS);
+	//for (int i = 0; i < 10; i++) {
 	verify_regulators();
+	//}
 
 	// delay during transmission
 	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	

@@ -44,17 +44,17 @@ void test_init(void)
 	assert(charging_data.lion_discharging == -1);
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
 	assert(charging_data.curr_charge_state == FILL_LI_NEITHER_FULL_A);
-	assert(charging_data.li_last_full_or_recommissioned_timestamp[0] == -1);
-	assert(charging_data.li_last_full_or_recommissioned_timestamp[1] == -1);
-	assert(charging_data.li_entered_low_voltage_timestamp[0] == -1);
-	assert(charging_data.li_entered_low_voltage_timestamp[1] == -1);
-	assert(charging_data.already_set_sat_state == 0);
+	assert(charging_data.li_last_full_or_recommissioned_timestamp[0] == (uint32_t)-1); //TODO: most of these tests don't make sense
+	assert(charging_data.li_last_full_or_recommissioned_timestamp[1] == (uint32_t)-1);
+	assert(charging_data.li_entered_low_voltage_timestamp[0] == (uint64_t)-1);
+	assert(charging_data.li_entered_low_voltage_timestamp[1] == (uint64_t)-1);
 
 	for (int i = 0; i < 4; i++)
 	{
-		assert(charging_data.bat_voltages[i] == -1);
+		assert(charging_data.already_set_sat_state[i] == 0);
+		assert(charging_data.bat_voltages[i] == 0); //TODO: this was originally -1, why tf
 		assert(charging_data.decommissioned[i] == 0);
-		assert(charging_data.decommissioned_timestamp[i] == -1);
+		assert(charging_data.decommissioned_timestamp[i] == 0); //TODO: this was originally -1, why tf
 		assert(charging_data.decommissioned_count[i] == 0);
 		assert(charging_data.charging_parity == 0);
 	}

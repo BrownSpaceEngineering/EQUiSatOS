@@ -85,7 +85,7 @@ size_t longest_same_seq_len(uint8_t* data, size_t len) {
 // wrapper for reading a field from MRAM
 // handles RAIDing, error checking and correction, and field duplication
 // returns whether accurate data should be expected in data (whether error checks worked out)
-bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t address) {
+static bool storage_read_field_unsafe(uint8_t *mram1_data1, uint num_bytes, uint32_t address) {
 	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
@@ -220,7 +220,7 @@ bool storage_read_field_unsafe(uint8_t *mram1_data1, int num_bytes, uint32_t add
 
 // wrapper for writing a field to MRAM
 // handles RAIDing, error checking, and field duplication
-bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
+static bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t address) {
 	bool success1 = !log_if_error(ELOC_MRAM1_WRITE,
 		mram_write_bytes(&spi_master_instance, &mram1_slave, data, num_bytes, address),
 			true); // priority
@@ -276,7 +276,7 @@ void read_state_from_storage(void) {
 }
 
 // writes error stack data to mram, and confirms it was written correctly if told to
-bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
+static bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	// (move these (big) buffers off stack)
 	static sat_error_t error_buf[ERROR_STACK_MAX]; 
 	static sat_error_t temp_error_buf[ERROR_STACK_MAX];
@@ -343,7 +343,7 @@ bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 // NOTE: must be called with the SPI mutex to protect the changes
 // in the cached state
 // Returns whether we should reboot (tick count overflowed)
-bool update_cache_fields(void) {
+static bool update_cache_fields(void) {
 	// make sure all the cached states are in sync
 	cached_state_correct_errors();
 	
@@ -381,7 +381,7 @@ bool update_cache_fields(void) {
 // helper to perform actual field writes of cache (used in two places)
 // Returns whether error writes were correctly confirmed,
 // if confirm_errors was true (otherwise true)
-bool write_cache_fields_to_storage(bool confirm_errors) {
+static bool write_cache_fields_to_storage(bool confirm_errors) {
 	storage_write_field_unsafe((uint8_t*) &cached_state.secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
 	storage_write_field_unsafe(&cached_state.reboot_count,						RAD_SAFE_FIELD_GET(storage_reboot_cnt_size),				RAD_SAFE_FIELD_GET(storage_reboot_cnt_addr));
 	storage_write_field_unsafe((uint8_t*) &cached_state.sat_state,				RAD_SAFE_FIELD_GET(storage_sat_state_size),					RAD_SAFE_FIELD_GET(storage_sat_state_addr));
@@ -588,9 +588,10 @@ void set_persistent_charging_data_unsafe(persistent_charging_data_t data) {
 /* Updates the sat_event_history if the given value is true, but ONLY
    sets them to TRUE, not to FALSE; if the passed in value is FALSE,
    the original value (TRUE or FALSE) is retained. 
-   Should really be called periodically for these crucial things */
-bool update_sat_event_history(bool write_through,
-								uint8_t antenna_deployed,
+   Writes through if the given value is true AND different from cached state.
+   Should be called periodically for these crucial things 
+   Returns whether got mutex (i.e. whether info was written) */
+bool update_sat_event_history(uint8_t antenna_deployed,
 								uint8_t lion_1_charged,
 								uint8_t lion_2_charged,
 								uint8_t lifepo_b1_charged,
@@ -601,23 +602,38 @@ bool update_sat_event_history(bool write_through,
 	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS)) {
 		cached_state_correct_errors();
 	
-		if (antenna_deployed)
+		bool hist_changed = false;
+		if (antenna_deployed) {
+			hist_changed = !cached_state.sat_event_history.antenna_deployed;
 			cached_state.sat_event_history.antenna_deployed = true;
-		if (lion_1_charged)
+		}
+		if (lion_1_charged) {
+			hist_changed = !cached_state.sat_event_history.lion_1_charged;
 			cached_state.sat_event_history.lion_1_charged = true;
-		if (lion_2_charged)
+		}
+		if (lion_2_charged) {
+			hist_changed = !cached_state.sat_event_history.lion_2_charged;
 			cached_state.sat_event_history.lion_2_charged = true;
-		if (lifepo_b1_charged)
+		}
+		if (lifepo_b1_charged) {
+			hist_changed = !cached_state.sat_event_history.lifepo_b1_charged;
 			cached_state.sat_event_history.lifepo_b1_charged = true;
-		if (lifepo_b2_charged)
+		}
+		if (lifepo_b2_charged) {
+			hist_changed = !cached_state.sat_event_history.lifepo_b2_charged;
 			cached_state.sat_event_history.lifepo_b2_charged = true;
-		if (first_flash)
+		}
+		if (first_flash) {
+			hist_changed = !cached_state.sat_event_history.first_flash;
 			cached_state.sat_event_history.first_flash = true;
-		if (prog_mem_rewritten)
+		}
+		if (prog_mem_rewritten) {
+			hist_changed = !cached_state.sat_event_history.prog_mem_rewritten;
 			cached_state.sat_event_history.prog_mem_rewritten = true;
+		}
 
 		cached_state_sync_redundancy();
-		if (write_through) {
+		if (hist_changed) {
 			write_state_to_storage_safety(false);
 		}
 		
@@ -730,7 +746,7 @@ bool compare_sat_event_history(satellite_history_batch* history1, satellite_hist
 	return result;
 }
 bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2) {
-	return data1->li_caused_reboot == data1->li_caused_reboot;
+	return data1->li_caused_reboot == data2->li_caused_reboot;
 }
 
 /************************************************************************/

@@ -22,82 +22,87 @@ static uint16_t untruncate(uint8_t val, sig_id_t sig) {
 
 void print_accel_batch(accelerometer_batch batch) {
 	print("accel\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_ACCEL));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_ACCEL));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_ACCEL));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_ACCEL));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_ACCEL));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_ACCEL));
 }
 void print_gyro_batch(gyro_batch batch) {
 	print("gyro\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_GYRO));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_GYRO));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_GYRO));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_GYRO));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_GYRO));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_GYRO));
 }
 void print_magnetometer_batch(magnetometer_batch batch) {
 	print("mag\n");
-	print("\tx: %d\t%d mV\n", batch[0], (int16_t) untruncate(batch[0], S_MAG));
-	print("\ty: %d\t%d mV\n", batch[1], (int16_t) untruncate(batch[1], S_MAG));
-	print("\tz: %d\t%d mV\n", batch[2], (int16_t) untruncate(batch[2], S_MAG));
+	print("\tx: %d\t%d\n", batch[0], (int16_t) untruncate(batch[0], S_MAG));
+	print("\ty: %d\t%d\n", batch[1], (int16_t) untruncate(batch[1], S_MAG));
+	print("\tz: %d\t%d\n", batch[2], (int16_t) untruncate(batch[2], S_MAG));
 }
 void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	print("ir ambs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
+		print("\t%d: %d\t%d C\n", i+1, untruncate(batch[i], S_IR_AMB), (int16_t) dataToTemp(untruncate(batch[i], S_IR_AMB)));
 	}
+}
+
+static int16_t ad590_to_temp(uint16_t mV)  {
+	float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
+	float tempInC = (current)*1000000-273;// T = 454*V in C
+	return (int16_t) tempInC;
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 	print("ir objs\n");
 	for (int i = 0; i < 6; i++) {
-		print("\t%d: %d\t%d C\n", i+1, batch[i], (int16_t) dataToTemp(batch[i]));
+		print("\t%d: %d\t%d C\n", i+1, batch[i]<<8, (int16_t) dataToTemp(batch[i]));
 	}
 }
 void print_lion_volts_batch(lion_volts_batch batch) {
-	print("lion volts 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
-	print("lion volts 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
+	print("L1_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_L_VOLT));
+	print("L2_REF: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
-void print_lion_current_batch(lion_current_batch batch) {
-	print("lion SNS 1: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
-	print("lion SNS 2: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
+static void print_lion_current_batch(lion_current_batch batch) {
+	print("L1_SNS: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
+	print("L2_SNS: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("lion temps 1: %d BAD: %d C\n", batch[0], untruncate(batch[0], S_L_TEMP));
-	print("lion temps 2: %d BAD: %d C\n", batch[1], untruncate(batch[1], S_L_TEMP));
+	print("L1_TEMP: %d %d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_L_TEMP)));
+	print("L2_TEMP: %d %d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_L_TEMP)));
 }
 void print_led_temps_batch(led_temps_batch batch) {
-	print("led temps\n");
+	print("LED Temps\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\tBAD: %d\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP_REG));
+		print("\t%d: %d\t%dC\n", i+1, batch[i], ad590_to_temp(untruncate(batch[i], S_LED_TEMP_REG)));
 	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
-	print("lifepo bank temps\n");
-	print("\t1: %d\tBAD: %d C\n", batch[0], untruncate(batch[0], S_LF_TEMP));
-	print("\t2: %d\tBAD: %d C\n", batch[1], untruncate(batch[1], S_LF_TEMP));
+	print("lifepo bat temps\n");
+	print("\t1: %d\t%d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_LF_TEMP)));
+	print("\t2: %d\t%d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_LF_TEMP)));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	print("lifepo volts\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%d mv\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
+		print("\tLF%dREF: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LF_VOLT));
 	}
 }
-void print_lifepo_current_batch(lifepo_current_batch batch) {
-	print("lifepo SNS\n");
-	print("\tbank1: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
-	print("\tbank2: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
-	print("lifepo OSNS\n");
-	print("\tbank1: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
-	print("\tbank2: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
+void print_lifepo_current_batch(lifepo_current_batch batch) {	
+	print("\tLFB1SNS: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
+	print("\tLFB2SNS: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
+		
+	print("\tLFB1OSNS: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
+	print("\tLFB2OSNS: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
 }
 void print_led_current_batch(led_current_batch batch) {
 	print("led current\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
+		print("\tLED%dSNS: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
 	}
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_RAD_TEMP));
+	print("radio temp: %d\t: %d C\n", batch, untruncate(batch, S_RAD_TEMP)/10);
 }
 void print_imu_temp_batch(imu_temp_batch batch) {
 	print("imu temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_IMU_TEMP));
@@ -140,7 +145,7 @@ void print_pdiode_batch(pdiode_batch batch) {
 /************************************************************************/
 /* Stack type element-printing methods                                  */
 /************************************************************************/
-void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
+static void print_stack_type_header(const char* header, int i, uint32_t timestamp, bool transmitted) {
 	print("%2d: ---------%s---------\n", i, header);
 	print("timestamp: %d \t %s\n", timestamp, transmitted ? "TRANSMITTED" : "not transmitted");
 }
@@ -172,34 +177,37 @@ void print_attitude_data(attitude_data_t* data, int i) {
 }
 
 void print_flash_data(flash_data_t* data, int i_global) {
+	print("---------LED BURST Data---------\n");
 	print_stack_type_header("Flash Data Packet", i_global, data->timestamp, data->transmitted);
-	print("---LED Temp Burst Data---\n");
+	//print("---LED Temp Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_led_temps_batch(data->led_temps_data[i]);
 	}
-	print("---LiFePo Temp Burst Data---\n");
+	//print("---LiFePo Temp Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_temps_batch(data->lifepo_bank_temps_data[i]);
 	}
-	print("---LiFePo Current Burst Data---\n");
+	//print("---LiFePo Current Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_current_batch(data->lifepo_current_data[i]);
 	}
-	print("---LiFePo Volts Burst Data---\n");
+	//print("---LiFePo Volts Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_lifepo_volts_batch(data->lifepo_volts_data[i]);
 	}
-	print("---Led Current Burst Data---\n");
+	//print("---Led Current Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_led_current_batch(data->led_current_data[i]);
 	}
-	print("---Gyro Burst Data---\n");
+	//print("---Gyro Burst Data---\n");
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {
 		print_gyro_batch(data->gyro_data[i]);
 	}
+	print("---------END LED BURST Data---------\n");
 }
 
 void print_flash_cmp_data(flash_cmp_data_t* data, int i) {
+	print("---------END LED COMPARISON Data---------\n");
 	print_stack_type_header("Flash Compare Data Packet", i, data->timestamp, data->transmitted);
 	print_led_temps_batch(data->led_temps_avg_data);
 	print_lifepo_temps_batch(data->lifepo_bank_temps_avg_data);
@@ -207,6 +215,7 @@ void print_flash_cmp_data(flash_cmp_data_t* data, int i) {
 	print_lifepo_current_batch(data->lifepo_current_avg_data);
 	print_lifepo_volts_batch(data->lifepo_volts_avg_data);
 	print_magnetometer_batch(data->mag_before_data);
+	print("---------END LED COMPARISON Data---------\n");
 }
 
 void print_low_power_data(low_power_data_t* data, int i) {
@@ -286,7 +295,7 @@ const char* get_msg_type_str(msg_data_type_t msg_type) {
 	}
 }
 
-uint16_t get_task_stack_size(task_type_t task) {
+static uint16_t get_task_stack_size(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return TASK_WATCHDOG_STACK_SIZE;
 		case STATE_HANDLING_TASK: return TASK_STATE_HANDLING_STACK_SIZE;
@@ -302,7 +311,7 @@ uint16_t get_task_stack_size(task_type_t task) {
 	}
 }
 
-uint32_t get_task_freq(task_type_t task) {
+static uint32_t get_task_freq(task_type_t task) {
 	switch (task) {
 		case WATCHDOG_TASK: return WATCHDOG_TASK_FREQ;
 		case STATE_HANDLING_TASK: return STATE_HANDLING_TASK_FREQ;
@@ -473,7 +482,7 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 37: return "ECODE_EXCESSIVE_SUSPENSION";
 
 	case 38: return "ECODE_CRIT_ACTION_MUTEX_TIMEOUT";
-	case 39: return "ECODE_I2C_MUTEX_TIMEOUT";
+	case 39: return "ECODE_I2C_IRPOW_MUTEX_TIMEOUT";
 	case 40: return "ECODE_PROC_ADC_MUTEX_TIMEOUT";
 	case 41: return "ECODE_HW_STATE_MUTEX_TIMEOUT";
 	case 42: return "ECODE_USART_MUTEX_TIMEOUT";
@@ -481,33 +490,35 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 44: return "ECODE_BAT_CHARGING_MUTEX_TIMEOUT";
 	case 45: return "ECODE_WATCHDOG_MUTEX_TIMEOUT";
 	case 46: return "ECODE_EQUISTACK_MUTEX_TIMEOUT";
-	case 47: return "ECODE_IRPOW_MUTEX_TIMEOUT";
-	case 48: return "ECODE_ALL_MUTEX_TIMEOUT";
+	case 47: return "ECODE_ALL_MUTEX_TIMEOUT";
 
-	case 49: return "ECODE_REWROTE_PROG_MEM";
-	case 50: return "ECODE_STACK_OVERFLOW";
-	case 51: return "ECODE_DET_ALREADY_HIGH";
+	case 48: return "ECODE_REWROTE_PROG_MEM";
+	case 49: return "ECODE_STACK_OVERFLOW";
+	case 50: return "ECODE_DET_ALREADY_HIGH";
 
-	case 52: return "ECODE_BAT_NOT_DISCHARGING";
-	case 53: return "ECODE_BAT_NOT_NOT_DISCHARGING";
-	case 54: return "ECODE_BAT_NOT_CHARGING";
-	case 55: return "ECODE_BAT_NOT_NOT_CHARGING";
-	case 56: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
-	case 57: return "ECODE_BAT_FAULT";
-	case 58: return "ECODE_NOT_FULL_FOR_WHILE";
-	case 59: return "ECODE_LOW_VOLTAGE_FOR_WHILE";
-	case 60: return "ECODE_RECOMMISSION";
-	case 61: return "ECODE_ALL_SAME_VAL";
-	case 62: return "ECODE_CORRUPTED";
-	case 63: return "ECODE_INVALID_STATE_CHANGE";
-	case 64: return "ECODE_TIMESTAMP_WRAPAROUND";
-	case 65: return "ECODE_INCONSISTENT_STATE";
-	case 66: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
-	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
-	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
-	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
-	case 70: return "ECODE_SOFTWARE_RESET";
-	case 71: return "ECODE_SAT_RESET";
+	case 51: return "ECODE_BAT_NOT_DISCHARGING";
+	case 52: return "ECODE_BAT_NOT_NOT_DISCHARGING";
+	case 53: return "ECODE_BAT_NOT_CHARGING";
+	case 54: return "ECODE_BAT_NOT_NOT_CHARGING";
+	case 55: return "ECODE_BAT_NOT_DISCHARGING_RESTART";
+	case 56: return "ECODE_BAT_FAULT";
+	case 57: return "ECODE_BAT_NOT_FULL_FOR_WHILE";
+	case 58: return "ECODE_BAT_LOW_VOLTAGE_FOR_WHILE";
+	case 59: return "ECODE_RECOMMISSION";
+	case 60: return "ECODE_ALL_SAME_VAL";
+	case 61: return "ECODE_CORRUPTED";
+	case 62: return "ECODE_INVALID_STATE_CHANGE";
+	case 63: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 64: return "ECODE_INCONSISTENT_STATE";
+	case 65: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	case 69: return "ECODE_SOFTWARE_RESET";
+	case 70: return "ECODE_SAT_RESET";
+
+	case 71: return "ECODE_BAT_LI_TIMEOUT";
+	case 72: return "ECODE_BAT_LF_TIMEOUT";
 	default: return "[error code not added to sys test]";
 	}
 }
@@ -533,7 +544,7 @@ void print_equistack(equistack* stack, void (*elm_print)(void*, int), const char
 	}
 }
 
-void print_equistacks(void) {
+static void print_equistacks(void) {
 	print("\n==============Equistack Dump==============\n");
 	int max_size = -1;
 	if (only_print_recent_data) {
@@ -575,14 +586,20 @@ void print_task_info(void) {
 
 void print_cur_data_buf(uint8_t* cur_data_buf) {
 	print("\n\n============Current Data============\n");
-	print("secs to next flash: %d\n", cur_data_buf[0]);
-	print("reboot count: %d\n",		cur_data_buf[1]);
-	print_lion_volts_batch(			&(cur_data_buf[2]));
-	print_lion_current_batch(		&(cur_data_buf[4]));
-	print_lion_temps_batch(			&(cur_data_buf[6]));
-	print_panelref_lref_batch(		&(cur_data_buf[8]));
-	print_bat_charge_dig_sigs_batch(cur_data_buf[11]<<8 | cur_data_buf[10]);
-	print_lifepo_volts_batch(		&(cur_data_buf[12]));
+	static uint8_t cmp_buf[MSG_CUR_DATA_LEN];
+	memset(cmp_buf, 0, sizeof(cmp_buf));
+	if (memcmp(cur_data_buf, cmp_buf, MSG_CUR_DATA_LEN) != 0) {
+		print("secs to next flash: %d\n", cur_data_buf[0]);
+		print("reboot count: %d\n",		cur_data_buf[1]);
+		print_lion_volts_batch(			&(cur_data_buf[2]));
+		print_lion_current_batch(		&(cur_data_buf[4]));
+		print_lion_temps_batch(			&(cur_data_buf[6]));
+		print_panelref_lref_batch(		&(cur_data_buf[8]));
+		print_bat_charge_dig_sigs_batch(cur_data_buf[11]<<8 | cur_data_buf[10]);
+		print_lifepo_volts_batch(		&(cur_data_buf[12]));
+	} else {
+		print("(none available (or all zeros)");
+	}
 }
 
 void rtos_system_test(void) {

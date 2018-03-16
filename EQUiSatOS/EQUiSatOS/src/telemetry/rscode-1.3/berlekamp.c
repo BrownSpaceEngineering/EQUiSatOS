@@ -166,13 +166,13 @@ init_gamma (int gamma[])
 	
 	
 	
-static void compute_next_omega (int d, int A[], int dst[], int src[])
+/*static void compute_next_omega (int d, int A[], int dst[], int src[])
 {
   uint8_t i;
   for ( i = 0; i < MAXDEG;  i++) {
     dst[i] = src[i] ^ gmult(d, A[i]);
   }
-}
+}*/
 	
 
 

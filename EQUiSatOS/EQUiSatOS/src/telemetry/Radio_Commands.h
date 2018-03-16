@@ -15,7 +15,7 @@
 // constants
 #define RADIO_BAUD_BYTES			1200
 #define TRANSMIT_TIME_MS(bytes)		((1000 * bytes) / RADIO_BAUD_BYTES)
-#define SET_CMD_MODE_WAIT_BEFORE_MS	200
+#define SET_CMD_MODE_WAIT_BEFORE_MS	1000
 #define SET_CMD_MODE_WAIT_AFTER_MS	300
 #define MAX_RADIO_CMD_TIME			200 // 20 ms inner delay * 20
 #define WARM_RESET_REBOOT_TIME		1000
@@ -31,11 +31,11 @@ extern char kill_forever_buf[LEN_UPLINK_BUF];
 extern char flash_buf[LEN_UPLINK_BUF];
 extern char reboot_buf[LEN_UPLINK_BUF];
 
-bool check_checksum(char* data, int dataLen, uint8_t actualChecksum);
+bool check_checksum(char* data, uint8_t dataLen, uint8_t actualChecksum);
 
 void set_command_mode(bool delay);
-bool XDL_prepare_get_temp();
-bool warm_reset(void);
+void XDL_prepare_get_temp(void);
+void warm_reset(void);
 void cold_reset(void);
 
 void radio_init(void);

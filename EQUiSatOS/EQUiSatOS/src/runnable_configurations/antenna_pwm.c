@@ -56,13 +56,17 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	vTaskDelay(ms / portTICK_PERIOD_MS);
 
 	// read current (both just in case) so we can shut it down if we need
-	uint16_t li1, li2 ,lf1, lf2, lf3, lf4;
+	uint16_t ad7991_bat_results[4];
+	uint16_t li1, li2, lf1, lf2, lf3, lf4;	
 	if (p_ant == 1) {
-		read_lion_current_precise(&li1, &li2);
+		// TODO: check mutex value?
+		//read_lion_current_precise(&li1, &li2);
+		read_ad7991_batbrd_precise(ad7991_bat_results);
 	} else {
 		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
 	}
-
+	li1 = ad7991_bat_results[1];
+	li2 = ad7991_bat_results[0];
 	hardware_state_mutex_take();
 	disable_pwm();
 	get_hw_states()->antenna_deploying = false;
@@ -77,11 +81,11 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		uint16_t li_cur;
 		li_discharging_t lid = get_li_discharging();
 		if (lid == LI1_DISG) {
-			lid = li1;
+			li_cur = li1;
 		} else if (lid == LI2_DISG) {
-			lid = li2;
+			li_cur = li2;
 		} else {
-			lid = li1 + li2;
+			li_cur = li1 + li2;
 		}
 
 		if (li_cur > PWM_MAX_CUR) {
