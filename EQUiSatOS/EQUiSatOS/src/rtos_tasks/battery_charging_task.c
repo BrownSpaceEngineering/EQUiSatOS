@@ -24,6 +24,11 @@
 //   - warnings
 //   - flow through the discharging section on the first time through
 
+// Stretch (TODO):
+//   - strike case for LI not charging
+//   - retry hardware checks that decommission
+//   - decrement decommission count if no decommission for a while
+
 li_discharging_t get_li_discharging(void)
 {
 	bat_charge_dig_sigs_batch batch;
@@ -335,9 +340,7 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 	print("set li %d to discharge: %d\n", bat, discharge);
 }
 
-// TODO: retry after seeing problems?
 // NOTE: we should only get here if we switched the batteries we're discharging
-// from
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
 	print("checking after discharge:\n");
@@ -436,7 +439,6 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	}
 }
 
-// TODO: retry after seeing problems?
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 {
 	print("checking after charging\n");
@@ -699,22 +701,8 @@ void battery_logic()
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
 
-		// we can't call the battery full from CHGN if we don't know CHGN
-		bat_charge_dig_sigs_batch batch;
-		bool dig_sigs_read_success = read_bat_charge_dig_sigs_batch_with_retry(&batch);
-		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
-
-		// we can't call the battery full from CHGN if we don't know PANEL_REF
-		int panel_ref_val = get_panel_ref_val_with_retry();
-		print("\tpanel ref: %d\n", panel_ref_val);
-
-		// TODO: do we want this to be based on SNS?
-		curr_charging_filled_up =
-									(dig_sigs_read_success && panel_ref_val != -1 &&
-									!chg_pin_active(charging_data.bat_charging, batch) &&
-								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_SANITY_MV &&
-								  panel_ref_val >= PANEL_REF_SUN_MV) ||
-								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
+		// TODO: we probably want this to be based on SNS?
+		curr_charging_filled_up = (charging_data.bat_voltages[charging_data.bat_charging] > LI_MAX_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
 	}
@@ -936,7 +924,6 @@ void battery_logic()
 	{
 		switch (charging_data.curr_charge_state)
 		{
-			// TODO*: add strike case if lifepos aren't charging for a long time
 			case FILL_LI_B:
 				if (charging_data.bat_charging == good_li && curr_charging_filled_up)
 					charging_data.curr_charge_state = FILL_LF_B;
