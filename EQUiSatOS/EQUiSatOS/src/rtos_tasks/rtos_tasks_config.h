@@ -181,8 +181,8 @@ typedef enum
 #endif
 
 #ifndef TESTING_SPEEDUP
-#define TRANSMIT_TASK_FREQ						(20*60*1000)	// 20 secs; how often to transmit
-	#define TRANSMIT_TASK_LESS_FREQ					(40*60*1000) // 40 secs; half as fast in low power (also transmits half the data)
+#define TRANSMIT_TASK_FREQ						(20*1000)	// 20 secs; how often to transmit
+	#define TRANSMIT_TASK_LESS_FREQ					(40*1000) // 40 secs; half as fast in low power (also transmits half the data)
 #endif
 
 #ifndef TESTING_SPEEDUP

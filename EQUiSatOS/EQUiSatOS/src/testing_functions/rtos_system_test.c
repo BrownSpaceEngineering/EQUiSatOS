@@ -61,8 +61,8 @@ void print_lion_volts_batch(lion_volts_batch batch) {
 	print("L2_REF: %d %d mV\n", batch[1], untruncate(batch[1], S_L_VOLT));
 }
 static void print_lion_current_batch(lion_current_batch batch) {
-	print("L1_SNS: %d %d mV\n", batch[0], untruncate(batch[0], S_L_SNS));
-	print("L2_SNS: %d %d mV\n", batch[1], untruncate(batch[1], S_L_SNS));
+	print("L1_SNS: %d %d mV\t%d mA\n", batch[0], untruncate(batch[0], S_L_SNS), ((int16_t)untruncate(batch[0], S_L_SNS)-985)*2);
+	print("L2_SNS: %d %d mV\t%d mA\n", batch[1], untruncate(batch[1], S_L_SNS), ((int16_t)untruncate(batch[1], S_L_SNS)-1022)*2);
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
 	print("L1_TEMP: %d %d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_L_TEMP)));
@@ -86,20 +86,19 @@ void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	}
 }
 void print_lifepo_current_batch(lifepo_current_batch batch) {	
-	print("\tLFB1SNS: %d\t%d mV\n", batch[0], untruncate(batch[0], S_LF_SNS_REG));
-	print("\tLFB2SNS: %d\t%d mV\n\n", batch[2], untruncate(batch[2], S_LF_SNS_REG));
-		
-	print("\tLFB1OSNS: %d\t%d mV\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG));
-	print("\tLFB2OSNS: %d\t%d mV\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG));
+	print("\tLFB1SNS: %d\t%d mV\t%d mA\n", batch[0], untruncate(batch[0], S_LF_SNS_REG), (untruncate(batch[0], S_LF_SNS_REG)-980)*50);
+	print("\tLFB1OSNS: %d\t%d mV\t%d mA\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG), untruncate(batch[1], S_LF_OSNS_REG)*71.43);
+	print("\tLFB2SNS: %d\t%d mV\t%d mA\n", batch[2], untruncate(batch[2], S_LF_SNS_REG), (untruncate(batch[2], S_LF_SNS_REG)-979)*50);
+	print("\tLFB2OSNS: %d\t%d mV\t%d mA\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG), untruncate(batch[3], S_LF_OSNS_REG)*71.43);
 }
 void print_led_current_batch(led_current_batch batch) {
 	print("led current\n");
 	for (int i = 0; i < 4; i++) {
-		print("\tLED%dSNS: %d\t%d mV\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS));
+		print("\tLED%dSNS: %d\t%d mV\t%d mA\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS), untruncate(batch[i], S_LED_SNS)*100/30);
 	}
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
-	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
+	print("refs: PANELREF: %d %d mV\t%d mV\nL_REF: %d %d mV\t%d mV\n", batch[0], untruncate(batch[0], S_PANELREF), (untruncate(batch[0], S_PANELREF)-130)*558/100, batch[1], untruncate(batch[1], S_LREF), (untruncate(batch[1], S_LREF)-50)*2717/1000);
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
 	print("radio temp: %d\t: %d C\n", batch, untruncate(batch, S_RAD_TEMP)/10);
