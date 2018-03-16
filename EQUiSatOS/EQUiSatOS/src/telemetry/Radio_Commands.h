@@ -13,13 +13,14 @@
 #include "../sensor_drivers/sensor_read_commands.h"
 
 // constants
-#define RADIO_BAUD_BYTES			1200
-#define TRANSMIT_TIME_MS(bytes)		((1000 * bytes) / RADIO_BAUD_BYTES)
-#define SET_CMD_MODE_WAIT_BEFORE_MS	1000
-#define SET_CMD_MODE_WAIT_AFTER_MS	300
-#define MAX_RADIO_CMD_TIME			200 // 20 ms inner delay * 20
-#define WARM_RESET_REBOOT_TIME		1000
-#define WARM_RESET_WAIT_AFTER_MS	500 // TODO: necessary / what value?
+#define RADIO_BAUD_BYTES				1200
+#define TRANSMIT_TIME_MS(bytes)			((1000 * bytes) / RADIO_BAUD_BYTES)
+#define TRANSMIT_CURRENT_RISE_TIME_MS	250
+#define SET_CMD_MODE_WAIT_BEFORE_MS		1000
+#define SET_CMD_MODE_WAIT_AFTER_MS		300
+#define MAX_RADIO_CMD_TIME				200 // 20 ms inner delay * 20
+#define WARM_RESET_REBOOT_TIME			1000
+#define WARM_RESET_WAIT_AFTER_MS		500 // TODO: necessary / what value?
 
 #define LEN_GROUND_CALLSIGN			4
 extern char ground_callsign_buf[LEN_GROUND_CALLSIGN];

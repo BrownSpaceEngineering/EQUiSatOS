@@ -240,62 +240,97 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		print("Transmitted %d bytes\n", size);
 	#endif
 	
+	// note the time of transmission so we can make sure we only delay 
+	// for the actual transmission time
+	TickType_t transmission_start_ticks;
+	
+	
+	// enable IR power and wait if necessary (it'll be safe (consistent) 
+	// if we have the mutex, otherwise transmission is so crucial we don't care)
+	// we're also taking the I2C mutex here so we're less likely to 
+	// get delayed later when verifying radio currents
+	enable_ir_pow_if_necessary_unsafe();
+ 	bool got_i2c_irpow_mutex = true;
 	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		// TODO: LOG ERROR
+		log_error(ELOC_RADIO, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		got_i2c_irpow_mutex = false;
+	}
+	{	
+		// now that we may have the mutex, try and enable IR power again
+		// in case it got shut off in the period between us first turning it
+		// on and getting the mutex (it should really be on)
+		enable_ir_pow_if_necessary_unsafe();
+		
+		// we don't care too much here if the mutex times out; we gotta transmit!
+		bool got_hw_state_mutex = true;
+		if (!hardware_state_mutex_take()) {
+			log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+			got_hw_state_mutex = false;
+		}
+	
+		// suspend the scheduler to make sure the whole buf is sent atomically
+		// (so the radio gets the full buf at once and doesn't cut out in the middle)	
+		pet_watchdog(); // in case this takes a bit and we're close to reset	
+		vTaskSuspendAll();
+		{
+			#if defined(TRANSMIT_ACTIVE)
+				setTXEnable(true);
+			#endif
+			#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
+				get_hw_states()->radio_state = RADIO_TRANSMITTING;
+				transmission_start_ticks = xTaskGetTickCount();
+				trace_print("transmitting...");
+				usart_send_buf(buf, size);
+			#endif
+			#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
+				delay_ms(10); // TODO
+				setTXEnable(false);
+			#endif
+		}
+		xTaskResumeAll();
+		// we only give the hw mutex here because we can't inside the scheduler suspended zone
+		// (also verify regulators needs it)
+		if (got_hw_state_mutex) hardware_state_mutex_give();
+	
+		// wait for transmission to start and current to rise before verifying
+		vTaskDelay(TRANSMIT_CURRENT_RISE_TIME_MS / portTICK_PERIOD_MS);
+		if (got_i2c_irpow_mutex) {
+			// if we got the mutex we can safely do a fast call to the unsafe method
+			verify_regulators_unsafe();
+			trace_print("verified regulators");
+		
+			// if we got the mutex, we can safely turn off IR power. Otherwise, 
+			// the best we can do is see if we can turn it off now.
+			// we don't care if we turned on IR power (this is mainly used in sensor read functions
+			// so external callers can avoid waits)
+			disable_ir_pow_if_necessary_unsafe(true);
+			xSemaphoreGive(i2c_irpow_mutex);
+		} else {
+			// if we didn't get the mutex, still try and verify the regulators (the slower way)
+			verify_regulators();
+			trace_print("verified regulators");
+		
+			// if we didn't get the IR power mutex, the best we can do 
+			// is see if we can turn it off now
+			disable_ir_pow_if_should_be_off(true); // expected on bcs. we turned it on
+		}
 	}
 	
-	// we don't care too much here if the mutex times out; we gotta transmit!
-	bool got_mutex = true;
-	if (!hardware_state_mutex_take()) {
-		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-		got_mutex = false;
-	}		
-	
-	// suspend the scheduler to make sure the whole buf is sent atomically
-	// (so the radio gets the full buf at once and doesn't cut out in the middle)	
-	pet_watchdog(); // in case this takes a bit and we're close to reset	
-	vTaskSuspendAll();
-	{
-		#if defined(TRANSMIT_ACTIVE)
-			setTXEnable(true);
-		#endif
-		#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
-			get_hw_states()->radio_state = RADIO_TRANSMITTING;
-			usart_send_buf(buf, size);
-		#endif
-		#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-			delay_ms(200); // TODO
-			setTXEnable(false);
-		#endif
-	}
-	xTaskResumeAll();
-	if (got_mutex) hardware_state_mutex_give();
-	
-	xSemaphoreGive(i2c_irpow_mutex);
-	
-	//TODO: current for first transmission in sequence too low. rest are fine :|
-	vTaskDelay(50 / portTICK_PERIOD_MS);
-	//for (int i = 0; i < 10; i++) {
-	verify_regulators();
-	//}
+	// delay for a total time of the transmission duration (hopefully the above didn't take that long)
+	vTaskDelayUntil(&transmission_start_ticks, TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	
 
-	// delay during transmission
-	vTaskDelay(TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	
-
-	got_mutex = true;
-	if (!hardware_state_mutex_take()) {
+	// note hardware state change, ignoring mutex timeout
+	if (hardware_state_mutex_take()) {
+		get_hw_states()->radio_state = RADIO_IDLE;
+		hardware_state_mutex_give();
+	} else {
+		get_hw_states()->radio_state = RADIO_IDLE;
 		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-		got_mutex = false;
 	}
-	
-	get_hw_states()->radio_state = RADIO_IDLE;
-	
-	if (got_mutex) hardware_state_mutex_give();
 	
 	#if defined(SAFE_PRINT) && (PRINT_DEBUG == 1 || PRINT_DEBUG == 3)
 		xSemaphoreGiveRecursive(print_mutex);
 	#endif
-	
 }
 
 /* high-level function to bring radio systems online and check their state */

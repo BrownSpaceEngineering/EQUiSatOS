@@ -25,9 +25,9 @@ static bool check_ins[NUM_TASKS];
 static uint32_t running_times[NUM_TASKS];
 static uint32_t prev_time;
 
-void watchdog_init(void) {
+// initializes our watchdog-monitoring task
+void init_watchdog_task(void) {
 	configASSERT(WATCHDOG_TASK == 0);
-	configure_watchdog();
 	memset(&check_ins, 0, sizeof(bool) * NUM_TASKS);
 	memset(&running_times, 0, sizeof(uint32_t) * NUM_TASKS);
 	watchdog_mutex = xSemaphoreCreateMutexStatic(&_watchdog_task_mutex_d);

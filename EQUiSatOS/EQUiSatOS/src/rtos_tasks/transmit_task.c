@@ -309,33 +309,31 @@ static void attempt_transmission(void) {
 	// wait here between calls to give buffer
 	if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) 
 	{
-		// note start time so we can make sure our packet timing
-		// is consistent no matter how long it takes to package the message
-		TickType_t prev_transmit_start_time = xTaskGetTickCount();
-		
 		// slot 1 transmit
 		transmit_buf_wait(msg_buffer, MSG_SIZE);
-		// between transmitting the first packet and starting the next one,
+		TickType_t prev_transmit_end_time = xTaskGetTickCount();
+		// between finishing transmitting the first packet and starting the next one,
 		// re-package the buffer with the message type of the second slot,
 		// and then delay any remaining time using RTOS to be timing-consistent
 		write_packet(msg_buffer, slot_2_msg_type, start_transmission_timestamp, cur_data_buf);
-		vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
-		// TODO: check that packaging doesn't take longer than TIME_BTWN_MSGS_MS (it shouldn't)
+		vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 		
 		// slot 2 transmit
 		transmit_buf_wait(msg_buffer, MSG_SIZE);
+		prev_transmit_end_time = xTaskGetTickCount();
 		
 		// in low power, only transmit two packets
-		if (low_power_active()) {
+		if (!low_power_active()) {
 			configASSERT(slot_3_msg_type == LOW_POWER_DATA && slot_4_msg_type == LOW_POWER_DATA);
 			
 			write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
-			vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 			
 			// slot 3 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);
+			prev_transmit_end_time = xTaskGetTickCount();
 			write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
-			vTaskDelayUntil(&prev_transmit_start_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
 			
 			// slot 4 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);
