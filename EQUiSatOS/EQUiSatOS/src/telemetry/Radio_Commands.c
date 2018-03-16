@@ -240,7 +240,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		print("Transmitted %d bytes\n", size);
 	#endif
 	
-	if (!xSemaphoreTake(i2c_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		// TODO: LOG ERROR
 	}
 	
@@ -271,7 +271,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	xTaskResumeAll();
 	if (got_mutex) hardware_state_mutex_give();
 	
-	xSemaphoreGive(i2c_mutex);
+	xSemaphoreGive(i2c_irpow_mutex);
 	
 	//TODO: current for first transmission in sequence too low. rest are fine :|
 	vTaskDelay(50 / portTICK_PERIOD_MS);
