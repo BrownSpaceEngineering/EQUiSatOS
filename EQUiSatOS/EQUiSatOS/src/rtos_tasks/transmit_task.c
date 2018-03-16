@@ -334,7 +334,6 @@ static void attempt_transmission(void) {
 			
 			// slot 3 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);
-			prev_transmit_start_time = xTaskGetTickCount();
 			write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
 			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 			
