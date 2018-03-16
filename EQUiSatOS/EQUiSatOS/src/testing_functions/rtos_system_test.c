@@ -102,7 +102,7 @@ void print_panelref_lref_batch(panelref_lref_batch batch) {
 	print("refs: PANELREF: %d %d mV\nL_REF: %d %d mV\n", batch[0], untruncate(batch[0], S_PANELREF), batch[1], untruncate(batch[1], S_LREF));
 }
 void print_radio_temp_batch(radio_temp_batch batch) {
-	print("radio temp: %d\tBAD?: %d C\n", batch, untruncate(batch, S_RAD_TEMP)/10);
+	print("radio temp: %d\t: %d C\n", batch, untruncate(batch, S_RAD_TEMP)/10);
 }
 void print_imu_temp_batch(imu_temp_batch batch) {
 	print("imu temp: %d\tBAD: %d C\n", batch, untruncate(batch, S_IMU_TEMP));

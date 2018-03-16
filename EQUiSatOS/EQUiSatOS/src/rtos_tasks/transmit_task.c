@@ -27,7 +27,8 @@ bool is_radio_killed(void) {
 void read_radio_temp_mode(void) {
 	// power on radio initially
 	setRadioState(true, true);
-	
+	setTXEnable(true);
+	setRXEnable(true);
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS / portTICK_PERIOD_MS);
 	set_command_mode(false); // don't delay, we'll take care of it
@@ -57,6 +58,10 @@ void read_radio_temp_mode(void) {
 		vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
 		setRadioPower(true);
 	}
+	#if PRINT_DEBUG == 1
+		setTXEnable(false);
+		setRXEnable(false);
+	#endif
 	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 }
 
@@ -375,13 +380,7 @@ void transmit_task(void *pvParameters)
 		}
 	
 		// report to watchdog
-		report_task_running(TRANSMIT_TASK);
-
-		/* enter command mode and commence radio temp reading stage */
-		read_radio_temp_mode();
-		
-		// report to watchdog (again)
-		report_task_running(TRANSMIT_TASK);
+		report_task_running(TRANSMIT_TASK);		
 		
 		/* if the radio isn't killed, enter transmission stage */
 		if (!is_radio_killed()) {
@@ -393,6 +392,12 @@ void transmit_task(void *pvParameters)
 
 		/* enable rx mode on radio and wait for any incoming transmissions */
 		handle_uplinks();
+		
+		// report to watchdog (again)
+		report_task_running(TRANSMIT_TASK);
+		
+		/* enter command mode and commence radio temp reading stage */
+		read_radio_temp_mode();				
 		
 		/* shut down and block for any leftover time in next loop */
 		setRadioState(false, true);

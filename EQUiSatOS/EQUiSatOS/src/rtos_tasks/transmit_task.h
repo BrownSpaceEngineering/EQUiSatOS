@@ -34,7 +34,7 @@
 
 // timing constants
 #define MAX_CMD_MODE_RECOVERY_TIME_MS		(100 + WARM_RESET_WAIT_AFTER_MS + WARM_RESET_REBOOT_TIME + MAX_RADIO_CMD_TIME)
-#define TEMP_RESPONSE_TIME_MS				300
+#define TEMP_RESPONSE_TIME_MS				200
 #define STATE_CHANGE_MONITOR_DELAY_TICKS	15
 
 // queue on which to receive rx_cmd_type_t's from UART interrupt to be processed
