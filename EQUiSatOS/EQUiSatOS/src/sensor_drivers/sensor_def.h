@@ -15,20 +15,20 @@
 /* POSSIBLE BOUNDS (for truncation)                                     */
 /************************************************************************/
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
-#define A_LED_TEMP_M				0
-#define A_LED_TEMP_B				~0
+#define A_LED_TEMP_M				1	//TODO: FILL IN!
+#define A_LED_TEMP_B				0	//TODO: FILL IN!
 #define A_LED_SNS_M					1
 #define A_LED_SNS_B					0
-#define A_LF_TEMP_M					0
-#define A_LF_TEMP_B					~0
+#define A_LF_TEMP_M					1	//TODO: FILL IN!
+#define A_LF_TEMP_B					0	//TODO: FILL IN!
 #define A_LF_SNS_M					197/4
 #define A_LF_SNS_B					-960
 #define A_LF_OSNS_M					500/7
 #define A_LF_OSNS_B					0
 #define A_LF_VOLT_M					130/9
 #define A_LF_VOLT_B					0
-#define A_L_TEMP_M					0
-#define A_L_TEMP_B					~0
+#define A_L_TEMP_M					1	//TODO: FILL IN!
+#define A_L_TEMP_B					0	//TODO: FILL IN!
 #define A_L_SNS_M					20
 #define A_L_SNS_B					150
 #define A_L_VOLT_M					130/9
