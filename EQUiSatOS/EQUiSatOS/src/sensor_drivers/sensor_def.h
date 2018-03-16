@@ -17,8 +17,8 @@
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
 #define A_LED_TEMP_M				1	//TODO: FILL IN!
 #define A_LED_TEMP_B				0	//TODO: FILL IN!
-#define A_LED_SNS_M					1
-#define A_LED_SNS_B					0
+#define A_LED_SNS_M					(433/10) //TODO: FILL IN!
+#define A_LED_SNS_B					0		//TODO: FILL IN!
 #define A_LF_TEMP_M					1	//TODO: FILL IN!
 #define A_LF_TEMP_B					0	//TODO: FILL IN!
 #define A_LF_SNS_M					197/4

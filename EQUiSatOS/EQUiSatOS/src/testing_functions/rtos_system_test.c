@@ -86,15 +86,15 @@ void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	}
 }
 void print_lifepo_current_batch(lifepo_current_batch batch) {	
-	print("\tLFB1SNS: %d\t%d mV\t%d mA\n", batch[0], untruncate(batch[0], S_LF_SNS_REG), (untruncate(batch[0], S_LF_SNS_REG)-980)*50);
-	print("\tLFB1OSNS: %d\t%d mV\t%d mA\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG), untruncate(batch[1], S_LF_OSNS_REG)*71.43);
-	print("\tLFB2SNS: %d\t%d mV\t%d mA\n", batch[2], untruncate(batch[2], S_LF_SNS_REG), (untruncate(batch[2], S_LF_SNS_REG)-979)*50);
-	print("\tLFB2OSNS: %d\t%d mV\t%d mA\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG), untruncate(batch[3], S_LF_OSNS_REG)*71.43);
+	print("\tLFB1SNS: %d\t%d mV\t%d mA\n", batch[0], untruncate(batch[0], S_LF_SNS_REG), ((int16_t) untruncate(batch[0], S_LF_SNS_REG)-980)*50);
+	print("\tLFB1OSNS: %d\t%d mV\t%d mA\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG), untruncate(batch[1], S_LF_OSNS_REG)*7143/100);
+	print("\tLFB2SNS: %d\t%d mV\t%d mA\n", batch[2], untruncate(batch[2], S_LF_SNS_REG), ((int16_t) untruncate(batch[2], S_LF_SNS_REG)-979)*50);
+	print("\tLFB2OSNS: %d\t%d mV\t%d mA\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG), untruncate(batch[3], S_LF_OSNS_REG)*7143/100);
 }
 void print_led_current_batch(led_current_batch batch) {
 	print("led current\n");
 	for (int i = 0; i < 4; i++) {
-		print("\tLED%dSNS: %d\t%d mV\t%d mA\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS), untruncate(batch[i], S_LED_SNS)*100/30);
+		print("\tLED%dSNS: %d\t%d mV\t%d mA\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS), untruncate(batch[i], S_LED_SNS)*100/3);
 	}
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
