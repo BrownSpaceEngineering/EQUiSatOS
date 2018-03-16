@@ -410,7 +410,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 
 		if (!charge_running &&
 			panel_ref_val > PANEL_REF_SUN_MV &&
-			charging_data.bat_voltages[bat] < MIGHT_BE_FULL)
+			charging_data.bat_voltages[bat] < is_lion(bat) ? LI_MIGHT_NOT_BE_FULL_MV : LF_MIGHT_NOT_BE_FULL_MV)
 		{
 			print("\t\tnot charging for bat %d -- decommissioning\n", bat);
 			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
@@ -575,9 +575,10 @@ void battery_logic()
 			(uint16_t *) &(charging_data.bat_voltages[LI1]),
 			(uint16_t *) &(charging_data.bat_voltages[LI2]));
 
+	// we're going to move to TWO_LI_DOWN -- but not decommission anyone
 	if (!li_success)
 	{
-		// TODO: what to do here?
+		print("mutex timed out before we got good LI readings -- bad!\n");
 		log_error(ELOC_BAT_CHARGING, ECODE_BAT_LI_TIMEOUT, true);
 	}
 
@@ -592,7 +593,7 @@ void battery_logic()
 
 	if (!lf_success)
 	{
-		// TODO: what to do here?
+		print("mutex timed out before we got good LF readings -- bad!\n");
 		log_error(ELOC_BAT_CHARGING, ECODE_BAT_LF_TIMEOUT, true);
 	}
 
@@ -620,6 +621,8 @@ void battery_logic()
 
 	#ifndef BAT_TESTING
 	#ifndef WITHOUT_DECOMMISION
+
+	// it's alright to recommission, even with bad voltage values
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
 		if (charging_data.decommissioned[bat])
@@ -633,36 +636,40 @@ void battery_logic()
 		}
 	}
 
-	// NOTE: only going through LI's
-	for (int8_t bat = 0; bat < 2; bat++)
+	// only going through this if we got good LI readings
+	if (li_success)
 	{
-		// this should be taken care of, but just making sure
-		if (!charging_data.decommissioned[bat])
+		// NOTE: only going through LI's
+		for (int8_t bat = 0; bat < 2; bat++)
 		{
-			// making sure the batteries haven't been below a battery threshold for
-			// too long
-			if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
+			// this should be taken care of, but just making sure
+			if (!charging_data.decommissioned[bat])
 			{
-				if (charging_data.li_entered_low_voltage_timestamp[bat] == -1)
+				// making sure the batteries haven't been below a battery threshold for
+				// too long
+				if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
 				{
-					charging_data.li_entered_low_voltage_timestamp[bat] = get_current_timestamp_wrapped();
+					if (charging_data.li_entered_low_voltage_timestamp[bat] == -1)
+					{
+						charging_data.li_entered_low_voltage_timestamp[bat] = get_current_timestamp_wrapped();
+					}
+					else if (get_current_timestamp_wrapped() - charging_data.li_entered_low_voltage_timestamp[bat] >
+									 MAX_TIME_BELOW_V_THRESHOLD_S)
+					{
+						// we should reset the low voltage timestamp, so this battery will get a chance
+						// next time -- this is done in the decommission function that will also take
+						// care of other things like this
+						print("decommissioning battery: %d because of long time at low voltage\n", bat);
+						print("\tentered low voltage at %d, now %d\n", charging_data.li_entered_low_voltage_timestamp[bat], get_current_timestamp_wrapped());
+						log_error(get_error_loc(bat), ECODE_BAT_LOW_VOLTAGE_FOR_WHILE, 1);
+						decommission(bat);
+						continue;
+					}
 				}
-				else if (get_current_timestamp_wrapped() - charging_data.li_entered_low_voltage_timestamp[bat] >
-								 MAX_TIME_BELOW_V_THRESHOLD_S)
+				else
 				{
-					// we should reset the low voltage timestamp, so this battery will get a chance
-					// next time -- this is done in the decommission function that will also take
-					// care of other things like this
-					print("decommissioning battery: %d because of long time at low voltage\n", bat);
-					print("\tentered low voltage at %d, now %d\n", charging_data.li_entered_low_voltage_timestamp[bat], get_current_timestamp_wrapped());
-					log_error(get_error_loc(bat), ECODE_BAT_LOW_VOLTAGE_FOR_WHILE, 1);
-					decommission(bat);
-					continue;
+					charging_data.li_entered_low_voltage_timestamp[bat] = -1;
 				}
-			}
-			else
-			{
-				charging_data.li_entered_low_voltage_timestamp[bat] = -1;
 			}
 		}
 	}
@@ -686,7 +693,9 @@ void battery_logic()
 	#ifndef BAT_TESTING
 	// we're interested in the charging battery filling up if it's a lion
 	bool curr_charging_filled_up = false;
-	if (is_lion(charging_data.bat_charging))
+
+	// we can only do this if we got good li readings
+	if (is_lion(charging_data.bat_charging) && li_success)
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
 
@@ -718,31 +727,47 @@ void battery_logic()
 	#endif
 
 	// we also want to know whether the life po banks have filled up
-	bool life_pos_filled_up = get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
+	bool life_pos_filled_up = false;
+
+	// this only makes sense if we have lf values
+	if (lf_success)
+		get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
 
 	// updating externally facing variables
-	if (num_li_down == 0)
-	{
-		if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
-			charging_data.should_move_to_antenna_deploy = 1;
-		else
-			charging_data.should_move_to_antenna_deploy = 0;
-	}
-	else if (num_li_down == 1)
-	{
-		if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
-			charging_data.should_move_to_antenna_deploy = 1;
-		else
-			charging_data.should_move_to_antenna_deploy = 0;
-	}
-	else
+	// if we don't have any good data about li's, we'll take the chance and move
+	// to antenna deploy
+	if (!li_success)
 	{
 		charging_data.should_move_to_antenna_deploy = 1;
 	}
+	else
+	{
+		if (num_li_down == 0)
+		{
+			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else if (num_li_down == 1)
+		{
+			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else
+		{
+			charging_data.should_move_to_antenna_deploy = 1;
+		}
+	}
+
+	print("decided for move to antenna deploy: %d", charging_data.should_move_to_antenna_deploy);
 
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
-		if (!charging_data.already_set_sat_state[bat])
+		// only valid if we have values
+		if (!charging_data.already_set_sat_state[bat] && (is_lion(bat) ? li_success : lf_success))
 		{
 			uint16_t threshold = is_lion(bat) ? LI_FULL_SANITY_MV : LF_FULL_SANITY_MV;
 			if (charging_data.bat_voltages[bat] > threshold)
@@ -789,36 +814,44 @@ void battery_logic()
 	// we make common-sense adjustments for the other states (detailed in the docs)
 
 	meta_charge_state_t new_meta_charge_state = 0;
-	if (num_li_down == 0)
+	if (!li_success)
 	{
-		if (num_lf_down < 2)
-		{
-			// ALL_GOOD (A)
-			new_meta_charge_state = ALL_GOOD;
-		}
-		else
-		{
-			// TWO_LF_DOWN (C)
-			new_meta_charge_state = TWO_LF_DOWN;
-		}
-	}
-	else if (num_li_down == 1)
-	{
-		if (num_lf_down < 2)
-		{
-			// ONE_LI_DOWN (B)
-			new_meta_charge_state = ONE_LI_DOWN;
-		}
-		else
-		{
-			// TWO_LF_DOWN (C)
-			new_meta_charge_state = TWO_LF_DOWN;
-		}
+		// we're going to act as if we have two li down
+		new_meta_charge_state = TWO_LI_DOWN;
 	}
 	else
 	{
-		// TWO_LI_DOWN (D)
-		new_meta_charge_state = TWO_LI_DOWN;
+		if (num_li_down == 0)
+		{
+			if (num_lf_down < 2)
+			{
+				// ALL_GOOD (A)
+				new_meta_charge_state = ALL_GOOD;
+			}
+			else
+			{
+				// TWO_LF_DOWN (C)
+				new_meta_charge_state = TWO_LF_DOWN;
+			}
+		}
+		else if (num_li_down == 1)
+		{
+			if (num_lf_down < 2)
+			{
+				// ONE_LI_DOWN (B)
+				new_meta_charge_state = ONE_LI_DOWN;
+			}
+			else
+			{
+				// TWO_LF_DOWN (C)
+				new_meta_charge_state = TWO_LF_DOWN;
+			}
+		}
+		else
+		{
+			// TWO_LI_DOWN (D)
+			new_meta_charge_state = TWO_LI_DOWN;
+		}
 	}
 
 	print("decided on meta charge state: %d\n", new_meta_charge_state);
@@ -1114,6 +1147,8 @@ void battery_logic()
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
 		// TODO: check this flow with Mckenna -- enough delay?
+		// it's okay to check discharging even with bad voltages -- there aren't
+		// any voltage based checks
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
 		// reset our emergency write to the MRAM
@@ -1142,13 +1177,18 @@ void battery_logic()
 			set_bat_to_charge(bat, bat == charging_data.bat_charging);
 
 		// NOTE: check after charging accounts for old_bat_charging as -1
-		check_after_charging(charging_data.bat_charging, old_bat_charging);
+		// only makes sense to do this if we got good voltage values
+		if (li_success && lf_success)
+			check_after_charging(charging_data.bat_charging, old_bat_charging);
 	}
 	else if (charging_data.bat_charging != old_bat_charging)
 	{
 		set_bat_to_charge(old_bat_charging, 0);
 		set_bat_to_charge(charging_data.bat_charging, 1);
-		check_after_charging(charging_data.bat_charging, old_bat_charging);
+
+		// only makes sense to do this if we got good voltage values
+		if (li_success && lf_success)
+			check_after_charging(charging_data.bat_charging, old_bat_charging);
 	}
 	else
 	{

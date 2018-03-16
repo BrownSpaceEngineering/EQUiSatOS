@@ -27,16 +27,17 @@
 #define LI_DOWN_MV                 		4050
 #define LI_LOW_POWER_MV            		3900
 #define LI_CRITICAL_MV             		2750
+#define LI_MIGHT_NOT_BE_FULL_MV       4000
 
 #define LF_FULL_SUM_MV             		7100 // what here?
 #define LF_FULL_MAX_MV                  3800
 #define LF_FULL_SANITY_MV               6000
+#define LF_MIGHT_NOT_BE_FULL_MV         6000
 #define LF_FLASH_AVG_MV            		3250
 
 #define RETRIES_AFTER_MUTEX_TIMEOUT     3
 
 // thresholds for error checking and the strikes system
-#define MIGHT_BE_FULL                   4000
 #define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
