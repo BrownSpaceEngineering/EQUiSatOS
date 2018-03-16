@@ -25,16 +25,16 @@ equisim_bat_state_t cur_state;
 
 void equisim_set_action_by_pin(bool setting, int pin) {
 	switch (pin) {
-		case P_L1_RUN_CHG:	
+		case P_L1_RUN_CHG:
 			cur_actions.l1_run_chg = setting;
 			return;
-		case P_L2_RUN_CHG:	
+		case P_L2_RUN_CHG:
 			cur_actions.l2_run_chg = setting;
 			return;
-		case P_L1_DISG:		
+		case P_L1_DISG:
 			cur_actions.l1_disg = setting;
 			return;
-		case P_L2_DISG:		
+		case P_L2_DISG:
 			cur_actions.l2_disg = setting;
 			return;
 		case P_LF_B1_RUNCHG:
@@ -48,7 +48,7 @@ void equisim_set_action_by_pin(bool setting, int pin) {
 }
 
 static uint32_t equisim_get_current_timestamp_ms(void) {
-	return EQUISIM_TIMESTAMP_SCALING * get_current_timestamp_ms(); 
+	return EQUISIM_TIMESTAMP_SCALING * get_current_timestamp_ms();
 }
 
 static void update_bat_state_from_actions(void) {
@@ -73,7 +73,7 @@ static void init_charging_state(void) {
 	chgn_normal(); // CHGN pins
 	fault_to_default(); // FAULTN pins
 	panel_to_default(); // PANEL_REF
-	
+
 	// voltages
 	cur_state.li1_volts = LI_FULL_MV;
 	cur_state.li2_volts = LI_FULL_MV;
@@ -190,42 +190,67 @@ void chgn_normal()
 	cur_state.lf_b2_chgn_inv = !cur_actions.lf_b2_runchg;
 }
 
+static uint16_t get_delta_charging(uint16_t voltage, uint64_t time_since_last_update_ms, bool run_chg, bool is_lion)
+{
+	if (run_chg)
+	{
+		if (is_lion)
+			return time_since_last_update_ms * ((voltage > LI_HIGH_LOW_THRESHOLD)
+				? LI_CHARGING_MV_PER_MS_HIGH : LI_CHARGING_MV_PER_MS_LOW);
+		else
+			return time_since_last_update_ms * ((voltage > LF_HIGH_LOW_THRESHOLD)
+				? LF_CHARGING_MV_PER_MS_HIGH : LF_CHARGING_MV_PER_MS_LOW);
+	}
+
+	return 0;
+}
+
+static uint16_t get_delta_discharging(uint16_t voltage, uint64_t time_since_last_update_ms, bool is_discharging, bool is_lion)
+{
+	if (is_discharging)
+	{
+		if (is_lion)
+			return time_since_last_update_ms * ((voltage > LI_HIGH_LOW_THRESHOLD)
+				? LI_DISCHARGING_MV_PER_MS_HIGH : LI_DISCHARGING_MV_PER_MS_LOW);
+		else
+			return time_since_last_update_ms * ((voltage > LF_HIGH_LOW_THRESHOLD)
+				? LF_DISCHARGING_MV_PER_MS_FLASHING_HIGH : LF_DISCHARGING_MV_PER_MS_FLASHING_LOW);
+	}
+
+	return 0;
+}
+
 static void voltages_normal(uint64_t timestamp_ms, sat_state_t sat_state)
 {
 	uint64_t time_since_last_update_ms = timestamp_ms - cur_actions.last_setting_time_ms;
 	cur_actions.last_setting_time_ms = timestamp_ms;
 
-	// starting with linear for now
-	float li_charging_delta =		time_since_last_update_ms * LI_CHARGING_MV_PER_MS;
-	float li_discharging_delta =	time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS;
-	float lf_charging_delta =		time_since_last_update_ms * LF_CHARGING_MV_PER_MS;
-	float lf_discharging_delta = time_since_last_update_ms * ((sat_state == IDLE_FLASH) ? LF_DISCHARGING_MV_PER_MS_FLASHING : LF_DISCHARGING_MV_PER_MS_SEEP);
-	
+	// charging
+	// only ever one battery charging at a time
+	cur_state.li1_volts += get_delta_charging(cur_state.li1_volts, time_since_last_update_ms, cur_actions.l1_run_chg, true);
+	cur_state.li2_volts += get_delta_charging(cur_state.li2_volts, time_since_last_update_ms, cur_actions.l2_run_chg, true);
+	cur_state.lf1_volts += get_delta_charging(cur_state.lf1_volts, time_since_last_update_ms, cur_actions.lf_b1_runchg, false);
+	cur_state.lf2_volts += get_delta_charging(cur_state.lf2_volts, time_since_last_update_ms, cur_actions.lf_b1_runchg, false);
+	cur_state.lf3_volts += get_delta_charging(cur_state.lf3_volts, time_since_last_update_ms, cur_actions.lf_b2_runchg, false);
+	cur_state.lf4_volts += get_delta_charging(cur_state.lf4_volts, time_since_last_update_ms, cur_actions.lf_b2_runchg, false);
 
 	// discharging
+	uint16_t li1_delta = get_delta_discharging(cur_state.li1_volts, time_since_last_update_ms, cur_actions.l1_disg, true);
+	uint16_t li2_delta = get_delta_discharging(cur_state.li2_volts, time_since_last_update_ms, cur_actions.l2_disg, true);
+	cur_state.li1_volts -= li1_delta;
+	cur_state.li2_volts -= li2_delta;
+
+	cur_state.lf1_volts -= get_delta_discharging(cur_state.lf1_volts, time_since_last_update_ms, sat_state == IDLE_FLASH, false);
+	cur_state.lf2_volts -= get_delta_discharging(cur_state.lf2_volts, time_since_last_update_ms, sat_state == IDLE_FLASH, false);
+	cur_state.lf3_volts -= get_delta_discharging(cur_state.lf3_volts, time_since_last_update_ms, sat_state == IDLE_FLASH, false);
+	cur_state.lf4_volts -= get_delta_discharging(cur_state.lf4_volts, time_since_last_update_ms, sat_state == IDLE_FLASH, false);
+
+	// each only discharges to half the extent of the other
 	if (cur_actions.l1_disg && cur_actions.l2_disg)
 	{
-		cur_state.li1_volts -= (li_discharging_delta / 2);
-		cur_state.li2_volts -= (li_discharging_delta / 2);
+		cur_state.li1_volts += (li1_delta / 2);
+		cur_state.li2_volts += (li2_delta / 2);
 	}
-	else
-	{
-		cur_state.li1_volts -= cur_actions.l1_disg ? (li_discharging_delta / 2) : time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS_SEEP;
-		cur_state.li2_volts -= cur_actions.l2_disg ? (li_discharging_delta / 2) : time_since_last_update_ms * LI_DISCHARGING_MV_PER_MS_SEEP;
-	}
-	
-	cur_state.lf1_volts -= lf_discharging_delta;
-	cur_state.lf2_volts -= lf_discharging_delta;
-	cur_state.lf3_volts -= lf_discharging_delta;
-	cur_state.lf4_volts -= lf_discharging_delta;
-
-	// TODO: why is LF charging delta distributed across batteries??
-	cur_state.li1_volts += cur_actions.l1_run_chg ? li_charging_delta : 0;
-	cur_state.li2_volts += cur_actions.l2_run_chg ? li_charging_delta : 0;
-	cur_state.lf1_volts += cur_actions.lf_b1_runchg ? lf_charging_delta : 0;
-	cur_state.lf2_volts += cur_actions.lf_b1_runchg ? lf_charging_delta : 0;
-	cur_state.lf3_volts += cur_actions.lf_b2_runchg ? lf_charging_delta : 0;
-	cur_state.lf4_volts += cur_actions.lf_b2_runchg ? lf_charging_delta : 0;
 
 	// can't be negative
 	cur_state.li1_volts = Max(cur_state.li1_volts, 0);
