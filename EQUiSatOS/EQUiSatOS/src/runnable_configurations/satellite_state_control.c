@@ -687,8 +687,12 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-BaseType_t hardware_state_mutex_take(void) {
-	return xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
+bool hardware_state_mutex_take(enum error_locations eloc) {
+	if (!xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS)) {
+		log_error(eloc, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+		return false;	
+	};
+	return true;
 }
 
 void hardware_state_mutex_give(void) {
