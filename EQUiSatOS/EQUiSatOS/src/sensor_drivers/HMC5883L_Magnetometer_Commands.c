@@ -5,8 +5,8 @@ enum status_code HMC5883L_init(){
 	//Sets config register A to 0x70: 8 samples averaged, 15Hz data output rate, single measurement
 	static uint8_t write_buffer_1[2] = {0x00, 0x70};
 
-	//Sets config register B to 0xA0: Gain = 390 (LSB/Gauss)
-	static uint8_t write_buffer_2[2] = {0x01, 0xA0};
+	//Sets config register B to 0xA0: Range=+-4.7G Gain = 390 (LSB/Gauss) | 0x20: Range=+-1.3G Gain = 1090 (LSB/Gauss)
+	static uint8_t write_buffer_2[2] = {0x01, 0x20};
 	
 	struct i2c_master_packet write_packet_1 = {
 		.address     = HMC5883L_ADDRESS,
