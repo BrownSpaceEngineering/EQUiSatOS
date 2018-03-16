@@ -238,7 +238,7 @@ bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
 	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
-	print("\t%d total decomissions for this bat\n", charging_data.decommission_count[bat]);
+	print("\t%d total decomissions for this bat\n", charging_data.decommissioned_count[bat]);
 	print("\tthis battery should be decomissioned for %d\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
