@@ -14,7 +14,7 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLATSAT
+#define FLIGHT
 
 /** 
  * flags to control dangerous / inconvenient functions of the satellite 
@@ -54,7 +54,7 @@
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		(30*1000) // ms
+#define SYSTEM_TEST_TASK_FREQ		(43*1000) // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
