@@ -250,7 +250,6 @@ bool check_for_recommission(int8_t bat)
 			// immediately decommissioned again
 			charging_data.decommissioned_timestamp[bat] = 0; // NOTE: this doesn't do much but keeps the struct consistent
 			charging_data.li_entered_low_voltage_timestamp[bat] = -1;
-			charging_data.li_last_full_or_recommissioned_timestamp[bat] = get_current_timestamp_wrapped();
 		}
 
 		return true;
@@ -277,8 +276,6 @@ void init_charging_data()
 	charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 
 	// set all battery timestamps to -1
-	charging_data.li_last_full_or_recommissioned_timestamp[0] = get_current_timestamp_wrapped();
-	charging_data.li_last_full_or_recommissioned_timestamp[1] = get_current_timestamp_wrapped();
 	charging_data.li_entered_low_voltage_timestamp[0] = -1;
 	charging_data.li_entered_low_voltage_timestamp[1] = -1;
 
@@ -295,7 +292,7 @@ void init_charging_data()
 	}
 
 	// initializing all values relevant to batteries and decommissioning
-	for (int8_t bat = 0; bat < 4; bat++) // TODO: can't all of these for loops be combined into one?
+	for (int8_t bat = 0; bat < 4; bat++)
 	{
 		charging_data.decommissioned[bat] = 0;
 		charging_data.decommissioned_timestamp[bat] = 0;
@@ -514,7 +511,7 @@ void battery_charging_task(void *pvParameters)
 		// the core battery logic -- a separate function to make it easier to
 		// unit test
 		battery_logic();
-		
+
 		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 
@@ -624,19 +621,6 @@ void battery_logic()
 		// this should be taken care of, but just making sure
 		if (!charging_data.decommissioned[bat])
 		{
-			// we have the expectation that both LI's will become full
-			// the charging loop will get stuck otherwise
-			// TODO: do we want to change this to use SNS
-			if ((get_current_timestamp_wrapped() - charging_data.li_last_full_or_recommissioned_timestamp[bat])
-					 > MAX_TIME_WITHOUT_FULL_MS)
-			{
-				print("decommissioning battery: %d because of long time without full\n", bat);
-				print("\twas full at %d, now %d\n", charging_data.li_last_full_or_recommissioned_timestamp[bat], get_current_timestamp_wrapped());
-				log_error(get_error_loc(bat), ECODE_BAT_NOT_FULL_FOR_WHILE, 1);
-				decommission(bat);
-				continue;
-			}
-
 			// making sure the batteries haven't been below a battery threshold for
 			// too long
 			if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
@@ -706,8 +690,6 @@ void battery_logic()
 								  charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV;
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
-		if (curr_charging_filled_up)
-			charging_data.li_last_full_or_recommissioned_timestamp[charging_data.bat_charging] = get_current_timestamp_wrapped();
 	}
 	#endif
 
