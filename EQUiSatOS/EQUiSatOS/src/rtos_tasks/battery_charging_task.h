@@ -22,6 +22,7 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
+#define LI_MAX_MV                       4200
 #define LI_FULL_MV                      4190
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 		4050
