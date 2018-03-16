@@ -403,7 +403,7 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	if (should_be_charging)
 	{
 		print("\tchecking is bat %d is charging:\n", bat);
-		print("\t\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
+		print("\t\tchg pin active: %d\n", chg_pin_active(bat, batch));
 		print("\t\tpanel ref: %d\n", get_panel_ref_val_with_retry());
 
 		// we can't make any claims if we don't know anything about PANEL_REF
@@ -411,9 +411,8 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 		if (panel_ref_val == -1)
 			return;
 
-		if (!charge_running &&
-			panel_ref_val > PANEL_REF_SUN_MV &&
-			charging_data.bat_voltages[bat] < is_lion(bat) ? LI_MIGHT_NOT_BE_FULL_MV : LF_MIGHT_NOT_BE_FULL_MV)
+		if (!charge_running && (panel_ref_val > PANEL_REF_SUN_MV) &&
+			(charging_data.bat_voltages[bat] < (is_lion(bat) ? LI_MIGHT_NOT_BE_FULL_MV : LF_MIGHT_NOT_BE_FULL_MV)))
 		{
 			print("\t\tnot charging for bat %d -- decommissioning\n", bat);
 			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
