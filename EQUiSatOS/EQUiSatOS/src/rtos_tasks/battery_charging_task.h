@@ -37,7 +37,6 @@
 
 // thresholds for error checking and the strikes system
 #define MIGHT_BE_FULL                   4000
-#define MAX_TIME_WITHOUT_FULL_MS        6000
 #define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
@@ -50,9 +49,8 @@
 #define MAX_TIME_TO_WAIT_FOR_DEPLOY_S	10000 // what here?
 
 #define MAX_RECOMMISSION_TIME_S         10000 // what here?
-#define MAX_TIME_BELOW_V_THRESHOLD_S	10000
+#define MAX_TIME_BELOW_V_THRESHOLD_S	  10000
 #define INITIAL_RECOMMISSION_TIME_S     500
-#define RECOMMISSION_TIME_INCREASE      2
 
 #define PANEL_REF_SUN_MV                1474	// 7500 mv
 

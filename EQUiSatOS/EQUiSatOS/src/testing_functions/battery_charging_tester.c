@@ -44,8 +44,6 @@ void test_init(void)
 	assert(charging_data.lion_discharging == -1);
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
 	assert(charging_data.curr_charge_state == FILL_LI_NEITHER_FULL_A);
-	assert(charging_data.li_last_full_or_recommissioned_timestamp[0] == (uint32_t)-1); //TODO: most of these tests don't make sense
-	assert(charging_data.li_last_full_or_recommissioned_timestamp[1] == (uint32_t)-1);
 	assert(charging_data.li_entered_low_voltage_timestamp[0] == (uint64_t)-1);
 	assert(charging_data.li_entered_low_voltage_timestamp[1] == (uint64_t)-1);
 

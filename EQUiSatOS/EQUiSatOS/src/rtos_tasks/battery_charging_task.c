@@ -229,6 +229,7 @@ void decommission(int8_t bat)
 	}
 }
 
+// TODO: finalize this function
 uint32_t time_for_recommission(int8_t bat)
 {
 	return Min(charging_data.decommissioned_count[bat] * INITIAL_RECOMMISSION_TIME_S, MAX_RECOMMISSION_TIME_S);
@@ -335,6 +336,8 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 }
 
 // TODO: retry after seeing problems?
+// NOTE: we should only get here if we switched the batteries we're discharging
+// from
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
 	print("checking after discharge:\n");
@@ -378,11 +381,16 @@ void set_bat_to_charge(int8_t bat, bool charge)
 
 void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
+	print("\tchecking bat %d for fault\n", bat);
 	if (fault_pin_active(bat, batch))
 	{
-		print("fault pin active for bat %d -- decommissioning\n", bat);
+		print("\t\tfault pin active for bat %d -- decommissioning\n", bat);
 		log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
 		decommission(bat);
+	}
+	else
+	{
+		print("\t\tall good!\n");
 	}
 }
 
@@ -391,9 +399,9 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 	bool charge_running = chg_pin_active(bat, batch);
 	if (should_be_charging)
 	{
-		print("checking is bat %d is charging:\n", bat);
-		print("\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
-		print("\tpanel ref: %d\n", get_panel_ref_val_with_retry());
+		print("\tchecking is bat %d is charging:\n", bat);
+		print("\t\tchg pin active: %d\n", chg_pin_active(charging_data.bat_charging, batch));
+		print("\t\tpanel ref: %d\n", get_panel_ref_val_with_retry());
 
 		// we can't make any claims if we don't know anything about PANEL_REF
 		int panel_ref_val = get_panel_ref_val_with_retry();
@@ -404,24 +412,34 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 			panel_ref_val > PANEL_REF_SUN_MV &&
 			charging_data.bat_voltages[bat] < MIGHT_BE_FULL)
 		{
-			print("\tnot charging for bat %d -- decommissioning\n", bat);
+			print("\t\tnot charging for bat %d -- decommissioning\n", bat);
 			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
 			decommission(bat);
 		}
 		else
 		{
-			print("\tnot decommissioning!\n");
+			print("\t\tall good!\n");
 		}
 	}
-	else if (charge_running)
+	else
 	{
-		log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, false);
+		print("\tchecking is bat %d not charging:\n", bat);
+		if (charge_running)
+		{
+			print("\t\tstill charging for bat %d -- error\n", bat);
+			log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, false);
+		}
+		else
+		{
+			print("\t\tall good!\n");
+		}
 	}
 }
 
 // TODO: retry after seeing problems?
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 {
+	print("checking after charging\n");
 	bat_charge_dig_sigs_batch batch;
 
 	// if the mutex times out we'll just return
@@ -681,7 +699,7 @@ void battery_logic()
 		int panel_ref_val = get_panel_ref_val_with_retry();
 		print("\tpanel ref: %d\n", panel_ref_val);
 
-		// TODO: do we want this to be based on SNS
+		// TODO: do we want this to be based on SNS?
 		curr_charging_filled_up =
 									(dig_sigs_read_success && panel_ref_val != -1 &&
 									!chg_pin_active(charging_data.bat_charging, batch) &&
@@ -1054,6 +1072,7 @@ void battery_logic()
 
 	if (charging_data.curr_meta_charge_state == TWO_LI_DOWN)
 	{
+		print("emergency discharging\n");
 		set_li_to_discharge(LI1, 1);
 		set_li_to_discharge(LI2, 1);
 	}
@@ -1104,6 +1123,10 @@ void battery_logic()
 		// resume normal operation
 		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
 	}
+	else
+	{
+		print("no change to discharging li's\n");
+	}
 
 	if (got_mutex) xSemaphoreGive(critical_action_mutex);
 	#endif
@@ -1117,15 +1140,22 @@ void battery_logic()
 	{
 		for (int8_t bat = 0; bat < 4; bat++)
 			set_bat_to_charge(bat, bat == charging_data.bat_charging);
+
+		// NOTE: check after charging accounts for old_bat_charging as -1
+		check_after_charging(charging_data.bat_charging, old_bat_charging);
 	}
 	else if (charging_data.bat_charging != old_bat_charging)
 	{
 		set_bat_to_charge(old_bat_charging, 0);
 		set_bat_to_charge(charging_data.bat_charging, 1);
+		check_after_charging(charging_data.bat_charging, old_bat_charging);
+	}
+	else
+	{
+		print("no change to charging bats\n");
 	}
 
 	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
-	check_after_charging(charging_data.bat_charging, old_bat_charging);
 
 	print("leaving battery charging\n");
 }
