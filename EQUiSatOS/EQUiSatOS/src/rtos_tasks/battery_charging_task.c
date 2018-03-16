@@ -238,8 +238,8 @@ bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
 	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
-	print("\t%d total decomissions for this bat\n");
-	print("\tthis battery should be decomissioned for\n", time_for_recommission(bat));
+	print("\t%d total decomissions for this bat\n", charging_data.decommission_count[bat]);
+	print("\tthis battery should be decomissioned for %d\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
 		charging_data.decommissioned[bat] = 0;
@@ -309,7 +309,7 @@ void init_charging_data()
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
 	if (persist_data.li_caused_reboot != -1)
 	{
-		print("mram has battery %d as having caused a reboot -- decommissioning\n");
+		print("mram has battery %d as having caused a reboot -- decommissioning\n", persist_data.li_caused_reboot);
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
 
