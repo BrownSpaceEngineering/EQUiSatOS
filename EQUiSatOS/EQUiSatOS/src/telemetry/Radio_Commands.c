@@ -350,17 +350,11 @@ void setRadioState(bool enable, bool confirm) {
 			setRXEnable(enable);
 		#endif
 
-		if (confirm) {
-			activate_ir_pow(); // avoid IR power on delay for speed
-			vTaskDelay(max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS) / portTICK_PERIOD_MS);	
-		} else {
-			vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
-		}
+		vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 		get_hw_states()->radio_state = enable ? RADIO_IDLE : RADIO_OFF;
 	}
 	hardware_state_mutex_give();
 	if (confirm) {
 		verify_regulators(); // will log error if regulator not valid
-		disable_ir_pow_if_should_be_off(true);
 	}
 }
