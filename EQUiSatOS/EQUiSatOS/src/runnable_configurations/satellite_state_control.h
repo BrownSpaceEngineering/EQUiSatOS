@@ -73,7 +73,7 @@ struct hw_states {
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
-#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(500 / portTICK_PERIOD_MS)
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 

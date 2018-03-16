@@ -8,7 +8,8 @@
 #include "global.h"
 
 #if PRINT_DEBUG > 0 // if using debug print
-	char debug_buf[128];
+	#define DEBUG_BUF_SIZE	128
+	char debug_buf[DEBUG_BUF_SIZE];
 
 	StaticSemaphore_t _print_mutex_d;
 #endif
@@ -132,6 +133,15 @@ void print(const char *format, ...)
 		va_start (arg, format);
 		vsprintf(debug_buf, format, arg);
 		va_end (arg);
+		
+		// add \r for each \n
+		size_t len = strlen(debug_buf);
+		if (len+1 <= DEBUG_BUF_SIZE && debug_buf[len-1] == '\n') {
+			// replace \0 with carriage return
+			debug_buf[len] = '\r';
+			// add back \0
+			debug_buf[len+1] = '\0';
+		}
 		
 		#if configUSE_TRACE_FACILITY == 1
 			#if PRINT_DEBUG == 2 || PRINT_DEBUG == 3

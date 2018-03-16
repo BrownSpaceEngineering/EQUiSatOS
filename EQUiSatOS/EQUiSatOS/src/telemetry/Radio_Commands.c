@@ -244,7 +244,6 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	// for the actual transmission time
 	TickType_t transmission_start_ticks;
 	
-	
 	// enable IR power and wait if necessary (it'll be safe (consistent) 
 	// if we have the mutex, otherwise transmission is so crucial we don't care)
 	// we're also taking the I2C mutex here so we're less likely to 
@@ -261,13 +260,6 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		// on and getting the mutex (it should really be on)
 		enable_ir_pow_if_necessary_unsafe();
 		
-		// we don't care too much here if the mutex times out; we gotta transmit!
-		bool got_hw_state_mutex = true;
-		if (!hardware_state_mutex_take()) {
-			log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			got_hw_state_mutex = false;
-		}
-	
 		// suspend the scheduler to make sure the whole buf is sent atomically
 		// (so the radio gets the full buf at once and doesn't cut out in the middle)	
 		pet_watchdog(); // in case this takes a bit and we're close to reset	
@@ -277,7 +269,6 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 				setTXEnable(true);
 			#endif
 			#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
-				get_hw_states()->radio_state = RADIO_TRANSMITTING;
 				transmission_start_ticks = xTaskGetTickCount();
 				trace_print("transmitting...");
 				usart_send_buf(buf, size);
@@ -288,12 +279,24 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			#endif
 		}
 		xTaskResumeAll();
+		
+		// we don't care too much here if the mutex times out; it's just for confirmations
+		bool got_hw_state_mutex = true;
+		if (!hardware_state_mutex_take()) {
+			log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+			got_hw_state_mutex = false;
+		}
+		
+		// wait duration for transmission to start and current to rise before verifying
+		// NOTE this increments transmission_start_ticks so it equals the time after this returns (for later)
+		vTaskDelayUntil(&transmission_start_ticks, TRANSMIT_CURRENT_RISE_TIME_MS / portTICK_PERIOD_MS);
+		
+		// only set as transmitting after enought time that we expect the current should be up
+		get_hw_states()->radio_state = RADIO_TRANSMITTING;
 		// we only give the hw mutex here because we can't inside the scheduler suspended zone
 		// (also verify regulators needs it)
 		if (got_hw_state_mutex) hardware_state_mutex_give();
-	
-		// wait for transmission to start and current to rise before verifying
-		vTaskDelay(TRANSMIT_CURRENT_RISE_TIME_MS / portTICK_PERIOD_MS);
+		
 		if (got_i2c_irpow_mutex) {
 			// if we got the mutex we can safely do a fast call to the unsafe method
 			verify_regulators_unsafe();
@@ -316,7 +319,8 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		}
 	}
 	
-	// delay for a total time of the transmission duration (hopefully the above didn't take that long)
+	// delay for a total time of the transmission duration, STARTING at when we verified
+	// regulators (see above)
 	vTaskDelayUntil(&transmission_start_ticks, TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	
 
 	// note hardware state change, ignoring mutex timeout
@@ -335,24 +339,22 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
-	setRadioPower(enable);
-	#if PRINT_DEBUG == 0
-		setTXEnable(enable);
-		setRXEnable(enable);
-	#endif
+	// keep hardware state mutex while state is indeterminate
+	hardware_state_mutex_take();
+	{
+		// enable / disable 3V6 regulator and radio power at the same time
+		set_output(enable, P_RAD_PWR_RUN);
+		set_output(enable, P_RAD_SHDN);
+		#if PRINT_DEBUG == 0
+			setTXEnable(enable);
+			setRXEnable(enable);
+		#endif
 
-	// if enabling, delay and check that the radio was enabled
-	if (confirm && enable) {
-		vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER);
+		vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+		get_hw_states()->radio_state = enable ? RADIO_IDLE : RADIO_OFF;
+	}
+	hardware_state_mutex_give();
+	if (confirm) {
 		verify_regulators(); // will log error if regulator not valid
 	}
-}
-
-void setRadioPower(bool on) {
-	hardware_state_mutex_take();
-	// enable / disable 3V6 regulator and radio power at the same time
-	set_output(on, P_RAD_PWR_RUN);
-	set_output(on, P_RAD_SHDN);
-	get_hw_states()->radio_state = on ? RADIO_IDLE : RADIO_OFF;
-	hardware_state_mutex_give();
 }
