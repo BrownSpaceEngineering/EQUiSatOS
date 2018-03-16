@@ -6,8 +6,6 @@
  */
 
 #include "satellite_state_control.h"
-#include "../testing_functions/os_system_tests.h"
-#include "antenna_pwm.h"
 
 /************************************************************************/
 /* Satellite state info - ONLY accessible in this file; ACTUALLY configured on boot */
@@ -29,8 +27,7 @@ SemaphoreHandle_t hardware_state_mutex;
 SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	&critical_action_mutex,
-	&i2c_mutex,
-	&irpow_mutex,
+	&i2c_irpow_mutex,
 	&processor_adc_mutex,
 	&hardware_state_mutex,
 	&watchdog_mutex,
@@ -51,7 +48,6 @@ SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 
 void configure_state_from_reboot(void);
 void set_single_task_state(bool running, task_type_t task_id);
-void set_irpow_by_sat_state(sat_state_t state);
 void startup_task(void* pvParameters);
 
 // starts RTOS scheduler
@@ -298,7 +294,7 @@ void configure_state_from_reboot(void) {
 	if (cause == SYSTEM_RESET_CAUSE_WDT) {
 		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_DID_KICK, true);
 	} else if (cause == SYSTEM_RESET_CAUSE_SOFTWARE) {
-		log_error(ELOC_WATCHDOG, ECODE_SOFTWARE_RESET, true);
+		log_error(ELOC_WATCHDOG, ECODE_SOFTWARE_RESET, false); // mostly for debug; hopefully no aliens are hacking us
 	} else if (cause == SYSTEM_RESET_CAUSE_EXTERNAL_RESET) {
 		log_error(ELOC_WATCHDOG, ECODE_SAT_RESET, true);
 	}
@@ -306,7 +302,7 @@ void configure_state_from_reboot(void) {
 	// if we had to rewrite program memory due to corruption, log a low-pri error
 	if (cache_get_prog_mem_rewritten()) {
 		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
-		update_sat_event_history(false, 0, 0, 0, 0, 0, 0, 1); // don't write through because it will be done just below
+		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
 	}
 
 	// note we've rebooted
@@ -314,7 +310,6 @@ void configure_state_from_reboot(void) {
 	
 	// initial hardware settings (last because they have delays)
 	setRadioState(false, false); // turn radio off and don't confirm (won't confirm going off)
-	set_irpow_by_sat_state(current_sat_state);
 }
 
 /* Given a task handle, initializes the task to the correct startup state - called be each task when it starts
@@ -332,8 +327,6 @@ void init_task_state(task_type_t task_id) {
 /************************************************************************/
 /* STATE HELPERS		                                                */
 /************************************************************************/
-void set_all_task_states(const task_states states, sat_state_t state, sat_state_t prev_sat_state);
-
 /* Getter for current global satellite state */
 sat_state_t get_sat_state(void) {
 	return current_sat_state;
@@ -345,7 +338,7 @@ task_states get_sat_task_states(void) {
 }
 
 // returns whether the given task state is consistent with its current RTOS state (given by its task handle state)
-bool task_state_consistent(bool expected_state, task_type_t task_id) {
+static bool task_state_consistent(bool expected_state, task_type_t task_id) {
 	configASSERT(task_handles[task_id] != NULL && *task_handles[task_id] != NULL);
 	eTaskState task_state_rtos = eTaskGetState(*task_handles[task_id]);
 	// a task is "running" (expected_state should be true) if it's NOT suspended
@@ -370,34 +363,6 @@ bool low_power_active(void) {
 /************************************************************************/
 /* GLOBAL STATE SETTING                                                 */
 /************************************************************************/
-/* wrapper for setting IR power state */
-void set_irpow_by_sat_state(sat_state_t state) {
-	switch (state) {
-		// if coming into any state besides low power,
-		// enable IR power if necessary 
-		case INITIAL:
-		case ANTENNA_DEPLOY:
-		case HELLO_WORLD:
-		case IDLE_NO_FLASH:
-		case IDLE_FLASH:
-			if (!get_output(P_IR_PWR_CMD)) {
-				set_output(true, P_IR_PWR_CMD);
-				vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
-			}
-			break;
-			
-		case LOW_POWER:
-			// disable on entry into LOW_POWER (it is enabled when requried in this state)
-			disable_ir_pow_if_should_be_off(true);
-			break;
-			
-		default:
-			configASSERT(false); // bad state ID or bit flip
-			log_error(ELOC_IR_POW, ECODE_UNEXPECTED_CASE, false);
-			break;
-	}
-}
-
 /* Sets the current satellite state to the given state, if a transition from
    the current state is valid; returns whether the state change was made (i.e. was valid)
    CAN be called consistently (i.e. if state == CurrentState), which will ensure all correct tasks
@@ -424,31 +389,26 @@ bool set_sat_state_helper(sat_state_t state)
 			// turn radio off and don't confirm (won't confirm going off)
 			// (this is the only state that can be re-entered where the transmit task is suspended)
 			setRadioState(false, false);
-			set_irpow_by_sat_state(ANTENNA_DEPLOY);
 			return prev_sat_state == INITIAL || prev_sat_state == LOW_POWER;
 
 		case HELLO_WORLD: ;
 			print("\n\nCHANGED STATE to HELLO_WORLD\n\n");
 			set_all_task_states(HELLO_WORLD_TASK_STATES, HELLO_WORLD, prev_sat_state);
-			set_irpow_by_sat_state(HELLO_WORLD);
 			return prev_sat_state == ANTENNA_DEPLOY;
 
 		case IDLE_NO_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_NO_FLASH\n\n");
 			set_all_task_states(IDLE_NO_FLASH_TASK_STATES, IDLE_NO_FLASH, prev_sat_state);
-			set_irpow_by_sat_state(IDLE_NO_FLASH);
 			return prev_sat_state == IDLE_FLASH || prev_sat_state == HELLO_WORLD || prev_sat_state == LOW_POWER;
 
 		case IDLE_FLASH: ;
 			print("\n\nCHANGED STATE to IDLE_FLASH\n\n");
 			set_all_task_states(IDLE_FLASH_TASK_STATES, IDLE_FLASH, prev_sat_state);
-			set_irpow_by_sat_state(IDLE_FLASH);
 			return prev_sat_state == IDLE_NO_FLASH;
 
 		case LOW_POWER: ;
 			print("\n\nCHANGED STATE to LOW_POWER\n\n");
 			set_all_task_states(LOW_POWER_TASK_STATES, LOW_POWER, prev_sat_state);
-			set_irpow_by_sat_state(LOW_POWER);
 			return prev_sat_state == ANTENNA_DEPLOY || prev_sat_state == HELLO_WORLD || 
 					prev_sat_state == IDLE_NO_FLASH || prev_sat_state == IDLE_FLASH;
 
@@ -456,6 +416,7 @@ bool set_sat_state_helper(sat_state_t state)
 			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			configASSERT(false); // bad state ID
 	}
+	return false;
 }
 
 bool set_sat_state(sat_state_t state) {
@@ -475,7 +436,7 @@ bool set_sat_state(sat_state_t state) {
    which operates semi-independently of satellite state 
    (it must run in some, must not run in some, and doesn't 
     matter in others) */
-void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t next_sat_state, bool antenna_deployed) {
+static void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t next_sat_state, bool antenna_deployed) {
 	bool antenna_task_state = false;
 	switch (prev_sat_state) {
 		// coming from initial, always turn on (we only ever go to antenna deploy)
@@ -535,13 +496,10 @@ void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_state_t nex
 // - task_suspend and task_resume are called while the scheduler
 //   is suspended and the watchdog mutex is locked so don't need to be safe
 /************************************************************************/
-void task_suspend(task_type_t task_id);
-void task_resume(task_type_t task_id);
-
 // Takes all mutexes in RTOS, in particular those that a task could hold.
 // This is done because these mutexes would be inaccessible on that task's suspension.
 // Returns whether all were obtained. If they weren't, NO mutexes will be held.
-bool take_all_mutexes(void) {
+static bool take_all_mutexes(void) {
 	// starting from the top (first-taken mutex), try to take ALL the mutexes
 	int8_t i = 0;
 	while (i < NUM_MUTEXES) {
@@ -574,7 +532,7 @@ bool take_all_mutexes(void) {
 }
 
 // Gives all mutexes that were taken above
-void give_all_mutexes(void) {
+static void give_all_mutexes(void) {
 	for (int8_t i = 0; i < NUM_MUTEXES; i++) {
 		configASSERT(all_mutexes_ordered[i] != NULL);
 		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog

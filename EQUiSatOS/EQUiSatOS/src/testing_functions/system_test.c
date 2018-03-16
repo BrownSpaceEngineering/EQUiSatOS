@@ -1,6 +1,6 @@
 #include "system_test.h"
 
-void set_regulator_power(bool on) {
+static void set_regulator_power(bool on) {
 	// bypass RTOS
 	set_output(on, P_RAD_PWR_RUN);
 	set_output(on, P_RAD_SHDN);
@@ -42,6 +42,7 @@ void sensor_read_tests(void) {
 	uint8_t four_buf[4];
 	uint16_t four_buf_16t[4];
 	uint8_t two_buf[2];	
+	uint16_t pd;
 	delay_ms(100);
 	print("\n\n\n\n##### NEW RUN #####\n");
 	
@@ -60,8 +61,8 @@ void sensor_read_tests(void) {
 	print_ir_object_temps_batch(six_buf_16t);
 
 	print("\n# PDIODE #\n");
-	read_pdiode_batch(&six_buf);
-	print_pdiode_batch(&six_buf);
+	read_pdiode_batch(&pd);
+	print_pdiode_batch(pd);
 
 	print("\n\n# LiON VOLTS #\n");
 	read_lion_volts_batch(two_buf);
@@ -207,7 +208,6 @@ static void MLX90614_test(bool printFloats){
 
 static void AD590_test(void){
 	char test_str[20];
-	const uint16_t expected_temp = 20;//Celsius
 	char error_str[20];	
 	struct adc_module temp_instance; //generate object	
 	
@@ -268,7 +268,6 @@ static void MPU9250_test(bool rebias, bool printFloats){
 	print("==============MPU9250 Test==============\n");	
 	// IMU
 	// testmap 0 - acc x : 1 - acc y : 2 - acc z : 3 - gyr x : 4 - gyr y : 5 - gyr z
-	uint16_t MPU9250_err_margin = 20;		
 
 	// re compute bias on call
 	if (rebias) {
@@ -334,7 +333,7 @@ static void HMC5883L_test(bool printFloats){
 }
 
 //GPIO test
-static enum status_code TCA9535_test(bool printStData, bool printChargeData){
+static void TCA9535_test(bool printStData, bool printChargeData){
 	if (printStData && printChargeData) {
 		print("==============TCA9535 Test==============\n");
 	}
@@ -360,7 +359,7 @@ static enum status_code TCA9535_test(bool printStData, bool printChargeData){
 }
 
 // Photodiode test
-static float TEMD6200_test(void){
+static void TEMD6200_test(void){
 	print("==============TEMD6200 Test==============\n");
 	char buffer[20];	
 	char test_str[20];
@@ -402,8 +401,6 @@ static float TEMD6200_test(void){
 static void AD7991_BAT_test(void){
 
 	print("==============AD7991_BATBRD Test==============\n");
-	//pass flag
-	int pass = 1;
 	char test_str[20];
 
 	int AD7991_results[4];
@@ -460,10 +457,9 @@ static void AD7991_BAT_test(void){
 static void AD7991_CTRL_test(bool regulatorsOn){
 
 	//pass flag
-	int pass = 1;
 	char test_str[20];	
 
-	float AD7991_results[4], AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5;	
+	float AD7991_results[4];	
 	uint16_t results[4];
 	
 	if (regulatorsOn) {
@@ -525,7 +521,7 @@ static void AD7991_CTRL_test(bool regulatorsOn){
 	//}
 }
 
-void readBatBoard(void){
+static void readBatBoard(void){
 	print("==============BATBRD Test==============\n");
 	struct adc_module bat_instance;		
 	uint16_t bat_ref_voltage_readings[10];
@@ -599,7 +595,7 @@ void readBatBoard(void){
 	}
 }
 
-void readLEDCurrent(bool printFloats){
+static void readLEDCurrent(bool printFloats){
 	print("==============LED Test==============\n");
 	struct adc_module bat_instance;
 	uint16_t voltage_readings[4];
@@ -644,7 +640,7 @@ void readLEDCurrent(bool printFloats){
 	}
 }
 
-void LION_DISG_test(void) {
+static void LION_DISG_test(void) {
 	print("==============DISCHARGE Test==============\n");
 
 	print("L1 ON, L2 OFF\n");
@@ -660,14 +656,14 @@ void LION_DISG_test(void) {
 	TCA9535_test(true, false);
 }
 
-void set_chg_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {	
+static void set_chg_states(bool lion1, bool lion2, bool lifepo_b1, bool lifepo_b2) {	
 	set_output(lion1, P_L1_RUN_CHG);	
 	set_output(lion2, P_L2_RUN_CHG);
 	set_output(lifepo_b1, P_LF_B1_RUNCHG);
 	set_output(lifepo_b2, P_LF_B2_RUNCHG);
 }
 
-void CHG_test() {
+static void CHG_test(void) {
 	print("==============CHARGE Test==============\n");
 
 	print("CHARGE L1");

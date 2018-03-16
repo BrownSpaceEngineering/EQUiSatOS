@@ -135,7 +135,7 @@ void* equistack_Stage_Unsafe(equistack* S) {
 }
 
 // guts of equistack_Stage, with ISR option
-void* equistack_Stage_helper(equistack* S, bool from_isr) {
+static void* equistack_Stage_helper(equistack* S, bool from_isr) {
 	void *staged_pointer = NULL;
 	bool got_mutex;
 	// take mutex using appropriate function
@@ -200,7 +200,7 @@ void* equistack_Push_Unsafe(equistack* S, void* data) {
 
 // guts of equistack_Push, with ISR option
 // exactly the same as equistack_Stage_helper but calls equistack_Push_Unsafe
-void* equistack_Push_helper(equistack* S, void* data, bool from_isr) 
+static void* equistack_Push_helper(equistack* S, void* data, bool from_isr) 
 {
 	void *staged_pointer = NULL;
 	bool got_mutex;

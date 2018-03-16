@@ -18,7 +18,7 @@ RAD_SAFE_FIELD_INIT(uint8_t, read_status_reg_command,	READ_STATUS_REG_COMMAND);
 RAD_SAFE_FIELD_INIT(uint8_t, write_command,				WRITE_COMMAND);
 RAD_SAFE_FIELD_INIT(uint8_t, enable_command,			ENABLE_COMMAND);
 
-void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
+static void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
 	buffer[0] = command;
 	buffer[1] = address >> 16;		// upper byte (only 3 bits are actually decoded)
 	buffer[2] = address >> 8;		// middle byte
@@ -51,7 +51,7 @@ void mram_reset(struct spi_module *spi_master_instance) {
 	spi_reset(spi_master_instance);
 }
 
-status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave) {
+static status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struct spi_slave_inst *slave) {
 	uint8_t enable = RAD_SAFE_FIELD_GET(enable_command);
 	spi_select_slave(spi_master_instance, slave, true);
 	// make sure to transceive data so we don't have RX data waiting (overflowed)
@@ -61,8 +61,8 @@ status_code_genare_t  enable_write(struct spi_module *spi_master_instance, struc
 }
 
 // returns true (1) if stat is a STATUS_CATEGORY_OK
-uint8_t status_ok(status_code_genare_t stat) {
-	return (stat < STATUS_CATEGORY_COMMON);
+static uint8_t status_ok(status_code_genare_t stat) {
+	return !(stat & 0xF0); // STATUS_CATEGORY_OK is 0x00 | exact_error, so the MSB is always 0
 }
 
 // returns a status code, and will fail partway through if the write fails

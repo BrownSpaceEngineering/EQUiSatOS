@@ -81,11 +81,11 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		uint16_t li_cur;
 		li_discharging_t lid = get_li_discharging();
 		if (lid == LI1_DISG) {
-			lid = li1;
+			li_cur = li1;
 		} else if (lid == LI2_DISG) {
-			lid = li2;
+			li_cur = li2;
 		} else {
-			lid = li1 + li2;
+			li_cur = li1 + li2;
 		}
 
 		if (li_cur > PWM_MAX_CUR) {

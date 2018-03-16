@@ -53,14 +53,9 @@ typedef enum {
 /************************************************************************/
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _i2c_mutex_d;
-SemaphoreHandle_t i2c_mutex;
+SemaphoreHandle_t i2c_irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
-// NOTE: this mutex is only used in LOW_POWER, otherwise IR power is kept on constantly
-// (anyone can enable it, no one can disable it). Tasks using it in low power:
-// LOW_POWER_DATA_TASK, TRANSMIT_TASK, BATTERY_CHARGING_TASK, 
-StaticSemaphore_t _irpow_mutex_d;
-SemaphoreHandle_t irpow_mutex;
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -99,11 +94,11 @@ void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
 bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 bool read_ad7991_batbrd_precise(uint16_t* results);
-//void read_lion_current_precise(uint16_t* val_1, uint16_t* val_2);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
-bool enable_ir_pow_if_necessary(void); // ONLY used in flash task
-void disable_ir_pow_if_necessary(bool got_mutex_on_en);
+void activate_ir_pow(void);
+bool enable_ir_pow_if_necessary_unsafe(void); // ONLY used in flash task
+void disable_ir_pow_if_necessary_unsafe(bool got_mutex_on_en); // (same)
 void disable_ir_pow_if_should_be_off(bool expected_on);
 bool _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);

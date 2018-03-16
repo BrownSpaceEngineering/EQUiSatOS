@@ -52,11 +52,11 @@ initialize_ecc ()
     compute_genpoly(NPAR, genPoly);
 }
 
-static void zero_fill_from (unsigned char buf[], int from, int to)
+/*static void zero_fill_from (unsigned char buf[], int from, int to)
 {
   uint8_t i;
   for (i = from; i < to; i++) buf[i] = 0;
-}
+}*/
 
 /* debugging routines */
 /*void

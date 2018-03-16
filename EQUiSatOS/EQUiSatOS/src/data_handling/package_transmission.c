@@ -49,14 +49,9 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 	read_lion_volts_batch((uint8_t*) (cur_data_buf + buf_index));
 	buf_index += sizeof(lion_volts_batch);
 	
-	// for the next couple we need to make sure IR power is on,
-	// but only if we're in low power mode (otherwise it's always on)
-	if (low_power_active()) {
-		// power on IR power so that the sensor reads in here
-		// don't have to wait on it (they won't shut if off if they didn't power it on)
-		set_output(true, P_IR_PWR_CMD);
-		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
-	}
+	// the next couple readings use IR power on, so turn it on for them
+	// to speed up the readings (otherwise they have to wait for it to come on)
+	activate_ir_pow();
 	{
 		// we read all battery board inputs at once,
 		// but we write to two different message buffer locations, so we
@@ -75,7 +70,7 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 		read_bat_charge_dig_sigs_batch(&dig_sigs);
 		write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
 	}
-	// in low power disable IR power, but only if we get the mutex (we expect it to be on so no errors)
+	// try to disable IR power because we're done, but only if we get the mutex (we expect it to be on so no errors)
 	disable_ir_pow_if_should_be_off(true);
 
 	read_lifepo_volts_batch((uint8_t*) (cur_data_buf + buf_index));
@@ -200,7 +195,7 @@ void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uin
 	write_bytes_and_shift(buffer, buf_index,	&num_errors,		sizeof(num_errors)); // 1 byte number of errors
 }
 
-void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
+static void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, uint32_t timestamp) {
 	// we have to fill up the error section, so either write the error or NULL bytes
 	// (it should be caught above but be extra-safe)
 	if (err != NULL) {

@@ -127,7 +127,7 @@ typedef struct charging_data
 	uint32_t li_last_full_or_recommissioned_timestamp[2];
 
 	// the last time each lion was low voltage
-	int64_t li_entered_low_voltage_timestamp[2];
+	int64_t li_entered_low_voltage_timestamp[2]; //TODO: should be 32???
 
 	// whether or not it's safe to move to antenna deploy at the moment
 	bool should_move_to_antenna_deploy;
