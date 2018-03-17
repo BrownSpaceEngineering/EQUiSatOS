@@ -365,6 +365,8 @@ bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
 //results must be length 4
 bool read_ad7991_batbrd_precise(uint16_t* results) {
 	status_code_genare_t sc;
+	sig_id_t l1_sig;
+	sig_id_t l2_sig;
 	sig_id_t sig;
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
@@ -380,6 +382,7 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 			log_if_error(ELOC_AD7991_BBRD, sc, true);
 
 			struct hw_states* states = get_hw_states();
+			li_discharging_t disg_state = get_li_discharging();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
 			} else if (states->radio_state == RADIO_TRANSMITTING) {
@@ -394,6 +397,8 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 				// default; most likely
 				sig = S_L_SNS_IDLE_RAD_OFF;
 			}
+			l1_sig = (disg_state == LI1_DISG || disg_state == BOTH_DISG) ? sig : S_L_SNS_OFF;
+			l2_sig = (disg_state == LI2_DISG || disg_state == BOTH_DISG) ? sig : S_L_SNS_OFF;			
 		}
 		if (got_hw_state_mutex) hardware_state_mutex_give();
 		disable_ir_pow_if_necessary_unsafe(we_turned_ir_on);
@@ -405,9 +410,9 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 	}
 
 	// results[0] = L2_SNS
-	log_if_out_of_bounds(results[0], sig, ELOC_AD7991_BBRD_L2_SNS, true);
+	log_if_out_of_bounds(results[0], l2_sig, ELOC_AD7991_BBRD_L2_SNS, true);
 	// results[1] = L1_SNS
-	log_if_out_of_bounds(results[1], sig, ELOC_AD7991_BBRD_L1_SNS, true);
+	log_if_out_of_bounds(results[1], l1_sig, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[2] = L_REF
 	log_if_out_of_bounds(results[2], S_LREF, ELOC_AD7991_BBRD_L_REF, true);
 	// results[3] = PANELREF
