@@ -694,6 +694,93 @@ static void CHG_test(void) {
 	set_chg_states(false, false, false, false);
 }
 
+void led_sns_test(void) {
+	set_chg_states(true, true, true, true);
+	print("LFB1OSNS, LFB1SNS, LFB2OSNS, LFB2SNS, LF2REF, LF1REF, LF4REF, LF3REF, L1_REF, L2_REF, L2_SNS, L1_SNS\n\r");
+	while (true) {
+	struct adc_module bat_instance;
+	uint16_t bat_ref_voltage_readings[10];
+	float bat_voltage_readings[10];	
+	enum adc_positive_input bat_adc_pins[10] = {
+		P_AI_LFB1OSNS,
+		P_AI_LFB1SNS,
+		P_AI_LFB2OSNS,
+		P_AI_LFB2SNS,
+		P_AI_LF2REF,
+		P_AI_LF1REF,
+		P_AI_LF4REF,
+		P_AI_LF3REF,
+		P_AI_L1_REF,
+		P_AI_L2_REF,
+	};
+	
+	for (int i=0; i<10; i++){
+		configure_adc(&bat_instance,bat_adc_pins[i]);
+		uint8_t rs;
+		LTC1380_channel_select(0x4a, i, &rs);
+		adc_enable(&bat_instance);
+		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);				
+		switch (i) {
+			case 0:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
+			break;
+			case 1:			
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-980) * 50;
+			break;
+			case 2:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
+			break;
+			case 3:			
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-979) * 50;
+			break;
+			case 4:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
+			break;
+			case 5:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87 - bat_voltage_readings[i-1];
+			break;
+			case 6:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
+			break;
+			case 7:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 3.87 - bat_voltage_readings[i-1];
+			break;
+			case 8:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
+			break;
+			case 9:			
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 2.5;
+			break;
+		}
+		print("%d,",(int)(bat_voltage_readings[i]));
+	}
+	
+	
+	
+	
+	
+	//char test_str[20];
+
+	int AD7991_results[4];
+	//AD7991_expected[] = {3.6, 0.068, 5, 3.3}, AD7991_err_margin = 0.5;
+	uint16_t results[4];
+	
+	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
+
+	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
+	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
+	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
+			
+
+	for (int i = 0; i < 2; i++){
+		print("%d,",AD7991_results[i]);
+	}
+	print("\n\r");
+	delay_ms(10000);
+	}
+}
+
 void system_test(bool printFloats){		
 	#ifndef XPLAINED
 	print("=======================================\n");

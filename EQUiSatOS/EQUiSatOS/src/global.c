@@ -8,7 +8,8 @@
 #include "global.h"
 
 #if PRINT_DEBUG > 0 // if using debug print
-	char debug_buf[128];
+	#define DEBUG_BUF_SIZE		128
+	char debug_buf[DEBUG_BUF_SIZE];
 
 	StaticSemaphore_t _print_mutex_d;
 #endif
@@ -55,12 +56,18 @@ static void pin_init(void) {
 	
 }
 
+/* status codes from initialization to be logged once RTOS starts */
+status_code_genare_t mpu9250_init_sc;
+status_code_genare_t gyro_init_sc;
+status_code_genare_t accel_init_sc;
+status_code_genare_t mag_init_sc;
+
 void global_init(void) {
 	// Initialize the SAM system
 	system_init();
 	
 	// start watchdog hardware ASAP
-	configure_watchdog();
+	init_watchdog_clock();
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
@@ -72,7 +79,11 @@ void global_init(void) {
 	radio_control_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
-	MPU9250_init();
+	mpu9250_init_sc = MPU9250_init();
+	gyro_init_sc = gyro_init();
+	accel_init_sc = accel_init();
+	mag_init_sc = mag_init();
+	
 	HMC5883L_init();
 	delay_init();
 	
@@ -100,6 +111,10 @@ void global_init_post_rtos(void) {
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
+	log_if_error(ELOC_IMU_INIT, mpu9250_init_sc, true);
+	log_if_error(ELOC_IMU_GYRO_INIT, gyro_init_sc, true);
+	log_if_error(ELOC_IMU_ACCEL_INIT, accel_init_sc, true);
+	log_if_error(ELOC_IMU_MAG_INIT, mag_init_sc, true);
 }
 
 // call this function to take the print mutex (suppress other task's printing)
@@ -123,7 +138,7 @@ void print(const char *format, ...)
 	#if PRINT_DEBUG > 0 // if debug mode
 		#ifdef SAFE_PRINT
 			bool got_mutex = false;
-			if (rtos_started) {
+			if (rtos_ready) {
 				got_mutex = xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 			}
 		#endif
@@ -132,6 +147,15 @@ void print(const char *format, ...)
 		va_start (arg, format);
 		vsprintf(debug_buf, format, arg);
 		va_end (arg);
+		
+		// add \r for each \n
+		size_t len = strlen(debug_buf);
+		if (len+1 <= DEBUG_BUF_SIZE && debug_buf[len-1] == '\n') {
+			// replace \0 with carriage return
+			debug_buf[len] = '\r';
+			// add back \0
+			debug_buf[len+1] = '\0';
+		}
 		
 		#if configUSE_TRACE_FACILITY == 1
 			#if PRINT_DEBUG == 2 || PRINT_DEBUG == 3
@@ -144,7 +168,7 @@ void print(const char *format, ...)
 		#endif
 	
 		#ifdef SAFE_PRINT
-			if (rtos_started) {
+			if (rtos_ready) {
 				if (got_mutex) xSemaphoreGiveRecursive(print_mutex);
 			}
 		#endif

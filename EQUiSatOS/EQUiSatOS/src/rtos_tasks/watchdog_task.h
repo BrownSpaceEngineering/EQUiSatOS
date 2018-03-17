@@ -19,7 +19,7 @@
 #ifdef TESTING_SPEEDUP
 	#define WATCHDOG_TASK_TIMEOUT_BUFFER 10000
 #else
-	#define WATCHDOG_TASK_TIMEOUT_BUFFER 120000 // TODO: too long?
+	#define WATCHDOG_TASK_TIMEOUT_BUFFER (1000*60*5)
 #endif
 
 // static memory for watchdog task mutex
@@ -27,6 +27,7 @@
 StaticSemaphore_t _watchdog_task_mutex_d;
 SemaphoreHandle_t watchdog_mutex;
 
+void init_watchdog_clock(void);
 void init_watchdog_task(void);
 bool watchdog_as_function(void);
 

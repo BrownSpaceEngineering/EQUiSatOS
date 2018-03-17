@@ -15,6 +15,7 @@
 #include "../global.h"
 #include "../testing_functions/equisim_simulated_data.h"
 #include "sensor_def.h"
+#include "../rtos_tasks/battery_charging_task.h"
 
 /************************************************************************/
 /* CRITICAL HARDWARE TIMINGS                                            */
@@ -52,10 +53,13 @@ typedef enum {
 /* **ONLY** can be used outside this task in the flash_activate_task (for speed purposes) */
 /************************************************************************/
 #define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
-StaticSemaphore_t _i2c_mutex_d;
+StaticSemaphore_t _i2c_irpow_mutex_d;
 SemaphoreHandle_t i2c_irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
 SemaphoreHandle_t processor_adc_mutex;
+#define IR_POW_SEMAPHORE_MAX_COUNT		0xff // infinite possible users really
+StaticSemaphore_t _irpow_semaphore_d;
+SemaphoreHandle_t irpow_semaphore;
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -77,7 +81,7 @@ void read_accel_batch(				accelerometer_batch accel_batch);
 void read_gyro_batch(				gyro_batch gyr_batch);
 void read_magnetometer_batch(		magnetometer_batch batch);
 void read_radio_temp_batch(			radio_temp_batch* batch);			// pointer to single value
-void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch); //TODO: UNCOMMENT IF YOU NEED THIS; otherwise it goes
+void read_ad7991_ctrlbrd(			ad7991_ctrlbrd_batch batch);
 bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch);	// pointer to single value
 bool read_field_from_bcds(			bat_charge_dig_sigs_batch batch, bcds_conversions_t shift);
 void read_lifepo_current_batch(		lifepo_current_batch batch, bool flashing_now);
@@ -97,10 +101,10 @@ bool read_ad7991_batbrd_precise(uint16_t* results);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
 void activate_ir_pow(void);
-bool enable_ir_pow_if_necessary_unsafe(void); // ONLY used in flash task
-void disable_ir_pow_if_necessary_unsafe(bool got_mutex_on_en); // (same)
-void disable_ir_pow_if_should_be_off(bool expected_on);
-bool _set_5v_enable_unsafe(bool on);
+bool enable_ir_pow_if_necessary(void);
+void disable_ir_pow_if_necessary(bool got_semaphore);
+void ensure_ir_power_disabled(bool expected_on);
+void _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);
 void verify_regulators_unsafe(void); // used in transmit task
 void verify_flash_readings(bool flashing);

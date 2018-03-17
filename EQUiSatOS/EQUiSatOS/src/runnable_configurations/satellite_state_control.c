@@ -26,6 +26,7 @@ SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	&critical_action_mutex,
 	&i2c_irpow_mutex,
+	&irpow_semaphore, // NOTE: is handled differently; must be taken after i2c_mutex (no one's using it) and waited on until it == IR_POW_SEMAPHORE_MAX_COUNT
 	&processor_adc_mutex,
 	&hardware_state_mutex,
 	&watchdog_mutex,
@@ -51,6 +52,8 @@ void startup_task(void* pvParameters);
 // starts RTOS scheduler
 void run_rtos()
 {
+	configASSERT(NUM_MUTEXES == sizeof(all_mutexes_ordered) / sizeof(SemaphoreHandle_t*));
+	
 	// create first init task to start RTOS and other tasks
 	xTaskCreateStatic(startup_task,
 		"initializer task",
@@ -72,10 +75,6 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
-	#if PRINT_DEBUG != 0
-		rtos_started = true;
-	#endif
-	
 	print("EQUiSatOS starting... ");
 	
 	#ifdef WRITE_DEFAULT_MRAM_VALS
@@ -129,6 +128,7 @@ void startup_task(void* pvParameters) {
 		// name mutexes
 		vTraceSetMutexName(critical_action_mutex, "CA");
 		vTraceSetMutexName(i2c_irpow_mutex, "I2C");
+		vTraceSetMutexName(irpow_semaphore, "IRPOW");
 		vTraceSetMutexName(processor_adc_mutex, "ADC");
 		vTraceSetMutexName(hardware_state_mutex, "HWST");
 		vTraceSetMutexName(watchdog_mutex, "WD");
@@ -141,6 +141,12 @@ void startup_task(void* pvParameters) {
 		vTraceSetMutexName(_low_power_equistack_mutex, "eqLP");
 		vTraceSetMutexName(_error_equistack_mutex, "eqERR");
 	#endif
+	
+	// note RTOS is ready for watchdog callback, and log error if it already tripped
+	rtos_ready = true;
+	if (got_early_warning_callback_in_boot) {
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
+	}
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */
@@ -317,7 +323,7 @@ void configure_state_from_reboot(void) {
 	// if we had to rewrite program memory due to corruption, log a low-pri error
 	if (cache_get_prog_mem_rewritten()) {
 		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
-		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
+		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);  // rare enough that the double-write here is fine
 	}
 
 	// note we've rebooted
@@ -503,7 +509,6 @@ static void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_stat
 	set_single_task_state(antenna_task_state, ANTENNA_DEPLOY_TASK);
 	// mainly for debugging; ensures check_task_state_consistenty is valid
 	current_task_states.states[ANTENNA_DEPLOY_TASK] = antenna_task_state;
-	
 }
 
 /************************************************************************/
@@ -511,6 +516,19 @@ static void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_stat
 // - task_suspend and task_resume are called while the scheduler
 //   is suspended and the watchdog mutex is locked so don't need to be safe
 /************************************************************************/
+
+// helper to wait until a semaphore is at zero
+bool wait_on_semaphore(SemaphoreHandle_t sem, TickType_t wait_time) {
+	TickType_t start_ticks = xTaskGetTickCount();
+	while (uxSemaphoreGetCount(sem) < IR_POW_SEMAPHORE_MAX_COUNT) {
+		vTaskDelay(SEMAPHORE_EMPTY_POLL_TIME_TICKS);
+		if (xTaskGetTickCount() - start_ticks > wait_time) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // Takes all mutexes in RTOS, in particular those that a task could hold.
 // This is done because these mutexes would be inaccessible on that task's suspension.
 // Returns whether all were obtained. If they weren't, NO mutexes will be held.
@@ -520,9 +538,21 @@ static bool take_all_mutexes(void) {
 	while (i < NUM_MUTEXES) {
 		configASSERT(all_mutexes_ordered[i] != NULL);
 		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog
-			bool got_mutex = xSemaphoreTake(*(all_mutexes_ordered[i]), TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
-			if (!got_mutex) {
-				break; // start unraveling taken mutexes
+			// handle special case for irpow counting semaphore (we can't just take it,
+			// we want to wait until everyone is done using it, so we wait for it to get to 0)
+			// NOTE that there are no guarantees we'll get it, but because all the things that use IR power
+			// take the i2c mutex, which we have, we'll be okay. (The auto-IR-power turn off logic handles this)
+			if (*(all_mutexes_ordered[i]) == irpow_semaphore) {
+				bool semaphore_got_to_zero = wait_on_semaphore(irpow_semaphore, TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
+				if (!semaphore_got_to_zero) {
+					// don't unravel mutexes, but log error (this could lead to timing issues in the future)
+					log_error(ELOC_STATE_HANDLING, ECODE_IR_POW_IN_USE_ON_STATE_CHANGE, false);
+				}
+			} else {
+				bool got_mutex = xSemaphoreTake(*(all_mutexes_ordered[i]), TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS);
+				if (!got_mutex) {
+					break; // start unraveling taken mutexes
+				}
 			}
 		}
 		i++;
@@ -539,7 +569,9 @@ static bool take_all_mutexes(void) {
 		// previous takings so we're not holding any mutexes, and THEN try again.
 		while (i >= 0) {
 			// (assume null check above worked for real satellite)
-			xSemaphoreGive(*(all_mutexes_ordered[i]));
+			if (*(all_mutexes_ordered[i]) != irpow_semaphore) {
+				xSemaphoreGive(*(all_mutexes_ordered[i]));
+			}
 			i--;
 		}
 		return false;
@@ -550,7 +582,8 @@ static bool take_all_mutexes(void) {
 static void give_all_mutexes(void) {
 	for (int8_t i = 0; i < NUM_MUTEXES; i++) {
 		configASSERT(all_mutexes_ordered[i] != NULL);
-		if (all_mutexes_ordered[i] != NULL) { // avoid null pointer and leave it to watchdog
+		if (all_mutexes_ordered[i] != NULL // avoid null pointer and leave it to watchdog
+			&& *(all_mutexes_ordered[i]) != irpow_semaphore) { // can't give the semaphore
 			xSemaphoreGive(*(all_mutexes_ordered[i]));
 		}
 	}
@@ -627,7 +660,7 @@ void task_suspend(task_type_t task_id) {
 	TaskHandle_t* task_handle = task_handles[task_id];
 	configASSERT(task_handle != NULL && *task_handle != NULL); // the latter would suspend THIS task
 
-	configASSERT(task_id != BATTERY_CHARGING_TASK 
+	configASSERT(task_id != BATTERY_CHARGING_TASK
 				&& task_id != STATE_HANDLING_TASK 
 				&& task_id != WATCHDOG_TASK 
 				&& task_id != PERSISTENT_DATA_BACKUP_TASK);
@@ -687,8 +720,12 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-BaseType_t hardware_state_mutex_take(void) {
-	return xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS);
+bool hardware_state_mutex_take(uint8_t eloc) {
+	if (!xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS)) {
+		log_error(eloc, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+		return false;	
+	};
+	return true;
 }
 
 void hardware_state_mutex_give(void) {

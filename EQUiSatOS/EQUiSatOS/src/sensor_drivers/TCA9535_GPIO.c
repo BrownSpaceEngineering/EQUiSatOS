@@ -17,7 +17,7 @@ enum status_code TCA9535_init(uint16_t *rs){
 	if ((sc & 0xf0) != 0) {
 		return sc;
 	}
-	// TODO: should it read levels?
+	
 	return readTCA9535Levels(rs);
 }
 

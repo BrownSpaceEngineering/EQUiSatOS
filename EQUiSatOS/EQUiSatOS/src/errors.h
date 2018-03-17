@@ -25,22 +25,22 @@
 
 /******************** LOCATIONS ********************/
 /* Error code that signified there is no error - "null error"; used in transmission */
-enum error_locations {
+typedef enum error_locations {
 	ELOC_NO_ERROR =						0,
 
 	ELOC_IR_POS_Y = 					1,
 	ELOC_IR_NEG_X = 					2,
 	ELOC_IR_NEG_Y = 					3,
-	ELOC_IR_POS_X = 						4,
+	ELOC_IR_POS_X = 					4,
 	ELOC_IR_NEG_Z = 					5,
-	ELOC_IR_POS_Z = 						6,
+	ELOC_IR_POS_Z = 					6,
 
 	ELOC_PD_POS_Y = 					7,
 	ELOC_PD_NEG_X = 					8,
 	ELOC_PD_NEG_Y = 					9,
-	ELOC_PD_POS_X = 						10,
+	ELOC_PD_POS_X = 					10,
 	ELOC_PD_NEG_Z = 					11,
-	ELOC_PD_POS_Z = 						12,
+	ELOC_PD_POS_Z = 					12,
 
 	ELOC_TEMP_LF_1 = 					13,
 	ELOC_TEMP_LF_2 = 					14,
@@ -72,66 +72,71 @@ enum error_locations {
 	ELOC_L1_REF = 						37,
 	ELOC_L2_REF = 						38,
 
-	ELOC_DET_RTN = 						39,
-	ELOC_RADIO = 						40,
+	ELOC_RADIO = 						39,
 
-	ELOC_AD7991_BBRD = 					41,
-	ELOC_AD7991_BBRD_L2_SNS = 			42,
-	ELOC_AD7991_BBRD_L1_SNS = 			43,
-	ELOC_AD7991_BBRD_L_REF = 			44,
-	ELOC_AD7991_BBRD_PANEL_REF = 		45,
-	ELOC_AD7991_CBRD = 					46,
-	ELOC_AD7991_CBRD_3V6_REF = 			47,
-	ELOC_AD7991_CBRD_3V6_SNS =			48,
-	ELOC_AD7991_CBRD_5V_REF = 			49,
-	ELOC_AD7991_CBRD_3V3_REF = 			50,
+	ELOC_AD7991_BBRD = 					40,
+	ELOC_AD7991_BBRD_L2_SNS = 			41,
+	ELOC_AD7991_BBRD_L1_SNS = 			42,
+	ELOC_AD7991_BBRD_L_REF = 			43,
+	ELOC_AD7991_BBRD_PANEL_REF = 		44,
+	ELOC_AD7991_CBRD = 					45,
+	ELOC_AD7991_CBRD_3V6_REF = 			46,
+	ELOC_AD7991_CBRD_3V6_SNS =			47,
+	ELOC_AD7991_CBRD_5V_REF = 			48,
+	ELOC_AD7991_CBRD_3V3_REF = 			49,
 
-	ELOC_TCA = 							51,
-	ELOC_CACHED_PERSISTENT_STATE = 		52,
-	ELOC_MRAM1_READ = 					53,
-	ELOC_MRAM2_READ = 					54,
-	ELOC_MRAM_READ =					55,
-	ELOC_MRAM1_WRITE = 					56,
-	ELOC_MRAM2_WRITE = 					57,
-	ELOC_MRAM_WRITE =					58,
-	ELOC_5V_REF = 						59,
-	ELOC_STATE_HANDLING = 				60,
-	ELOC_BAT_CHARGING =					61,
-	ELOC_ANTENNA_DEPLOY	=				62,
-	ELOC_ERROR_STACK =					63,
-	ELOC_WATCHDOG =						64,
-	ELOC_IMU_TEMP =						65,
-	ELOC_VERIFY_REGS =					66,
+	ELOC_TCA = 							50,
+	ELOC_CACHED_PERSISTENT_STATE = 		51,
+	ELOC_MRAM1_READ = 					52,
+	ELOC_MRAM2_READ = 					53,
+	ELOC_MRAM_READ =					54,
+	ELOC_MRAM1_WRITE = 					55,
+	ELOC_MRAM2_WRITE = 					56,
+	ELOC_MRAM_WRITE =					57,
+	ELOC_5V_REF = 						58,
+	ELOC_STATE_HANDLING = 				59,
+	ELOC_BAT_CHARGING =					60,
+	ELOC_ANTENNA_DEPLOY	=				61,
+	ELOC_WATCHDOG =						62,
+	ELOC_IMU_TEMP =						63,
+	ELOC_VERIFY_REGS =					64,
 
-	ELOC_IDLE_DATA =					67,
-	ELOC_ATTITUDE_DATA =				68,
-	ELOC_FLASH =						69, // both flash and flash_cmp (for now)
-	ELOC_LOW_POWER_DATA =				70,
-	ELOC_EQUISTACK_GET =				71,
-	ELOC_EQUISTACK_PUT =				72,
+	ELOC_IDLE_DATA =					65,
+	ELOC_ATTITUDE_DATA =				66,
+	ELOC_FLASH =						67, // both flash and flash_cmp (for now)
+	ELOC_LOW_POWER_DATA =				68,
+	ELOC_EQUISTACK_GET =				69,
+	ELOC_EQUISTACK_PUT =				70,
 
-	ELOC_BOOTLOADER =					73,
-	ELOC_RTOS =							74,
+	ELOC_BOOTLOADER =					71,
+	ELOC_RTOS =							72,
 
-	ELOC_BAT_L1 =						75,
-	ELOC_BAT_L2 =						76,
-	ELOC_BAT_LFB1 =						77,
-	ELOC_BAT_LFB2 =						78,
-	ELOC_BAT_CHARGING_SWITCH_1 =        79,
-	ELOC_BAT_CHARGING_SWITCH_2 =        80,
-	ELOC_BAT_CHARGING_SWITCH_3 =        81,
-	ELOC_BAT_CHARGING_SWITCH_4 =        82,
-	ELOC_BAT_CHARGING_SWITCH_5 =        83,
-	ELOC_BAT_CHARGING_SWITCH_6 =        84,
-	ELOC_BAT_CHARGING_SWITCH_7 =        85,
-	ELOC_BAT_CHARGING_SWITCH_8 =        86,
-	ELOC_BAT_CHARGING_SWITCH_9 =        87,
-	ELOC_IR_POW =						88,
-	ELOC_RADIO_KILLTIME =				89
-};
+	ELOC_BAT_L1 =						73,
+	ELOC_BAT_L2 =						74,
+	ELOC_BAT_LFB1 =						75,
+	ELOC_BAT_LFB2 =						76,
+	ELOC_BAT_CHARGING_SWITCH_1 =        77,
+	ELOC_BAT_CHARGING_SWITCH_2 =        78,
+	ELOC_BAT_CHARGING_SWITCH_3 =        79,
+	ELOC_BAT_CHARGING_SWITCH_4 =        80,
+	ELOC_BAT_CHARGING_SWITCH_5 =        81,
+	ELOC_BAT_CHARGING_SWITCH_6 =        82,
+	ELOC_BAT_CHARGING_SWITCH_7 =        83,
+	ELOC_BAT_CHARGING_SWITCH_8 =        84,
+	ELOC_BAT_CHARGING_SWITCH_9 =        85,
+	ELOC_IR_POW =						86,
+	ELOC_RADIO_KILLTIME =				87,
+	ELOC_RADIO_TRANSMIT =				88,
+	ELOC_RADIO_POWER =					89,
+
+	ELOC_IMU_INIT =						90,
+	ELOC_IMU_GYRO_INIT =				91,
+	ELOC_IMU_ACCEL_INIT =				92,
+	ELOC_IMU_MAG_INIT =					93
+} sat_eloc;
 
 /******************** PROBLEM CODES ********************/
-enum error_codes {
+typedef enum error_codes {
 /**** ATMEL DEFINED ****/
 	ECODE_OK = 							0,
 	ECODE_VALID_DATA = 					1,
@@ -212,8 +217,9 @@ enum error_codes {
 	ECODE_SAT_RESET =					70,
 
 	ECODE_BAT_LI_TIMEOUT =				71,
-	ECODE_BAT_LF_TIMEOUT =				72
-};
+	ECODE_BAT_LF_TIMEOUT =				72,
+	ECODE_IR_POW_IN_USE_ON_STATE_CHANGE = 73,
+} sat_ecode;
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */
@@ -223,7 +229,7 @@ enum error_codes {
 
 typedef struct {
 	uint32_t timestamp;
-	uint8_t eloc;
+	sat_eloc eloc;
 	uint8_t ecode; // top bit is priority of error
 } sat_error_t;
 #define SAT_ERROR_T_SIZE		6
@@ -238,9 +244,9 @@ SemaphoreHandle_t _error_equistack_mutex;
 void init_errors(void);
 uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
-bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
-void log_error(uint8_t loc, uint8_t err, bool priority);
-void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
+bool log_if_error(sat_eloc loc, enum status_code sc, bool priority);
+void log_error(sat_eloc loc, sat_ecode err, bool priority);
+void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
 // defined in rtos_system_test.c

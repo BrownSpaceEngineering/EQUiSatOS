@@ -21,8 +21,6 @@
 
 typedef enum {DEFAULT = MLX90614_DEFAULT_I2CADDR,
               TBOARD_IR2 = MLX90614_TBOARD_IR2
-              /* TODO: add more members to this enum
-                 as we get more IR sensors to talk to */
               } MLXDeviceAddr;
 
 typedef enum {IR1 = MLX90614_RAWIR1,

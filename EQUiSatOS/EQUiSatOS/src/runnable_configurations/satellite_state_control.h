@@ -16,6 +16,7 @@
 #include "testing_functions/sat_data_tests.h"
 #include "../testing_functions/os_system_tests.h"
 #include "antenna_pwm.h"
+#include "../errors.h"
 
 /************************************************************************/
 /* Satellite state constructs                                           */
@@ -24,6 +25,12 @@
 typedef struct task_states {
 	bool states[NUM_TASKS];
 } task_states;
+
+// (atomic) field to notify watchdog early warning interrupt of RTOS being
+// ready so it can start logging data if it occurs
+// NOTE: these are not bools out of concurrency concerns
+uint8_t rtos_ready;
+uint8_t got_early_warning_callback_in_boot;
 
 /************************************************************************/
 /* Defined task state sets - order must match enum in rtos_tasks_config.h: */
@@ -40,10 +47,7 @@ typedef struct task_states {
 // duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
 #define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(5000 / portTICK_PERIOD_MS)
 #define TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES		5
-
-#if PRINT_DEBUG != 0
-	bool rtos_started;
-#endif
+#define SEMAPHORE_EMPTY_POLL_TIME_TICKS				(TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS / 20) // poll a lot
 
 /************************************************************************/
 /* global hardware states												
@@ -60,27 +64,35 @@ typedef struct task_states {
 	   2. Measuring battery currents									*/
 /************************************************************************/ 
 typedef enum {
-	RADIO_OFF = 0,
-	RADIO_IDLE = 1,
+	HW_OFF = false,
+	HW_ON = true,
+	HW_TRANSITIONING,
+} hw_state_t;
+
+typedef enum {
+	RADIO_OFF = false,
+	RADIO_IDLE = true,
 	RADIO_TRANSMITTING,
+	RADIO_OFF_IDLE_TRANSITION,
+	RADIO_IDLE_TRANS_TRANSITION
 } radio_state_t;
 
 struct hw_states {
 	/* locked by peripheral mutexes - mainly done to simplify function arguments */
-	bool rail_5v_enabled : 1;
+	hw_state_t rail_5v_enabled : 2;
 	/* locked by hardware state mutex */
-	radio_state_t radio_state : 2; // if >0, both 3V6 regulator and radio power pin are on	
+	radio_state_t radio_state : 3;
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
-#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(500 / portTICK_PERIOD_MS)
+#define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _hardware_state_mutex_d;
 SemaphoreHandle_t hardware_state_mutex;
 
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(6000 / portTICK_PERIOD_MS) // these can take quite a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(10000 / portTICK_PERIOD_MS) // these can take quite a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 
@@ -96,7 +108,7 @@ bool low_power_active(void);
 
 // hardware-specific functions
 struct hw_states* get_hw_states(void);
-BaseType_t hardware_state_mutex_take(void);
+bool hardware_state_mutex_take(uint8_t eloc);
 void hardware_state_mutex_give(void);
 
 void run_rtos(void);

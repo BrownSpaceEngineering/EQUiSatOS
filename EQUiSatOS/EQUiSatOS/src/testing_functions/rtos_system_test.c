@@ -86,15 +86,15 @@ void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	}
 }
 void print_lifepo_current_batch(lifepo_current_batch batch) {	
-	print("\tLFB1SNS: %d\t%d mV\t%d mA\n", batch[0], untruncate(batch[0], S_LF_SNS_REG), (untruncate(batch[0], S_LF_SNS_REG)-980)*50);
-	print("\tLFB1OSNS: %d\t%d mV\t%d mA\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG), untruncate(batch[1], S_LF_OSNS_REG)*71.43);
-	print("\tLFB2SNS: %d\t%d mV\t%d mA\n", batch[2], untruncate(batch[2], S_LF_SNS_REG), (untruncate(batch[2], S_LF_SNS_REG)-979)*50);
-	print("\tLFB2OSNS: %d\t%d mV\t%d mA\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG), untruncate(batch[3], S_LF_OSNS_REG)*71.43);
+	print("\tLFB1SNS: %d\t%d mV\t%d mA\n", batch[0], untruncate(batch[0], S_LF_SNS_REG), ((int16_t) untruncate(batch[0], S_LF_SNS_REG)-980)*50);
+	print("\tLFB1OSNS: %d\t%d mV\t%d mA\n", batch[1], untruncate(batch[1], S_LF_OSNS_REG), untruncate(batch[1], S_LF_OSNS_REG)*7143/100);
+	print("\tLFB2SNS: %d\t%d mV\t%d mA\n", batch[2], untruncate(batch[2], S_LF_SNS_REG), ((int16_t) untruncate(batch[2], S_LF_SNS_REG)-979)*50);
+	print("\tLFB2OSNS: %d\t%d mV\t%d mA\n\n", batch[3], untruncate(batch[3], S_LF_OSNS_REG), untruncate(batch[3], S_LF_OSNS_REG)*7143/100);
 }
 void print_led_current_batch(led_current_batch batch) {
 	print("led current\n");
 	for (int i = 0; i < 4; i++) {
-		print("\tLED%dSNS: %d\t%d mV\t%d mA\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS), untruncate(batch[i], S_LED_SNS)*100/30);
+		print("\tLED%dSNS: %d\t%d mV\t%d mA\n", i+1, batch[i], untruncate(batch[i], S_LED_SNS), untruncate(batch[i], S_LED_SNS)*100/3);
 	}
 }
 void print_panelref_lref_batch(panelref_lref_batch batch) {
@@ -331,19 +331,19 @@ const char* get_eloc_str(sat_error_t* err) {
 	switch (err->eloc) {
 	case 0: return "ELOC_NO_ERROR";
 
-	case 1: return "ELOC_IR_FLASH";
-	case 2: return "ELOC_IR_SIDE1";
-	case 3: return "ELOC_IR_SIDE2";
-	case 4: return "ELOC_IR_RBF";
-	case 5: return "ELOC_IR_ACCESS";
-	case 6: return "ELOC_IR_TOP1";
+	case 1: return "ELOC_IR_POS_Y";
+	case 2: return "ELOC_IR_NEG_X";
+	case 3: return "ELOC_IR_NEG_Y";
+	case 4: return "ELOC_IR_POS_X";
+	case 5: return "ELOC_IR_NEG_Z";
+	case 6: return "ELOC_IR_POS_Z";
 
-	case 7: return "ELOC_PD_FLASH";
-	case 8: return "ELOC_PD_SIDE1";
-	case 9: return "ELOC_PD_SIDE2";
-	case 10: return "ELOC_PD_RBF";
-	case 11: return "ELOC_PD_ACCESS";
-	case 12: return "ELOC_PD_TOP1";
+	case 7: return "ELOC_PD_POS_Y";
+	case 8: return "ELOC_PD_NEG_X";
+	case 9: return "ELOC_PD_NEG_Y";
+	case 10: return "ELOC_PD_POS_X";
+	case 11: return "ELOC_PD_NEG_Z";
+	case 12: return "ELOC_PD_POS_Z";
 
 	case 13: return "ELOC_TEMP_LF_1";
 	case 14: return "ELOC_TEMP_LF_2";
@@ -375,62 +375,67 @@ const char* get_eloc_str(sat_error_t* err) {
 	case 37: return "ELOC_L1_REF";
 	case 38: return "ELOC_L2_REF";
 
-	case 39: return "ELOC_DET_RTN";
-	case 40: return "ELOC_RADIO";
+	case 39: return "ELOC_RADIO";
 
-	case 41: return "ELOC_AD7991_BBRD";
-	case 42: return "ELOC_AD7991_BBRD_L2_SNS";
-	case 43: return "ELOC_AD7991_BBRD_L1_SNS";
-	case 44: return "ELOC_AD7991_BBRD_L_REF";
-	case 45: return "ELOC_AD7991_BBRD_PANEL_REF";
-	case 46: return "ELOC_AD7991_CBRD";
-	case 47: return "ELOC_AD7991_CBRD_3V6_REF";
-	case 48: return "ELOC_AD7991_CBRD_3V6_SNS";
-	case 49: return "ELOC_AD7991_CBRD_5V_REF";
-	case 50: return "ELOC_AD7991_CBRD_3V3_REF";
+	case 40: return "ELOC_AD7991_BBRD";
+	case 41: return "ELOC_AD7991_BBRD_L2_SNS";
+	case 42: return "ELOC_AD7991_BBRD_L1_SNS";
+	case 43: return "ELOC_AD7991_BBRD_L_REF";
+	case 44: return "ELOC_AD7991_BBRD_PANEL_REF";
+	case 45: return "ELOC_AD7991_CBRD";
+	case 46: return "ELOC_AD7991_CBRD_3V6_REF";
+	case 47: return "ELOC_AD7991_CBRD_3V6_SNS";
+	case 48: return "ELOC_AD7991_CBRD_5V_REF";
+	case 49: return "ELOC_AD7991_CBRD_3V3_REF";
 
-	case 51: return "ELOC_TCA";
-	case 52: return "ELOC_CACHED_PERSISTENT_STATE";
-	case 53: return "ELOC_MRAM1_READ";
-	case 54: return "ELOC_MRAM2_READ";
-	case 55: return "ELOC_MRAM_READ";
-	case 56: return "ELOC_MRAM1_WRITE";
-	case 57: return "ELOC_MRAM2_WRITE";
-	case 58: return "ELOC_MRAM_WRITE";
-	case 59: return "ELOC_5V_REF";
-	case 60: return "ELOC_STATE_HANDLING";
-	case 61: return "ELOC_BAT_CHARGING";
-	case 62: return "ELOC_ANTENNA_DEPLOY";
-	case 63: return "ELOC_ERROR_STACK";
-	case 64: return "ELOC_WATCHDOG";
-	case 65: return "ELOC_IMU_TEMP";
-	case 66: return "ELOC_VERIFY_REGS";
+	case 50: return "ELOC_TCA";
+	case 51: return "ELOC_CACHED_PERSISTENT_STATE";
+	case 52: return "ELOC_MRAM1_READ";
+	case 53: return "ELOC_MRAM2_READ";
+	case 54: return "ELOC_MRAM_READ";
+	case 55: return "ELOC_MRAM1_WRITE";
+	case 56: return "ELOC_MRAM2_WRITE";
+	case 57: return "ELOC_MRAM_WRITE";
+	case 58: return "ELOC_5V_REF";
+	case 59: return "ELOC_STATE_HANDLING";
+	case 60: return "ELOC_BAT_CHARGING";
+	case 61: return "ELOC_ANTENNA_DEPLOY";
+	case 62: return "ELOC_WATCHDOG";
+	case 63: return "ELOC_IMU_TEMP";
+	case 64: return "ELOC_VERIFY_REGS";
 
-	case 67: return "ELOC_IDLE_DATA";
-	case 68: return "ELOC_ATTITUDE_DATA";
-	case 69: return "ELOC_FLASH"; // both flash and flash_cmp (for now)
-	case 70: return "ELOC_LOW_POWER_DATA";
-	case 71: return "ELOC_EQUISTACK_GET";
-	case 72: return "ELOC_EQUISTACK_PUT";
+	case 65: return "ELOC_IDLE_DATA";
+	case 66: return "ELOC_ATTITUDE_DATA";
+	case 67: return "ELOC_FLASH"; // both flash and flash_cmp (for now)
+	case 68: return "ELOC_LOW_POWER_DATA";
+	case 69: return "ELOC_EQUISTACK_GET";
+	case 70: return "ELOC_EQUISTACK_PUT";
 
-	case 73: return "ELOC_BOOTLOADER";
-	case 74: return "ELOC_RTOS";
+	case 71: return "ELOC_BOOTLOADER";
+	case 72: return "ELOC_RTOS";
 
-	case 75: return "ELOC_BAT_L1";
-	case 76: return "ELOC_BAT_L2";
-	case 77: return "ELOC_BAT_LFB1";
-	case 78: return "ELOC_BAT_LFB2";
-	case 79: return "ELOC_BAT_CHARGING_SWITCH_1";
-	case 80: return "ELOC_BAT_CHARGING_SWITCH_2";
-	case 81: return "ELOC_BAT_CHARGING_SWITCH_3";
-	case 82: return "ELOC_BAT_CHARGING_SWITCH_4";
-	case 83: return "ELOC_BAT_CHARGING_SWITCH_5";
-	case 84: return "ELOC_BAT_CHARGING_SWITCH_6";
-	case 85: return "ELOC_BAT_CHARGING_SWITCH_7";
-	case 86: return "ELOC_BAT_CHARGING_SWITCH_8";
-	case 87: return "ELOC_BAT_CHARGING_SWITCH_9";
-	case 88: return "ELOC_IR_POW";
-	case 89: return "ELOC_RADIO_KILLTIME";	
+	case 73: return "ELOC_BAT_L1";
+	case 74: return "ELOC_BAT_L2";
+	case 75: return "ELOC_BAT_LFB1";
+	case 76: return "ELOC_BAT_LFB2";
+	case 77: return "ELOC_BAT_CHARGING_SWITCH_1";
+	case 78: return "ELOC_BAT_CHARGING_SWITCH_2";
+	case 79: return "ELOC_BAT_CHARGING_SWITCH_3";
+	case 80: return "ELOC_BAT_CHARGING_SWITCH_4";
+	case 81: return "ELOC_BAT_CHARGING_SWITCH_5";
+	case 82: return "ELOC_BAT_CHARGING_SWITCH_6";
+	case 83: return "ELOC_BAT_CHARGING_SWITCH_7";
+	case 84: return "ELOC_BAT_CHARGING_SWITCH_8";
+	case 85: return "ELOC_BAT_CHARGING_SWITCH_9";
+	case 86: return "ELOC_IR_POW";
+	case 87: return "ELOC_RADIO_KILLTIME";
+	case 88: return "ELOC_RADIO_TRANSMIT";
+	case 89: return "ELOC_RADIO_POWER";
+
+	case 90: return "ELOC_IMU_INIT";
+	case 91: return "ELOC_IMU_GYRO_INIT";
+	case 92: return "ELOC_IMU_ACCEL_INIT";
+	case 93: return "ELOC_IMU_MAG_INIT";
 	default: return "[error loc not added to sys test]";
 	}
 }
@@ -518,6 +523,7 @@ const char* get_ecode_str(sat_error_t* err) {
 
 	case 71: return "ECODE_BAT_LI_TIMEOUT";
 	case 72: return "ECODE_BAT_LF_TIMEOUT";
+	case 73: return "ECODE_IR_POW_IN_USE_ON_STATE_CHANGE";
 	default: return "[error code not added to sys test]";
 	}
 }

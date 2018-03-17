@@ -61,9 +61,10 @@ static void read_radio_temp_mode(void) {
 	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
 	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
 		//power cycle radio
-		setRadioPower(false);
-		vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
-		setRadioPower(true);
+		setRadioState(false, false); // off; don't confirm
+		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
+			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
+		setRadioState(true, false); // on; don't confirm
 	}
 	#if PRINT_DEBUG == 1
 		setTXEnable(false);
@@ -309,31 +310,32 @@ static void attempt_transmission(void) {
 	// wait here between calls to give buffer
 	if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) 
 	{
+		// note time before transmit so we can try and align transmissions
+		TickType_t prev_transmit_start_time = xTaskGetTickCount();
+		
 		// slot 1 transmit
 		transmit_buf_wait(msg_buffer, MSG_SIZE);
-		TickType_t prev_transmit_end_time = xTaskGetTickCount();
 		// between finishing transmitting the first packet and starting the next one,
 		// re-package the buffer with the message type of the second slot,
 		// and then delay any remaining time using RTOS to be timing-consistent
 		write_packet(msg_buffer, slot_2_msg_type, start_transmission_timestamp, cur_data_buf);
-		vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+		// delay until a specified time after the expected transmission time plus some bufer
+		vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 		
 		// slot 2 transmit
 		transmit_buf_wait(msg_buffer, MSG_SIZE);
-		prev_transmit_end_time = xTaskGetTickCount();
 		
 		// in low power, only transmit two packets
 		if (!low_power_active()) {
-			configASSERT(slot_3_msg_type == LOW_POWER_DATA && slot_4_msg_type == LOW_POWER_DATA);
+			configASSERT(slot_3_msg_type != LOW_POWER_DATA && slot_4_msg_type != LOW_POWER_DATA);
 			
 			write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
-			vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 			
 			// slot 3 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);
-			prev_transmit_end_time = xTaskGetTickCount();
 			write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
-			vTaskDelayUntil(&prev_transmit_end_time, TIME_BTWN_MSGS_MS / portTICK_PERIOD_MS);
+			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 			
 			// slot 4 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);

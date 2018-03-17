@@ -38,7 +38,7 @@ void attitude_data_task(void *pvParameters)
 		
 		// the next couple readings use IR power on, so turn it on for them
 		// to speed up the readings (otherwise they have to wait for it to come on each time)
-		activate_ir_pow();
+		bool got_semaphore = enable_ir_pow_if_necessary();
 		{
 			// read all sensors first
 			read_ir_object_temps_batch(	current_struct->ir_obj_temps_data);
@@ -54,7 +54,7 @@ void attitude_data_task(void *pvParameters)
 			read_magnetometer_batch(	current_struct->magnetometer_data	[1]);
 		}
 		// try to disable IR power because we're done, but only if we get the mutex (we expect it to be on so no errors)
-		disable_ir_pow_if_should_be_off(true);
+		disable_ir_pow_if_necessary(got_semaphore);
 	
 		// if we were suspended in some period between start of this packet and here, DON'T add it
 		// and go on to rewrite the current one

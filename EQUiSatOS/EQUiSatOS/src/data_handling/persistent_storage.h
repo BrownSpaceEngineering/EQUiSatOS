@@ -41,7 +41,7 @@
 // note: this is the NUMBER of stored errors; the bytes taken up is this times sizeof(sat_error_t)
 // note: not made rad-safe bcs. the probability of being corrupted + being needed is VERY small
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX 
-#define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1000 / portTICK_PERIOD_MS) // ms
+#define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1500 / portTICK_PERIOD_MS) // ms
 
 /* rad-safe triple-redundant variables used to weather bit flips in crucial fields */
 // addresses
@@ -67,7 +67,7 @@ RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_size);
 
 /* battery-specific state cache (put here for #include reasons) */
 typedef struct persistent_charging_data_t {
-	int8_t li_caused_reboot;
+	uint8_t li_caused_reboot;
 } persistent_charging_data_t;
 
 /************************************************************************/

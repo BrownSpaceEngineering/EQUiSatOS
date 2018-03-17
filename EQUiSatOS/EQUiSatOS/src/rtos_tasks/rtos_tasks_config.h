@@ -58,7 +58,7 @@ enum {
 #endif
 #define TASK_FLASH_ACTIVATE_PRIORITY				(FLASH_PRIORITY)
 
-#define TASK_TRANSMIT_STACK_SIZE					(768/sizeof(portSTACK_TYPE))
+#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 #define TASK_TRANSMIT_PRIORITY						(ACTION_PRIORITY)
 
 #define TASK_IDLE_DATA_RD_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
@@ -177,7 +177,7 @@ typedef enum
 	#define ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT	(max(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT, max(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT, ANTENNA_DEPLOY_TASK_LESS_FREQ)))
 	
 #ifndef TESTING_SPEEDUP
-#define BATTERY_CHARGING_TASK_FREQ				(5*60*1000)	// 5 minutes; how often run battery charging logic
+#define BATTERY_CHARGING_TASK_FREQ				(1*60*1000)	// 5 minutes; how often run battery charging logic
 #endif
 
 #ifndef TESTING_SPEEDUP
@@ -188,7 +188,7 @@ typedef enum
 #ifndef TESTING_SPEEDUP
 #define IDLE_DATA_TASK_FREQ						(1*60*1000) // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					1500 // has to turn on IR power
+	#define IDLE_DATA_MAX_READ_TIME					2000 // has to turn on IR power
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	#ifndef TESTING_SPEEDUP
 	#define IDLE_DATA_LOG_FREQ_S						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
@@ -237,7 +237,7 @@ typedef enum
 	#define FLASH_ACTIVATE_TASK_FREQ			(1*60*1000) // same
 		#define FLASH_CMP_DATA_LOG_FREQ_S			30
 	#define LOW_POWER_DATA_TASK_FREQ			20000
-	#define BATTERY_CHARGING_TASK_FREQ			(2*60*1000)
+	#define BATTERY_CHARGING_TASK_FREQ			(1*60*1000)
 	#define PERSISTENT_DATA_BACKUP_TASK_FREQ	(30*1000)
 #endif
 

@@ -14,7 +14,7 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLIGHT
+#define FLATSAT
 
 /** 
  * flags to control dangerous / inconvenient functions of the satellite 
@@ -45,7 +45,7 @@
 #define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
-#define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
+#define OVERRIDE_STATE_HOLD_INIT	1 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define ONLY_RUN_TESTING_TASKS	// doesn't run normal EQUISAT tasks
@@ -71,7 +71,7 @@
 #define USE_TRACELYZER				1
 
 // whether to configASSERTs (and other asserts) should hang
-//#define USE_ASSERTIONS
+#define USE_ASSERTIONS
 
 // add strict asserts to notify of events that we want to be rare
 //#define USE_STRICT_ASSERTIONS
@@ -90,7 +90,7 @@
 //#define SAFE_PRINT	
 
 // define to print errors as the come in
-//#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
+#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

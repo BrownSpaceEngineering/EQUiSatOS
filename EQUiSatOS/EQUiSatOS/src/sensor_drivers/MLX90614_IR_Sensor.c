@@ -41,21 +41,7 @@ enum status_code MLX90614_read_amb(MLXDeviceAddr addr, uint16_t* buf){
 
 // average obj1 and obj2 
 enum status_code MLX90614_read_all_obj(MLXDeviceAddr addr, uint16_t* buf){
-	uint16_t val[2];	
-
-	enum status_code read_obj1 = MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, &val[0]);
-	if ((read_obj1 & 0x0F) != 0){
-		return read_obj1;
-	}
-
-	// TODO: figure out why it isn't working with OBJ2
-	enum status_code read_obj2 = MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, &val[1]);
-	if ((read_obj2 & 0x0F) != 0) {
-		return read_obj2;
-	}
-	
-	*buf = (val[0] + val[1])/2;
-	return read_obj2;
+	return MLX90614_read2ByteValue(addr, (uint8_t)OBJ1, buf);
 }
 
 // converts a data value from the sensor corresponding to a temperature memory address to a Celsius temperature

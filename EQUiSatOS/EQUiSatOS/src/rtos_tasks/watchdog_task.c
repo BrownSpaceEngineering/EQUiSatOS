@@ -11,7 +11,7 @@
 uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 	WATCHDOG_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER, // doesn't really matter, not used
 	STATE_HANDLING_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
-	ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT + WATCHDOG_TASK_TIMEOUT_BUFFER, // TODO: this won't monitor very tightly during ANTENNA_DEPLOY
+	ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	BATTERY_CHARGING_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	TRANSMIT_TASK_LESS_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
 	FLASH_ACTIVATE_TASK_FREQ + WATCHDOG_TASK_TIMEOUT_BUFFER,
@@ -24,6 +24,12 @@ uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 static bool check_ins[NUM_TASKS];
 static uint32_t running_times[NUM_TASKS];
 static uint32_t prev_time;
+
+void init_watchdog_clock(void) {
+	rtos_ready = false;
+	got_early_warning_callback_in_boot = false;
+	configure_watchdog();
+}
 
 // initializes our watchdog-monitoring task
 void init_watchdog_task(void) {
@@ -154,10 +160,15 @@ void check_out_task_unsafe(task_type_t task_ind) {
 	running_times[task_ind] = 0;
 }
 
-// Writes state to storage if the watchdog is about to restart the satellite
+// INTERRUPT; Writes state to storage if the watchdog is about to restart the satellite
 void watchdog_early_warning_callback(void) {
-	log_error_from_isr(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
-	write_state_to_storage_emergency(true); // from ISR
+	// if RTOS is ready we can manually log errors/write to storage
+	if (rtos_ready) {
+		log_error_from_isr(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
+		write_state_to_storage_emergency(true); // from ISR
+	}
+	// otherwise; defer this operation by telling RTOS to do it once started
+	got_early_warning_callback_in_boot = true;
 }
 
 /* testing functions */
