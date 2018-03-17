@@ -8,7 +8,7 @@
 #include "global.h"
 
 #if PRINT_DEBUG > 0 // if using debug print
-	#define DEBUG_BUF_SIZE	128
+	#define DEBUG_BUF_SIZE		128
 	char debug_buf[DEBUG_BUF_SIZE];
 
 	StaticSemaphore_t _print_mutex_d;
@@ -61,7 +61,7 @@ void global_init(void) {
 	system_init();
 	
 	// start watchdog hardware ASAP
-	configure_watchdog();
+	init_watchdog_clock();
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
@@ -127,7 +127,7 @@ void print(const char *format, ...)
 	#if PRINT_DEBUG > 0 // if debug mode
 		#ifdef SAFE_PRINT
 			bool got_mutex = false;
-			if (rtos_started) {
+			if (rtos_ready) {
 				got_mutex = xSemaphoreTakeRecursive(print_mutex, PRINT_MUTEX_WAIT_TIME_TICKS);
 			}
 		#endif
@@ -157,7 +157,7 @@ void print(const char *format, ...)
 		#endif
 	
 		#ifdef SAFE_PRINT
-			if (rtos_started) {
+			if (rtos_ready) {
 				if (got_mutex) xSemaphoreGiveRecursive(print_mutex);
 			}
 		#endif

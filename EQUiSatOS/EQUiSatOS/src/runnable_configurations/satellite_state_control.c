@@ -51,6 +51,8 @@ void startup_task(void* pvParameters);
 // starts RTOS scheduler
 void run_rtos()
 {
+	configASSERT(NUM_MUTEXES == sizeof(all_mutexes_ordered) / sizeof(SemaphoreHandle_t*));
+	
 	// create first init task to start RTOS and other tasks
 	xTaskCreateStatic(startup_task,
 		"initializer task",
@@ -72,10 +74,6 @@ void run_rtos()
  * WARNING: The vApplicationDaemonTaskStartupHook did not work for us.
  */
 void startup_task(void* pvParameters) {
-	#if PRINT_DEBUG != 0
-		rtos_started = true;
-	#endif
-	
 	print("EQUiSatOS starting... ");
 	
 	#ifdef WRITE_DEFAULT_MRAM_VALS
@@ -141,6 +139,12 @@ void startup_task(void* pvParameters) {
 		vTraceSetMutexName(_low_power_equistack_mutex, "eqLP");
 		vTraceSetMutexName(_error_equistack_mutex, "eqERR");
 	#endif
+	
+	// note RTOS is ready for watchdog callback, and log error if it already tripped
+	rtos_ready = true;
+	if (got_early_warning_callback_in_boot) {
+		log_error(ELOC_WATCHDOG, ECODE_WATCHDOG_EARLY_WARNING, true);
+	}
 
 	/************************************************************************/
 	/* TASK CREATION                                                        */
@@ -317,7 +321,7 @@ void configure_state_from_reboot(void) {
 	// if we had to rewrite program memory due to corruption, log a low-pri error
 	if (cache_get_prog_mem_rewritten()) {
 		log_error(ELOC_BOOTLOADER, ECODE_REWROTE_PROG_MEM, false);
-		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);
+		update_sat_event_history(0, 0, 0, 0, 0, 0, 1);  // rare enough that the double-write here is fine
 	}
 
 	// note we've rebooted
@@ -687,7 +691,7 @@ struct hw_states* get_hw_states(void) {
 	return &hardware_states;
 }
 
-bool hardware_state_mutex_take(enum error_locations eloc) {
+bool hardware_state_mutex_take(uint8_t eloc) {
 	if (!xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS)) {
 		log_error(eloc, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 		return false;	

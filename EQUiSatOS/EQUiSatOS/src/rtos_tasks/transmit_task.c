@@ -327,7 +327,7 @@ static void attempt_transmission(void) {
 		
 		// in low power, only transmit two packets
 		if (!low_power_active()) {
-			configASSERT(slot_3_msg_type == LOW_POWER_DATA && slot_4_msg_type == LOW_POWER_DATA);
+			configASSERT(slot_3_msg_type != LOW_POWER_DATA && slot_4_msg_type != LOW_POWER_DATA);
 			
 			write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
 			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);

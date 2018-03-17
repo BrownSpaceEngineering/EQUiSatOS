@@ -274,7 +274,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 				setTXEnable(true);
 			#endif
 			#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
-				transmission_start_ticks = xTaskGetTickCount();
+				transmission_start_ticks = xTaskGetTickCount(); // note: doesn't change in this block
 				usart_send_buf(buf, size);
 				get_hw_states()->radio_state = RADIO_IDLE_TRANS_TRANSITION;
 				trace_print("transmitting...");

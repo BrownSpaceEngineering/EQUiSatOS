@@ -160,7 +160,7 @@ bool enable_ir_pow_if_necessary_unsafe(void) {
 		// note wake_time is technically updated, so use a local 
 		// to avoid concurrency issues
 		TickType_t wake_time = ir_target_on_time;
-		vTaskDelayUntil(&wake_time, 0); 
+		vTaskDelayUntil(&wake_time, 1); // can't do delay offset of 0
 		return false;
 	}
 }
@@ -291,7 +291,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 		i2c_send_stop();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
-			bool irpow = get_output(P_IR_PWR_CMD);
+			bool irpow = get_output(P_IR_PWR_CMD); // TODO
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
 			log_if_error(IR_ELOCS[i], sc, false);
 			log_if_out_of_bounds(obj, S_IR_OBJ, IR_ELOCS[i], false);

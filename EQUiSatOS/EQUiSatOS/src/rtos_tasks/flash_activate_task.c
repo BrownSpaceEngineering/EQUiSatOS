@@ -102,6 +102,8 @@ void flash_activate_task(void *pvParameters)
 		// clear out our average sums struct
 		memset(&current_sums_struct, 0, sizeof(struct flash_burst_data_sums));
 		
+		print("Starting FLASH sequence");
+		
 		// actually flash leds (make sure we're not transmitting or deploying antenna while this is going on)
 		if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
 		{
