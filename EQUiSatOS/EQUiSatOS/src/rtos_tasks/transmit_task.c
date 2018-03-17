@@ -55,22 +55,21 @@ static void read_radio_temp_mode(void) {
 	}
 	
 	// warm reset to get back into transmit mode
-	warm_reset();
-	clear_USART_rx_buffer();
-	usart_send_string(radio_send_buffer);
-	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
-	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
-		//power cycle radio
-		setRadioState(false, false); // off; don't confirm
-		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
-			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
-		setRadioState(true, false); // on; don't confirm
-	}
-	#if PRINT_DEBUG == 1
-		setTXEnable(false);
-		setRXEnable(false);
-	#endif
-	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+// 	warm_reset();
+// 	clear_USART_rx_buffer();
+// 	usart_send_string(radio_send_buffer);
+// 	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+// 	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
+// 		//power cycle radio
+// 		setRadioState(false, false); // off; don't confirm
+// 		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
+// 			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
+// 		setRadioState(true, false); // on; don't confirm
+// 	}
+// 	#if PRINT_DEBUG == 1
+// 		setTXEnable(false);
+// 		setRXEnable(false);
+// 	#endif
 }
 
 /************************************************************************/
@@ -433,8 +432,7 @@ void transmit_task(void *pvParameters)
 		read_radio_temp_mode();				
 		
 		/* shut down and block for any leftover time in next loop */
-		setRadioState(false, true);
-		// TODO: actually confirm??
+		setRadioState(false, false);
 		
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);

@@ -27,6 +27,9 @@
 #define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING ***/
+// used for final release settings (disabled debug helpers)
+#define RELEASE
+
 // define this flag to disable normal frequencies and read data faster,
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:

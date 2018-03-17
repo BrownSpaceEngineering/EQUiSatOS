@@ -89,7 +89,6 @@ static bool storage_read_field_unsafe(uint8_t *mram1_data1, uint num_bytes, uint
 	static uint8_t mram1_data2[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data1[STORAGE_MAX_FIELD_SIZE];
 	static uint8_t mram2_data2[STORAGE_MAX_FIELD_SIZE];
-	// TODO: ^^^^^ can we find a way to use just two of these 
 	
 	// read both duplicates from MRAM1
 	bool success_mram1_data1 = !log_if_error(ELOC_MRAM1_READ,
@@ -269,7 +268,7 @@ void read_state_from_storage(void) {
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		log_error(ELOC_MRAM_READ, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 	// write to redundancy to sync changes
 	cached_state_sync_redundancy();
@@ -294,7 +293,7 @@ static bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	bool got_mutex = true;
 	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		log_error(ELOC_MRAM_WRITE, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
 		got_mutex = false;
 	}
 	{
@@ -449,8 +448,8 @@ void write_state_to_storage_safety(bool safe) {
 		
 		if (safe) xSemaphoreGive(mram_spi_cache_mutex); // we got the mutex if safe is true
 		
-	} else {
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_SPI_MUTEX_TIMEOUT, true);
+	} else if (safe) {
+		log_error(ELOC_MRAM_WRITE, ECODE_SPI_MUTEX_TIMEOUT, true);
 	}
 }
 
@@ -487,6 +486,12 @@ void write_state_to_storage_emergency(bool from_isr) {
 		} else {
 			xSemaphoreGive(mram_spi_cache_mutex);
 		}
+	} else {
+		if (from_isr) {
+			log_error_from_isr(ELOC_MRAM_WRITE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		} else {
+			log_error(ELOC_MRAM_WRITE, ECODE_SPI_MUTEX_TIMEOUT, true);
+		}
 	}
 }
 
@@ -522,7 +527,7 @@ void cached_state_correct_errors(void) {
 		configASSERT(false); // only reason should be radiation corruption
 	} else {
 		// there's not much we can do (this is extremely unlikely), so just take the cached state
-		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED, true);
+		log_error(ELOC_CACHED_PERSISTENT_STATE, ECODE_CORRUPTED_FATAL, false);
 		configASSERT(false); // only reason should be radiation corruption
 	}
 }
