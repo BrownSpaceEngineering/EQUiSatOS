@@ -19,8 +19,8 @@
 #define LEN_SENDBUFFER 16
 
 uint8_t receiveIndex;
-char radio_receive_buffer[LEN_RECEIVEBUFFER];
-char radio_send_buffer[LEN_SENDBUFFER];
+uint8_t radio_receive_buffer[LEN_RECEIVEBUFFER];
+uint8_t radio_send_buffer[LEN_SENDBUFFER];
 
 /* function prototype */
 void USART_init(void);

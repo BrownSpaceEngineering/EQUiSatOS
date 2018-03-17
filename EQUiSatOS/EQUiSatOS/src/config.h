@@ -90,7 +90,7 @@
 //#define SAFE_PRINT	
 
 // define to print errors as the come in
-//#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
+#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

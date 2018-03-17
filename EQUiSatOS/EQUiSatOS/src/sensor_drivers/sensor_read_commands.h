@@ -104,7 +104,7 @@ void activate_ir_pow(void);
 bool enable_ir_pow_if_necessary_unsafe(void); // ONLY used in flash task
 void disable_ir_pow_if_necessary_unsafe(bool got_mutex_on_en); // (same)
 void disable_ir_pow_if_should_be_off(bool expected_on);
-bool _set_5v_enable_unsafe(bool on);
+void _set_5v_enable_unsafe(bool on);
 void verify_regulators(void);
 void verify_regulators_unsafe(void); // used in transmit task
 void verify_flash_readings(bool flashing);

@@ -47,10 +47,10 @@ void pwm_test(void) {
 void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	configure_pwm(pin, pin_mux, p_ant);
 
-	hardware_state_mutex_take();
+	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
 	enable_pwm(current_on_cycle);
 	get_hw_states()->antenna_deploying = true;
-	hardware_state_mutex_give();
+	if (got_hw_state_mutex) hardware_state_mutex_give();
 
 	//delay_ms(ms); // for testing only
 	vTaskDelay(ms / portTICK_PERIOD_MS);
@@ -67,10 +67,11 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	}
 	li1 = ad7991_bat_results[1];
 	li2 = ad7991_bat_results[0];
-	hardware_state_mutex_take();
+	
+	got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
 	disable_pwm();
 	get_hw_states()->antenna_deploying = false;
-	hardware_state_mutex_give();
+	if (got_hw_state_mutex) hardware_state_mutex_give();
 
 	bool can_cont = true;
 	bool deployed = antenna_did_deploy();

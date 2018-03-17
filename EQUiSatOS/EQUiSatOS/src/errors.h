@@ -25,7 +25,7 @@
 
 /******************** LOCATIONS ********************/
 /* Error code that signified there is no error - "null error"; used in transmission */
-enum error_locations {
+typedef enum error_locations {
 	ELOC_NO_ERROR =						0,
 
 	ELOC_IR_POS_Y = 					1,
@@ -127,11 +127,13 @@ enum error_locations {
 	ELOC_BAT_CHARGING_SWITCH_8 =        86,
 	ELOC_BAT_CHARGING_SWITCH_9 =        87,
 	ELOC_IR_POW =						88,
-	ELOC_RADIO_KILLTIME =				89
-};
+	ELOC_RADIO_KILLTIME =				89,
+	ELOC_RADIO_TRANSMIT =				90,
+	ELOC_RADIO_POWER =					91
+} sat_eloc;
 
 /******************** PROBLEM CODES ********************/
-enum error_codes {
+typedef enum error_codes {
 /**** ATMEL DEFINED ****/
 	ECODE_OK = 							0,
 	ECODE_VALID_DATA = 					1,
@@ -213,7 +215,7 @@ enum error_codes {
 
 	ECODE_BAT_LI_TIMEOUT =				71,
 	ECODE_BAT_LF_TIMEOUT =				72
-};
+} sat_ecode;
 
 /************************************************************************/
 /* ERROR STORAGE / INTERFACES                                           */
@@ -223,7 +225,7 @@ enum error_codes {
 
 typedef struct {
 	uint32_t timestamp;
-	uint8_t eloc;
+	sat_eloc eloc;
 	uint8_t ecode; // top bit is priority of error
 } sat_error_t;
 #define SAT_ERROR_T_SIZE		6
@@ -238,9 +240,9 @@ SemaphoreHandle_t _error_equistack_mutex;
 void init_errors(void);
 uint8_t atmel_to_equi_error(enum status_code sc);
 bool is_error(enum status_code sc);
-bool log_if_error(uint8_t loc, enum status_code sc, bool priority);
-void log_error(uint8_t loc, uint8_t err, bool priority);
-void log_error_from_isr(uint8_t loc, uint8_t err, bool priority);
+bool log_if_error(sat_eloc loc, enum status_code sc, bool priority);
+void log_error(sat_eloc loc, sat_ecode err, bool priority);
+void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
 // defined in rtos_system_test.c

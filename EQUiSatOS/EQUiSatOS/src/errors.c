@@ -15,6 +15,8 @@ void init_errors(void) {
 	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
 	equistack_Init(&error_equistack, &_error_equistack_arr, sizeof(sat_error_t),
 		ERROR_STACK_MAX, _error_equistack_mutex);
+	configASSERT(sizeof(sat_eloc) == 1);
+	configASSERT(sizeof(sat_ecode) == 1);
 }
 
 /*
@@ -63,7 +65,7 @@ void print_error(enum status_code code){
 }
 
 // logs an error if the given atmel status code is one, and returns whether it was an error
-bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
+bool log_if_error(sat_eloc loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
 		log_error(loc, atmel_to_equi_error(sc), priority);
 		return true;
@@ -135,7 +137,7 @@ uint8_t atmel_to_equi_error(enum status_code sc) {
 }
 
 /* Logs an error to the error stack, noting its timestamp */
-void log_error(uint8_t loc, uint8_t err, bool priority) {
+void log_error(sat_eloc loc, sat_ecode err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
@@ -153,7 +155,7 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
-void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
+void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits
 
 	sat_error_t full_error;
@@ -178,12 +180,8 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	// is in a consistent state, and ensures that the mutex grabs in
 	// the "safe" equistack functions don't result in infinite recursion 
 	// by logging an error if they can't get a mutex
-	bool got_mutex = true;
-	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
-		// log error, but continue on because we're just reading
-		log_error(ELOC_ERROR_STACK, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
-		got_mutex = false;
-	}
+	bool got_mutex = xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	// would log error if we didn't get it, but we can't!
 	{
 		sat_error_t* newest_same_error = NULL;
 		int num_same_errors = 0;
@@ -222,10 +220,12 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 				if (to_overwrite != NULL
 					&& (!is_priority_error(*to_overwrite)  ||
 						get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S)) {
-					equistack_Push_Unsafe(stack, new_error);
+					// need to have mutex to add, otherwise things may get screwed up
+					if (got_mutex) equistack_Push_Unsafe(stack, new_error);
 				}
 			} else {
-				equistack_Push_Unsafe(stack, new_error);
+				// need to have mutex to add, otherwise things may get screwed up
+				if (got_mutex) equistack_Push_Unsafe(stack, new_error);
 			}
 		
 		} else if(num_same_errors == 2) {
@@ -235,6 +235,7 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 			newest_same_error->timestamp = new_error->timestamp;
 		
 		} else {
+			print("ERROR EQUISTACK NOT FORMATTED AS EXPECTED"); // TODO
 			// otherwise, the stack is not formatted as it should be 
 			// (though this may be due to an emergency reboot) 
 			#ifdef USE_STRICT_ASSERTIONS
@@ -249,20 +250,24 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 // hangs on the given error if it's a "bad/rare" one as defined in this function
 // ONLY called if USE_STRICT_ASSERTIONS enabled
 void check_for_bad_error(sat_error_t* full_error) {
-	int actual_code = full_error->ecode & 0b01111111;
+	enum error_codes actual_code = full_error->ecode & 0b01111111;
 	#ifdef USE_STRICT_ASSERTIONS
 		configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
 		configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 		configASSERT(actual_code != ECODE_CORRUPTED);
 	#endif
+	static int a = 1;
 	if (actual_code >= ECODE_CRIT_ACTION_MUTEX_TIMEOUT && actual_code <= ECODE_ALL_MUTEX_TIMEOUT) {
-		int a = actual_code;
+		a++;
 	}
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
-		bool a = actual_code == ECODE_READING_HIGH;
+		a++;
 	}
 	if (actual_code == ECODE_BAD_ADDRESS
 		 && full_error->eloc != ELOC_IR_NEG_X) {
-		bool a = 1;
+		a++;
+	}
+	if (actual_code == ECODE_EXCESSIVE_SUSPENSION) {
+		a++;
 	}
 };

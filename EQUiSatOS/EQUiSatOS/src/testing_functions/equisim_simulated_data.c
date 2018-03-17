@@ -161,7 +161,7 @@ void fault_to_default()
 
 void panel_to_default()
 {
-	cur_state.panel_ref_mv = 9000; // TODO: 9000 is way bigger than what a uint8 can hold
+	cur_state.panel_ref_mv = get_high_bound_from_signal(S_PANELREF); 
 	cur_state.spf_st = 1;
 }
 
@@ -259,6 +259,14 @@ static void voltages_normal(uint64_t timestamp_ms, sat_state_t sat_state)
 	cur_state.lf2_volts = Max(cur_state.lf2_volts, 0);
 	cur_state.lf3_volts = Max(cur_state.lf3_volts, 0);
 	cur_state.lf4_volts = Max(cur_state.lf4_volts, 0);
+	
+	// can't be above full charge
+	cur_state.li1_volts = Min(cur_state.li1_volts, LI_VOLTS_CEILING);
+	cur_state.li2_volts = Min(cur_state.li2_volts, LI_VOLTS_CEILING);
+	cur_state.lf1_volts = Min(cur_state.lf1_volts, LF_VOLTS_CEILING);
+	cur_state.lf2_volts = Min(cur_state.lf2_volts, LF_VOLTS_CEILING);
+	cur_state.lf3_volts = Min(cur_state.lf3_volts, LF_VOLTS_CEILING);
+	cur_state.lf4_volts = Min(cur_state.lf4_volts, LF_VOLTS_CEILING);
 }
 
 void normal_charge_discharge(uint64_t timestamp_ms, sat_state_t sat_state) {
