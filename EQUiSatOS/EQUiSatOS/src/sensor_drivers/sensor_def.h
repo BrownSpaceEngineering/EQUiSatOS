@@ -65,8 +65,8 @@
 #define B_LED_TEMP_FLASH_HIGH			~0
 #define B_LED_SNS_REG_LOW				0
 #define B_LED_SNS_REG_HIGH				5
-#define B_LED_SNS_FLASH_LOW				166
-#define B_LED_SNS_FLASH_HIGH			2000
+#define B_LED_SNS_FLASH_LOW				0//20
+#define B_LED_SNS_FLASH_HIGH			100
 #define B_LF_TEMP_LOW					0
 #define B_LF_TEMP_HIGH					~0
 #define B_LF_SNS_REG_LOW				0
@@ -139,7 +139,7 @@
 #define B_3V6_SNS_IDLE_TRANS_TRANSITION_HIGH	B_3V6_SNS_TRANSMIT_HIGH
 /* 5v ref */
 #define B_5VREF_OFF_LOW					0
-#define B_5VREF_OFF_HIGH				120  
+#define B_5VREF_OFF_HIGH				120
 #define B_5VREF_ON_LOW					1400 // 4733 mV
 #define B_5VREF_ON_HIGH					1515 // 5122 mV
 #define B_5VREF_TRANSITION_LOW			B_5VREF_OFF_LOW
