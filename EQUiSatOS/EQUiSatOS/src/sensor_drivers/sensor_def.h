@@ -17,7 +17,7 @@
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
 #define A_LED_TEMP_M				1	//TODO: FILL IN!
 #define A_LED_TEMP_B				0	//TODO: FILL IN!
-#define A_LED_SNS_M					(433/10) //TODO: FILL IN!
+#define A_LED_SNS_M					650 //TODO: FILL IN!
 #define A_LED_SNS_B					0		//TODO: FILL IN!
 #define A_LF_TEMP_M					1	//TODO: FILL IN!
 #define A_LF_TEMP_B					0	//TODO: FILL IN!
@@ -81,12 +81,14 @@
 #define B_LF_VOLT_HIGH					4000
 #define B_L_TEMP_LOW					0
 #define B_L_TEMP_HIGH					~0
-#define B_L_SNS_IDLE_RAD_OFF_LOW		10
-#define B_L_SNS_IDLE_RAD_OFF_HIGH		150
-#define B_L_SNS_IDLE_RAD_ON_LOW			100
-#define B_L_SNS_IDLE_RAD_ON_HIGH		900 // TODO
-#define B_L_SNS_TRANSMIT_LOW			800
-#define B_L_SNS_TRANSMIT_HIGH			2000
+#define B_L_SNS_OFF_LOW					950		//-100mA
+#define B_L_SNS_OFF_HIGH				1075	//150mA
+#define B_L_SNS_IDLE_RAD_OFF_LOW		925		//-150mA
+#define B_L_SNS_IDLE_RAD_OFF_HIGH		1050	//100mA
+#define B_L_SNS_IDLE_RAD_ON_LOW			875		//-250mA
+#define B_L_SNS_IDLE_RAD_ON_HIGH		1025	//50mA
+#define B_L_SNS_TRANSMIT_LOW			0		//-2000mA
+#define B_L_SNS_TRANSMIT_HIGH			750		//-500mA
 #define B_L_SNS_ANT_DEPLOY_LOW			200
 #define B_L_SNS_ANT_DEPLOY_HIGH			3100
 #define B_L_VOLT_LOW					0
@@ -147,6 +149,7 @@ typedef enum {
 	S_LF_VOLT,
 	S_L_TEMP,
 	S_L_SNS, // ONLY USE TO TRUNCATE, NOT LOG_IF_OUT_OF_BOUNDS
+	S_L_SNS_OFF,
 	S_L_SNS_IDLE_RAD_OFF,
 	S_L_SNS_IDLE_RAD_ON,
 	S_L_SNS_TRANSMIT,
