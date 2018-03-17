@@ -73,8 +73,22 @@ void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool pri
 	uint16_t high = get_high_bound_from_signal(sig);
 	if (reading < low) {
 		log_error(eloc, ECODE_READING_LOW, priority);
+		#ifdef PRINT_NEW_ERRORS
+			sat_error_t err;
+			err.ecode = 0;
+			err.timestamp = 0;
+			err.eloc = eloc;
+			print("READING OUT OF BOUNDS - LOW - eloc: %s, reading: %d, low bound: %d\n", get_eloc_str(&err), reading, low);
+		#endif
 	} else if (reading > high) {
 		log_error(eloc, ECODE_READING_HIGH, priority);
+		#ifdef PRINT_NEW_ERRORS
+			sat_error_t err;
+			err.ecode = 0;
+			err.timestamp = 0;
+			err.eloc = eloc;
+			print("READING OUT OF BOUNDS - HIGH - eloc: %s, reading: %d, high bound: %d\n", get_eloc_str(&err), reading, low);
+		#endif
 	}
 }
 

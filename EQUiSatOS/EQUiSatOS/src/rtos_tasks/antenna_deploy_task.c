@@ -15,7 +15,7 @@ static int num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
 	return (antenna_did_deploy() && num_tries > 0) // must try at least once
-		|| num_tries >= ANTENNA_DEPLOY_MAX_TRIES;
+		|| num_tries > ANTENNA_DEPLOY_MAX_TRIES;
 }
 
 void antenna_deploy_task(void *pvParameters) {
