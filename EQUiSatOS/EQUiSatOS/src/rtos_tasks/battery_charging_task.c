@@ -659,8 +659,11 @@ void battery_charging_task(void *pvParameters)
 
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
 {
-	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
-		   max_cell_mv > LF_FULL_MAX_MV;
+	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
+	
+	return (charging_data.bat_voltages[lf] >= LF_FULL_SUM_MAX_MV) ||
+			(charging_data.bat_voltages[lf]	> LF_FULL_SUM_MV && panel_ref_val > PANEL_REF_SUN_MV) // TODO: finish this &&  chg_pin_active(lf, )
+		  || max_cell_mv >= LF_FULL_MAX_MV;
 }
 
 bool get_lfs_both_full(

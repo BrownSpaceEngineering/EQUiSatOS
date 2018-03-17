@@ -31,11 +31,12 @@
 #define LI_CRITICAL_MV             		2750
 #define LI_MIGHT_NOT_BE_FULL_MV       4000
 
-#define LF_FULL_SUM_MV             		7100 // what here?
+#define LF_FULL_SUM_MAX_MV             	7100 // what here?
+#define LF_FULL_SUM_MV             		7000 // what here?
 #define LF_FULL_MAX_MV                  3800
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
-#define LF_FLASH_AVG_MV            		3250
+#define LF_FLASH_MIN_MV					6200
 
 #define SNS_THRESHOLD                   1000
 
