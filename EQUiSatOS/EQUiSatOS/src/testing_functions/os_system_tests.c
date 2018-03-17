@@ -12,7 +12,7 @@
 
 // determines how long we spend in each state
 #define LOWEST_TASK_FREQ			240000 //BATTERY_CHARGING_TASK_FREQ
-#define IN_STATE_TIME_MS			(LOWEST_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME)
+#define EQUISIM_IN_STATE_TIME_MS			(LOWEST_TASK_FREQ + TASK_EXECUTION_WINDOW_BUFFER_TIME)
 
 void test_all_state_transitions(void)
 {
@@ -47,13 +47,13 @@ void test_normal_satellite_state_sequence(void) {
 		// start out in initial
 		set_sat_state_helper(INITIAL);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 	}
 
 	if (state_num < 1) {
 		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
@@ -61,35 +61,35 @@ void test_normal_satellite_state_sequence(void) {
 	if (state_num < 2) {
 		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
 	if (state_num < 3) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
 	if (state_num < 4) {
 		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
 	if (state_num < 5) {
 		check_set_sat_state(IDLE_FLASH, LOW_POWER);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 
 	if (state_num < 6) {
 		check_set_sat_state(LOW_POWER, IDLE_NO_FLASH);
 		check_out_task_unsafe(STATE_HANDLING_TASK); // to avoid watchdog reset when warranted
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	vTaskDelay(LOWEST_TASK_FREQ * 10);
@@ -102,13 +102,13 @@ void test_error_case_satellite_state_sequence(void)
 	if (state_num == 0) {
 		// start out in initial
 		set_sat_state_helper(INITIAL);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 1) {
 		check_set_sat_state(INITIAL, ANTENNA_DEPLOY);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
@@ -116,9 +116,9 @@ void test_error_case_satellite_state_sequence(void)
 	// go to emergency low power (the ANTENNA_DEPLOY state is very different from IDLE_NO_FLASH)
 	if (state_num < 2) {
 		check_set_sat_state(ANTENNA_DEPLOY, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		check_set_sat_state(LOW_POWER, ANTENNA_DEPLOY);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
@@ -126,7 +126,7 @@ void test_error_case_satellite_state_sequence(void)
 	// the below may actually transition sooner to hello world depending on what the antenna deploy state is
 	if (state_num < 3) {
 		check_set_sat_state(ANTENNA_DEPLOY, HELLO_WORLD);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
@@ -134,16 +134,16 @@ void test_error_case_satellite_state_sequence(void)
 	// go to emergency low power
 	if (state_num < 4) {
 		check_set_sat_state(HELLO_WORLD, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		check_set_sat_state(LOW_POWER, HELLO_WORLD);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 5) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
@@ -151,37 +151,37 @@ void test_error_case_satellite_state_sequence(void)
 	// go to emergency low power, then back again
 	if (state_num < 6) {
 		check_set_sat_state(IDLE_NO_FLASH, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		check_set_sat_state(LOW_POWER, IDLE_NO_FLASH);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 7) {
 		check_set_sat_state(IDLE_NO_FLASH, IDLE_FLASH);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 8) {
 		check_set_sat_state(IDLE_FLASH, LOW_POWER);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 9) {
 		check_set_sat_state(LOW_POWER, IDLE_FLASH);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);
 
 	if (state_num < 10) {
 		check_set_sat_state(HELLO_WORLD, IDLE_NO_FLASH);
-		vTaskDelay(IN_STATE_TIME_MS / portTICK_PERIOD_MS);
+		vTaskDelay(EQUISIM_IN_STATE_TIME_MS / portTICK_PERIOD_MS);
 		state_num++;
 	}
 	report_task_running(STATE_HANDLING_TASK);

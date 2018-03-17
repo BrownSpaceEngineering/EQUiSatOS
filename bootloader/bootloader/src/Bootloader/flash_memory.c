@@ -25,7 +25,6 @@ void flash_mem_write_bytes(uint8_t* data, uint32_t num_bytes, uint32_t start_add
 	uint8_t* cur_data_ptr = data;
 
 	// assert start_address is a multiple of the page size (for now)
-	// TODO TODO TODO TODO TODO TODO TODO TODO TODO
 	if (start_address % NVMCTRL_PAGE_SIZE != 0) {
 		while(true) {}; // tsk, tsk, tsk
 	}

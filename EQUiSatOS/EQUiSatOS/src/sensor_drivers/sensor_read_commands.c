@@ -816,12 +816,11 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	status_code_genare_t sc = STATUS_OK; // initialize!
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		#ifndef EQUISIM_SIMULATE_BATTERIES
-			sc = TCA9535_init(batch);
+			status_code_genare_t sc = TCA9535_init(batch);
 			log_if_error(ELOC_TCA, sc, true);
 			// zero out the places we're going to overwrite
 			// see order in Message Format spreadsheet
