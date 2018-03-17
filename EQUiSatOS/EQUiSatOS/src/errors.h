@@ -129,7 +129,12 @@ typedef enum error_locations {
 	ELOC_IR_POW =						88,
 	ELOC_RADIO_KILLTIME =				89,
 	ELOC_RADIO_TRANSMIT =				90,
-	ELOC_RADIO_POWER =					91
+	ELOC_RADIO_POWER =					91,
+	
+	ELOC_IMU_INIT =						92,
+	ELOC_IMU_GYRO_INIT =				93,
+	ELOC_IMU_ACCEL_INIT =				94,
+	ELOC_IMU_MAG_INIT =					95
 } sat_eloc;
 
 /******************** PROBLEM CODES ********************/

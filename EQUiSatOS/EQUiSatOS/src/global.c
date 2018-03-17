@@ -73,7 +73,6 @@ void global_init(void) {
 	radio_control_init();
 	configure_i2c_master(SERCOM4);
 	MLX90614_init();
-	MPU9250_init();
 	HMC5883L_init();
 	delay_init();
 	
@@ -101,6 +100,10 @@ void global_init_post_rtos(void) {
 	// now that errors are initialized, try to init AD7991 and log potential errors
 	log_if_error(ELOC_AD7991_BBRD, AD7991_init(AD7991_BATBRD), true);
 	log_if_error(ELOC_AD7991_CBRD, AD7991_init(AD7991_CTRLBRD), true);
+	log_if_error(ELOC_IMU_INIT, MPU9250_init(), true);
+	log_if_error(ELOC_IMU_GYRO_INIT, gyro_init(), true);
+	log_if_error(ELOC_IMU_ACCEL_INIT, accel_init(), true);
+	log_if_error(ELOC_IMU_MAG_INIT, mag_init(), true);
 }
 
 // call this function to take the print mutex (suppress other task's printing)

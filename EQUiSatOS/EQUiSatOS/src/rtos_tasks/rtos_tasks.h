@@ -138,7 +138,6 @@ void pre_init_rtos_tasks(void); // MUST be called on startup to setup assign var
 /************************************************************************/
 /* Helper Functions                                                     */
 /************************************************************************/
-void rtos_safe_delay(uint32_t ms); // delay which SUSPENDS RTOS while delaying, so the delay is determinate
 uint32_t get_time_of_next_flash(void);	// implemented in flash_activate_task
 bool flash_now(void);					// implemented in flash_activate_task
 bool would_flash_now(void);				// implemented in flash_activate_task
