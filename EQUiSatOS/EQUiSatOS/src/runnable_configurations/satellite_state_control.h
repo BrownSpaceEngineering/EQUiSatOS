@@ -16,7 +16,7 @@
 #include "testing_functions/sat_data_tests.h"
 #include "../testing_functions/os_system_tests.h"
 #include "antenna_pwm.h"
-#include "errors.h"
+#include "../errors.h"
 
 /************************************************************************/
 /* Satellite state constructs                                           */
@@ -25,6 +25,12 @@
 typedef struct task_states {
 	bool states[NUM_TASKS];
 } task_states;
+
+// (atomic) field to notify watchdog early warning interrupt of RTOS being
+// ready so it can start logging data if it occurs
+// NOTE: these are not bools out of concurrency concerns
+uint8_t rtos_ready;
+uint8_t got_early_warning_callback_in_boot;
 
 /************************************************************************/
 /* Defined task state sets - order must match enum in rtos_tasks_config.h: */
@@ -41,10 +47,6 @@ typedef struct task_states {
 // duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
 #define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(5000 / portTICK_PERIOD_MS)
 #define TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES		5
-
-#if PRINT_DEBUG != 0
-	bool rtos_started;
-#endif
 
 /************************************************************************/
 /* global hardware states												
@@ -105,7 +107,7 @@ bool low_power_active(void);
 
 // hardware-specific functions
 struct hw_states* get_hw_states(void);
-bool hardware_state_mutex_take(enum error_locations eloc);
+bool hardware_state_mutex_take(uint8_t eloc);
 void hardware_state_mutex_give(void);
 
 void run_rtos(void);

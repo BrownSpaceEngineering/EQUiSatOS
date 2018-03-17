@@ -15,6 +15,8 @@ void init_errors(void) {
 	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
 	equistack_Init(&error_equistack, &_error_equistack_arr, sizeof(sat_error_t),
 		ERROR_STACK_MAX, _error_equistack_mutex);
+	configASSERT(sizeof(sat_eloc) == 1);
+	configASSERT(sizeof(sat_ecode) == 1);
 }
 
 /*
@@ -63,7 +65,7 @@ void print_error(enum status_code code){
 }
 
 // logs an error if the given atmel status code is one, and returns whether it was an error
-bool log_if_error(uint8_t loc, enum status_code sc, bool priority) {
+bool log_if_error(sat_eloc loc, enum status_code sc, bool priority) {
 	if (is_error(sc)) {
 		log_error(loc, atmel_to_equi_error(sc), priority);
 		return true;
@@ -135,7 +137,7 @@ uint8_t atmel_to_equi_error(enum status_code sc) {
 }
 
 /* Logs an error to the error stack, noting its timestamp */
-void log_error(uint8_t loc, uint8_t err, bool priority) {
+void log_error(sat_eloc loc, sat_ecode err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits	
 
 	sat_error_t full_error;
@@ -153,7 +155,7 @@ void log_error(uint8_t loc, uint8_t err, bool priority) {
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
-void log_error_from_isr(uint8_t loc, uint8_t err, bool priority) {
+void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority) {
 	configASSERT(err <= 127); // only 7 bits
 
 	sat_error_t full_error;
@@ -254,14 +256,18 @@ void check_for_bad_error(sat_error_t* full_error) {
 		configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 		configASSERT(actual_code != ECODE_CORRUPTED);
 	#endif
+	static int a = 1;
 	if (actual_code >= ECODE_CRIT_ACTION_MUTEX_TIMEOUT && actual_code <= ECODE_ALL_MUTEX_TIMEOUT) {
-		do {} while (0);
+		a++;
 	}
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
-		do {} while (0);
+		a++;
 	}
 	if (actual_code == ECODE_BAD_ADDRESS
 		 && full_error->eloc != ELOC_IR_NEG_X) {
-		do {} while (0);
+		a++;
+	}
+	if (actual_code == ECODE_EXCESSIVE_SUSPENSION) {
+		a++;
 	}
 };

@@ -34,8 +34,9 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					174892);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				60);
-// address at which prog mem rewritten boolean is stored in mram
+// address at which prog mem rewritten boolean is stored in mram + size
 RAD_SAFE_FIELD_INIT(uint32_t, mram_prog_mem_rewritten_addr, 42);
+RAD_SAFE_FIELD_INIT(uint32_t, mram_prog_mem_rewritten_size, 1);
 // size of buffer to use when copying data from mram to flash
 // IMPORTANT NOTE: MUST be multiple of NVM page size, i.e. NVMCTRL_PAGE_SIZE = 64
 // (use powers of two and you'll be fine)
@@ -172,10 +173,11 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 void set_prog_memory_rewritten(uint8_t was_rewritten, struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write duplicate fields to both mrams (no spacing)
-	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
-	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + 1);
-	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
-	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, 1, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + 1);
+	uint8_t field_size = RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_size); // == 1
+	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
+	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + field_size);
+	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
+	mram_write_bytes(spi_master_instance, mram_slave2, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + field_size);
 	// note: don't bother to read it back and confirm because there's nothing we can do and it doesn't really matter
 }
 

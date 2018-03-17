@@ -248,7 +248,7 @@ void read_state_from_storage(void) {
 			cached_state.reboot_count = 0;
 			memset(&cached_state.sat_event_history, 0, sizeof(satellite_history_batch));
 			cached_state.prog_mem_rewritten = false;
-			cached_state.persistent_charging_data.li_caused_reboot = -1;
+			cached_state.persistent_charging_data.li_caused_reboot = 0xff;
 			cached_state.radio_revive_timestamp = 0;
 		#else
 			storage_read_field_unsafe((uint8_t*) &cached_state.secs_since_launch,		RAD_SAFE_FIELD_GET(storage_secs_since_lauch_size),			RAD_SAFE_FIELD_GET(storage_secs_since_lauch_addr));
@@ -793,7 +793,7 @@ void write_custom_state(void) {
 	uint8_t prog_mem_rewritten =				false;
 	persistent_charging_data_t persistent_charging_data;
 	uint32_t radio_revive_timestamp =				0;
-	persistent_charging_data.li_caused_reboot = -1;
+	persistent_charging_data.li_caused_reboot = ~0;
 
 	#define NUM_ERRS	0
 	const uint8_t num_errs = NUM_ERRS;

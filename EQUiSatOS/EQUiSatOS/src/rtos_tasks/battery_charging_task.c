@@ -310,14 +310,14 @@ void init_charging_data()
 	// we need to decommission here if the MRAM says that one of the LI's caused
 	// a reboot
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
-	if (persist_data.li_caused_reboot != -1)
+	if (persist_data.li_caused_reboot != 0xff)
 	{
 		print("mram has battery %d as having caused a reboot -- decommissioning\n", persist_data.li_caused_reboot);
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
 		decommission(persist_data.li_caused_reboot);
 
 		// reset persistent data so we give another chance
-		persist_data.li_caused_reboot = -1;
+		persist_data.li_caused_reboot = ~0;
 		set_persistent_charging_data_unsafe(persist_data);
 	}
 
@@ -1138,7 +1138,7 @@ void battery_logic()
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 
 		// reset our emergency write to the MRAM
-		persist_data.li_caused_reboot = -1;
+		persist_data.li_caused_reboot = ~0;
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
