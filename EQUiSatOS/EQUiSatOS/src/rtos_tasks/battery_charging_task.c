@@ -246,7 +246,6 @@ void decommission(int8_t bat)
 	}
 }
 
-// TODO: finalize this function
 uint32_t time_for_recommission(int8_t bat)
 {
 	return Min(charging_data.decommissioned_count[bat] * INITIAL_RECOMMISSION_TIME_S, MAX_RECOMMISSION_TIME_S);
@@ -256,8 +255,8 @@ bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
 	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
-	print("\t%d total decomissions for this bat\n", charging_data.decommissioned_count[bat]);
-	print("\tthis battery should be decomissioned for %d\n", time_for_recommission(bat));
+	print("\t%d total decommissions for this bat\n", charging_data.decommissioned_count[bat]);
+	print("\tthis battery should be decommissioned for %d\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
 		charging_data.decommissioned[bat] = 0;
@@ -659,8 +658,17 @@ void battery_charging_task(void *pvParameters)
 
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
 {
+	bat_charge_dig_sigs_batch batch;
+	bool got_chgn = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
+
+	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
+	bool got_panel_ref = panel_ref_val != -1;
+	
 	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
-		   max_cell_mv > LF_FULL_MAX_MV;
+		   max_cell_mv > LF_FULL_MAX_MV ||
+		   (charging_data.bat_charging == lf && got_panel_ref && got_chgn && 
+		    !chg_pin_active(lf) && panel_ref_val > PANEL_REF_SUN_MV &&
+			charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
 }
 
 bool get_lfs_both_full(

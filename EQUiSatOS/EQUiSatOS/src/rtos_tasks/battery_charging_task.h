@@ -58,7 +58,7 @@
 #define MAX_TIME_BELOW_V_THRESHOLD_S	  10000
 #define INITIAL_RECOMMISSION_TIME_S     500
 
-#define PANEL_REF_SUN_MV                1474	// 7500 mv
+#define PANEL_REF_SUN_MV                1474	// 7500 mv // is this working?
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank
@@ -167,7 +167,6 @@ uint8_t get_run_chg_pin(int8_t bat);
 uint8_t get_run_dischg_pin(int8_t bat);
 bool chg_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch);
 bool st_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch);
-uint16_t get_panel_ref_val(void);
 bool is_lion(int8_t bat);
 void init_charging_data(void);
 void set_li_to_discharge(int8_t bat, bool discharge);
