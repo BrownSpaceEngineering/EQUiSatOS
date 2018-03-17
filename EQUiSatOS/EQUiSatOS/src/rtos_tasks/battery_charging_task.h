@@ -23,23 +23,28 @@
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
 #define LI_MAX_MV                       4200
-#define LI_FULL_MV                      4190
+#define LI_FULL_MV                      4175
+#define LI_FULL_LOWER_MV                4150
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 		4050
 #define LI_LOW_POWER_MV            		3900
 #define LI_CRITICAL_MV             		2750
 #define LI_MIGHT_NOT_BE_FULL_MV       4000
 
-#define LF_FULL_SUM_MV             		7100 // what here?
+#define LF_FULL_SUM_MAX_MV             	7100 // what here?
+#define LF_FULL_SUM_MV             		7000 // what here?
 #define LF_FULL_MAX_MV                  3800
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
-#define LF_FLASH_AVG_MV            		3250
+#define LF_FLASH_MIN_MV					6200
+
+#define SNS_THRESHOLD                   1000
 
 #define RETRIES_AFTER_MUTEX_TIMEOUT     3
 
 // thresholds for error checking and the strikes system
 #define MAX_TIME_WITHOUT_CHARGE_MS      (3 * 60 * 60 * 1000)
+#define DELAY_BEFORE_RETRY_MS           400
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 #define SAT_NO_POWER_TURN_OFF_T_MS		1000
@@ -176,11 +181,14 @@ void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
 void charge_lower_li(void);
 void discharge_higher_li(void);
 void check_after_charging(int8_t bat_charging, int8_t old_bat_charging);
-void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
-void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch);
+bool check_chg_should_decommission(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
+void check_chg_with_retry(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
+void check_fault_with_retry(int8_t bat, bat_charge_dig_sigs_batch batch);
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv);
 bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
+void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch);
+void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch);
 
 void run_unit_tests(void);
 void run_simulations(void);

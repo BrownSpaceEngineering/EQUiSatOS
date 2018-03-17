@@ -47,6 +47,14 @@ static uint8_t PD_ELOCS[6] = {
 
 static struct adc_module adc_instance; // global is allowed because we always lock the processor ADC
 
+// time that IR power will be fully on; used so that no one uses IR power
+// in an (upwards) transition state (nothing needs to know explicitly when it's off)
+TickType_t ir_target_on_time;
+
+// time that IR power will be fully off; used so that no one tries to confirm
+// the value until it's good
+TickType_t rail_5v_target_off_time;
+
 void init_sensor_read_commands(void) {
 	i2c_irpow_mutex = xSemaphoreCreateMutexStatic(&_i2c_irpow_mutex_d);
 	processor_adc_mutex = xSemaphoreCreateMutexStatic(&_processor_adc_mutex_d);
@@ -54,6 +62,7 @@ void init_sensor_read_commands(void) {
 	// time doesn't matter because in order to turn IR power on,
 	// someone will have to set it's initial value
 	ir_target_on_time = 0;
+	rail_5v_target_off_time = 0;
 }
 
 /************************************************************************/
@@ -126,14 +135,17 @@ void _set_5v_enable_unsafe(bool on) {
 	// allow time to power up/down before someone uses it
 	if (on) {
 		vTaskDelay(EN_5V_POWER_ON_DELAY_MS / portTICK_PERIOD_MS);
+		
+		// set hardware state after sufficient time for it to be valid
+		got_hw_state_mutex = hardware_state_mutex_take(ELOC_5V_REF);
+		get_hw_states()->rail_5v_enabled = on;
+		if (got_hw_state_mutex)	hardware_state_mutex_give();
+		
 	} else {
-		vTaskDelay(EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
+		// don't delay on OFF time because it's so long... just let 
+		// tasks know they have to wait
+		rail_5v_target_off_time = xTaskGetTickCount() + EN_5V_POWER_OFF_DELAY_MS;
 	}
-
-	// set hardware state after sufficient time for it to be valid
-	got_hw_state_mutex = hardware_state_mutex_take(ELOC_5V_REF);
-	get_hw_states()->rail_5v_enabled = on;
-	if (got_hw_state_mutex)	hardware_state_mutex_give();
 }
 
 // wrapper function to handle enabling IR power;
@@ -191,8 +203,6 @@ void ensure_ir_power_disabled(bool expected_on) {
 
 	} else if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		trace_print("set ir power off (had to take mutex)");
-		// log error because this indicates the semaphores for IR power weren't working
-		log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, false);
 		set_output(false, P_IR_PWR_CMD);
 		xSemaphoreGive(i2c_irpow_mutex);
 
@@ -217,6 +227,15 @@ void verify_regulators_unsafe(void) {
 	// but long enough to ensure the state doesn't change in the middle of checking it
 	if (hardware_state_mutex_take(ELOC_VERIFY_REGS)) {
 		read_ad7991_ctrlbrd_unsafe(batch);
+		
+		// check 5V regulator state and update hardware states if necessary
+		// if it's transitioning to OFF, check that it's done and set it's
+		// state to off if it is (we're the one who should do this)
+		if (get_hw_states()->rail_5v_enabled == HW_TRANSITIONING 
+			&& xTaskGetTickCount() >= rail_5v_target_off_time) {
+			get_hw_states()->rail_5v_enabled = HW_OFF;
+		}
+		
 		states = get_hw_states(); // take at time of state read
 		hardware_state_mutex_give();
 	} else {
@@ -276,9 +295,12 @@ void verify_regulators_unsafe(void) {
 void verify_regulators(void) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
+		// safely turn on IR power
 		bool got_semaphore = enable_ir_pow_if_necessary();
+		// safely delay until 5V regulator is in a good state
+		TickType_t wake_time = rail_5v_target_off_time;
+		vTaskDelayUntil(&wake_time, 1); // can't do delay offset of 0
+		
 		verify_regulators_unsafe();
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
@@ -294,8 +316,6 @@ void verify_regulators(void) {
 void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		// send stop because the IR sensors need it before processing commands
 		// after the line has been busy
@@ -320,8 +340,6 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		// send stop because the IR sensors need it before processing commands
 		// after the line has been busy
@@ -382,8 +400,6 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 
 	// (we need to lock i2c_irpow_mutex before hardware_state_mutex to avoid deadlock)
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
@@ -452,8 +468,6 @@ bool read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		read_ad7991_ctrlbrd_unsafe(batch);
 		disable_ir_pow_if_necessary(got_semaphore);
@@ -503,8 +517,6 @@ void _read_lifepo_current_batch_unsafe(lifepo_current_batch batch, bool flashing
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
@@ -613,8 +625,6 @@ void verify_flash_readings(bool flashing_now) {
 	// (the passed flash state will be valid even if a flash happens)
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
@@ -664,8 +674,6 @@ uint8_t get_pdiode_two_bit_range(uint16_t raw) {
 void read_pdiode_batch(pdiode_batch* batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
@@ -702,8 +710,6 @@ void read_pdiode_batch(pdiode_batch* batch) {
 void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
@@ -737,8 +743,6 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		sc = MPU9250_read_acc(rs);
 		disable_ir_pow_if_necessary(got_semaphore);
@@ -771,7 +775,6 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
 		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		sc = MPU9250_read_gyro(rs);
@@ -795,8 +798,6 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 	status_code_genare_t sc;
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		//sc = MPU9250_read_mag(rs);
 		sc = HMC5883L_readXYZ(rs);
@@ -815,14 +816,11 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	status_code_genare_t sc = STATUS_OK; // initialize!
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		#ifndef EQUISIM_SIMULATE_BATTERIES
-			sc = TCA9535_init(batch);
+			status_code_genare_t sc = TCA9535_init(batch);
 			log_if_error(ELOC_TCA, sc, true);
 			// zero out the places we're going to overwrite
 			// see order in Message Format spreadsheet
@@ -850,8 +848,6 @@ bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		// note: IR power will always be enabled if necessary, but if we
-		// didn't enable it, we won't turn it off
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		int16_t buf;
 		enum status_code sc = MPU9250_read_temp(&buf);

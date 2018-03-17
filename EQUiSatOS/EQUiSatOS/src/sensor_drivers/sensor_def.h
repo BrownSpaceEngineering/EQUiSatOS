@@ -114,7 +114,7 @@
 #ifdef FLIGHT
 	#define B_3V6_REF_OFF_HIGH				200
 #else
-	#define B_3V6_REF_OFF_HIGH				400
+	#define B_3V6_REF_OFF_HIGH				500
 #endif
 #define B_3V6_REF_ON_LOW				1700 // 3400 mV
 #define B_3V6_REF_ON_HIGH				1850 // 3700 mV

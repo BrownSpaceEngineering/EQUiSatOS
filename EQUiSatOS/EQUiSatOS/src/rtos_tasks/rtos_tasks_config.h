@@ -38,7 +38,7 @@ enum {
 #define TASK_BATTERY_CHARGING_STACK_SIZE			(1280/sizeof(portSTACK_TYPE)) // TODO: 768 when Rohan gets rid of his ints
 #define TASK_BATTERY_CHARGING_PRIORITY				(ACTION_PRIORITY)
 
-#define TASK_STATE_HANDLING_STACK_SIZE				(768/sizeof(portSTACK_TYPE))
+#define TASK_STATE_HANDLING_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) // TODO: only 768 needed when not printing (we think)
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
 #define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) // TODO: 768, don't know why it need so much
@@ -177,7 +177,7 @@ typedef enum
 	#define ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT	(max(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT, max(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT, ANTENNA_DEPLOY_TASK_LESS_FREQ)))
 	
 #ifndef TESTING_SPEEDUP
-#define BATTERY_CHARGING_TASK_FREQ				(1*60*1000)	// 5 minutes; how often run battery charging logic
+#define BATTERY_CHARGING_TASK_FREQ				(20*60*1000)	// 20 minutes; how often run battery charging logic
 #endif
 
 #ifndef TESTING_SPEEDUP

@@ -25,8 +25,7 @@
 //   - flow through the discharging section on the first time through
 
 // Stretch (TODO):
-//   - strike case for LI not charging
-//   - retry hardware checks that decommission
+//   - strike case for LF not charging
 //   - decrement decommission count if no decommission for a while
 
 li_discharging_t get_li_discharging(void)
@@ -209,6 +208,19 @@ static uint16_t get_panel_ref_val_with_retry(void)
 	return ((uint16_t)four_buf[2]);
 }
 
+static uint16_t get_sns_val_with_retry(int8_t bat)
+{
+	uint16_t four_buf[4];
+	bool success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+		success = read_ad7991_batbrd_precise(four_buf);
+
+	if (!success)
+		return -1;
+
+	return ((uint16_t)four_buf[bat == LI1 ? 1 : 0]);
+}
+
 bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
 {
 	bool success = false;
@@ -340,6 +352,74 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 	print("set li %d to discharge: %d\n", bat, discharge);
 }
 
+void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch)
+{
+	print("\tchecking bat %d is discharging\n");
+	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
+	if (!bat_discharging_st_pin_active)
+	{
+		print("\t\tbat %d not discharging -- checking again\n", bat_discharging);
+		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
+		
+		bat_charge_dig_sigs_batch new_batch;
+		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
+		{
+			print("\t\tmutex timed out for dig sigs batch -- abandoning check\n");
+			return;
+		}
+
+		bool new_bat_discharging_st_pin_active = st_pin_active(bat_discharging, new_batch);
+		if (!new_bat_discharging_st_pin_active)
+		{
+			print("\t\tbad result again -- decommissioning\n");
+			log_error(get_error_loc(bat_discharging), ECODE_BAT_NOT_DISCHARGING, true);
+			decommission(bat_discharging);
+		}
+		else
+		{
+			print("\t\tall good on second try\n");
+		}
+	}
+	else
+	{
+		print("\t\tall good\n");
+	}
+}
+
+void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch)
+{
+	print("\tchecking bat %d is not discharging\n");
+	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
+	if (bat_not_discharging_st_pin_active)
+	{
+		print("\t\tbat %d still discharging -- checking again\n", bat_not_discharging);
+		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
+		
+		bat_charge_dig_sigs_batch new_batch;
+		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
+		{
+			print("\t\tmutex timed out for dig sigs batch -- abandoning check\n");
+			return;
+		}
+
+		bool new_bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, new_batch);
+		if (new_bat_not_discharging_st_pin_active)
+		{
+			print("\t\tbad result again -- decommissioning\n");
+			log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
+			decommission(bat_not_discharging);
+		}
+		else
+		{
+			print("\t\tall good on second try\n");
+		}
+	}
+	else
+	{
+		print("\t\tall good\n");
+	}
+}
+
 // NOTE: we should only get here if we switched the batteries we're discharging
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 {
@@ -350,22 +430,11 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 	if (!read_bat_charge_dig_sigs_batch_with_retry(&batch))
 		return;
 
+	check_discharging_with_retry(bat_discharging, batch);
+	check_not_discharging_with_retry(bat_not_discharging, batch);
+
 	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
 	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
-
-	if (!bat_discharging_st_pin_active)
-	{
-		log_error(get_error_loc(bat_discharging), ECODE_BAT_NOT_DISCHARGING, true);
-		print("\tbat %d not discharging -- decommissioning\n", bat_discharging);
-		decommission(bat_discharging);
-	}
-
-	if (bat_not_discharging_st_pin_active)
-	{
-		log_error(get_error_loc(bat_not_discharging), ECODE_BAT_NOT_NOT_DISCHARGING, true);
-		print("\tbat %d not not discharging -- decommissioning\n", bat_not_discharging);
-		decommission(bat_not_discharging);
-	}
 }
 
 void set_bat_to_charge(int8_t bat, bool charge)
@@ -382,22 +451,42 @@ void set_bat_to_charge(int8_t bat, bool charge)
 	print("set bat %d to charge: %d\n", bat, charge);
 }
 
-void check_fault(int8_t bat, bat_charge_dig_sigs_batch batch)
+void check_fault_with_retry(int8_t bat, bat_charge_dig_sigs_batch batch)
 {
 	print("\tchecking bat %d for fault\n", bat);
 	if (fault_pin_active(bat, batch))
 	{
-		print("\t\tfault pin active for bat %d -- decommissioning\n", bat);
-		log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
-		decommission(bat);
+		print("\t\tfault pin active for bat %d -- will retry\n", bat);
+		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
+		
+		// if the mutex times out we'll just return
+		bat_charge_dig_sigs_batch new_batch;
+		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
+		{
+			print("\t\tmutex timed out for dig sigs batch -- abandoning check\n");
+			return;
+		}
+
+		if (fault_pin_active(bat, new_batch))
+		{
+			print("\t\tfault pin again active for bat %d -- decommissioning\n", bat);
+			log_error(get_error_loc(bat), ECODE_BAT_FAULT, true);
+			decommission(bat);
+		}
+		else
+		{
+			print("\t\tall good on the second time\n");
+		}
 	}
 	else
 	{
-		print("\t\tall good!\n");
+		print("\t\tall good\n");
 	}
 }
 
-void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch)
+// retry this if bad value?
+// NOTE: returns true if should decommission
+bool check_chg_should_decommission(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch)
 {
 	bool charge_running = chg_pin_active(bat, batch);
 	if (should_be_charging)
@@ -409,18 +498,18 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 		// we can't make any claims if we don't know anything about PANEL_REF
 		int panel_ref_val = get_panel_ref_val_with_retry();
 		if (panel_ref_val == -1)
-			return;
+			return false;
 
 		if (!charge_running && (panel_ref_val > PANEL_REF_SUN_MV) &&
 			(charging_data.bat_voltages[bat] < (is_lion(bat) ? LI_MIGHT_NOT_BE_FULL_MV : LF_MIGHT_NOT_BE_FULL_MV)))
 		{
-			print("\t\tnot charging for bat %d -- decommissioning\n", bat);
-			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, false);
-			decommission(bat);
+			print("\t\tnot charging for bat %d\n", bat);
+			return true;
 		}
 		else
 		{
 			print("\t\tall good!\n");
+			return false;
 		}
 	}
 	else
@@ -434,6 +523,36 @@ void check_chg(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch ba
 		else
 		{
 			print("\t\tall good!\n");
+		}
+
+		return false;
+	}
+}
+
+void check_chg_with_retry(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch)
+{
+	if (check_chg_should_decommission(bat, should_be_charging, batch))
+	{
+		print("\tbad result -- retrying\n");
+		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
+
+		// if the mutex times out we'll just return
+		bat_charge_dig_sigs_batch new_batch;
+		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
+		{
+			print("\t\tmutex timed out for dig sigs batch -- abandoning check\n");
+			return;
+		}
+
+		if (check_chg_should_decommission(bat, should_be_charging, new_batch))
+		{
+			print("\t\tbad result again for bat %d -- decomissioning\n", bat);
+			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, true);
+			decommission(bat);
+		}
+		else
+		{
+			print("\t\tall good on the second time\n");
 		}
 	}
 }
@@ -453,17 +572,17 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 	{
 		for (int8_t bat = 0; bat < 4; bat++)
 		{
-			check_fault(bat, batch);
-			check_chg(bat, bat == bat_charging, batch);
+			check_fault_with_retry(bat, batch);
+			check_chg_with_retry(bat, bat == bat_charging, batch);
 		}
 	}
 	else
 	{
-		check_fault(bat_charging, batch);
-		check_chg(bat_charging, true, batch);
+		check_fault_with_retry(bat_charging, batch);
+		check_chg_with_retry(bat_charging, true, batch);
 
-		check_fault(old_bat_charging, batch);
-		check_chg(old_bat_charging, false, batch);
+		check_fault_with_retry(old_bat_charging, batch);
+		check_chg_with_retry(old_bat_charging, false, batch);
 	}
 }
 
@@ -540,8 +659,11 @@ void battery_charging_task(void *pvParameters)
 
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
 {
-	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
-		   max_cell_mv > LF_FULL_MAX_MV;
+	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
+	
+	return (charging_data.bat_voltages[lf] >= LF_FULL_SUM_MAX_MV) ||
+			(charging_data.bat_voltages[lf]	> LF_FULL_SUM_MV && panel_ref_val > PANEL_REF_SUN_MV) // TODO: finish this &&  chg_pin_active(lf, )
+		  || max_cell_mv >= LF_FULL_MAX_MV;
 }
 
 bool get_lfs_both_full(
@@ -699,9 +821,16 @@ void battery_logic()
 	if (is_lion(charging_data.bat_charging) && li_success)
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
+		
+		uint16_t sns_value = get_sns_val_with_retry(charging_data.bat_charging);
+		bool got_sns_data = sns_value != -1;
 
-		// TODO: we probably want this to be based on SNS?
-		curr_charging_filled_up = (charging_data.bat_voltages[charging_data.bat_charging] > LI_MAX_MV);
+		print("\tsns value: %d\n", sns_value);
+
+		curr_charging_filled_up = 
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV && 
+			 got_sns_data && sns_value < SNS_THRESHOLD) || 
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
 	}
@@ -749,7 +878,7 @@ void battery_logic()
 		}
 	}
 
-	print("decided for move to antenna deploy: %d", charging_data.should_move_to_antenna_deploy);
+	print("decided for move to antenna deploy: %d\n", charging_data.should_move_to_antenna_deploy);
 
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
