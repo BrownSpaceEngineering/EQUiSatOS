@@ -64,7 +64,10 @@
 #define		ZA_OFFSET_H      0x0A
 #define		ZA_OFFSET_L_TC   0x0B
 
-void MPU9250_init(void);
+enum status_code MPU9250_init(void);
+enum status_code gyro_init(void);
+enum status_code accel_init(void);
+enum status_code mag_init(void);
 void convert_MPU9250_to_EQUiSat_coords(int16_t toFill[3]);
 enum status_code MPU9250_read_mag(int16_t toFill[3]);
 enum status_code MPU9250_read_mag_EQUiSat_coords(int16_t toFill[3]);

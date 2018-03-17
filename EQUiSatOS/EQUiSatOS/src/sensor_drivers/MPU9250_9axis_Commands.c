@@ -1,21 +1,23 @@
 #include "MPU9250_9axis_Commands.h"
 
-void MPU9250_init(void) {
+enum status_code MPU9250_init(void) {
 	uint8_t address = 0;
-	// TODO: handle all (search regex) //enum lines
-	//enum status_code statc1 = 
-	readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
-	
+	return readFromAddressAndMemoryLocation(&address,1,MPU9250_ADDRESS,WHOAMI_ADDRESS,MPU9250_SHOULD_STOP);
+}
+
+enum status_code gyro_init(void) {
 	uint8_t gyroData[] = {GYRO_CONFIG_ADDRESS,GYRO_FULL_SCALE_250_DPS};
+	return writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+}
+
+enum status_code accel_init(void) {
 	uint8_t accData[] = {ACC_CONFIG_ADDRESS,ACC_FULL_SCALE_2_G};
+	return writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+}
+
+enum status_code mag_init(void) {
 	uint8_t magData[] = {MAG_PASSTHROUGH_ADDRESS,MAG_PASSTHROUGH_MODE};
-	
-	//enum status_code statc2 = 
-	writeDataToAddress(gyroData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	//enum status_code statc3 = 
-	writeDataToAddress(accData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
-	//enum status_code statc4 = 
-	writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
+	return writeDataToAddress(magData,2,MPU9250_ADDRESS,MPU9250_SHOULD_STOP);
 }
 
 void convert_MPU9250_to_EQUiSat_coords(int16_t toFill[3]) {

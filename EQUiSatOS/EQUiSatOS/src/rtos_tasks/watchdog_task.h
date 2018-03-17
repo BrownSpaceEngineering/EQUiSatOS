@@ -19,7 +19,7 @@
 #ifdef TESTING_SPEEDUP
 	#define WATCHDOG_TASK_TIMEOUT_BUFFER 10000
 #else
-	#define WATCHDOG_TASK_TIMEOUT_BUFFER 120000 // TODO: too long?
+	#define WATCHDOG_TASK_TIMEOUT_BUFFER (1000*60*5)
 #endif
 
 // static memory for watchdog task mutex

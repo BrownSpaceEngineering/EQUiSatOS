@@ -52,7 +52,6 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	get_hw_states()->antenna_deploying = true;
 	if (got_hw_state_mutex) hardware_state_mutex_give();
 
-	//delay_ms(ms); // for testing only
 	vTaskDelay(ms / portTICK_PERIOD_MS);
 
 	// read current (both just in case) so we can shut it down if we need

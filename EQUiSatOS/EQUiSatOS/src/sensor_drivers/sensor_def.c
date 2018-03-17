@@ -16,9 +16,6 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_IR_AMB:
 			return B_IR_AMB_LOW;
 			break;
-		case S_PD:
-			return B_PD_LOW;
-			break;
 		case S_LED_TEMP_REG:
 			return B_LED_TEMP_REG_LOW;
 			break;
@@ -134,9 +131,6 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 			break;
 		case S_IR_AMB:
 			return B_IR_AMB_HIGH;
-			break;
-		case S_PD:
-			return B_PD_HIGH;
 			break;
 		case S_LED_TEMP_REG:
 			return B_LED_TEMP_REG_HIGH;

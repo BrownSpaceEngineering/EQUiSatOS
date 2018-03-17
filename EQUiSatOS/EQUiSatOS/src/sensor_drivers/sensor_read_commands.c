@@ -60,7 +60,11 @@ void init_sensor_read_commands(void) {
 /************************************************************************/
 /* NOTE: the "batch" value passed into these functions are generally arrays, so are passed by reference */
 
-void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch);
+// unsafe version required for verify_regulators_unsafe
+static void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
+	status_code_genare_t sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
+	log_if_error(ELOC_AD7991_CBRD, sc, false);
+}
 
 uint8_t truncate_16t(uint16_t src, sig_id_t sig) {
 	uint16_t m = get_line_m_from_signal(sig);
@@ -135,7 +139,7 @@ void _set_5v_enable_unsafe(bool on) {
 // NOTE: ONLY use disable_ir_pow_if_should_be_off() to turn IR power off
 // unless you have the i2c_irpow_mutex!
 void activate_ir_pow(void) {
-	trace_print("set ir power on"); // TODO
+	trace_print("set ir power on");
 	set_output(true, P_IR_PWR_CMD);
 	ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 	vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
@@ -167,7 +171,7 @@ bool enable_ir_pow_if_necessary_unsafe(void) {
 void disable_ir_pow_if_necessary_unsafe(bool we_turned_ir_on) {
 	if (we_turned_ir_on) {
 		set_output(false, P_IR_PWR_CMD);
-		trace_print("set ir power off"); // TODO
+		trace_print("set ir power off");
 	}
 }
 
@@ -180,7 +184,7 @@ void disable_ir_pow_if_should_be_off(bool expected_on) {
 			// if we have the mutex AND IR power is on, no one is using it and 
 			// it should be turned off
 			set_output(false, P_IR_PWR_CMD);
-			trace_print("set ir power off"); // TODO
+			trace_print("set ir power off");
 			if (!expected_on) {
 				// if it was expected to be off and it's on, this is an issue
 				log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, true);
@@ -326,7 +330,6 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	}
 }
 
-// TODO: make sure this all looks okay
 void read_lion_volts_batch(lion_volts_batch batch) {
 	uint16_t val_1_precise;
 	uint16_t val_2_precise;
@@ -428,13 +431,6 @@ bool read_ad7991_batbrd(lion_current_batch batch1, panelref_lref_batch batch2) {
 	// results[3] = PANELREF
 	batch2[0] = truncate_16t(results[3], S_PANELREF);
 	return gotMutex;
-}
-
-// TODO: why is ad7991_ctrlbrd required outside here??
-// unsafe version required for verify_regulators_unsafe
-void read_ad7991_ctrlbrd_unsafe(ad7991_ctrlbrd_batch batch) {
-	status_code_genare_t sc = AD7991_read_all_mV(batch, AD7991_CTRLBRD);
-	log_if_error(ELOC_AD7991_CBRD, sc, false);
 }
 
 void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {

@@ -36,15 +36,6 @@ void pre_init_rtos_tasks(void) {
 /* Helper Functions														*/
 /************************************************************************/
 
-// TODO: get rid of this if no one uses it
-void rtos_safe_delay(uint32_t ms) 
-{
-	pet_watchdog(); // in case this takes a bit and we're close
-	vTaskSuspendAll();
-	delay_ms(ms);
-	xTaskResumeAll();
-}
-
 /* returns the equistack associated with the given message type */
 equistack* get_msg_type_equistack(msg_data_type_t msg_type) {
 	switch (msg_type) {
