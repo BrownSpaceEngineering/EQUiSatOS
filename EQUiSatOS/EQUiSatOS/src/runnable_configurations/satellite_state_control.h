@@ -16,6 +16,7 @@
 #include "testing_functions/sat_data_tests.h"
 #include "../testing_functions/os_system_tests.h"
 #include "antenna_pwm.h"
+#include "errors.h"
 
 /************************************************************************/
 /* Satellite state constructs                                           */
@@ -60,16 +61,24 @@ typedef struct task_states {
 	   2. Measuring battery currents									*/
 /************************************************************************/ 
 typedef enum {
-	RADIO_OFF = 0,
-	RADIO_IDLE = 1,
+	HW_OFF = false,
+	HW_ON = true,
+	HW_TRANSITIONING,
+} hw_state_t;
+
+typedef enum {
+	RADIO_OFF = false,
+	RADIO_IDLE = true,
 	RADIO_TRANSMITTING,
+	RADIO_OFF_IDLE_TRANSITION,
+	RADIO_IDLE_TRANS_TRANSITION
 } radio_state_t;
 
 struct hw_states {
 	/* locked by peripheral mutexes - mainly done to simplify function arguments */
-	bool rail_5v_enabled : 1;
+	hw_state_t rail_5v_enabled : 2;
 	/* locked by hardware state mutex */
-	radio_state_t radio_state : 2; // if >0, both 3V6 regulator and radio power pin are on	
+	radio_state_t radio_state : 3;
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
 };
@@ -96,7 +105,7 @@ bool low_power_active(void);
 
 // hardware-specific functions
 struct hw_states* get_hw_states(void);
-BaseType_t hardware_state_mutex_take(void);
+bool hardware_state_mutex_take(enum error_locations eloc);
 void hardware_state_mutex_give(void);
 
 void run_rtos(void);

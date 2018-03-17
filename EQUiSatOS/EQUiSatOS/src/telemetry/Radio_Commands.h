@@ -33,7 +33,7 @@ extern char kill_forever_buf[LEN_UPLINK_BUF];
 extern char flash_buf[LEN_UPLINK_BUF];
 extern char reboot_buf[LEN_UPLINK_BUF];
 
-bool check_checksum(char* data, uint8_t dataLen, uint8_t actualChecksum);
+bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum);
 
 void set_command_mode(bool delay);
 void XDL_prepare_get_temp(void);

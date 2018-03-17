@@ -24,7 +24,7 @@ void radio_init(void) {
 	setup_pin(true, P_RX_EN); //init receive enable pin
 }
 
-bool check_checksum(char* data, uint8_t dataLen, uint8_t actualChecksum) {
+bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum) {
 	uint8_t checksum = 0;
 	for (uint8_t i = 0; i<dataLen; i++) {
 		checksum = (checksum + data[i]) & 0xFF;
@@ -251,7 +251,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	enable_ir_pow_if_necessary_unsafe();
  	bool got_i2c_irpow_mutex = true;
 	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		log_error(ELOC_RADIO, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 		got_i2c_irpow_mutex = false;
 	}
 	{	
@@ -259,6 +259,11 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 		// in case it got shut off in the period between us first turning it
 		// on and getting the mutex (it should really be on)
 		enable_ir_pow_if_necessary_unsafe();
+		
+		// take hardware state mutex in case someone wants a stable state
+		// we don't care too much here if the mutex times out; it's just for confirmations
+		// (don't let it delay transmission)
+		bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_TRANSMIT);
 		
 		// suspend the scheduler to make sure the whole buf is sent atomically
 		// (so the radio gets the full buf at once and doesn't cut out in the middle)	
@@ -270,8 +275,9 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			#endif
 			#if defined(TRANSMIT_ACTIVE) || !defined(DONT_PRINT_RAW_TRANSMISSIONS)
 				transmission_start_ticks = xTaskGetTickCount();
-				trace_print("transmitting...");
 				usart_send_buf(buf, size);
+				get_hw_states()->radio_state = RADIO_IDLE_TRANS_TRANSITION;
+				trace_print("transmitting...");
 			#endif
 			#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
 				delay_ms(10); // TODO
@@ -279,22 +285,15 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			#endif
 		}
 		xTaskResumeAll();
-		
-		// we don't care too much here if the mutex times out; it's just for confirmations
-		bool got_hw_state_mutex = true;
-		if (!hardware_state_mutex_take()) {
-			log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			got_hw_state_mutex = false;
-		}
-		
+		if (got_hw_state_mutex) hardware_state_mutex_give();
+	
 		// wait duration for transmission to start and current to rise before verifying
 		// NOTE this increments transmission_start_ticks so it equals the time after this returns (for later)
 		vTaskDelayUntil(&transmission_start_ticks, TRANSMIT_CURRENT_RISE_TIME_MS / portTICK_PERIOD_MS);
 		
-		// only set as transmitting after enought time that we expect the current should be up
+		// only set as transmitting after enough time that we expect the current should be up
+		got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_TRANSMIT);
 		get_hw_states()->radio_state = RADIO_TRANSMITTING;
-		// we only give the hw mutex here because we can't inside the scheduler suspended zone
-		// (also verify regulators needs it)
 		if (got_hw_state_mutex) hardware_state_mutex_give();
 		
 		if (got_i2c_irpow_mutex) {
@@ -324,13 +323,9 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	vTaskDelayUntil(&transmission_start_ticks, TRANSMIT_TIME_MS(size) / portTICK_PERIOD_MS);	
 
 	// note hardware state change, ignoring mutex timeout
-	if (hardware_state_mutex_take()) {
-		get_hw_states()->radio_state = RADIO_IDLE;
-		hardware_state_mutex_give();
-	} else {
-		get_hw_states()->radio_state = RADIO_IDLE;
-		log_error(ELOC_RADIO, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-	}
+	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_TRANSMIT);
+	get_hw_states()->radio_state = RADIO_IDLE; // TODO: could possible result in errors if current fall time is long
+	if (got_hw_state_mutex) hardware_state_mutex_give();
 	
 	#if defined(SAFE_PRINT) && (PRINT_DEBUG == 1 || PRINT_DEBUG == 3)
 		xSemaphoreGiveRecursive(print_mutex);
@@ -339,21 +334,22 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 
 /* high-level function to bring radio systems online and check their state */
 void setRadioState(bool enable, bool confirm) {
-	// keep hardware state mutex while state is indeterminate
-	hardware_state_mutex_take();
-	{
-		// enable / disable 3V6 regulator and radio power at the same time
-		set_output(enable, P_RAD_PWR_RUN);
-		set_output(enable, P_RAD_SHDN);
-		#if PRINT_DEBUG == 0
-			setTXEnable(enable);
-			setRXEnable(enable);
-		#endif
+	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_POWER);
+	// enable / disable 3V6 regulator and radio power at the same time
+	set_output(enable, P_RAD_PWR_RUN);
+	set_output(enable, P_RAD_SHDN);
+	#if PRINT_DEBUG == 0
+		setTXEnable(enable);
+		setRXEnable(enable);
+	#endif
+	get_hw_states()->radio_state = RADIO_OFF_IDLE_TRANSITION; // either direction
+	if (got_hw_state_mutex) hardware_state_mutex_give();
 
-		vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
-		get_hw_states()->radio_state = enable ? RADIO_IDLE : RADIO_OFF;
-	}
-	hardware_state_mutex_give();
+	vTaskDelay(REGULATOR_ENABLE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+	got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_POWER);
+	get_hw_states()->radio_state = enable ? RADIO_IDLE : RADIO_OFF;
+	if (got_hw_state_mutex) hardware_state_mutex_give();
+	
 	if (confirm) {
 		verify_regulators(); // will log error if regulator not valid
 	}

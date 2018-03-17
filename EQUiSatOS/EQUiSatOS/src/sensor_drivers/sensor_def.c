@@ -52,6 +52,12 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_L_SNS_TRANSMIT:
 			return B_L_SNS_TRANSMIT_LOW;
 			break;
+		case S_L_SNS_OFF_IDLE_TRANSITION:
+			return B_L_SNS_OFF_IDLE_TRANSITION_LOW;
+			break;
+		case S_L_SNS_IDLE_TRANS_TRANSITION:
+			return B_L_SNS_IDLE_TRANS_TRANSITION_LOW;
+			break;
 		case S_L_SNS_ANT_DEPLOY:
 			return B_L_SNS_ANT_DEPLOY_LOW;
 			break;
@@ -97,11 +103,20 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_3V6_SNS_TRANSMIT:
 			return B_3V6_SNS_TRANSMIT_LOW;
 			break;
+		case S_3V6_SNS_OFF_IDLE_TRANSITION:
+			return B_3V6_SNS_OFF_IDLE_TRANSITION_LOW;
+			break;
+		case S_3V6_SNS_IDLE_TRANS_TRANSITION:
+			return B_3V6_SNS_IDLE_TRANS_TRANSITION_LOW;
+			break;
 		case S_5VREF_OFF:
 			return B_5VREF_OFF_LOW;
 			break;
 		case S_5VREF_ON:
 			return B_5VREF_ON_LOW;
+			break;
+		case S_5VREF_TRANSITION:
+			return B_5VREF_TRANSITION_LOW;
 			break;
 		case S_RAD_TEMP:
 			return B_RAD_TEMP_LOW;
@@ -156,6 +171,12 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_L_SNS_TRANSMIT:
 			return B_L_SNS_TRANSMIT_HIGH;
 			break;
+		case S_L_SNS_OFF_IDLE_TRANSITION:
+			return B_L_SNS_OFF_IDLE_TRANSITION_HIGH;
+			break;
+		case S_L_SNS_IDLE_TRANS_TRANSITION:
+			return B_L_SNS_IDLE_TRANS_TRANSITION_HIGH;
+			break;
 		case S_L_SNS_ANT_DEPLOY:
 			return B_L_SNS_ANT_DEPLOY_HIGH;
 			break;
@@ -201,11 +222,20 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_3V6_SNS_TRANSMIT:
 			return B_3V6_SNS_TRANSMIT_HIGH;
 			break;
+		case S_3V6_SNS_OFF_IDLE_TRANSITION:
+			return B_3V6_SNS_OFF_IDLE_TRANSITION_HIGH;
+			break;
+		case S_3V6_SNS_IDLE_TRANS_TRANSITION:
+			return B_3V6_SNS_IDLE_TRANS_TRANSITION_HIGH;
+			break;
 		case S_5VREF_OFF:
 			return B_5VREF_OFF_HIGH;
 			break;
 		case S_5VREF_ON:
 			return B_5VREF_ON_HIGH;
+			break;
+		case S_5VREF_TRANSITION:
+			return B_5VREF_TRANSITION_HIGH;
 			break;
 		case S_RAD_TEMP:
 			return B_RAD_TEMP_HIGH;

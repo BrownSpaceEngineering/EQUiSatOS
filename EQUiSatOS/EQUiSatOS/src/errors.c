@@ -178,12 +178,8 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	// is in a consistent state, and ensures that the mutex grabs in
 	// the "safe" equistack functions don't result in infinite recursion 
 	// by logging an error if they can't get a mutex
-	bool got_mutex = true;
-	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
-		// log error, but continue on because we're just reading
-		log_error(ELOC_ERROR_STACK, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
-		got_mutex = false;
-	}
+	bool got_mutex = xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	// would log error if we didn't get it, but we can't!
 	{
 		sat_error_t* newest_same_error = NULL;
 		int num_same_errors = 0;
@@ -222,10 +218,12 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 				if (to_overwrite != NULL
 					&& (!is_priority_error(*to_overwrite)  ||
 						get_current_timestamp() - to_overwrite->timestamp >= PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S)) {
-					equistack_Push_Unsafe(stack, new_error);
+					// need to have mutex to add, otherwise things may get screwed up
+					if (got_mutex) equistack_Push_Unsafe(stack, new_error);
 				}
 			} else {
-				equistack_Push_Unsafe(stack, new_error);
+				// need to have mutex to add, otherwise things may get screwed up
+				if (got_mutex) equistack_Push_Unsafe(stack, new_error);
 			}
 		
 		} else if(num_same_errors == 2) {
@@ -235,6 +233,7 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 			newest_same_error->timestamp = new_error->timestamp;
 		
 		} else {
+			print("ERROR EQUISTACK NOT FORMATTED AS EXPECTED"); // TODO
 			// otherwise, the stack is not formatted as it should be 
 			// (though this may be due to an emergency reboot) 
 			#ifdef USE_STRICT_ASSERTIONS
@@ -249,20 +248,20 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 // hangs on the given error if it's a "bad/rare" one as defined in this function
 // ONLY called if USE_STRICT_ASSERTIONS enabled
 void check_for_bad_error(sat_error_t* full_error) {
-	int actual_code = full_error->ecode & 0b01111111;
+	enum error_codes actual_code = full_error->ecode & 0b01111111;
 	#ifdef USE_STRICT_ASSERTIONS
 		configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
 		configASSERT(actual_code != ECODE_EXCESSIVE_SUSPENSION);
 		configASSERT(actual_code != ECODE_CORRUPTED);
 	#endif
 	if (actual_code >= ECODE_CRIT_ACTION_MUTEX_TIMEOUT && actual_code <= ECODE_ALL_MUTEX_TIMEOUT) {
-		int a = actual_code;
+		do {} while (0);
 	}
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
-		bool a = actual_code == ECODE_READING_HIGH;
+		do {} while (0);
 	}
 	if (actual_code == ECODE_BAD_ADDRESS
 		 && full_error->eloc != ELOC_IR_NEG_X) {
-		bool a = 1;
+		do {} while (0);
 	}
 };

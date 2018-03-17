@@ -107,35 +107,28 @@ static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, 
 	*dest = truncate_16t(read, sig);
 }
 
-// unsafe becuse need i2c_mutex AND/OR processor_adc_mutex
-bool _set_5v_enable_unsafe(bool on) {
+// unsafe because need i2c_mutex AND/OR processor_adc_mutex
+void _set_5v_enable_unsafe(bool on) {
 	// note: to avoid chance of deadlock, any locks
-	// of the i2c bus / processor adc mutex must be above this
-	if (hardware_state_mutex_take())
-	{
-		// enable regulator (taking mutex in case anyone want's consistent state),
-		// but don't set the hardware state until after the delay
-		set_output(on, P_5V_EN);
-		hardware_state_mutex_give();
-		// allow time to power up/down before someone uses it
-		if (on) {
-			vTaskDelay(EN_5V_POWER_ON_DELAY_MS / portTICK_PERIOD_MS);
-		} else {
-			vTaskDelay(EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
-		}
-		// set hardware state after sufficient time for it to be valid
-		if (hardware_state_mutex_take()) {
-			get_hw_states()->rail_5v_enabled = on;
-			hardware_state_mutex_give();
-		} else {
-			get_hw_states()->rail_5v_enabled = on;
-			log_error(ELOC_5V_REF, ECODE_HW_STATE_MUTEX_TIMEOUT, true); // TODO: finer error
-		}
-		return true;
+	// of the i2c bus / processor ADC mutex must be above this
+	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_5V_REF);
+	// enable regulator (taking mutex in case anyone wants consistent state),
+	// but don't set the hardware state until after the delay
+	set_output(on, P_5V_EN);
+	get_hw_states()->rail_5v_enabled = HW_TRANSITIONING;
+	if (got_hw_state_mutex) hardware_state_mutex_give();
+	
+	// allow time to power up/down before someone uses it
+	if (on) {
+		vTaskDelay(EN_5V_POWER_ON_DELAY_MS / portTICK_PERIOD_MS);
 	} else {
-		log_error(ELOC_5V_REF, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-		return false;
+		vTaskDelay(EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
 	}
+	
+	// set hardware state after sufficient time for it to be valid
+	got_hw_state_mutex = hardware_state_mutex_take(ELOC_5V_REF);
+	get_hw_states()->rail_5v_enabled = on;
+	if (got_hw_state_mutex)	hardware_state_mutex_give();
 }
 
 // wrapper to turn on IR power that adds a delay
@@ -207,12 +200,11 @@ void verify_regulators_unsafe(void) {
 
 	// only lock hardware state mutex while needed to act on state,
 	// but long enough to ensure the state doesn't change in the middle of checking it
-	if (hardware_state_mutex_take()) {
+	if (hardware_state_mutex_take(ELOC_VERIFY_REGS)) {
 		read_ad7991_ctrlbrd_unsafe(batch);
-		states = get_hw_states();
+		states = get_hw_states(); // take at time of state read
 		hardware_state_mutex_give();
 	} else {
-		log_error(ELOC_VERIFY_REGS, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
 		return;
 	}
 
@@ -231,11 +223,38 @@ void verify_regulators_unsafe(void) {
 			state_3v6_sns = S_3V6_SNS_TRANSMIT;
 			print("\n=======\nRADIO CURRENT: %d mA\n=======\n",batch[1]);
 			break;
+		case RADIO_OFF_IDLE_TRANSITION:
+			state_3v6_sns = S_3V6_SNS_OFF_IDLE_TRANSITION;
+			break;
+		case RADIO_IDLE_TRANS_TRANSITION:
+			state_3v6_sns = S_3V6_SNS_IDLE_TRANS_TRANSITION;
+			break;
+		default: 
+			state_3v6_sns = S_3V6_REF_OFF; // most likely
+			log_error(ELOC_AD7991_CBRD_3V6_REF, ECODE_UNEXPECTED_CASE, false);
+			break;
 	}
 	log_if_out_of_bounds(batch[1], state_3v6_sns, ELOC_AD7991_CBRD_3V6_SNS, true);
 	// 5VREF is index 2
-	log_if_out_of_bounds(batch[2], states->rail_5v_enabled ? S_5VREF_ON : S_5VREF_OFF, ELOC_AD7991_CBRD_5V_REF, true);
-	// 3V3REF current is index 3
+	sig_id_t state_5v_rail;
+	switch (states->rail_5v_enabled) {
+		case HW_OFF:
+			state_5v_rail = S_5VREF_OFF;
+			break;
+		case HW_ON:
+			state_5v_rail = S_5VREF_ON;
+			break;
+		case HW_TRANSITIONING:
+			state_5v_rail = S_5VREF_TRANSITION;
+			break;
+		default: 
+			state_5v_rail = S_5VREF_OFF; // most likely
+			log_error(ELOC_5V_REF, ECODE_UNEXPECTED_CASE, false);
+			break;
+	}
+	
+	log_if_out_of_bounds(batch[2], state_5v_rail, ELOC_AD7991_CBRD_5V_REF, true);
+	// 3V3REF current is index 3 (should always be on)
 	log_if_out_of_bounds(batch[3], S_3V3_REF, ELOC_AD7991_CBRD_3V3_REF, true);
 }
 
@@ -352,30 +371,28 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 		bool we_turned_ir_on = enable_ir_pow_if_necessary_unsafe();
 		// only lock hardware state mutex while needed to act on state,
 		// but long enough to ensure the state doesn't change in the middle of checking it
-		if (hardware_state_mutex_take()) {
+		bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_AD7991_BBRD);
+		{
 			sc = AD7991_read_all_mV(results, AD7991_BATBRD);
 			log_if_error(ELOC_AD7991_BBRD, sc, true);
 
 			struct hw_states* states = get_hw_states();
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
-				} else if (states->radio_state == RADIO_TRANSMITTING) {
+			} else if (states->radio_state == RADIO_TRANSMITTING) {
 				sig = S_L_SNS_TRANSMIT;
-				} else if (states->radio_state == RADIO_IDLE) {
+			} else if (states->radio_state == RADIO_IDLE_TRANS_TRANSITION) {
+				sig = S_L_SNS_IDLE_TRANS_TRANSITION;
+			} else if (states->radio_state == RADIO_OFF_IDLE_TRANSITION) {
+				sig = S_L_SNS_OFF_IDLE_TRANSITION;
+			} else if (states->radio_state == RADIO_IDLE) {
 				sig = S_L_SNS_IDLE_RAD_ON;
-				} else {
+			} else {
+				// default; most likely
 				sig = S_L_SNS_IDLE_RAD_OFF;
 			}
-
-			hardware_state_mutex_give();
-		} else {
-			log_error(ELOC_AD7991_BBRD, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
-			memset(results, 0, sizeof(uint16_t)*4);
-			// give outer mutexes
-			disable_ir_pow_if_necessary_unsafe(we_turned_ir_on);
-			xSemaphoreGive(i2c_irpow_mutex);
-			return false;
 		}
+		if (got_hw_state_mutex) hardware_state_mutex_give();
 		disable_ir_pow_if_necessary_unsafe(we_turned_ir_on);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {

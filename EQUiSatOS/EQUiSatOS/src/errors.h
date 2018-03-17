@@ -127,7 +127,9 @@ enum error_locations {
 	ELOC_BAT_CHARGING_SWITCH_8 =        86,
 	ELOC_BAT_CHARGING_SWITCH_9 =        87,
 	ELOC_IR_POW =						88,
-	ELOC_RADIO_KILLTIME =				89
+	ELOC_RADIO_KILLTIME =				89,
+	ELOC_RADIO_TRANSMIT =				90,
+	ELOC_RADIO_POWER =					91
 };
 
 /******************** PROBLEM CODES ********************/
