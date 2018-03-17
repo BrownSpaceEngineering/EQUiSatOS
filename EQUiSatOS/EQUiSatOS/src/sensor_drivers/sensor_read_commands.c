@@ -409,12 +409,12 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 	// results[1] = L1_SNS
 	log_if_out_of_bounds(results[1], sig, ELOC_AD7991_BBRD_L1_SNS, true);
 	// results[2] = L_REF
-	log_if_out_of_bounds(results[2], S_LREF, ELOC_AD7991_BBRD_L1_SNS, true);
+	log_if_out_of_bounds(results[2], S_LREF, ELOC_AD7991_BBRD_L_REF, true);
 	// results[3] = PANELREF
 	#ifdef EQUISIM_SIMULATE_BATTERIES
 	results[3] = equisim_read_panelref();
 	#endif	
-	log_if_out_of_bounds(results[3], S_PANELREF, ELOC_AD7991_BBRD_L2_SNS, true);
+	log_if_out_of_bounds(results[3], S_PANELREF, ELOC_AD7991_BBRD_PANEL_REF, true);
 	
 	return true;
 }
@@ -546,7 +546,7 @@ bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3
 		xSemaphoreGive(processor_adc_mutex);
 		return true;
 	} else {
-		log_error(ELOC_L1_REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+		log_error(ELOC_LF1REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 		memset(val_1, 0, sizeof(uint16_t));
 		memset(val_2, 0, sizeof(uint16_t));
 		memset(val_3, 0, sizeof(uint16_t));
