@@ -32,7 +32,13 @@ extern char kill_week_buf[LEN_UPLINK_BUF];
 extern char kill_forever_buf[LEN_UPLINK_BUF];
 extern char flash_buf[LEN_UPLINK_BUF];
 extern char reboot_buf[LEN_UPLINK_BUF];
-
+#define CMD_RESPONSE_SIZE			9
+extern char echo_response_buf[CMD_RESPONSE_SIZE];
+extern char flash_response_buf[CMD_RESPONSE_SIZE];
+extern char reboot_response_buf[CMD_RESPONSE_SIZE];
+extern char kill_response_buf[CMD_RESPONSE_SIZE];
+extern char revive_response_buf[CMD_RESPONSE_SIZE];
+	
 bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum);
 
 void set_command_mode(bool delay);
@@ -56,6 +62,7 @@ typedef enum {
 	CMD_KILL_3DAYS,
 	CMD_KILL_WEEK,
 	CMD_KILL_FOREVER,
+	CMD_REVIVE,
 	
 } rx_cmd_type_t;
 

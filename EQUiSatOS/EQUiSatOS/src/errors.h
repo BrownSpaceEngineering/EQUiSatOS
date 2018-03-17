@@ -125,14 +125,14 @@ typedef enum error_locations {
 	ELOC_BAT_CHARGING_SWITCH_8 =        84,
 	ELOC_BAT_CHARGING_SWITCH_9 =        85,
 	ELOC_IR_POW =						86,
-	ELOC_RADIO_KILLTIME =				87,
+	ELOC_RADIO_UPLINK	 =				87,
 	ELOC_RADIO_TRANSMIT =				88,
 	ELOC_RADIO_POWER =					89,
 
 	ELOC_IMU_INIT =						90,
 	ELOC_IMU_GYRO_INIT =				91,
 	ELOC_IMU_ACCEL_INIT =				92,
-	ELOC_IMU_MAG_INIT =					93
+	ELOC_IMU_MAG_INIT =					93,	
 } sat_eloc;
 
 /******************** PROBLEM CODES ********************/
@@ -219,6 +219,11 @@ typedef enum error_codes {
 	ECODE_BAT_LI_TIMEOUT =				71,
 	ECODE_BAT_LF_TIMEOUT =				72,
 	ECODE_IR_POW_IN_USE_ON_STATE_CHANGE = 73,
+	ECODE_UPLINK_REBOOT =				74,
+	ECODE_UPLINK_KILL3DAYS =			75,
+	ECODE_UPLINK_KILL1WEEK =			76,
+	ECODE_UPLINK_KILLFOREVER =			77,
+	ECODE_UPLINK_REVIVED =				78,
 } sat_ecode;
 
 /************************************************************************/

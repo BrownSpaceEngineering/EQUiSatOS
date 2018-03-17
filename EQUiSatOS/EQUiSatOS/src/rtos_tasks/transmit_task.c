@@ -80,10 +80,6 @@ static void read_radio_temp_mode(void) {
 StaticQueue_t _rx_command_queue_d;
 uint8_t _rx_command_queue_storage[RX_CMD_QUEUE_LEN * sizeof(rx_cmd_type_t)];
 
-char echo_response_buf[] =	{'E', 'C', 'H', 'O', 'C', 'H', 'O', 'C', 'O'};
-char flash_response_buf[] =	{'F', 'L', 'A', 'S', 'H', 'I', 'N', 'G', 0}; // last byte set to whether will flash
-char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N',  0,   0,   0,  0}; // last 4 bytes for revive timestamp
-
 // init for radio in general
 void radio_control_init(void) {
 	radio_init();
@@ -100,17 +96,26 @@ static void kill_radio_for_time(rx_cmd_type_t cmd) {
 	switch(cmd) {
 		case CMD_KILL_3DAYS:
 			revive_time += RADIO_KILL_DUR_3DAYS_S;
+			log_error(ELOC_RADIO_UPLINK, ECODE_UPLINK_KILL3DAYS, false);
 			break;
 		case CMD_KILL_WEEK:
 			revive_time += RADIO_KILL_DUR_WEEK_S;
+			log_error(ELOC_RADIO_UPLINK, ECODE_UPLINK_KILL1WEEK, false);
 			break;
-		case CMD_KILL_FOREVER: //:'(
-			revive_time |= 0xFFFFFF;
-			break;
+		case CMD_KILL_FOREVER: // :'(
+			log_error(ELOC_RADIO_UPLINK, ECODE_UPLINK_KILLFOREVER, false);
+			revive_time = 0xFFFFFFFF;
+			break;		
 		default:
-			log_error(ELOC_RADIO_KILLTIME, ECODE_UNEXPECTED_CASE, false);
+			log_error(ELOC_RADIO_UPLINK, ECODE_UNEXPECTED_CASE, false);
 	}
 	set_radio_revive_timestamp(revive_time);	
+}
+
+//revives radio from being killed if revive command is received
+static void revive_radio() {	
+	set_radio_revive_timestamp(0);
+	log_error(ELOC_RADIO_UPLINK, ECODE_UPLINK_REVIVED, false);
 }
 
 // listens for RX and handles uplink commands for up to RX_READY_PERIOD_MS
@@ -135,15 +140,20 @@ static void handle_uplinks(void) {
 				case CMD_ECHO:
 					// just an echo
 					if (!is_killed)
-						// TODO: Should echo multiple times (for all commands)?
-						transmit_buf_wait((uint8_t*) echo_response_buf, CMD_RESPONSE_SIZE);
+						for (int i = 0; i < 3; i++) {
+							vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+							transmit_buf_wait((uint8_t*) echo_response_buf, CMD_RESPONSE_SIZE);
+						}
 					break;
 					
 				case CMD_FLASH:
 					// write whether we will flash (weren't currently) to last byte
 					flash_response_buf[CMD_RESPONSE_SIZE-1] = would_flash_now();
 					if (!is_killed)
-						transmit_buf_wait((uint8_t*) flash_response_buf, CMD_RESPONSE_SIZE);
+						for (int i = 0; i < 3; i++) {
+							vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+							transmit_buf_wait((uint8_t*) flash_response_buf, CMD_RESPONSE_SIZE);
+						}
 					// wait a bit after sending response before actually flashing
 					vTaskDelay(FLASH_CMD_PREFLASH_DELAY_MS  / portTICK_PERIOD_MS);
 					// if flash task is currently in period between flashes,
@@ -153,21 +163,35 @@ static void handle_uplinks(void) {
 					break;
 				case CMD_REBOOT:
 					if (!is_killed)
-						transmit_buf_wait((uint8_t*) flash_response_buf, CMD_RESPONSE_SIZE);
+						for (int i = 0; i < 3; i++) {
+							vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+							transmit_buf_wait((uint8_t*) reboot_response_buf, CMD_RESPONSE_SIZE);
+						}						
 					vTaskDelay(REBOOT_CMD_DELAY_MS / portTICK_PERIOD_MS);
+					log_error(ELOC_RADIO_UPLINK, ECODE_UPLINK_REBOOT, false);
+					write_state_to_storage_emergency(false);
 					system_reset();
 					break;
 				case CMD_KILL_3DAYS:
 				case CMD_KILL_WEEK:
-				case CMD_KILL_FOREVER:
-					// TODO: let kill command be activated while we're killed??					
-					kill_radio_for_time(rx_command);
-					if (is_killed) {
-						uint32_t revive_time = cache_get_radio_revive_timestamp();
-						memcpy(kill_response_buf + 1, &revive_time, 4);
-						transmit_buf_wait((uint8_t*) kill_response_buf, CMD_RESPONSE_SIZE);
-					}					
-					break;				
+				case CMD_KILL_FOREVER:																			
+					if (!is_killed) {
+						kill_radio_for_time(rx_command);
+						uint32_t revive_time = cache_get_radio_revive_timestamp();						
+						memcpy(kill_response_buf + 5, &revive_time, 4);
+						for (int i = 0; i < 3; i++) {
+							vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+							transmit_buf_wait((uint8_t*) kill_response_buf, CMD_RESPONSE_SIZE);
+						}
+					}
+					break;
+				case CMD_REVIVE: // :)
+					revive_radio();
+					for (int i = 0; i < 3; i++) {
+						vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+						transmit_buf_wait((uint8_t*) revive_response_buf, CMD_RESPONSE_SIZE);
+					}
+					break;		
 				case CMD_NONE:
 					// nothing received, wait for more
 					break;

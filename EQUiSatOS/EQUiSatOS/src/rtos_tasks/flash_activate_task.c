@@ -63,7 +63,7 @@ bool flash_now(void) {
 // flash (caution: this is only valid at the moment of calling,
 // it could change right after)
 bool would_flash_now(void) {
-	return waiting_between_flashes;
+	return (get_sat_state() == IDLE_FLASH) && waiting_between_flashes;
 }
 
 void flash_activate_task(void *pvParameters)
