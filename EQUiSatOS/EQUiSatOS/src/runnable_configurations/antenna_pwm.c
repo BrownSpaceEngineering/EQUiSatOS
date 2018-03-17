@@ -8,7 +8,7 @@
 #include "antenna_pwm.h"
 
 static int curren_pwm_pin = 1;
-static int current_on_cycle = PWM_PERIOD / 2;
+static int current_on_cycle = (PWM_PERIOD / 2) + 1;
 
 // not for flight
 static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {

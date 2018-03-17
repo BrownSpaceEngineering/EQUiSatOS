@@ -9,7 +9,7 @@
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-#define DISABLE_REWRITE_FROM_MRAM
+//#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
@@ -95,7 +95,7 @@ static void start_application(void)
 }
 
 // Returns the number of matching bytes in the two buffers up to len.
-size_t num_similar(uint8_t* data1, uint8_t* data2, size_t len) {
+static size_t num_similar(uint8_t* data1, uint8_t* data2, size_t len) {
 	size_t num_same = 0;
 	for (size_t i = 0; i < len; i++) {
 		if (data1[i] == data2[i]) {
@@ -110,13 +110,13 @@ size_t num_similar(uint8_t* data1, uint8_t* data2, size_t len) {
 	in the actual flash, and corrects any buffers that don't match.
 	Returns whether any were corrected
 */
-int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
+static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 
-	int num_copied = 0;
+	uint num_copied = 0;
 	uint32_t mram_addr = RAD_SAFE_FIELD_GET(mram_app_address);
 	uint32_t flash_addr = (uint32_t) RAD_SAFE_FIELD_GET(app_start_address);
-	int corrections_made = 0;
+	uint corrections_made = 0;
 
 	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
 		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
@@ -170,7 +170,7 @@ int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 /*
 	Function to write to "program memory rewritten" field in MRAM.
 */
-void set_prog_memory_rewritten(uint8_t was_rewritten, struct spi_module* spi_master_instance,
+static void set_prog_memory_rewritten(uint8_t was_rewritten, struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write duplicate fields to both mrams (no spacing)
 	uint8_t field_size = RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_size); // == 1
