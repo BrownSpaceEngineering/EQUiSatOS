@@ -11,11 +11,15 @@
 #include "../runnable_configurations/antenna_pwm.h"
 
 #define ANTENNA_DEPLOY_MAX_TRIES	26
-static int num_tries = 0;
+static uint8_t num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
 	return (antenna_did_deploy() && num_tries > 0) // must try at least once
 		|| num_tries > ANTENNA_DEPLOY_MAX_TRIES;
+}
+
+uint8_t get_num_tries_antenna_deploy(void) {
+	return num_tries;
 }
 
 void antenna_deploy_task(void *pvParameters) {

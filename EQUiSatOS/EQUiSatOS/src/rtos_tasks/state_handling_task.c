@@ -136,7 +136,7 @@ void decide_next_state(sat_state_t current_state) {
 
 			// otherwise if the antenna deploy task says we should move on
 			// from deployment, do so
-			} else if (should_exit_antenna_deploy()) {
+			} else if (should_exit_antenna_deploy() || get_num_tries_antenna_deploy() >= 10) {
 				set_sat_state(HELLO_WORLD);
 			}
 			break;
@@ -147,6 +147,8 @@ void decide_next_state(sat_state_t current_state) {
 				set_sat_state(LOW_POWER);
 			else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
 				set_sat_state(IDLE_NO_FLASH);
+			else if (should_exit_antenna_deploy())
+				task_suspend(ANTENNA_DEPLOY_TASK);
 			break;
 
 		// TODO: new criteria here
