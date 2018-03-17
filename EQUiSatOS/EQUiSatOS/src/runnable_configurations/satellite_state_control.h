@@ -47,6 +47,7 @@ uint8_t got_early_warning_callback_in_boot;
 // duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
 #define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(5000 / portTICK_PERIOD_MS)
 #define TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES		5
+#define SEMAPHORE_EMPTY_POLL_TIME_TICKS				(TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS / 20) // poll a lot
 
 /************************************************************************/
 /* global hardware states												
@@ -91,7 +92,7 @@ SemaphoreHandle_t hardware_state_mutex;
 /************************************************************************/
 /* Mutex for major satellite operations that should be mutually exclusive*/
 /************************************************************************/
-#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(6000 / portTICK_PERIOD_MS) // these can take quite a while
+#define CRITICAL_MUTEX_WAIT_TIME_TICKS			(10000 / portTICK_PERIOD_MS) // these can take quite a while
 StaticSemaphore_t _critical_action_mutex_d;
 SemaphoreHandle_t critical_action_mutex;
 

@@ -217,7 +217,8 @@ typedef enum error_codes {
 	ECODE_SAT_RESET =					70,
 
 	ECODE_BAT_LI_TIMEOUT =				71,
-	ECODE_BAT_LF_TIMEOUT =				72
+	ECODE_BAT_LF_TIMEOUT =				72,
+	ECODE_IR_POW_IN_USE_ON_STATE_CHANGE = 73,
 } sat_ecode;
 
 /************************************************************************/

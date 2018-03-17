@@ -121,7 +121,7 @@ void flash_activate_task(void *pvParameters)
 				{
 					// note: IR power will always be enabled if necessary but we can't
 					// give an un-taken mutex
-					bool we_turned_ir_on = enable_ir_pow_if_necessary_unsafe();
+					bool got_semaphore = enable_ir_pow_if_necessary();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable_unsafe(true);
@@ -163,7 +163,7 @@ void flash_activate_task(void *pvParameters)
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
 					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
-					disable_ir_pow_if_necessary_unsafe(we_turned_ir_on); 
+					disable_ir_pow_if_necessary(got_semaphore); 
 					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);

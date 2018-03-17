@@ -64,33 +64,38 @@ rx_cmd_type_t check_rx_received(void) {
 			}
 		}
 		if (callsign_valid) {
+			// required RTOS interrupt context-switching variable; see below
+			BaseType_t xHigherPriorityTaskWoken = false;
 			uint8_t rxbuf_cmd_start_index = (i+4) % LEN_RECEIVEBUFFER;
 			// if valid command, send to transmit task to handle when ready			
 			if (check_if_rx_matches(echo_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//ECHO
 				command = CMD_ECHO;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);								
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);							
 			} else if (check_if_rx_matches(flash_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//FLASH
 				command = CMD_FLASH;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
 			} else if (check_if_rx_matches(reboot_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//REBOOT
 				command = CMD_REBOOT;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
 			}  else if (check_if_rx_matches(kill_3days_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//KILL FOR 3 DAYS
 				command = CMD_KILL_3DAYS;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);					
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);					
 			} else if (check_if_rx_matches(kill_week_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//KILL FOR 1 WEEK
 				command = CMD_KILL_WEEK;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
 			} else if (check_if_rx_matches(kill_forever_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//KILL FOREVER :'(
 				command = CMD_KILL_FOREVER;
-				//xQueueSendFromISR(rx_command_queue, &command, NULL);				
-			}			
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
+			}
+			// trigger a context switch if the call from this interrupt
+			// resulting in a lower-priority task being interrupted
+			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 		}
 		i++;
 	}
@@ -244,22 +249,15 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	// for the actual transmission time
 	TickType_t transmission_start_ticks;
 	
-	// enable IR power and wait if necessary (it'll be safe (consistent) 
-	// if we have the mutex, otherwise transmission is so crucial we don't care)
-	// we're also taking the I2C mutex here so we're less likely to 
-	// get delayed later when verifying radio currents
-	enable_ir_pow_if_necessary_unsafe();
+	// enable IR power and wait if necessary, so that the 
+	// reads below will go fast (NOTE okay to break mutex order because shouldn't ever block)
+	bool got_ir_pow_semaphore = enable_ir_pow_if_necessary();
  	bool got_i2c_irpow_mutex = true;
 	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
 		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 		got_i2c_irpow_mutex = false;
 	}
-	{	
-		// now that we may have the mutex, try and enable IR power again
-		// in case it got shut off in the period between us first turning it
-		// on and getting the mutex (it should really be on)
-		enable_ir_pow_if_necessary_unsafe();
-		
+	{
 		// take hardware state mutex in case someone wants a stable state
 		// we don't care too much here if the mutex times out; it's just for confirmations
 		// (don't let it delay transmission)
@@ -300,22 +298,13 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 			// if we got the mutex we can safely do a fast call to the unsafe method
 			verify_regulators_unsafe();
 			trace_print("verified regulators");
-		
-			// if we got the mutex, we can safely turn off IR power. Otherwise, 
-			// the best we can do is see if we can turn it off now.
-			// we don't care if we turned on IR power (this is mainly used in sensor read functions
-			// so external callers can avoid waits)
-			disable_ir_pow_if_necessary_unsafe(true);
 			xSemaphoreGive(i2c_irpow_mutex);
 		} else {
 			// if we didn't get the mutex, still try and verify the regulators (the slower way)
 			verify_regulators();
 			trace_print("verified regulators");
-		
-			// if we didn't get the IR power mutex, the best we can do 
-			// is see if we can turn it off now
-			disable_ir_pow_if_should_be_off(true); // expected on bcs. we turned it on
 		}
+		disable_ir_pow_if_necessary(got_ir_pow_semaphore);
 	}
 	
 	// delay for a total time of the transmission duration, STARTING at when we verified

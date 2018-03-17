@@ -51,7 +51,7 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 	
 	// the next couple readings use IR power on, so turn it on for them
 	// to speed up the readings (otherwise they have to wait for it to come on)
-	activate_ir_pow();
+	bool got_semaphore = enable_ir_pow_if_necessary();
 	{
 		// we read all battery board inputs at once,
 		// but we write to two different message buffer locations, so we
@@ -70,8 +70,8 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 		read_bat_charge_dig_sigs_batch(&dig_sigs);
 		write_bytes_and_shift(cur_data_buf, &buf_index, &dig_sigs, sizeof(bat_charge_dig_sigs_batch));
 	}
-	// try to disable IR power because we're done, but only if we get the mutex (we expect it to be on so no errors)
-	disable_ir_pow_if_should_be_off(true);
+	// try to disable IR power because we're done and no one else is using it
+	disable_ir_pow_if_necessary(got_semaphore);
 
 	read_lifepo_volts_batch((uint8_t*) (cur_data_buf + buf_index));
 }

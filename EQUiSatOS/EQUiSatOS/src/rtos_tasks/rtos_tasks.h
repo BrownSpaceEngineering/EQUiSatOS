@@ -94,9 +94,9 @@ idle_data_t _low_power_equistack_arr	[LOW_POWER_STACK_MAX];
 /* # of mutexes (for sat state handling) */
 #if (PRINT_DEBUG == 1 || PRINT_DEBUG == 3) && defined(SAFE_PRINT)
 	// to be technically correct with prints
-	#define NUM_MUTEXES			13
+	#define NUM_MUTEXES			14
 #else 
-	#define NUM_MUTEXES			12
+	#define NUM_MUTEXES			13
 #endif
 
 /* Global (but don't use them!) mutex data and mutex handles used inside equistacks (alt. to malloc) */
