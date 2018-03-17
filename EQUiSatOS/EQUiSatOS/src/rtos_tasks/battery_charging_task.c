@@ -25,8 +25,7 @@
 //   - flow through the discharging section on the first time through
 
 // Stretch (TODO):
-//   - strike case for LI not charging
-//   - retry hardware checks that decommission
+//   - strike case for LF not charging
 //   - decrement decommission count if no decommission for a while
 
 li_discharging_t get_li_discharging(void)
@@ -207,6 +206,19 @@ static uint16_t get_panel_ref_val_with_retry(void)
 		return -1;
 
 	return ((uint16_t)four_buf[2]);
+}
+
+static uint16_t get_sns_val_with_retry(int8_t bat)
+{
+	uint16_t four_buf[4];
+	bool success = false;
+	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+		success = read_ad7991_batbrd_precise(four_buf);
+
+	if (!success)
+		return -1;
+
+	return ((uint16_t)four_buf[bat == LI1 ? 1 : 0]);
 }
 
 bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
@@ -806,9 +818,16 @@ void battery_logic()
 	if (is_lion(charging_data.bat_charging) && li_success)
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
+		
+		uint16_t sns_value = get_sns_val_with_retry(charging_data.bat_charging);
+		bool got_sns_data = sns_value != -1;
 
-		// TODO: we probably want this to be based on SNS?
-		curr_charging_filled_up = (charging_data.bat_voltages[charging_data.bat_charging] > LI_MAX_MV);
+		print("\tsns value: %d\n", sns_value);
+
+		curr_charging_filled_up = 
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV && 
+			 got_sns_data && sns_value < SNS_THRESHOLD) || 
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
 	}

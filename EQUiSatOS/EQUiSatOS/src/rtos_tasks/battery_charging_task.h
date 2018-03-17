@@ -23,7 +23,8 @@
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
 #define LI_MAX_MV                       4200
-#define LI_FULL_MV                      4190
+#define LI_FULL_MV                      4175
+#define LI_FULL_LOWER_MV                4150
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 		4050
 #define LI_LOW_POWER_MV            		3900
@@ -35,6 +36,8 @@
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
 #define LF_FLASH_AVG_MV            		3250
+
+#define SNS_THRESHOLD                   1000
 
 #define RETRIES_AFTER_MUTEX_TIMEOUT     3
 
