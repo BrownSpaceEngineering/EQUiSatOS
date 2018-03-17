@@ -61,10 +61,6 @@ SemaphoreHandle_t processor_adc_mutex;
 StaticSemaphore_t _irpow_semaphore_d;
 SemaphoreHandle_t irpow_semaphore;
 
-// time that IR power will be fully on; used so that no one uses IR power
-// in an (upwards) transition state (nothing needs to know explicitly when it's off)
-TickType_t ir_target_on_time;
-
 /************************************************************************/
 /* FUNCTIONS                                                            */
 /************************************************************************/
