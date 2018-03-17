@@ -8,6 +8,6 @@
 void tca_shifts_test(void);
 void sensor_read_tests(void);
 void system_test(bool printFloats); 
-void led_sns_test(void);
+void lf_sns_test(void);
 
 #endif
