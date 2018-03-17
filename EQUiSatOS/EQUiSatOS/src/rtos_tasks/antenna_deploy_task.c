@@ -88,6 +88,7 @@ void antenna_deploy_task(void *pvParameters) {
 					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;
 					int mux = current_pwm_pin == 2 ? P_ANT_DRV2_MUX : P_ANT_DRV3_MUX;
 					set_output(true, P_LF_B1_OUTEN);
+					vTaskDelay(10); // delay to let the bank turn on
 					try_pwm_deploy(pin, mux, PWM_LENGTH_MS, current_pwm_pin);
 					set_output(false, P_LF_B1_OUTEN);
 					
