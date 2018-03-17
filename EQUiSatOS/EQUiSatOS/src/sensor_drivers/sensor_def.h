@@ -11,6 +11,8 @@
 
 #include <inttypes.h>
 
+#define SNS_mA_TO_mV(mA) ((mA/2)+985)
+
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
 /************************************************************************/
@@ -81,21 +83,21 @@
 #define B_LF_VOLT_HIGH					4000
 #define B_L_TEMP_LOW					0
 #define B_L_TEMP_HIGH					~0
-#define B_L_SNS_OFF_LOW					950		//-100mA
-#define B_L_SNS_OFF_HIGH				1075	//150mA
-#define B_L_SNS_IDLE_RAD_OFF_LOW		925		//-150mA
-#define B_L_SNS_IDLE_RAD_OFF_HIGH		1050	//100mA
-#define B_L_SNS_IDLE_RAD_ON_LOW			875		//-250mA
-#define B_L_SNS_IDLE_RAD_ON_HIGH		1025	//50mA
-#define B_L_SNS_TRANSMIT_LOW			0		//-2000mA
-#define B_L_SNS_TRANSMIT_HIGH			750		//-500mA
 /* lion sense */
+#define B_L_SNS_OFF_LOW					SNS_mA_TO_mV(100)
+#define B_L_SNS_OFF_HIGH				SNS_mA_TO_mV(275)
+#define B_L_SNS_IDLE_RAD_OFF_LOW		SNS_mA_TO_mV(-150)
+#define B_L_SNS_IDLE_RAD_OFF_HIGH		SNS_mA_TO_mV(100)
+#define B_L_SNS_IDLE_RAD_ON_LOW			SNS_mA_TO_mV(-250)
+#define B_L_SNS_IDLE_RAD_ON_HIGH		SNS_mA_TO_mV(50)
+#define B_L_SNS_TRANSMIT_LOW			SNS_mA_TO_mV(-2000)
+#define B_L_SNS_TRANSMIT_HIGH			SNS_mA_TO_mV(-500)
+#define B_L_SNS_ANT_DEPLOY_LOW			SNS_mA_TO_mV(200)
+#define B_L_SNS_ANT_DEPLOY_HIGH			SNS_mA_TO_mV(3100)
 #define B_L_SNS_OFF_IDLE_TRANSITION_LOW		B_L_SNS_IDLE_RAD_OFF_LOW
 #define B_L_SNS_OFF_IDLE_TRANSITION_HIGH	B_L_SNS_IDLE_RAD_ON_HIGH
 #define B_L_SNS_IDLE_TRANS_TRANSITION_LOW	B_L_SNS_IDLE_RAD_ON_LOW
 #define B_L_SNS_IDLE_TRANS_TRANSITION_HIGH	B_L_SNS_TRANSMIT_HIGH
-#define B_L_SNS_ANT_DEPLOY_LOW			200
-#define B_L_SNS_ANT_DEPLOY_HIGH			3100
 /* end lion sense */
 #define B_L_VOLT_LOW					0
 #define B_L_VOLT_HIGH					4220
