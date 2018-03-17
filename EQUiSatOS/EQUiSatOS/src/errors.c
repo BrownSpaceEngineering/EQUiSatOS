@@ -263,11 +263,13 @@ void check_for_bad_error(sat_error_t* full_error) {
 	if (actual_code == ECODE_READING_HIGH || actual_code == ECODE_READING_LOW) {
 		a++;
 	}
-	if (actual_code == ECODE_BAD_ADDRESS
-		 && full_error->eloc != ELOC_IR_NEG_X) {
+	if (actual_code == ECODE_BAD_ADDRESS) {
 		a++;
 	}
 	if (actual_code == ECODE_EXCESSIVE_SUSPENSION) {
+		a++;
+	}
+	if (actual_code == ECODE_INCONSISTENT_STATE) {
 		a++;
 	}
 };

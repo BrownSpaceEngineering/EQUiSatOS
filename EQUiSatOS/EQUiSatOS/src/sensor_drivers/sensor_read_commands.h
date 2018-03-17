@@ -15,6 +15,7 @@
 #include "../global.h"
 #include "../testing_functions/equisim_simulated_data.h"
 #include "sensor_def.h"
+#include "../rtos_tasks/battery_charging_task.h"
 
 /************************************************************************/
 /* CRITICAL HARDWARE TIMINGS                                            */

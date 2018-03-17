@@ -57,6 +57,8 @@
 #define B_IR_OBJ_HIGH					~0
 #define B_IR_AMB_LOW					0
 #define B_IR_AMB_HIGH					~0
+#define B_PD_LOW						0  // note: note used (intentional)
+#define B_PD_HIGH						~0 // note: note used (intentional)
 #define B_LED_TEMP_REG_LOW				0
 #define B_LED_TEMP_FLASH_LOW			0
 #define B_LED_TEMP_REG_HIGH				~0

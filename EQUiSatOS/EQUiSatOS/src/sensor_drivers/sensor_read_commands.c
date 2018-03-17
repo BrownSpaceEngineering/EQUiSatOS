@@ -187,8 +187,10 @@ void ensure_ir_power_disabled(bool expected_on) {
 	// are no active users and we can shut off IR power
 	if (uxSemaphoreGetCount(irpow_semaphore) == IR_POW_SEMAPHORE_MAX_COUNT) {
 		set_output(false, P_IR_PWR_CMD);
+		trace_print("set ir power off (semaphore unused)");
 
 	} else if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
+		trace_print("set ir power off (had to take mutex)");
 		// log error because this indicates the semaphores for IR power weren't working
 		log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, false);
 		set_output(false, P_IR_PWR_CMD);
@@ -200,7 +202,6 @@ void ensure_ir_power_disabled(bool expected_on) {
 		return;
 	}
 
-	trace_print("set ir power off");
 	if (!expected_on && get_output(P_IR_PWR_CMD)) {
 		// if it was expected to be off and it's on, this is an issue
 		log_error(ELOC_IR_POW, ECODE_INCONSISTENT_STATE, false);
@@ -392,7 +393,7 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 			log_if_error(ELOC_AD7991_BBRD, sc, true);
 
 			struct hw_states* states = get_hw_states();
-			li_discharging_t disg_state = get_li_discharging();
+			int8_t disg_state = charging_data.lion_discharging;
 			if (states->antenna_deploying) {
 				sig = S_L_SNS_ANT_DEPLOY;
 			} else if (states->radio_state == RADIO_TRANSMITTING) {
@@ -407,8 +408,8 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 				// default; most likely
 				sig = S_L_SNS_IDLE_RAD_OFF;
 			}
-			l1_sig = (disg_state == LI1_DISG || disg_state == BOTH_DISG) ? sig : S_L_SNS_OFF;
-			l2_sig = (disg_state == LI2_DISG || disg_state == BOTH_DISG) ? sig : S_L_SNS_OFF;
+			l1_sig = (disg_state == LI1 || disg_state == -1) ? sig : S_L_SNS_OFF;
+			l2_sig = (disg_state == LI2 || disg_state == -1) ? sig : S_L_SNS_OFF;
 		}
 		if (got_hw_state_mutex) hardware_state_mutex_give();
 		disable_ir_pow_if_necessary(got_semaphore);
@@ -822,6 +823,7 @@ bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		#ifndef EQUISIM_SIMULATE_BATTERIES
 			sc = TCA9535_init(batch);
+			log_if_error(ELOC_TCA, sc, true);
 			// zero out the places we're going to overwrite
 			// see order in Message Format spreadsheet
 			*batch &= 0b1111001111110000;
@@ -844,7 +846,6 @@ bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 		memset(batch, 0, sizeof(bat_charge_dig_sigs_batch));
 		return false;
 	}
-	log_if_error(ELOC_TCA, sc, true);
 }
 
 void read_imu_temp_batch(imu_temp_batch* batch) {
