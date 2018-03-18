@@ -96,6 +96,9 @@ void flash_activate_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
+		// turn on IR power before we start to use it during flash
+		bool got_semaphore = enable_ir_pow_if_necessary();
+		
 		// read a single magnetometer batch before flash
 		read_magnetometer_batch(current_cmp_struct->mag_before_data);
 
@@ -119,9 +122,6 @@ void flash_activate_task(void *pvParameters)
 				bool actually_flashed = false;
 				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
-					// note: IR power will always be enabled if necessary but we can't
-					// give an un-taken mutex
-					bool got_semaphore = enable_ir_pow_if_necessary();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable_unsafe(true);
@@ -162,7 +162,7 @@ void flash_activate_task(void *pvParameters)
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
-					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
+					// disable IR power before giving I2C to work a bit better with state handling task
 					disable_ir_pow_if_necessary(got_semaphore); 
 					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
