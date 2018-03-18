@@ -34,7 +34,7 @@
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
-//#define TESTING_SPEEDUP
+#define TESTING_SPEEDUP
 //#define TESTING_SPEEDUP_LONG_OPS
 
 // reduces the stack size of some tasks to a workable but risky level
@@ -44,8 +44,8 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
@@ -57,7 +57,7 @@
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		(310*1000) // ms
+	#define SYSTEM_TEST_TASK_FREQ		(45*1000) // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -66,8 +66,8 @@
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
-//#define EQUISIM_IN_STATE_TIME_MS			(20*1000)
+#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
+#define EQUISIM_IN_STATE_TIME_MS			(20*1000)
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 /** Debug **/
