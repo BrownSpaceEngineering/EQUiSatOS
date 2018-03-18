@@ -357,7 +357,7 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 
 void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch)
 {
-	print("\tchecking bat %d is discharging\n");
+	print("\tchecking bat %d is discharging\n", bat_discharging);
 	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
 	if (!bat_discharging_st_pin_active)
 	{
