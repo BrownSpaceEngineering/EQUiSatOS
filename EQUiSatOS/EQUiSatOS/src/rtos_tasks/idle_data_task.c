@@ -23,7 +23,7 @@ void idle_data_task(void *pvParameters)
 	init_task_state(IDLE_DATA_TASK); // suspend or run on boot
 	
 	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
+	uint32_t time_of_last_log_s = 0; // try to log ASAP (on first task start) (makes time since log large)
 
 	for( ;; )
 	{
@@ -65,6 +65,7 @@ void idle_data_task(void *pvParameters)
 		// once we've collected all the data we need to into the current struct, add the whole thing
 		// if we took too long between the start of this packet and here, 
 		// DON'T add it and go on to rewrite the current one
+		// NOTE: if timestamp overflows, everything works because tick type is a uint
 		TickType_t data_read_time = (xTaskGetTickCount() / portTICK_PERIOD_MS) - time_before_data_read;
 		if (data_read_time <= IDLE_DATA_MAX_READ_TIME) {
 			uint32_t time_since_last_log_s = get_current_timestamp() - time_of_last_log_s;

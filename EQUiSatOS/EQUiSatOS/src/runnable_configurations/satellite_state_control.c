@@ -519,6 +519,7 @@ static void set_antenna_deploy_by_sat_state(sat_state_t prev_sat_state, sat_stat
 
 // helper to wait until a semaphore is at zero
 static bool wait_on_semaphore(SemaphoreHandle_t sem, TickType_t wait_time) {
+	// won't infinite loop if tick count wraps around in here bcs. we're using uints
 	TickType_t start_ticks = xTaskGetTickCount();
 	while (uxSemaphoreGetCount(sem) < IR_POW_SEMAPHORE_MAX_COUNT) {
 		vTaskDelay(SEMAPHORE_EMPTY_POLL_TIME_TICKS);

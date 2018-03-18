@@ -54,15 +54,6 @@ equistack* get_msg_type_equistack(msg_data_type_t msg_type) {
 	}
 }
 
-void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log)
-{
-	// increment array tail marker and reset reads-per-log counter
-	data_array_tails[data_type] = data_array_tails[data_type] + 1;
-	loops_since_last_log[data_type] = 0;
-}
-
-
-
 /************************************************************************/
 /* RTOS HOOKS															*/
 /************************************************************************/

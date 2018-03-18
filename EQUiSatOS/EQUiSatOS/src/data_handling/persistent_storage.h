@@ -42,6 +42,7 @@
 // note: not made rad-safe bcs. the probability of being corrupted + being needed is VERY small
 #define MAX_STORED_ERRORS					ERROR_STACK_MAX 
 #define MRAM_SPI_MUTEX_WAIT_TIME_TICKS		((TickType_t) 1500 / portTICK_PERIOD_MS) // ms
+#define TICK_COUNT_MAX_VALUE				(portMAX_DELAY)
 
 /* rad-safe triple-redundant variables used to weather bit flips in crucial fields */
 // addresses
@@ -63,7 +64,6 @@ RAD_SAFE_FIELD_DEFINE(uint32_t, storage_prog_mem_rewritten_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_persistent_charging_data_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_radio_revive_timestamp_size);
 RAD_SAFE_FIELD_DEFINE(uint32_t, storage_err_num_size);
-
 
 /* battery-specific state cache (put here for #include reasons) */
 typedef struct persistent_charging_data_t {
@@ -107,10 +107,15 @@ struct persistent_data {
 	uint32_t radio_revive_timestamp;
 	persistent_charging_data_t persistent_charging_data;
 	
+	/* fields NOT written to MRAM;  just here for rad redundancy */
 	// the seconds since launch when we booted; add xTaskGetTickCount()/1000 to get current timestamp
 	// note: not actually written to MRAM, just used as a basis for the timestamp during
 	// this boot of the OS (updated on every reboot and then kept constant)
 	uint32_t _secs_since_launch_at_boot;
+	
+	// a value to use to shift the tick count component of the current timestamp
+	// in seconds up whenever the tick counter overflows
+	uint32_t _tick_count_overflow_offset_s;
 	
 } cached_state;
 struct persistent_data cached_state_2;

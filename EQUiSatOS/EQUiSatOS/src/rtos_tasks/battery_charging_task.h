@@ -38,7 +38,7 @@
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
 #define LF_FLASH_MIN_MV					6200
 
-#define SNS_THRESHOLD                   1000
+#define SNS_THRESHOLD                   1025
 
 #define RETRIES_AFTER_MUTEX_TIMEOUT     3
 

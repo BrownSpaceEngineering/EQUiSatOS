@@ -511,19 +511,28 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 59: return "ECODE_RECOMMISSION";
 	case 60: return "ECODE_ALL_SAME_VAL";
 	case 61: return "ECODE_CORRUPTED";
-	case 62: return "ECODE_INVALID_STATE_CHANGE";
-	case 63: return "ECODE_TIMESTAMP_WRAPAROUND";
-	case 64: return "ECODE_INCONSISTENT_STATE";
-	case 65: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
-	case 66: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
-	case 67: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
-	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
-	case 69: return "ECODE_SOFTWARE_RESET";
-	case 70: return "ECODE_SAT_RESET";
+	case 62: return "ECODE_CORRUPTED_FATAL";
+	case 63: return "ECODE_INVALID_STATE_CHANGE";
+	case 64: return "ECODE_TIMESTAMP_WRAPAROUND";
+	case 65: return "ECODE_INCONSISTENT_STATE";
+	case 66: return "ECODE_PWM_CUR_LOW_ON_DEPLOY";
+	case 67: return "ECODE_PWM_CUR_LOW_ON_MAX_CYCLE";
+	case 68: return "ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY";
+	case 69: return "ECODE_PWM_CUR_VERY_LOW_ON_MAX_CYCLE";
+	case 70: return "ECODE_SOFTWARE_RESET";
+	case 71: return "ECODE_SAT_RESET";
 
-	case 71: return "ECODE_BAT_LI_TIMEOUT";
-	case 72: return "ECODE_BAT_LF_TIMEOUT";
-	case 73: return "ECODE_IR_POW_IN_USE_ON_STATE_CHANGE";
+	case 72: return "ECODE_BAT_LI_TIMEOUT";
+	case 73: return "ECODE_BAT_LF_TIMEOUT";
+	case 74: return "ECODE_IR_POW_IN_USE_ON_STATE_CHANGE";
+	case 75: return "ECODE_UPLINK_REBOOT";
+	case 76: return "ECODE_UPLINK_KILL3DAYS";
+	case 77: return "ECODE_UPLINK_KILL1WEEK";
+	case 78: return "ECODE_UPLINK_KILLFOREVER";
+	case 79: return "ECODE_UPLINK_REVIVED";
+	case 80: return "ECODE_P1_NOT_DEPLOYED";
+	case 81: return "ECODE_P2_NOT_DEPLOYED";
+	case 82: return "ECODE_P3_NOT_DEPLOYED";
 	default: return "[error code not added to sys test]";
 	}
 }

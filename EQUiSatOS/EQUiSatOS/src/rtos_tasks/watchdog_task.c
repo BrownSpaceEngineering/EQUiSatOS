@@ -23,7 +23,7 @@ uint32_t WATCHDOG_ALLOWED_TIMES_MS[NUM_TASKS] = {
 
 static bool check_ins[NUM_TASKS];
 static uint32_t running_times[NUM_TASKS];
-static uint32_t prev_time;
+static TickType_t prev_time;
 
 void init_watchdog_clock(void) {
 	rtos_ready = false;
@@ -71,7 +71,7 @@ bool watchdog_as_function(void) {
 	
 	bool watch_block = false;
 	// we only care about ticks since boot, not total timestamp
-	uint32_t curr_time = xTaskGetTickCount();
+	TickType_t curr_time = xTaskGetTickCount();
 	// if the time has wrapped around it will be less than the previous, so just say it's fine
 	// and wait for the next call of the task
 	if (curr_time < prev_time) {

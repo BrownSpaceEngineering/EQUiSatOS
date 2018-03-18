@@ -21,7 +21,7 @@ void attitude_data_task(void *pvParameters)
 	init_task_state(ATTITUDE_DATA_TASK); // suspend or run on boot
 	
 	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
+	uint32_t time_of_last_log_s = 0; // try to log ASAP (on first task start)
 	
 	for ( ;; )
 	{

@@ -151,7 +151,6 @@ void decide_next_state(sat_state_t current_state) {
 				task_suspend(ANTENNA_DEPLOY_TASK);
 			break;
 
-		// TODO: new criteria here
 		case IDLE_NO_FLASH:
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
