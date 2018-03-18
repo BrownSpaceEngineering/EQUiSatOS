@@ -1,6 +1,6 @@
 #include "ADC_Commands.h"
 
-enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin) {
+enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin, bool precise) {
 	#ifndef XPLAINED
 	struct adc_config config_adc;
 	adc_get_config_defaults(&config_adc);
@@ -22,7 +22,7 @@ enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positiv
 	}*/
 
 	// TODO: See how high we can go for samples without slowing things down too much
-	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_512;
+	config_adc.accumulate_samples = precise ? ADC_ACCUMULATE_SAMPLES_1024 : ADC_ACCUMULATE_SAMPLES_64;
 	config_adc.divide_result = ADC_DIVIDE_RESULT_16;
 
 	//Set the pin

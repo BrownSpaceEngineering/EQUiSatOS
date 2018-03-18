@@ -83,14 +83,14 @@ void decide_next_state(sat_state_t current_state) {
 
 	uint16_t li1_mv;
 	uint16_t li2_mv;
-	read_lion_volts_precise(&li1_mv, &li2_mv);
+	read_lion_volts_precise(&li1_mv, &li2_mv, true);
 
 	// individual batteries within the life po banks
 	uint16_t lf1_mv;
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv, true);
 
 	// average voltage for the batteries within each LF bank
 	int lfb1_sum = lf1_mv + lf2_mv;

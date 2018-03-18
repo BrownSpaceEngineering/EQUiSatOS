@@ -68,29 +68,45 @@ bool would_flash_now(void) {
 
 //check LED_SNS to make sure each LED turned on, log error otherwise
 void validate_LEDSNS_readings(flash_data_t* cur_burst) {	
-	uint16_t max_LEDSNS[4] = {0, 0, 0, 0};
+	uint16_t max_LED_current[4] = {0, 0, 0, 0};
+	uint16_t max_LF_current[2] = {0, 0};
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {		
 		for (int j = 0; j < 4; j++) {
-			max_LEDSNS[j] = max(cur_burst->led_current_data[i][j], max_LEDSNS[j]);
+			max_LED_current[j] = max(cur_burst->led_current_data[i][j], max_LED_current[j]);
+			max_LF_current[j] = max(cur_burst->lifepo_current_data[i][j], max_LF_current[j]);
 		}
 	}
 	for (int i = 0; i < 4; i++) {
-		uint8_t eloc;
+		uint8_t led_eloc;
+		uint8_t lf_eloc;
+		sig_id_t lf_sig;
 		switch(i) {
-			case 1:
-				eloc = ELOC_LED1SNS;
+			case 0:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
 				break;
+			case 1:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1OSNS;
+				break;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
 			case 2:
-				eloc = ELOC_LED1SNS;
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
 				break;
 			case 3:
-				eloc = ELOC_LED1SNS;
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2OSNS;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
 				break;
-			case 4:
-				eloc = ELOC_LED1SNS;
-				break;
+			default:
+				return;
 		}
-		log_if_out_of_bounds(max_LEDSNS[i], S_LED_SNS_FLASH, eloc, true);
+		
+		log_if_out_of_bounds(untruncate(max_LED_current[i], S_LED_SNS_FLASH_BATCH), S_LED_SNS_FLASH_BATCH, led_eloc, true);
+		log_if_out_of_bounds(untruncate(max_LF_current[i], lf_sig), lf_sig, lf_eloc, true);
 	}
 }
 

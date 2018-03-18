@@ -215,7 +215,7 @@ static void AD590_test(void){
 	
 	print("==============AD590 Test==============\n");
 	for (int i = 0; i < 8; i++){
-		configure_adc(&temp_instance,P_AI_TEMP_OUT);
+		configure_adc(&temp_instance,P_AI_TEMP_OUT, true);
 		uint8_t rs;
 		enum status_code sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
 		
@@ -367,7 +367,7 @@ static void TEMD6200_test(void){
 	struct adc_module pd_instance;
 	for (int i = 0; i < 6; i++){		
 		uint16_t pd_mV;
-		configure_adc(&pd_instance,P_AI_PD_OUT);
+		configure_adc(&pd_instance,P_AI_PD_OUT, true);
 		uint8_t rs;		
 		enum status_code code = LTC1380_channel_select(0x4a, i, &rs);
 		get_status(code, buffer);
@@ -543,7 +543,7 @@ static void readBatBoard(void){
 	};
 	
 	for (int i=0; i<10; i++){		
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
@@ -611,7 +611,7 @@ static void readLEDCurrent(bool printFloats){
 	};
 	
 	for (int i=0; i<4; i++){		
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
@@ -716,7 +716,7 @@ void lf_sns_test(void) {
 	};
 	
 	for (int i=0; i<10; i++){
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);

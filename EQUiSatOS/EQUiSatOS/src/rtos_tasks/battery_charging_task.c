@@ -639,7 +639,7 @@ bool update_should_deploy_antenna(bool has_li_data)
 	if (!has_li_data)
 	{
 		for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
-			li_success = read_lion_volts_precise((uint16_t *) &li1_mv, (uint16_t *) &li2_mv);
+			li_success = read_lion_volts_precise((uint16_t *) &li1_mv, (uint16_t *) &li2_mv, true);
 	}
 	else
 	{
@@ -772,7 +772,7 @@ void battery_logic()
 	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
 		li_success = read_lion_volts_precise(
 			(uint16_t *) &(charging_data.bat_voltages[LI1]),
-			(uint16_t *) &(charging_data.bat_voltages[LI2]));
+			(uint16_t *) &(charging_data.bat_voltages[LI2]), true);
 
 	// we're going to move to TWO_LI_DOWN -- but not decommission anyone
 	if (!li_success)
@@ -788,7 +788,7 @@ void battery_logic()
 	uint16_t lf4_mv;
 	bool lf_success = false;
 	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !lf_success; i++)
-		lf_success = read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+		lf_success = read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv, true);
 
 	if (!lf_success)
 	{

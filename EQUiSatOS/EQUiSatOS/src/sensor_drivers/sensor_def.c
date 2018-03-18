@@ -25,15 +25,17 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 		case S_LED_SNS_FLASH:
 			return 0;  //intentional--logging errors based on a batch, not individual readings
 		case S_LED_SNS_FLASH_BATCH:
-			return B_LED_SNS_FLASH_LOW; //do ledsns errors by batch
+			return B_LED_SNS_FLASH_LOW;
 		case S_L_TEMP:
 			return B_TEMP_LOW;
 		case S_LF_TEMP:
 			return B_TEMP_LOW;
 		case S_LF_SNS_REG:
 			return B_LF_SNS_REG_LOW;
-		case S_LF_SNS_FLASH:
+		case S_LF_SNS_FLASH_BATCH:
 			return B_LF_SNS_FLASH_LOW;
+		case S_LF_SNS_FLASH:
+			return 0; //intentional--logging errors based on a batch, not individual readings
 		case S_L_SNS_OFF:
 			return B_L_SNS_OFF_LOW;
 		case S_L_SNS_IDLE_RAD_OFF:
@@ -50,8 +52,10 @@ uint16_t get_low_bound_from_signal(sig_id_t sig) {
 			return B_L_SNS_ANT_DEPLOY_LOW;
 		case S_LF_VOLT:
 			return B_LF_VOLT_LOW;
-		case S_LF_OSNS_FLASH:
+		case S_LF_OSNS_FLASH_BATCH:
 			return B_LF_OSNS_FLASH_LOW;
+		case S_LF_OSNS_FLASH:
+			return 0; //intentional--logging errors based on a batch
 		case S_LF_OSNS_REG:
 			return B_LF_OSNS_REG_LOW;
 		case S_L_VOLT:
@@ -118,8 +122,10 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 			return B_TEMP_HIGH;
 		case S_LF_SNS_REG:
 			return B_LF_SNS_REG_HIGH;
-		case S_LF_SNS_FLASH:
+		case S_LF_SNS_FLASH_BATCH:
 			return B_LF_SNS_FLASH_HIGH;
+		case S_LF_SNS_FLASH:
+			return ~0; //intentional--logging errors based on a batch
 		case S_L_SNS_OFF:
 			return B_L_SNS_OFF_HIGH;
 		case S_L_SNS_IDLE_RAD_OFF:
@@ -135,9 +141,11 @@ uint16_t get_high_bound_from_signal(sig_id_t sig) {
 		case S_L_SNS_ANT_DEPLOY:
 			return B_L_SNS_ANT_DEPLOY_HIGH;
 		case S_LF_VOLT:
-			return B_LF_VOLT_HIGH;
-		case S_LF_OSNS_FLASH:
+			return B_LF_VOLT_HIGH;		
+		case S_LF_OSNS_FLASH_BATCH:
 			return B_LF_OSNS_FLASH_HIGH;
+		case S_LF_OSNS_FLASH:
+			return ~0; //intentional--logging errors based on a batch;
 		case S_LF_OSNS_REG:
 			return B_LF_OSNS_REG_HIGH;
 		case S_L_VOLT:

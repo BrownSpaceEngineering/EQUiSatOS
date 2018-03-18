@@ -107,8 +107,8 @@ void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool pri
 }
 
 // note: processor ADC is locked externally to these methods for speed and for particular edge cases
-static void commands_read_adc_mV(uint16_t* dest, uint8_t pin, uint8_t eloc, sig_id_t sig, bool priority) {
-	status_code_genare_t sc = configure_adc(&adc_instance, pin);
+static void commands_read_adc_mV(uint16_t* dest, uint8_t pin, uint8_t eloc, sig_id_t sig, bool priority, bool precise) {
+	status_code_genare_t sc = configure_adc(&adc_instance, pin, precise);
 	log_if_error(eloc, sc, priority);
 	sc = read_adc_mV(adc_instance, dest);
 	log_if_error(eloc, sc, priority);
@@ -117,7 +117,7 @@ static void commands_read_adc_mV(uint16_t* dest, uint8_t pin, uint8_t eloc, sig_
 
 static void commands_read_adc_mV_truncate(uint8_t* dest, int pin, uint8_t eloc, sig_id_t sig, bool priority) {
 	uint16_t read;
-	commands_read_adc_mV(&read, pin, eloc, sig, priority);
+	commands_read_adc_mV(&read, pin, eloc, sig, priority, false);
 	*dest = truncate_16t(read, sig);
 }
 
@@ -368,17 +368,17 @@ void read_lion_volts_batch(lion_volts_batch batch) {
 	uint16_t val_2_precise;
 
 	// locks and releases processor_adc_mutex
-	read_lion_volts_precise(&val_1_precise, &val_2_precise);
+	read_lion_volts_precise(&val_1_precise, &val_2_precise, false);
 	batch[0] = truncate_16t(val_1_precise, S_L_VOLT);
 	batch[1] = truncate_16t(val_2_precise, S_L_VOLT);
 }
 
-bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2) {
+bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2, bool precise) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		#ifndef EQUISIM_SIMULATE_BATTERIES
-			commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, S_L_VOLT, true);
-			commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, S_L_VOLT, true);
+			commands_read_adc_mV(val_1, P_AI_L1_REF, ELOC_L1_REF, S_L_VOLT, true, precise);
+			commands_read_adc_mV(val_2, P_AI_L2_REF, ELOC_L2_REF, S_L_VOLT, true, precise);
 			*val_1 = *val_1 * 25 / 10;
 			*val_2 = *val_2 * 25 / 10;
 		#else
@@ -525,10 +525,10 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 		{
 			#ifndef EQUISIM_SIMULATE_BATTERIES
-				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_OSNS_REG, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_SNS_REG, true);
-				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true);
+				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_SNS_REG, true, false);
+				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_OSNS_REG, true, false);
+				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_SNS_REG, true, false);
+				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true, false);
 			#else
 				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
 			#endif
@@ -553,13 +553,13 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 }
 
 // reads precise values; just a helper function
-static void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+static void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4, bool precise) {
 	#ifndef EQUISIM_SIMULATE_BATTERIES
 		// note: lifepo voltages will not vary enough during flash to warrant a separate bound for them
-		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, S_LF_VOLT, true);
-		commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, S_LF_VOLT, true);
-		commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, S_LF_VOLT, true);
-		commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, S_LF_VOLT, true);
+		commands_read_adc_mV(val_1, P_AI_LF1REF, ELOC_LF1REF, S_LF_VOLT, true, precise);
+		commands_read_adc_mV(val_2, P_AI_LF2REF, ELOC_LF2REF, S_LF_VOLT, true, precise);
+		commands_read_adc_mV(val_3, P_AI_LF3REF, ELOC_LF3REF, S_LF_VOLT, true, precise);
+		commands_read_adc_mV(val_4, P_AI_LF4REF, ELOC_LF4REF, S_LF_VOLT, true, precise);
 
 		*val_2 = *val_2 * 195 / 100;
 		*val_4 = *val_4 * 195 / 100;
@@ -571,10 +571,10 @@ static void read_lifepo_volts_precise_unsafe(uint16_t* val_1, uint16_t* val_2, u
 }
 
 // reads precise values; mutex safe
-bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4) {
+bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4, bool precise) {
 	if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
-		read_lifepo_volts_precise_unsafe(val_1, val_2, val_3, val_4);
+		read_lifepo_volts_precise_unsafe(val_1, val_2, val_3, val_4, precise);
 		xSemaphoreGive(processor_adc_mutex);
 		return true;
 	} else {
@@ -594,7 +594,7 @@ void _read_lifepo_volts_batch_unsafe(lifepo_volts_batch batch) {
 	uint16_t val_3_precise;
 	uint16_t val_4_precise;
 
-	read_lifepo_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise);
+	read_lifepo_volts_precise_unsafe(&val_1_precise, &val_2_precise, &val_3_precise, &val_4_precise, false);
 
 	batch[0] = truncate_16t(val_1_precise, S_LF_VOLT);
 	batch[1] = truncate_16t(val_2_precise, S_LF_VOLT);
@@ -689,7 +689,7 @@ void read_pdiode_batch(pdiode_batch* batch) {
 				status_code_genare_t sc = LTC1380_channel_select(PHOTO_MULTIPLEXER_I2C, i, &rs);
 				log_if_error(PD_ELOCS[i], sc, false);
 
-				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], S_PD, false);
+				commands_read_adc_mV(&result, P_AI_PD_OUT, PD_ELOCS[i], S_PD, false, false);
 				uint8_t two_bit_range = get_pdiode_two_bit_range(result);
 				if (two_bit_range == 4) {
 					// PD_ACCESS used as general photo diode indicator
@@ -872,4 +872,9 @@ void read_radio_temp_batch(radio_temp_batch* batch) {
 
 bool read_field_from_bcds(bat_charge_dig_sigs_batch batch, bcds_conversions_t shift) {
 	return (batch >> shift) & 1;
+}
+
+uint16_t untruncate(uint8_t val, sig_id_t sig) {
+	uint16_t u16 = ((uint16_t)val) << 8;
+	return u16 / get_line_m_from_signal(sig) - get_line_b_from_signal(sig);
 }
