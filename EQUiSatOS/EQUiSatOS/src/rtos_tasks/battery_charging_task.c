@@ -588,13 +588,16 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 {
 	int8_t lf_charging = -1;
+	
+	bat_charge_dig_sigs_batch batch;
+	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 
 	// NOTE: it shouldn't be the case that both are full -- we'd be charging LI's
-	if (get_lf_full(LFB1, lfb1_max_cell_mv))
+	if (get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch))
 	{
 		lf_charging = LFB2;
 	}
-	else if (get_lf_full(LFB2, lfb2_max_cell_mv))
+	else if (get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch))
 	{
 		lf_charging = LFB1;
 	}
@@ -656,18 +659,15 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
-{
-	bat_charge_dig_sigs_batch batch;
-	bool got_chgn = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
-
+bool get_lf_full(int8_t lf, uint16_t max_cell_mv, bat_charge_dig_sigs_batch batch, bool got_batch)
+{	
 	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
 	bool got_panel_ref = panel_ref_val != -1;
 
 	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
 		   max_cell_mv > LF_FULL_MAX_MV ||
-		   (charging_data.bat_charging == lf && got_panel_ref && got_chgn &&
-		    !chg_pin_active(lf) && (panel_ref_val > PANEL_REF_SUN_MV) &&
+		   (charging_data.bat_charging == lf && got_panel_ref && got_batch &&
+		    !chg_pin_active(lf, batch) && (panel_ref_val > PANEL_REF_SUN_MV) &&
 		  	charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
 }
 
@@ -677,12 +677,15 @@ bool get_lfs_both_full(
 	uint16_t lfb1_max_cell_mv,
 	uint16_t lfb2_max_cell_mv)
 {
+	bat_charge_dig_sigs_batch batch;
+	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
+	
 	if (num_lf_down == 0)
-		return get_lf_full(LFB1, lfb1_max_cell_mv) ||
-			   get_lf_full(LFB2, lfb2_max_cell_mv);
+		return get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch) &&
+			   get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch);
 
 	if (num_lf_down == 1)
-		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv);
+		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv, batch, got_batch);
 
 	return true;
 }
@@ -748,8 +751,6 @@ void battery_logic()
 	/////
 
 	#ifndef BAT_TESTING
-	#ifndef WITHOUT_DECOMMISION
-
 	// it's alright to recommission, even with bad voltage values
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
@@ -801,7 +802,20 @@ void battery_logic()
 			}
 		}
 	}
-	#endif
+	
+	// not a decommissioning case, but will log errors if very unbalanced
+	if (lf_success)
+	{
+		if (lfb1_max_cell_mv > LF_FULL_MAX_MV)
+		{
+			log_error(get_error_loc(LFB1), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+		}
+		
+		if (lfb2_max_cell_mv > LF_FULL_MAX_MV)
+		{
+			log_error(get_error_loc(LFB2), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+		}
+	}
 	#endif
 
 	// drawing metadata about the state of the batteries

@@ -227,7 +227,8 @@ typedef enum error_codes {
 	ECODE_UPLINK_REVIVED =				79,
 	ECODE_P1_NOT_DEPLOYED =				80,
 	ECODE_P2_NOT_DEPLOYED =				81,
-	ECODE_P3_NOT_DEPLOYED =				82
+	ECODE_P3_NOT_DEPLOYED =				82,
+	ECODE_BAT_LF_CELLS_UNBALANCED =     83
 } sat_ecode;
 
 /************************************************************************/
