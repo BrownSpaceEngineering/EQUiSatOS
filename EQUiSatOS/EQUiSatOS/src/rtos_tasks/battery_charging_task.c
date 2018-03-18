@@ -1351,17 +1351,16 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: where do we want this check?x
-		// it's okay to check discharging even with bad voltages -- there aren't
-		// any voltage based checks
-		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
-
 		// reset our emergency write to the MRAM
 		persist_data.li_caused_reboot = ~0;
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
 		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
+		
+		// it's okay to check discharging even with bad voltages -- there aren't
+		// any voltage based checks
+		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 	}
 	else
 	{
