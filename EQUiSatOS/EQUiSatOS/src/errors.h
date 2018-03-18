@@ -224,6 +224,9 @@ typedef enum error_codes {
 	ECODE_UPLINK_KILL1WEEK =			76,
 	ECODE_UPLINK_KILLFOREVER =			77,
 	ECODE_UPLINK_REVIVED =				78,
+	ECODE_P1_NOT_DEPLOYED =				79,
+	ECODE_P2_NOT_DEPLOYED =				80,
+	ECODE_P3_NOT_DEPLOYED =				81
 } sat_ecode;
 
 /************************************************************************/
