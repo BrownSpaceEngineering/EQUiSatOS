@@ -67,7 +67,9 @@ void global_init(void) {
 	system_init();
 	
 	// start watchdog hardware ASAP
-	init_watchdog_clock();
+	#ifdef WATCHDOG_RESET_ACTIVE // note bootloader may have enabled it
+		init_watchdog_clock();
+	#endif
 
 	// MUST be before anything RTOS-related
 	// (most notably, those creating mutexes)
