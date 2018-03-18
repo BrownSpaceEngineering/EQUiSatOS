@@ -56,7 +56,7 @@ li_discharging_t get_li_discharging(void)
 
 uint32_t get_current_timestamp_wrapped(void)
 {
-	#ifdef BAT_TESTING
+	#ifdef BAT_UNIT_TESTING
 	return simulated_timestamp;
 	#else
 	return get_current_timestamp();
@@ -65,7 +65,7 @@ uint32_t get_current_timestamp_wrapped(void)
 
 sat_state_t get_sat_state_wrapped(void)
 {
-	#ifdef BAT_TESTING
+	#ifdef BAT_UNIT_TESTING
 	return simulated_state;
 	#else
 	return get_sat_state();
@@ -266,7 +266,7 @@ bool check_for_recommission(int8_t bat)
 			// we also need to do various things to make sure that the battery won't be
 			// immediately decommissioned again
 			charging_data.decommissioned_timestamp[bat] = 0; // NOTE: this doesn't do much but keeps the struct consistent
-			charging_data.li_entered_low_voltage_timestamp[bat] = -1;
+			charging_data.li_entered_low_voltage_timestamp[bat] = (uint32_t) -1;
 		}
 
 		return true;
@@ -293,8 +293,8 @@ void init_charging_data()
 	charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 
 	// set all battery timestamps to -1
-	charging_data.li_entered_low_voltage_timestamp[0] = -1;
-	charging_data.li_entered_low_voltage_timestamp[1] = -1;
+	charging_data.li_entered_low_voltage_timestamp[0] = (uint32_t) -1;
+	charging_data.li_entered_low_voltage_timestamp[1] = (uint32_t) -1;
 
 	for (int8_t bat = 0; bat < 4; bat++)
 		charging_data.already_set_sat_state[bat] = 0;
@@ -312,12 +312,15 @@ void init_charging_data()
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
 		charging_data.decommissioned[bat] = 0;
+		
+		// NOTE: this is okay -- only relevant when really decommissioned, at which point it will be set
 		charging_data.decommissioned_timestamp[bat] = 0;
 		charging_data.decommissioned_count[bat] = 0;
 	}
 
 	charging_data.charging_parity = 0;
 
+	#ifndef BAT_UNIT_TESTING
 	// we need to decommission here if the MRAM says that one of the LI's caused
 	// a reboot
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
@@ -331,6 +334,7 @@ void init_charging_data()
 		persist_data.li_caused_reboot = ~0;
 		set_persistent_charging_data_unsafe(persist_data);
 	}
+	#endif
 
 	print("initializing charging data - complete\n");
 }
@@ -587,6 +591,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 
 void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 {
+	#ifndef BAT_UNIT_TESTING
 	int8_t lf_charging = -1;
 	
 	bat_charge_dig_sigs_batch batch;
@@ -610,6 +615,17 @@ void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 	}
 
 	charging_data.bat_charging = lf_charging;
+	#endif
+	
+	#ifdef BAT_UNIT_TESTING
+	int8_t lf_charging = -1;
+	if (charging_data.bat_voltages[LFB1] <= charging_data.bat_voltages[LFB2])
+		lf_charging = LFB1;
+	else
+		lf_charging = LFB2;
+		
+	charging_data.bat_charging = lf_charging;
+	#endif
 }
 
 // NOTE: subtle case when the voltages are equivalent for LI1 and LI2
@@ -766,8 +782,14 @@ void battery_logic()
 	// phase prologue: updating relevant data in the charging data struct
 	///
 
-	#ifndef BAT_TESTING
+	#ifdef BAT_UNIT_TESTING
+	bool li_success = true;
+	bool lf_success = true;
+	uint16_t lfb1_max_cell_mv = charging_data.bat_voltages[LFB1] / 2;
+	uint16_t lfb2_max_cell_mv = charging_data.bat_voltages[LFB2] / 2;
+	#endif
 
+	#ifndef BAT_UNIT_TESTING
 	bool li_success = false;
 	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
 		li_success = read_lion_volts_precise(
@@ -818,7 +840,7 @@ void battery_logic()
 	// recommissioned
 	/////
 
-	#ifndef BAT_TESTING
+	#ifndef BAT_UNIT_TESTING
 	// it's alright to recommission, even with bad voltage values
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
@@ -846,12 +868,12 @@ void battery_logic()
 				// too long
 				if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
 				{
-					if (charging_data.li_entered_low_voltage_timestamp[bat] == -1)
+					if (charging_data.li_entered_low_voltage_timestamp[bat] == (uint32_t) -1)
 					{
 						charging_data.li_entered_low_voltage_timestamp[bat] = get_current_timestamp_wrapped();
 					}
 					else if (get_current_timestamp_wrapped() - charging_data.li_entered_low_voltage_timestamp[bat] >
-									 MAX_TIME_BELOW_V_THRESHOLD_S)
+							 MAX_TIME_BELOW_V_THRESHOLD_S)
 					{
 						// we should reset the low voltage timestamp, so this battery will get a chance
 						// next time -- this is done in the decommission function that will also take
@@ -865,7 +887,7 @@ void battery_logic()
 				}
 				else
 				{
-					charging_data.li_entered_low_voltage_timestamp[bat] = -1;
+					charging_data.li_entered_low_voltage_timestamp[bat] = (uint32_t) -1;
 				}
 			}
 		}
@@ -900,7 +922,13 @@ void battery_logic()
 
 	print("currently have %d bad li and %d bad lf\n", num_li_down, num_lf_down);
 
-	#ifndef BAT_TESTING
+	// reading simulated values -- some of the simulated values will already
+	// have been put into the charging_data struct
+	#ifdef BAT_UNIT_TESTING
+	bool curr_charging_filled_up = simulated_curr_charging_filled_up;
+	#endif
+	
+	#ifndef BAT_UNIT_TESTING
 	// we're interested in the charging battery filling up if it's a lion
 	bool curr_charging_filled_up = false;
 
@@ -923,21 +951,22 @@ void battery_logic()
 	}
 	#endif
 
-	// reading simulated values -- some of the simulated values will already
-	// have been put into the charging_data struct
-	#ifdef BAT_TESTING
-	bool curr_charging_filled_up = simulated_curr_charging_filled_up;
+	#ifdef BAT_UNIT_TESTING
+	bool life_pos_filled_up = simulated_lfs_both_filled_up;
 	#endif
 
+	#ifndef BAT_UNIT_TESTING
 	// we also want to know whether the life po banks have filled up
 	bool life_pos_filled_up = false;
 
 	// this only makes sense if we have lf values
 	if (lf_success)
-		get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
+		life_pos_filled_up = get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
+	#endif
 
 	// updating externally facing variables
 	
+	#ifndef BAT_UNIT_TESTING
 	// updating antenna deploy
 	// if there are good values in charging_data, we'll just use those
 	// if not we'll try to grab new ones -- but this won't affect the current flow
@@ -978,6 +1007,7 @@ void battery_logic()
 			}
 		}
 	}
+	#endif
 
 	/////
 	// phase 1: determine whether we want to make a change to the charge state
@@ -1073,7 +1103,7 @@ void battery_logic()
 				// we only want to make a move when both batteries are good -- this is
 				// like our default state
 				if (charging_data.bat_voltages[LI1] > LI_DOWN_MV &&
-					  charging_data.bat_voltages[LI2] > LI_DOWN_MV)
+					charging_data.bat_voltages[LI2] > LI_DOWN_MV)
 				{
 					if (charging_data.bat_charging == LI1 && curr_charging_filled_up)
 						charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
@@ -1267,7 +1297,7 @@ void battery_logic()
 	// phase 3: apply the decisions we've made about which batteries to charge!
 	/////
 
-	#ifndef BAT_TESTING
+	#ifndef BAT_UNIT_TESTING
 	bool got_mutex = true;
 	if (!xSemaphoreTake(critical_action_mutex, (TickType_t) CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 		// if for some reason we can't get the bat charging mutex (it times out),
@@ -1308,12 +1338,6 @@ void battery_logic()
 			log_error(ELOC_BAT_CHARGING, ECODE_SPI_MUTEX_TIMEOUT, true);
 		}
 
-
-
-		// TODO: maybe give up on this check if we fail to get the mutex?? ROHAN??
-
-
-
 		// write to the MRAM that the battery caused a reboot, in case does
 		// (we'll deal with this when we reboot)
 		persistent_charging_data_t persist_data;
@@ -1325,7 +1349,7 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: check this flow with Mckenna -- enough delay?
+		// TODO: where do we want this check?
 		// it's okay to check discharging even with bad voltages -- there aren't
 		// any voltage based checks
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
@@ -1343,7 +1367,6 @@ void battery_logic()
 	}
 
 	if (got_mutex) xSemaphoreGive(critical_action_mutex);
-	#endif
 
 	///
 	// phase 3b: set the battery that should be charging to charge and
@@ -1375,6 +1398,7 @@ void battery_logic()
 	}
 
 	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
+	#endif
 
 	print("leaving battery charging\n");
 }

@@ -17,7 +17,7 @@
 // TODO*: figure out these thresholds fully and deal with scaling
 // TODO*: remove deprecated thresholds
 
-// #define BAT_TESTING
+// #define BAT_UNIT_TESTING
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
@@ -130,12 +130,12 @@ typedef struct charging_data
 	charge_state_t curr_charge_state;
 
 	// the last time each lion was low voltage
-	int64_t li_entered_low_voltage_timestamp[2];
+	uint32_t li_entered_low_voltage_timestamp[2];
 
 	// whether or not it's safe to move to antenna deploy at the moment
 	bool should_move_to_antenna_deploy;
 
-	// whether or not the satellite state has already been set witht the state of each of
+	// whether or not the satellite state has already been set with the state of each of
 	// the batteries
 	bool already_set_sat_state[4];
 

@@ -15,6 +15,7 @@
 extern int simulated_timestamp;
 extern int simulated_state;
 extern int simulated_curr_charging_filled_up;
+extern int simulated_lfs_both_filled_up;
 
 /************************************************************************/
 /* CONFIG                                                               */

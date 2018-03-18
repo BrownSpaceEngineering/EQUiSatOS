@@ -12,7 +12,9 @@
 #define LI_ABOVE_FULL              (LI_FULL_SANITY_MV + 50)
 #define LI_BETWEEN_DOWN_AND_FULL   (LI_DOWN_MV + 25)
 #define LI_BELOW_DOWN              (LI_DOWN_MV - 50)
-#define LF_ABOVE_FULL							 (LF_FULL_MAX_MV + 10)
+#define LF_ABOVE_FULL			   (LF_FULL_SUM_MV + 10)
+
+// NOTE: doesn't simulate much complexity with lf's -- will always assume they aren't
 
 // The goals of testing are as follow:
 //  - run single iterations of battery logic to assert its correctness in isolation
@@ -40,19 +42,21 @@
 void test_init(void)
 {
 	init_charging_data();
+	
 	assert(charging_data.bat_charging == -1);
 	assert(charging_data.lion_discharging == -1);
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
 	assert(charging_data.curr_charge_state == FILL_LI_NEITHER_FULL_A);
-	assert(charging_data.li_entered_low_voltage_timestamp[0] == (uint64_t)-1);
-	assert(charging_data.li_entered_low_voltage_timestamp[1] == (uint64_t)-1);
+	assert(charging_data.li_entered_low_voltage_timestamp[0] == (uint32_t) -1);
+	assert(charging_data.li_entered_low_voltage_timestamp[1] == (uint32_t) -1);
+	assert(!charging_data.should_move_to_antenna_deploy);
 
 	for (int i = 0; i < 4; i++)
 	{
 		assert(charging_data.already_set_sat_state[i] == 0);
-		assert(charging_data.bat_voltages[i] == 0); //TODO: this was originally -1, why tf
+		assert(charging_data.bat_voltages[i] == 0);
 		assert(charging_data.decommissioned[i] == 0);
-		assert(charging_data.decommissioned_timestamp[i] == 0); //TODO: this was originally -1, why tf
+		assert(charging_data.decommissioned_timestamp[i] == 0);
 		assert(charging_data.decommissioned_count[i] == 0);
 		assert(charging_data.charging_parity == 0);
 	}
@@ -295,7 +299,7 @@ void l1_full_to_neither_full_a(void)
 	charging_data.curr_charge_state = FILL_LI_LI1_FULL_A;
 	charging_data.bat_charging = LI2;
 	charging_data.lion_discharging = LI1;
-	charging_data.bat_voltages[LI1] = LI_BETWEEN_DOWN_AND_FULL;
+	charging_data.bat_voltages[LI1] = LI_BELOW_DOWN;
 	charging_data.bat_voltages[LI2] = LI_ABOVE_FULL;
 	simulated_state = IDLE_NO_FLASH;
 	simulated_curr_charging_filled_up = 1;
@@ -344,7 +348,7 @@ void l2_full_to_neither_full_a(void)
 	charging_data.curr_charge_state = FILL_LI_LI2_FULL_A;
 	charging_data.bat_charging = LI1;
 	charging_data.lion_discharging = LI2;
-	charging_data.bat_voltages[LI1] = LI_ABOVE_FULL;
+	charging_data.bat_voltages[LI1] = LI_BELOW_DOWN;
 	charging_data.bat_voltages[LI2] = LI_BETWEEN_DOWN_AND_FULL;
 	simulated_state = IDLE_NO_FLASH;
 	simulated_curr_charging_filled_up = 1;
@@ -379,6 +383,7 @@ void lf_to_same_a(void)
 	charging_data.bat_voltages[LI1] = LI_ABOVE_FULL + 2;
 	charging_data.bat_voltages[LI2] = LI_ABOVE_FULL;
 	simulated_state = IDLE_NO_FLASH;
+	simulated_lfs_both_filled_up = false;
 	battery_logic();
 
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
@@ -394,21 +399,7 @@ void lf_to_neither_full_a(void)
 	charging_data.bat_voltages[LI1] = LI_BETWEEN_DOWN_AND_FULL;
 	charging_data.bat_voltages[LI2] = LI_BELOW_DOWN;
 	simulated_state = IDLE_NO_FLASH;
-	battery_logic();
-
-	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
-	assert(charging_data.curr_charge_state == FILL_LI_NEITHER_FULL_A);
-}
-
-void to_neither_full_for_global_state_a(void)
-{
-	init_charging_data();
-	charging_data.curr_charge_state = FILL_LF_A;
-	charging_data.bat_charging = LFB2;
-	charging_data.lion_discharging = LI1;
-	charging_data.bat_voltages[LI1] = LI_ABOVE_FULL + 2;
-	charging_data.bat_voltages[LI2] = LI_ABOVE_FULL;
-	simulated_state = LOW_POWER; // this is a bit of a construed example
+	
 	battery_logic();
 
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
@@ -425,7 +416,7 @@ void to_neither_full_for_lf_full_a(void)
 	charging_data.bat_voltages[LI2] = LI_ABOVE_FULL;
 	charging_data.bat_voltages[LFB1] = LF_ABOVE_FULL;
 	charging_data.bat_voltages[LFB2] = LF_ABOVE_FULL;
-	simulated_state = IDLE_NO_FLASH;
+	simulated_lfs_both_filled_up = true;
 	battery_logic();
 
 	assert(charging_data.curr_meta_charge_state == ALL_GOOD);
@@ -479,6 +470,7 @@ void lf_to_same_b(void)
 	charging_data.bat_voltages[LI1] = LI_BETWEEN_DOWN_AND_FULL;
 	charging_data.bat_voltages[LI2] = LI_ABOVE_FULL;
 	simulated_state = IDLE_FLASH;
+	simulated_lfs_both_filled_up = false;
 	battery_logic();
 
 	assert(charging_data.curr_meta_charge_state == ONE_LI_DOWN);
@@ -502,23 +494,6 @@ void lf_to_li_b(void)
 	assert(charging_data.curr_charge_state == FILL_LI_B);
 }
 
-void to_li_for_global_state_b(void)
-{
-	init_charging_data();
-	charging_data.curr_meta_charge_state = ONE_LI_DOWN;
-	charging_data.curr_charge_state = FILL_LF_B;
-	charging_data.decommissioned[LI1] = 1;
-	charging_data.decommissioned[LFB1] = 1;
-	charging_data.bat_charging = LFB2;
-	charging_data.lion_discharging = LI2;
-	charging_data.bat_voltages[LI1] = LI_BETWEEN_DOWN_AND_FULL;
-	simulated_state = LOW_POWER;
-	battery_logic();
-
-	assert(charging_data.curr_meta_charge_state == ONE_LI_DOWN);
-	assert(charging_data.curr_charge_state == FILL_LI_B);
-}
-
 void to_li_for_lf_full_b(void)
 {
 	init_charging_data();
@@ -531,6 +506,7 @@ void to_li_for_lf_full_b(void)
 	charging_data.bat_voltages[LI1] = LI_BETWEEN_DOWN_AND_FULL;
 	charging_data.bat_voltages[LFB2] = LF_ABOVE_FULL;
 	simulated_state = IDLE_NO_FLASH;
+	simulated_lfs_both_filled_up = false;
 	battery_logic();
 
 	assert(charging_data.curr_meta_charge_state == ONE_LI_DOWN);
@@ -744,6 +720,7 @@ void run_unit_tests(void)
 	// batteries
 	///
 
+	/*
 	a_to_b();
 	a_to_c();
 	a_to_d();
@@ -781,7 +758,6 @@ void run_unit_tests(void)
 	lf_to_neither_full_a();
 
 	// back to neither_full
-	to_neither_full_for_global_state_a();
 	to_neither_full_for_lf_full_a();
 
 	///
@@ -794,7 +770,6 @@ void run_unit_tests(void)
 	lf_to_same_b();
 	lf_to_li_b();
 
-	to_li_for_global_state_b();
 	to_li_for_lf_full_b();
 
 	///
@@ -802,7 +777,7 @@ void run_unit_tests(void)
 	///
 
 	c_to_c();
-	d_to_d();
+	d_to_d(); */
 
 	///
 	// given a meta-state and a sub-state, decisions about the batteries that should
