@@ -42,7 +42,9 @@ bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum) {
 
 void set_command_mode(bool delay) {
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_BEFORE_MS);
+	setTXEnable(true);
 	usart_send_string((uint8_t*) "+++");
+	setTXEnable(false);
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_AFTER_MS);
 }
 

@@ -33,17 +33,18 @@ static bool is_radio_killed(void) {
 
 static void read_radio_temp_mode(void) {
 	// power on radio initially
-	setRadioState(true, true);
-	setTXEnable(true);
-	setRXEnable(true);
+	setRadioState(true, false);	
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS / portTICK_PERIOD_MS);
 	set_command_mode(false); // don't delay, we'll take care of it
 	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 
 	clear_USART_rx_buffer();
-	XDL_prepare_get_temp();
+	XDL_prepare_get_temp();	
+	setRXEnable(true);
+	setTXEnable(true);
 	usart_send_string(radio_send_buffer);
+	setTXEnable(false);
 	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
 	if (check_checksum(radio_receive_buffer+1, 3, radio_receive_buffer[4])) {
 		radio_temp_cached = (radio_receive_buffer[2] << 8) | radio_receive_buffer[3];
@@ -51,25 +52,9 @@ static void read_radio_temp_mode(void) {
 	} else {
 		//TODO: Wait longer?
 		// log error
-		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);
+		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);		
 	}
-	
-	// warm reset to get back into transmit mode
-// 	warm_reset();
-// 	clear_USART_rx_buffer();
-// 	usart_send_string(radio_send_buffer);
-// 	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
-// 	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
-// 		//power cycle radio
-// 		setRadioState(false, false); // off; don't confirm
-// 		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
-// 			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
-// 		setRadioState(true, false); // on; don't confirm
-// 	}
-// 	#if PRINT_DEBUG == 1
-// 		setTXEnable(false);
-// 		setRXEnable(false);
-// 	#endif
+	setRXEnable(false)
 }
 
 /************************************************************************/
