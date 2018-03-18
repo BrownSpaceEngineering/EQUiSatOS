@@ -943,8 +943,10 @@ void battery_logic()
 		print("\tsns value: %d\n", sns_value);
 
 		curr_charging_filled_up =
-			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV &&
-			 got_sns_data && sns_value < SNS_THRESHOLD) ||
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOW_MV &&
+			 got_sns_data && sns_value < SNS_THRESHOLD_LOW) ||
+			 (charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV &&
+			 got_sns_data && sns_value < SNS_THRESHOLD_LOWER) ||
 			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
