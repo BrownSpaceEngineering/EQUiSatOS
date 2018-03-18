@@ -391,7 +391,7 @@ void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_ba
 
 void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch)
 {
-	print("\tchecking bat %d is not discharging\n");
+	print("\tchecking bat %d is not discharging\n", bat_not_discharging);
 	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
 	if (bat_not_discharging_st_pin_active)
 	{
