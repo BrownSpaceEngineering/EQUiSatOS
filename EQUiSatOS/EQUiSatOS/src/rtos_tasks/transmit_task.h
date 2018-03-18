@@ -15,7 +15,7 @@
 
 
 // transmission-related constants
-#define TIME_BTWN_MSGS_MS			250 // > 2x EOT timeout for radio
+#define TIME_BTWN_MSGS_MS			300 // > 2x EOT timeout for radio
 #define TOTAL_PACKET_TRANS_TIME_MS	(TOTAL_TRANSMIT_TIME_MS(MSG_SIZE) + TIME_BTWN_MSGS_MS - IR_WAKE_DELAY_MS) // we wake IR before so it doesn't require that time
 #define EXPECTED_TRANSMISSION_TIME	(3*TOTAL_PACKET_TRANS_TIME_MS)
 #define RX_READY_PERIOD_MS			1000

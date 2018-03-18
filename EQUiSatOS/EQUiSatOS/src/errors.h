@@ -227,7 +227,10 @@ typedef enum error_codes {
 	ECODE_UPLINK_REVIVED =				79,
 	ECODE_P1_NOT_DEPLOYED =				80,
 	ECODE_P2_NOT_DEPLOYED =				81,
-	ECODE_P3_NOT_DEPLOYED =				82
+	ECODE_P3_NOT_DEPLOYED =				82,
+	ECODE_IRPOW_SEM_TOO_MANY_USERS =	83,
+	ECODE_IRPOW_SEM_TOO_FEW_USERS =		84,
+	ECODE_I2C_BUS_ERROR =				85,
 } sat_ecode;
 
 /************************************************************************/
@@ -235,6 +238,8 @@ typedef enum error_codes {
 /************************************************************************/
 #define ERROR_STACK_MAX		51 // including staged
 #define PRIORITY_ERROR_IMPORTANCE_TIMEOUT_S		86400 // 1 day
+#define I2C_ERROR_CONSIDERATION_PERIOD_S		(5*60)
+#define I2C_ERROR_MAX_NUM_IN_CONSID_PERIOD		20
 
 typedef struct {
 	uint32_t timestamp;
@@ -258,6 +263,7 @@ void log_error(sat_eloc loc, sat_ecode err, bool priority);
 void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
+bool eloc_category_i2c(sat_eloc eloc);
 // defined in rtos_system_test.c
 void print_sat_error(sat_error_t* data, int i);
 const char* get_eloc_str(sat_error_t* err);

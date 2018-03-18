@@ -96,9 +96,6 @@ void flash_activate_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
-		// turn on IR power before we start to use it during flash
-		bool got_semaphore = enable_ir_pow_if_necessary();
-		
 		// read a single magnetometer batch before flash
 		read_magnetometer_batch(current_cmp_struct->mag_before_data);
 
@@ -110,6 +107,8 @@ void flash_activate_task(void *pvParameters)
 		// actually flash leds (make sure we're not transmitting or deploying antenna while this is going on)
 		if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
 		{
+			// turn on IR power before we start to use it during flash
+			bool got_semaphore = enable_ir_pow_if_necessary();
 			for (int i = 0; i < NUM_FLASHES; i++) {
 				// start taking data and set start timestamp
 				uint32_t cur_timestamp = get_current_timestamp();
@@ -162,13 +161,11 @@ void flash_activate_task(void *pvParameters)
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
-					// disable IR power before giving I2C to work a bit better with state handling task
-					disable_ir_pow_if_necessary(got_semaphore); 
 					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 				}
-			
+				
 				// in case any mutex didn't get locked
 				if (!actually_flashed) {
 					// note critical action mutex is given OUTSIDE this loop
@@ -190,6 +187,7 @@ void flash_activate_task(void *pvParameters)
 				// delay between successive flashes
 				vTaskDelay(TIME_BTWN_FLASHES / portTICK_PERIOD_MS); // delay on last iteration as well is OK
 			}
+			disable_ir_pow_if_necessary(got_semaphore);
 			xSemaphoreGive(critical_action_mutex);
 		} else {
 			log_error(ELOC_FLASH, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);

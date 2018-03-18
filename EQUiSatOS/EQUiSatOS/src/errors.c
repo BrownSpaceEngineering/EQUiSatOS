@@ -9,7 +9,7 @@
 
 void log_error_stack_error(uint8_t ecode);
 void add_error_to_equistack(equistack* stack, sat_error_t* error);
-void check_for_bad_error(sat_error_t* full_error);
+void check_for_bad_errors(sat_error_t* full_error);
 
 void init_errors(void) {
 	_error_equistack_mutex = xSemaphoreCreateMutexStatic(&_error_equistack_mutex_d);
@@ -151,7 +151,7 @@ void log_error(sat_eloc loc, sat_ecode err, bool priority) {
 		print_sat_error(&full_error, 0);
 	#endif
 	
-	check_for_bad_error(&full_error);
+	check_for_bad_errors(&full_error);
 }
 
 /* Logs an error to the error stack, noting its timestamp (ISR safe) */
@@ -167,7 +167,7 @@ void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority) {
 	// don't want to spend to much time on it (or write more ISR alternative functions :P)
 	equistack_Push_from_isr(&error_equistack, &full_error);
 	
-	check_for_bad_error(&full_error);
+	// don't respond to errors in ISRs
 }
 
 /* adds the given error to the given error equistack, in such a way 
@@ -246,10 +246,56 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	if (got_mutex) xSemaphoreGive(stack->mutex);
 }
 
+// Returns whether the given error code was an i2c device
+bool eloc_category_i2c(sat_eloc eloc) {
+	switch (eloc) {
+		// slide
+		case ELOC_IR_POS_Y:
+		case ELOC_IR_NEG_X:
+		case ELOC_IR_NEG_Y:
+		case ELOC_IR_POS_X:
+		case ELOC_IR_NEG_Z:
+		case ELOC_IR_POS_Z:
+		case ELOC_PD_POS_Y:
+		case ELOC_PD_NEG_X:
+		case ELOC_PD_NEG_Y:
+		case ELOC_PD_POS_X:
+		case ELOC_PD_NEG_Z:
+		case ELOC_PD_POS_Z:
+		case ELOC_TEMP_LF_1:
+		case ELOC_TEMP_LF_2:
+		case ELOC_TEMP_L_1:
+		case ELOC_TEMP_L_2:
+		case ELOC_TEMP_LED_1:
+		case ELOC_TEMP_LED_2:
+		case ELOC_TEMP_LED_3:
+		case ELOC_TEMP_LED_4:
+		case ELOC_IMU_ACC:
+		case ELOC_IMU_GYRO:
+		case ELOC_IMU_MAG:
+		case ELOC_AD7991_BBRD:
+		case ELOC_AD7991_BBRD_L2_SNS:
+		case ELOC_AD7991_BBRD_L1_SNS:
+		case ELOC_AD7991_BBRD_L_REF:
+		case ELOC_AD7991_BBRD_PANEL_REF:
+		case ELOC_AD7991_CBRD:
+		case ELOC_AD7991_CBRD_3V6_REF:
+		case ELOC_AD7991_CBRD_3V6_SNS:
+		case ELOC_AD7991_CBRD_5V_REF:
+		case ELOC_AD7991_CBRD_3V3_REF:
+		case ELOC_TCA:
+			return true;
+		default:
+			return false;
+	}
+}
 
-// hangs on the given error if it's a "bad/rare" one as defined in this function
-// ONLY called if USE_STRICT_ASSERTIONS enabled
-void check_for_bad_error(sat_error_t* full_error) {
+
+/* responds to certain errors that may require action */
+void check_for_bad_errors(sat_error_t* full_error) {
+	/************************************************************************/
+	/* TESTING                                                              */
+	/************************************************************************/
 	enum error_codes actual_code = full_error->ecode & 0b01111111;
 	#ifdef USE_STRICT_ASSERTIONS
 		configASSERT(actual_code < ECODE_CRIT_ACTION_MUTEX_TIMEOUT || actual_code > ECODE_ALL_MUTEX_TIMEOUT);
@@ -266,6 +312,10 @@ void check_for_bad_error(sat_error_t* full_error) {
 	if (actual_code == ECODE_BAD_ADDRESS) {
 		a++;
 	}
+	if (actual_code == ECODE_TIMEOUT || actual_code == ECODE_BAD_ADDRESS) {
+		//i2c_send_stop();
+	}
+	
 	if (actual_code == ECODE_EXCESSIVE_SUSPENSION) {
 		a++;
 	}

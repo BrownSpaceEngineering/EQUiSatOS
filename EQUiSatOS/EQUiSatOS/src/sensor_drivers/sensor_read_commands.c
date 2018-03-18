@@ -157,6 +157,10 @@ void _set_5v_enable_unsafe(bool on) {
 bool enable_ir_pow_if_necessary(void) {
 	// increment the IR power semaphore to indicate there is another user.
 	bool got_semaphore = xSemaphoreTake(irpow_semaphore, HARDWARE_MUTEX_WAIT_TIME_TICKS);
+	if (!got_semaphore) {
+		log_error(ELOC_IR_POW, ECODE_IRPOW_SEM_TOO_MANY_USERS, true);
+	}
+	
 	if (!get_output(P_IR_PWR_CMD)) {
 		// only enable (and do full delay) if IR power is not on
 		trace_print("set ir power on");
@@ -183,11 +187,18 @@ bool enable_ir_pow_if_necessary(void) {
 // Takes in whether the first call to enable_ir_pow_if_necessary got the semaphore
 // to avoid bad cases in the off chance it didn't
 void disable_ir_pow_if_necessary(bool got_semaphore) {
+	bool could_give = false; // if didn't get semaphore initially, that's also bad
 	if (got_semaphore) {
-		xSemaphoreGive(irpow_semaphore);
+		could_give = xSemaphoreGive(irpow_semaphore);
+		if (!could_give) {
+			log_error(ELOC_IR_POW, ECODE_IRPOW_SEM_TOO_FEW_USERS, true);
+		}
 	}
 	// check if there are no IR power users, and disable if there are none
-	if (uxSemaphoreGetCount(irpow_semaphore) == IR_POW_SEMAPHORE_MAX_COUNT) {
+	// NOTE: if we couldn't give the IR power semaphore, that means too many people
+	// took it, and someone is probably still using it, so don't turn it off in here
+	// (use the i2c mutex instead at some point)
+	if (could_give && uxSemaphoreGetCount(irpow_semaphore) == IR_POW_SEMAPHORE_MAX_COUNT) {
 		set_output(false, P_IR_PWR_CMD);
 		trace_print("set ir power off");
 	}

@@ -533,6 +533,9 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 80: return "ECODE_P1_NOT_DEPLOYED";
 	case 81: return "ECODE_P2_NOT_DEPLOYED";
 	case 82: return "ECODE_P3_NOT_DEPLOYED";
+	case 83: return "ECODE_IRPOW_SEM_TOO_MANY_USERS";
+	case 84: return "ECODE_IRPOW_SEM_TOO_FEW_USERS";
+	case 85: return "ECODE_I2C_BUS_ERROR";
 	default: return "[error code not added to sys test]";
 	}
 }

@@ -52,7 +52,7 @@ typedef enum {
 /* HARDWARE MUTEXs - see https://www.draw.io/#G1bt9XDgZvyObssMtjbUi8nUNwu0kcQpVI */
 /* **ONLY** can be used outside this task in the flash_activate_task (for speed purposes) */
 /************************************************************************/
-#define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
+#define HARDWARE_MUTEX_WAIT_TIME_TICKS	(1500 / portTICK_PERIOD_MS)
 StaticSemaphore_t _i2c_irpow_mutex_d;
 SemaphoreHandle_t i2c_irpow_mutex;
 StaticSemaphore_t _processor_adc_mutex_d;
