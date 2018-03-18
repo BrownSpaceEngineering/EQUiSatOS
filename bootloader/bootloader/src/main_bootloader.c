@@ -10,8 +10,8 @@
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-#define DISABLE_REWRITE_FROM_MRAM
-//#define RUN_TESTS
+//#define DISABLE_REWRITE_FROM_MRAM
+#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
 #include <assert.h>
@@ -32,7 +32,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					191892);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					185792);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				60);
 // address at which prog mem rewritten boolean is stored in mram + size
@@ -311,7 +311,7 @@ void set_random_bytes(uint8_t* start, size_t num) {
 }
 
 void corrupt_prog_mem(void) {
-	#define NUM_RAND_SEQS			8
+	#define NUM_RAND_SEQS			4
 	#define RAND_SEQ_LEN			1
 	#define INSERT_POINT_STEP_AVG	(RAD_SAFE_FIELD_GET(prog_mem_size) / NUM_RAND_SEQS)
 
