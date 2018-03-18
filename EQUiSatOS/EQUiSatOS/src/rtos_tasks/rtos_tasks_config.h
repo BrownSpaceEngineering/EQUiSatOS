@@ -163,7 +163,7 @@ typedef enum
 
 /* action frequency periods in MS (some that actually have data collection are below) */
 #ifndef TESTING_SPEEDUP
-#define STATE_HANDLING_TASK_FREQ				(1*60*1000)	// ms
+#define STATE_HANDLING_TASK_FREQ				(2*60*1000)	// ms
 #endif
 
 #define WATCHDOG_TASK_FREQ						1500

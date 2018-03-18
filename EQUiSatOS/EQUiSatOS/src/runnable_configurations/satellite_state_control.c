@@ -16,7 +16,7 @@ task_states current_task_states;
 /************************************************************************/
 /* global states for hardware		                                    */
 /************************************************************************/ 
-struct hw_states hardware_states = {false, 0, false};
+struct hw_states hardware_states = {false, RADIO_OFF, false, 0, 0, 0};
 
 /************************************************************************/
 /* List of mutexes for massive take of all of them during a task state change */

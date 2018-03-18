@@ -20,7 +20,7 @@
  * flags to control dangerous / inconvenient functions of the satellite
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-//#define FLASH_ACTIVE // enable flashing
+#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
@@ -41,7 +41,7 @@
 //#define RISKY_STACK_SIZES
 
 // use this flag to disable reed-solomon tables (frees up memory)
-//#define USE_REED_SOLOMON
+#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
 #define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
@@ -72,10 +72,10 @@
 
 /** Debug **/
 // whether to include Tracelyzer tracing library
-#define USE_TRACELYZER				1
+#define USE_TRACELYZER				0
 
 // whether to configASSERTs (and other asserts) should hang
-#define USE_ASSERTIONS
+//#define USE_ASSERTIONS
 
 // add strict asserts to notify of events that we want to be rare
 //#define USE_STRICT_ASSERTIONS

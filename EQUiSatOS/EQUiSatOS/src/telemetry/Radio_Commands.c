@@ -324,7 +324,8 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 
 	// note hardware state change, ignoring mutex timeout
 	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_RADIO_TRANSMIT);
-	get_hw_states()->radio_state = RADIO_IDLE; // TODO: could possible result in errors if current fall time is long
+	get_hw_states()->radio_trans_done_target_time = xTaskGetTickCount() + (TRANSMIT_CURRENT_FALL_TIME_MS / portTICK_PERIOD_MS);
+	get_hw_states()->radio_state = RADIO_IDLE_TRANS_TRANSITION;
 	if (got_hw_state_mutex) hardware_state_mutex_give();
 	
 	#if defined(SAFE_PRINT) && (PRINT_DEBUG == 1 || PRINT_DEBUG == 3)
