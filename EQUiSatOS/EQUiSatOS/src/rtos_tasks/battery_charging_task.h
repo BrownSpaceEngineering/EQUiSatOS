@@ -25,7 +25,7 @@
 #define LI_FULL_MV                      4175
 #define LI_FULL_LOWER_MV                4150
 #define LI_FULL_SANITY_MV               4100
-#define LI_DOWN_MV                 		4050
+#define LI_DOWN_MV                 		4000
 #define LI_LOW_POWER_MV            		3900
 #define LI_CRITICAL_MV             		2750
 #define LI_MIGHT_NOT_BE_FULL_MV         4000
