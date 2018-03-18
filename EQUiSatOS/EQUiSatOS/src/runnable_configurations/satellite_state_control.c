@@ -448,6 +448,8 @@ bool set_sat_state(sat_state_t state) {
 			#ifdef USE_STRICT_ASSERTIONS
 				configASSERT(false); // busy loop because this should only be radiation issues
 			#endif
+		} else {
+			log_error(ELOC_STATE_HANDLING, ECODE_VALID_STATE_CHANGE, false);
 		}
 		return valid;
 	#endif

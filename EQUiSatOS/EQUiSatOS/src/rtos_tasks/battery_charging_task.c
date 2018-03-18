@@ -1351,7 +1351,7 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: where do we want this check?
+		// TODO: where do we want this check?x
 		// it's okay to check discharging even with bad voltages -- there aren't
 		// any voltage based checks
 		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);

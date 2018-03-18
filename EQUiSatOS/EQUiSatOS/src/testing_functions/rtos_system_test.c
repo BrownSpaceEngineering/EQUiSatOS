@@ -533,6 +533,7 @@ const char* get_ecode_str(sat_error_t* err) {
 	case 84: return "ECODE_IRPOW_SEM_TOO_FEW_USERS";
 	case 85: return "ECODE_I2C_BUS_ERROR";
 	case 86: return "ECODE_BAT_LF_CELLS_UNBALANCED";
+	case 87: return "ECODE_VALID_STATE_CHANGE";
 	default: return "[error code not added to sys test]";
 	}
 }
