@@ -11,9 +11,6 @@
 
 #include <inttypes.h>
 
-#define SNS_mA_TO_mV(mA) ((mA/2)+985)
-#define IR_C_TO_RAW(temp_C) ((temp_C+273.15)/.02)
-
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
 /************************************************************************/
@@ -75,7 +72,7 @@
 #define B_LF_VOLT_LOW					0
 #define B_LF_VOLT_HIGH					4000
 /* lion sense */
-#define B_L_SNS_OFF_LOW					985		//0mA
+#define B_L_SNS_OFF_LOW					975		//-20mA
 #define B_L_SNS_OFF_HIGH				1122	//275mA
 #define B_L_SNS_IDLE_RAD_OFF_LOW		910		//-150mA
 #define B_L_SNS_IDLE_RAD_OFF_HIGH		1085	//200mA
