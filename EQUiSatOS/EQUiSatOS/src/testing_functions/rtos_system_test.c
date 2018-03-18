@@ -61,19 +61,19 @@ static void print_lion_current_batch(lion_current_batch batch) {
 	print("L2_SNS: %d %d mV\t%d mA\n", batch[1], untruncate(batch[1], S_L_SNS), ((int16_t)untruncate(batch[1], S_L_SNS)-985)*2);
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
-	print("L1_TEMP: %d %d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_L_TEMP)));
-	print("L2_TEMP: %d %d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_L_TEMP)));
+	print("L1_TEMP: %d\t%d mV\t%d C\n", batch[0], untruncate(batch[0], S_L_TEMP), ad590_to_temp(untruncate(batch[0], S_L_TEMP)));
+	print("L2_TEMP: %d\t%d mV\t %d C\n", batch[1], untruncate(batch[1], S_L_TEMP), ad590_to_temp(untruncate(batch[1], S_L_TEMP)));
 }
 void print_led_temps_batch(led_temps_batch batch) {
 	print("LED Temps\n");
 	for (int i = 0; i < 4; i++) {
-		print("\t%d: %d\t%dC\n", i+1, batch[i], ad590_to_temp(untruncate(batch[i], S_LED_TEMP_REG)));
+		print("\t%d: %d\t%d mV\t%dC\n", i+1, batch[i], untruncate(batch[i], S_LED_TEMP_REG), ad590_to_temp(untruncate(batch[i], S_LED_TEMP_REG)));
 	}
 }
 void print_lifepo_temps_batch(lifepo_bank_temps_batch batch) {
 	print("lifepo bat temps\n");
-	print("\t1: %d\t%d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_LF_TEMP)));
-	print("\t2: %d\t%d C\n", batch[1], ad590_to_temp(untruncate(batch[1], S_LF_TEMP)));
+	print("\t1: %d\t%d mV\t%d C\n", batch[0], untruncate(batch[0], S_LF_TEMP), ad590_to_temp(untruncate(batch[0], S_LF_TEMP)));
+	print("\t2: %d\t%d mV\t%d C\n", batch[1], untruncate(batch[0], S_LF_TEMP), ad590_to_temp(untruncate(batch[1], S_LF_TEMP)));
 }
 void print_lifepo_volts_batch(lifepo_volts_batch batch) {
 	print("lifepo volts\n");
