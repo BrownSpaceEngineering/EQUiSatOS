@@ -246,6 +246,11 @@ void add_error_to_equistack(equistack* stack, sat_error_t* new_error) {
 	if (got_mutex) xSemaphoreGive(stack->mutex);
 }
 
+// removes priority bit from error code
+sat_ecode get_ecode(sat_error_t* err) {
+	return err->ecode & 0b01111111;
+}
+
 // Returns whether the given error code was an i2c device
 bool eloc_category_i2c(sat_eloc eloc) {
 	switch (eloc) {

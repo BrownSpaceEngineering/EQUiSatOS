@@ -21,7 +21,7 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
-#define BAT_CHARGING_PERIOD_MINS        5
+#define BAT_CHARGING_PERIOD_MINS        5 // TODO: change this back
 #define FULL_BAT_CHARGING_PERIOD_MINS   20
 #define BAT_CHARGING_ITERS_UNTIL_FULL   (FULL_BAT_CHARGING_PERIOD_MINS / BAT_CHARGING_PERIOD_MINS)
 
@@ -35,8 +35,8 @@
 #define LI_CRITICAL_MV             		2750
 #define LI_MIGHT_NOT_BE_FULL_MV         4000
 
-#define LF_FULL_SUM_MV					7000 // what here?
-#define LF_FULL_MAX_MV                  3900 // TODO: ask Manny
+#define LF_FULL_SUM_MV					7000
+#define LF_FULL_MAX_MV                  4000
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
 #define LF_FLASH_MIN_MV            	  	6200
@@ -191,7 +191,7 @@ bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_ce
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
 void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch);
 void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch);
-bool update_should_deploy_antenna(bool has_li_data);
+void update_should_deploy_antenna(bool has_li_data);
 
 void run_unit_tests(void);
 void run_simulations(void);

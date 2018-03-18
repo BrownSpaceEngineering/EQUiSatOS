@@ -23,6 +23,7 @@
 //   - everything is okay coming back from a boot
 //   - warnings
 //   - flow through the discharging section on the first time through
+//   - strike conditions
 
 // Stretch (TODO):
 //   - strike case for LF not charging
@@ -435,9 +436,6 @@ void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging)
 
 	check_discharging_with_retry(bat_discharging, batch);
 	check_not_discharging_with_retry(bat_not_discharging, batch);
-
-	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
-	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
 }
 
 void set_bat_to_charge(int8_t bat, bool charge)
@@ -645,7 +643,7 @@ void discharge_higher_li(void)
 		charging_data.lion_discharging = LI1;
 }
 
-bool update_should_deploy_antenna(bool has_li_data)
+void update_should_deploy_antenna(bool has_li_data)
 {
 	print("checking antenna deploy\n");
 	
@@ -1278,6 +1276,7 @@ void battery_logic()
 	}
 	else // if (charging_data.curr_meta_charge_state == TWO_LI_DOWN)
 	{
+		// NOTE: only one sub-state here, too!
 		if (charging_data.charging_parity)
 		{
 			charging_data.bat_charging = LI1;
@@ -1351,17 +1350,16 @@ void battery_logic()
 		// if this battery had failed
 		vTaskDelay(SAT_NO_POWER_TURN_OFF_T_MS / portTICK_PERIOD_MS);
 
-		// TODO: where do we want this check?
-		// it's okay to check discharging even with bad voltages -- there aren't
-		// any voltage based checks
-		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
-
 		// reset our emergency write to the MRAM
 		persist_data.li_caused_reboot = ~0;
 		if (got_mutex_spi) set_persistent_charging_data_unsafe(persist_data);
 
 		// resume normal operation
 		if (got_mutex_spi) xSemaphoreGive(mram_spi_cache_mutex);
+		
+		// it's okay to check discharging even with bad voltages -- there aren't
+		// any voltage based checks
+		check_after_discharging(charging_data.lion_discharging, lion_not_discharging);
 	}
 	else
 	{

@@ -233,7 +233,8 @@ typedef enum error_codes {
 	ECODE_IRPOW_SEM_TOO_MANY_USERS =	83,
 	ECODE_IRPOW_SEM_TOO_FEW_USERS =		84,
 	ECODE_I2C_BUS_ERROR =				85,
-	ECODE_BAT_LF_CELLS_UNBALANCED =     86
+	ECODE_BAT_LF_CELLS_UNBALANCED =     86,
+	ECODE_VALID_STATE_CHANGE =			87,
 } sat_ecode;
 
 /************************************************************************/
@@ -266,6 +267,7 @@ void log_error(sat_eloc loc, sat_ecode err, bool priority);
 void log_error_from_isr(sat_eloc loc, sat_ecode err, bool priority);
 bool is_priority_error(sat_error_t err);
 void print_error(enum status_code code);
+sat_ecode get_ecode(sat_error_t* err);
 bool eloc_category_i2c(sat_eloc eloc);
 // defined in rtos_system_test.c
 void print_sat_error(sat_error_t* data, int i);

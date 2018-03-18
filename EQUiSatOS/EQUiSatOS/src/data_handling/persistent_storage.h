@@ -22,8 +22,8 @@
 #define STORAGE_PERSISTENT_CHARGING_DATA_ADDR	46
 #define STORAGE_RADIO_REVIVE_TIMESTAMP_ADDR		50
 // prog memory address not used here
-#define STORAGE_ERR_NUM_ADDR					175080
-#define STORAGE_ERR_LIST_ADDR					175084
+#define STORAGE_ERR_NUM_ADDR					60
+#define STORAGE_ERR_LIST_ADDR					64
 
 /* cached state (known) field sizes */
 #define STORAGE_SECS_SINCE_LAUNCH_SIZE			 4
