@@ -20,7 +20,7 @@
  * flags to control dangerous / inconvenient functions of the satellite 
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-#define FLASH_ACTIVE // enable flashing
+//#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
@@ -31,8 +31,8 @@
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
-#define TESTING_SPEEDUP
-#define TESTING_SPEEDUP_LONG_OPS
+//#define TESTING_SPEEDUP
+//#define TESTING_SPEEDUP_LONG_OPS
 
 // reduces the stack size of some tasks to a workable but risky level
 //#define RISKY_STACK_SIZES
@@ -54,7 +54,7 @@
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		(43*1000) // ms
+	#define SYSTEM_TEST_TASK_FREQ		(310*1000) // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -63,8 +63,8 @@
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
-	#define EQUISIM_IN_STATE_TIME_MS			(1*60*1000)
+//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
+//#define EQUISIM_IN_STATE_TIME_MS			(1*60*1000)
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 /** Debug **/
