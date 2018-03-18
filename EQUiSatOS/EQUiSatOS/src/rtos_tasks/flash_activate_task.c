@@ -66,6 +66,34 @@ bool would_flash_now(void) {
 	return (get_sat_state() == IDLE_FLASH) && waiting_between_flashes;
 }
 
+//check LED_SNS to make sure each LED turned on, log error otherwise
+void validate_LEDSNS_readings(flash_data_t* cur_burst) {	
+	uint16_t max_LEDSNS[4] = {0, 0, 0, 0};
+	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {		
+		for (int j = 0; j < 4; j++) {
+			max_LEDSNS[j] = max(cur_burst->led_current_data[i][j], max_LEDSNS[j]);
+		}
+	}
+	for (int i = 0; i < 4; i++) {
+		uint8_t eloc;
+		switch(i) {
+			case 1:
+				eloc = ELOC_LED1SNS;
+				break;
+			case 2:
+				eloc = ELOC_LED1SNS;
+				break;
+			case 3:
+				eloc = ELOC_LED1SNS;
+				break;
+			case 4:
+				eloc = ELOC_LED1SNS;
+				break;
+		}
+		log_if_out_of_bounds(max_LEDSNS[i], S_LED_SNS_FLASH, eloc, true);
+	}
+}
+
 void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
@@ -181,6 +209,8 @@ void flash_activate_task(void *pvParameters)
 				}
 			
 				configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
+					
+				validate_LEDSNS_readings(current_burst_struct)							;
 			
 				// store burst data in equistack
 				current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
