@@ -95,8 +95,8 @@ void _read_led_current_batch_unsafe(		led_current_batch batch, bool flashing_now
 void _read_gyro_batch_unsafe(				gyro_batch gyr_batch);
 
 /* utility */
-bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2);
-bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
+bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2, bool precise);
+bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4, bool precise);
 bool read_ad7991_batbrd_precise(uint16_t* results);
 void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3, uint16_t* val_4);
 
@@ -109,5 +109,5 @@ void verify_regulators(void);
 void verify_regulators_unsafe(void); // used in transmit task
 void verify_flash_readings(bool flashing);
 uint8_t get_pdiode_two_bit_range(uint16_t raw);
-
+uint16_t untruncate(uint8_t val, sig_id_t sig);
 #endif

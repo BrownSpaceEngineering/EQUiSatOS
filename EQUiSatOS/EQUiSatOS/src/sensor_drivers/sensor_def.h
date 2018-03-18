@@ -12,25 +12,22 @@
 #include <inttypes.h>
 
 #define SNS_mA_TO_mV(mA) ((mA/2)+985)
+#define IR_C_TO_RAW(temp_C) ((temp_C+273.15)/.02)
 
 /************************************************************************/
 /* POSSIBLE BOUNDS (for truncation)                                     */
 /************************************************************************/
  // TODO: anything that has a ~0 (search file for ~0 and they should all be gone)
-#define A_LED_TEMP_M				1	//TODO: FILL IN!
-#define A_LED_TEMP_B				0	//TODO: FILL IN!
+#define A_TEMP_M					(65/2)
+#define A_TEMP_B					0
 #define A_LED_SNS_M					650
 #define A_LED_SNS_B					0
-#define A_LF_TEMP_M					1	//TODO: FILL IN!
-#define A_LF_TEMP_B					0	//TODO: FILL IN!
-#define A_LF_SNS_M					(197/4)
+#define A_LF_SNS_M					(316/7)
 #define A_LF_SNS_B					-960
-#define A_LF_OSNS_M					(500/7)
+#define A_LF_OSNS_M					(650/9)
 #define A_LF_OSNS_B					0
 #define A_LF_VOLT_M					(130/9)
 #define A_LF_VOLT_B					0
-#define A_L_TEMP_M					1	//TODO: FILL IN!
-#define A_L_TEMP_B					0	//TODO: FILL IN!
 #define A_L_SNS_M					20
 #define A_L_SNS_B					150
 #define A_L_VOLT_M					(130/9)
@@ -55,45 +52,39 @@
 /************************************************************************/
 /* ERROR BOUNDS                                                         */
 /************************************************************************/
-#define B_IR_OBJ_LOW					0
-#define B_IR_OBJ_HIGH					~0
-#define B_IR_AMB_LOW					0
-#define B_IR_AMB_HIGH					~0
-#define B_PD_LOW						0  // note: note used (intentional)
-#define B_PD_HIGH						~0 // note: note used (intentional)
-#define B_LED_TEMP_REG_LOW				0
-#define B_LED_TEMP_FLASH_LOW			0
-#define B_LED_TEMP_REG_HIGH				~0
-#define B_LED_TEMP_FLASH_HIGH			~0
+#define B_IR_OBJ_LOW					0		//note: not used (intentional)
+#define B_IR_OBJ_HIGH					~0		 //note: not used (intentional)
+#define B_IR_AMB_LOW					11657	//-40C
+#define B_IR_AMB_HIGH					19908	//125C
+#define B_PD_LOW						0		// note: not used (intentional)
+#define B_PD_HIGH						~0		// note: not used (intentional)
+#define B_TEMP_LOW						0
+#define B_TEMP_HIGH						2000
 #define B_LED_SNS_REG_LOW				0
-#define B_LED_SNS_REG_HIGH				5
-#define B_LED_SNS_FLASH_LOW				0//20
-#define B_LED_SNS_FLASH_HIGH			100
-#define B_LF_TEMP_LOW					0
-#define B_LF_TEMP_HIGH					~0
-#define B_LF_SNS_REG_LOW				0
-#define B_LF_SNS_REG_HIGH				~0
-#define B_LF_SNS_FLASH_LOW				0
-#define B_LF_SNS_FLASH_HIGH				~0
-#define B_LF_OSNS_REG_LOW				0
-#define B_LF_OSNS_REG_HIGH				~0
-#define B_LF_OSNS_FLASH_LOW				0
-#define B_LF_OSNS_FLASH_HIGH			~0
+#define B_LED_SNS_REG_HIGH				5		//167mA
+#define B_LED_SNS_FLASH_LOW				20		//667mA
+#define B_LED_SNS_FLASH_HIGH			100		//3.33A
+#define B_LF_SNS_REG_LOW				960		//-1A
+#define B_LF_SNS_REG_HIGH				1000	//1A	
+#define B_LF_SNS_FLASH_LOW				1500	//26A
+#define B_LF_SNS_FLASH_HIGH				2400	//65A
+#define B_LF_OSNS_REG_LOW				0		//0A
+#define B_LF_OSNS_REG_HIGH				25		//1.785A
+#define B_LF_OSNS_FLASH_LOW				100		//7.143A
+#define B_LF_OSNS_FLASH_HIGH			900		//~64A
 #define B_LF_VOLT_LOW					0
 #define B_LF_VOLT_HIGH					4000
-#define B_L_TEMP_LOW					0
-#define B_L_TEMP_HIGH					~0
 /* lion sense */
-#define B_L_SNS_OFF_LOW					SNS_mA_TO_mV(0)
-#define B_L_SNS_OFF_HIGH				SNS_mA_TO_mV(275)
-#define B_L_SNS_IDLE_RAD_OFF_LOW		SNS_mA_TO_mV(-150)
-#define B_L_SNS_IDLE_RAD_OFF_HIGH		SNS_mA_TO_mV(100)
-#define B_L_SNS_IDLE_RAD_ON_LOW			SNS_mA_TO_mV(-250)
-#define B_L_SNS_IDLE_RAD_ON_HIGH		SNS_mA_TO_mV(50)
-#define B_L_SNS_TRANSMIT_LOW			SNS_mA_TO_mV(-2000)
-#define B_L_SNS_TRANSMIT_HIGH			SNS_mA_TO_mV(-500)
-#define B_L_SNS_ANT_DEPLOY_LOW			SNS_mA_TO_mV(-3000)
-#define B_L_SNS_ANT_DEPLOY_HIGH			SNS_mA_TO_mV(250)
+#define B_L_SNS_OFF_LOW					985		//0mA
+#define B_L_SNS_OFF_HIGH				1122	//275mA
+#define B_L_SNS_IDLE_RAD_OFF_LOW		910		//-150mA
+#define B_L_SNS_IDLE_RAD_OFF_HIGH		1085	//200mA
+#define B_L_SNS_IDLE_RAD_ON_LOW			860		//-250mA
+#define B_L_SNS_IDLE_RAD_ON_HIGH		1010	//-1970+
+#define B_L_SNS_TRANSMIT_LOW			0		//-1970mA
+#define B_L_SNS_TRANSMIT_HIGH			810		//-350mA
+#define B_L_SNS_ANT_DEPLOY_LOW			0		//-1970mA
+#define B_L_SNS_ANT_DEPLOY_HIGH			1122	//275mA
 #define B_L_SNS_OFF_IDLE_TRANSITION_LOW		B_L_SNS_IDLE_RAD_OFF_LOW
 #define B_L_SNS_OFF_IDLE_TRANSITION_HIGH	B_L_SNS_IDLE_RAD_ON_HIGH
 #define B_L_SNS_IDLE_TRANS_TRANSITION_LOW	B_L_SNS_IDLE_RAD_ON_LOW
@@ -104,7 +95,7 @@
 #define B_LREF_LOW						0
 #define B_LREF_HIGH						4220
 #define B_PANELREF_LOW					0
-#define B_PANELREF_HIGH					9000
+#define B_PANELREF_HIGH					10000
 #define B_GYRO_LOW						0
 #define B_GYRO_HIGH						~0
 #define B_IMU_TEMP_LOW					0
@@ -158,11 +149,14 @@ typedef enum {
 	S_LED_SNS,
 	S_LED_SNS_REG,
 	S_LED_SNS_FLASH,
+	S_LED_SNS_FLASH_BATCH,
 	S_LF_TEMP,
 	S_LF_SNS_REG,
 	S_LF_SNS_FLASH,
+	S_LF_SNS_FLASH_BATCH,
 	S_LF_OSNS_REG,
 	S_LF_OSNS_FLASH,
+	S_LF_OSNS_FLASH_BATCH,
 	S_LF_VOLT,
 	S_L_TEMP,
 	S_L_SNS, // ONLY USE TO TRUNCATE, NOT LOG_IF_OUT_OF_BOUNDS

@@ -87,14 +87,14 @@ void decide_next_state(sat_state_t current_state) {
 
 	uint16_t li1_mv;
 	uint16_t li2_mv;
-	read_lion_volts_precise(&li1_mv, &li2_mv);
+	read_lion_volts_precise(&li1_mv, &li2_mv, true);
 
 	// individual batteries within the life po banks
 	uint16_t lf1_mv;
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv, true);
 
 	// average voltage for the batteries within each LF bank
 	int lfb1_sum = lf1_mv + lf2_mv;
@@ -109,8 +109,11 @@ void decide_next_state(sat_state_t current_state) {
 	// now it's time to check for all of the standard state changes
 	///
 
-	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv)) && lfb2_sum >= LF_FLASH_MIN_MV) 
-									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv)) && lfb1_sum >= LF_FLASH_MIN_MV);
+	bat_charge_dig_sigs_batch batch;
+	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
+
+	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv), batch, got_batch) && lfb2_sum >= LF_FLASH_MIN_MV) 
+									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv), batch, got_batch) && lfb1_sum >= LF_FLASH_MIN_MV);
 	bool one_lf_below_flash = (lfb1_sum < LF_FLASH_MIN_MV) || (lfb2_sum < LF_FLASH_MIN_MV);
 
 	bool one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;

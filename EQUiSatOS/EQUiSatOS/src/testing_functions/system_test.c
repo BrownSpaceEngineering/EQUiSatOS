@@ -215,7 +215,7 @@ static void AD590_test(void){
 	
 	print("==============AD590 Test==============\n");
 	for (int i = 0; i < 8; i++){
-		configure_adc(&temp_instance,P_AI_TEMP_OUT);
+		configure_adc(&temp_instance,P_AI_TEMP_OUT, true);
 		uint8_t rs;
 		enum status_code sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);		
 		
@@ -225,8 +225,9 @@ static void AD590_test(void){
 		read_adc_mV(temp_instance,&temp_mV);
 		
 		// temperature conversion from voltage -> current -> degrees celsius		
-		float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
-		float tempInC = (current)*1000000-273;// T = 454*V in C
+		//float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
+		//float tempInC = (current)*1000000-273;// T = 454*V in C
+		float tempInC = ((float) temp_mV) *0.1286 - 107.405;
 		
 		get_status(sc,error_str);	
 		switch (i) {
@@ -366,7 +367,7 @@ static void TEMD6200_test(void){
 	struct adc_module pd_instance;
 	for (int i = 0; i < 6; i++){		
 		uint16_t pd_mV;
-		configure_adc(&pd_instance,P_AI_PD_OUT);
+		configure_adc(&pd_instance,P_AI_PD_OUT, true);
 		uint8_t rs;		
 		enum status_code code = LTC1380_channel_select(0x4a, i, &rs);
 		get_status(code, buffer);
@@ -409,7 +410,7 @@ static void AD7991_BAT_test(void){
 	
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
 
-	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[0] = ((int)results[0]-985)*2;	//L2_SNS mA
 	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
 	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
 	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
@@ -542,7 +543,7 @@ static void readBatBoard(void){
 	};
 	
 	for (int i=0; i<10; i++){		
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
@@ -610,7 +611,7 @@ static void readLEDCurrent(bool printFloats){
 	};
 	
 	for (int i=0; i<4; i++){		
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
@@ -715,7 +716,7 @@ void lf_sns_test(void) {
 	};
 	
 	for (int i=0; i<10; i++){
-		configure_adc(&bat_instance,bat_adc_pins[i]);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);
 		uint8_t rs;
 		LTC1380_channel_select(0x4a, i, &rs);
 		adc_enable(&bat_instance);
@@ -764,7 +765,7 @@ void lf_sns_test(void) {
 	
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
 
-	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[0] = ((int)results[0]-985)*2;	//L2_SNS mA
 	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
 	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
 	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV

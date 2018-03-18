@@ -62,7 +62,7 @@ void antenna_deploy_task(void *pvParameters) {
 		int current_pwm_pin = get_current_pwm_pin();
 		if (current_pwm_pin == 1) {
 			uint16_t li1, li2;
-			read_lion_volts_precise(&li1, &li2);
+			read_lion_volts_precise(&li1, &li2, true);
 			li_discharging_t lid = get_li_discharging();
 			if ((lid == LI1_DISG && li1 > PWM_LION_MIN_V)
 					|| (lid == LI2_DISG && li2 > PWM_LION_MIN_V)
@@ -84,7 +84,7 @@ void antenna_deploy_task(void *pvParameters) {
 			}
 		} else {
 			uint16_t lf1, lf2, lf3, lf4;
-			read_lifepo_volts_precise(&lf1, &lf2, &lf3, &lf4);
+			read_lifepo_volts_precise(&lf1, &lf2, &lf3, &lf4, true);
 			if (lf1 + lf2 > PWM_LIFEPO_MIN_V) {
 				if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) {
 					int pin = current_pwm_pin == 2 ? P_ANT_DRV2 : P_ANT_DRV3;

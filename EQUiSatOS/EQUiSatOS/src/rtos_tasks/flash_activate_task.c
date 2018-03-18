@@ -66,6 +66,50 @@ bool would_flash_now(void) {
 	return (get_sat_state() == IDLE_FLASH) && waiting_between_flashes;
 }
 
+//check LED_SNS to make sure each LED turned on, log error otherwise
+void validate_LEDSNS_readings(flash_data_t* cur_burst) {	
+	uint16_t max_LED_current[4] = {0, 0, 0, 0};
+	uint16_t max_LF_current[2] = {0, 0};
+	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {		
+		for (int j = 0; j < 4; j++) {
+			max_LED_current[j] = max(cur_burst->led_current_data[i][j], max_LED_current[j]);
+			max_LF_current[j] = max(cur_burst->lifepo_current_data[i][j], max_LF_current[j]);
+		}
+	}
+	for (int i = 0; i < 4; i++) {
+		uint8_t led_eloc;
+		uint8_t lf_eloc;
+		sig_id_t lf_sig;
+		switch(i) {
+			case 0:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
+				break;
+			case 1:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1OSNS;
+				break;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
+			case 2:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
+				break;
+			case 3:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2OSNS;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
+				break;
+			default:
+				return;
+		}
+		
+		log_if_out_of_bounds(untruncate(max_LED_current[i], S_LED_SNS_FLASH_BATCH), S_LED_SNS_FLASH_BATCH, led_eloc, true);
+		log_if_out_of_bounds(untruncate(max_LF_current[i], lf_sig), lf_sig, lf_eloc, true);
+	}
+}
+
 void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
@@ -178,6 +222,8 @@ void flash_activate_task(void *pvParameters)
 				}
 			
 				configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
+					
+				validate_LEDSNS_readings(current_burst_struct)							;
 			
 				// store burst data in equistack
 				current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
