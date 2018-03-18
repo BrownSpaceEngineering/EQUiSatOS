@@ -629,6 +629,61 @@ void discharge_higher_li(void)
 		charging_data.lion_discharging = LI1;
 }
 
+bool update_should_deploy_antenna(bool has_li_data)
+{
+	print("checking antenna deploy\n");
+	
+	bool li_success = false;
+	uint16_t li1_mv = 0;
+	uint16_t li2_mv = 0;
+	if (!has_li_data)
+	{
+		for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
+			li_success = read_lion_volts_precise((uint16_t *) &li1_mv, (uint16_t *) &li2_mv);
+	}
+	else
+	{
+		li1_mv = charging_data.bat_voltages[LI1];
+		li2_mv = charging_data.bat_voltages[LI2];
+		li_success = true;
+	}
+	
+	uint8_t num_li_down = charging_data.decommissioned[LI1] + charging_data.decommissioned[LI2];
+	int8_t good_li = -1;
+	if (num_li_down == 1)
+		good_li = charging_data.decommissioned[LI1] ? LI2 : LI1;
+	
+	// if we don't have any good data about li's, we'll take the chance and move
+	// to antenna deploy
+	if (!li_success)
+	{
+		charging_data.should_move_to_antenna_deploy = 1;
+	}
+	else
+	{
+		if (num_li_down == 0)
+		{
+			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else if (num_li_down == 1)
+		{
+			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else
+		{
+			charging_data.should_move_to_antenna_deploy = 1;
+		}
+	}
+
+	print("\tdecided: %d\n", charging_data.should_move_to_antenna_deploy);
+}
+
 void battery_charging_task(void *pvParameters)
 {
 	print("\n\nstarting battery charging (:\n");
@@ -643,15 +698,28 @@ void battery_charging_task(void *pvParameters)
 	// initialize xNextWakeTime onces
 	init_task_state(BATTERY_CHARGING_TASK); // suspend or run on boot (ALWAYS RUN!)
 
+	uint8_t iter_count = 0;
 	while (true)
 	{
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
-
-		// the core battery logic -- a separate function to make it easier to
-		// unit test
-		battery_logic();
-
+		
+		print("entering battery task!\n");
+		if (iter_count % BAT_CHARGING_ITERS_UNTIL_FULL == 0 || get_sat_state_wrapped() == LOW_POWER)
+		{
+			// the core battery logic -- a separate function to make it easier to
+			// unit test
+			// there's an update to should_deploy_antenna within battery logic
+			battery_logic();
+			iter_count = 0;
+		}
+		else
+		{
+			print("not running the full logic yet: iter at %d\n", iter_count);
+			update_should_deploy_antenna(false);
+		}
+		
+		iter_count++;
 		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 
@@ -692,7 +760,7 @@ bool get_lfs_both_full(
 
 void battery_logic()
 {
-	print("\n\nentering battery logic\n");
+	print("\n\nentering full battery logic\n");
 
 	///
 	// phase prologue: updating relevant data in the charging data struct
@@ -869,36 +937,13 @@ void battery_logic()
 		get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
 
 	// updating externally facing variables
-	// if we don't have any good data about li's, we'll take the chance and move
-	// to antenna deploy
-	if (!li_success)
-	{
-		charging_data.should_move_to_antenna_deploy = 1;
-	}
-	else
-	{
-		if (num_li_down == 0)
-		{
-			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
-				charging_data.should_move_to_antenna_deploy = 1;
-			else
-				charging_data.should_move_to_antenna_deploy = 0;
-		}
-		else if (num_li_down == 1)
-		{
-			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
-				charging_data.should_move_to_antenna_deploy = 1;
-			else
-				charging_data.should_move_to_antenna_deploy = 0;
-		}
-		else
-		{
-			charging_data.should_move_to_antenna_deploy = 1;
-		}
-	}
-
-	print("decided for move to antenna deploy: %d\n", charging_data.should_move_to_antenna_deploy);
-
+	
+	// updating antenna deploy
+	// if there are good values in charging_data, we'll just use those
+	// if not we'll try to grab new ones -- but this won't affect the current flow
+	update_should_deploy_antenna(li_success);
+	
+	// updating sat state
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
 		// only valid if we have values

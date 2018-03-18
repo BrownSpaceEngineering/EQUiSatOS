@@ -21,6 +21,10 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
+#define BAT_CHARGING_PERIOD_MINS        5
+#define FULL_BAT_CHARGING_PERIOD_MINS   45
+#define BAT_CHARGING_ITERS_UNTIL_FULL   (FULL_BAT_CHARGING_PERIOD_MINS / BAT_CHARGING_PERIOD_MINS)
+
 #define LI_MAX_MV                       4200
 #define LI_FULL_MV                      4175
 #define LI_FULL_LOWER_MV                4150
@@ -185,6 +189,7 @@ bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_ce
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
 void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch);
 void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch);
+bool update_should_deploy_antenna(bool has_li_data);
 
 void run_unit_tests(void);
 void run_simulations(void);
