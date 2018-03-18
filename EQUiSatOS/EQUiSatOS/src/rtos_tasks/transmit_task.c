@@ -55,22 +55,21 @@ static void read_radio_temp_mode(void) {
 	}
 	
 	// warm reset to get back into transmit mode
-	warm_reset();
-	clear_USART_rx_buffer();
-	usart_send_string(radio_send_buffer);
-	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
-	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
-		//power cycle radio
-		setRadioState(false, false); // off; don't confirm
-		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
-			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
-		setRadioState(true, false); // on; don't confirm
-	}
-	#if PRINT_DEBUG == 1
-		setTXEnable(false);
-		setRXEnable(false);
-	#endif
-	vTaskDelay(WARM_RESET_WAIT_AFTER_MS / portTICK_PERIOD_MS);
+// 	warm_reset();
+// 	clear_USART_rx_buffer();
+// 	usart_send_string(radio_send_buffer);
+// 	vTaskDelay(WARM_RESET_REBOOT_TIME / portTICK_PERIOD_MS);
+// 	if (!check_checksum(radio_receive_buffer+1, 1, radio_receive_buffer[2]) && (radio_receive_buffer[1] == 0)) {
+// 		//power cycle radio
+// 		setRadioState(false, false); // off; don't confirm
+// 		vTaskDelay(max(WARM_RESET_REBOOT_TIME,
+// 			max(REGULATOR_ENABLE_WAIT_AFTER_MS, IR_WAKE_DELAY_MS)) / portTICK_PERIOD_MS);
+// 		setRadioState(true, false); // on; don't confirm
+// 	}
+// 	#if PRINT_DEBUG == 1
+// 		setTXEnable(false);
+// 		setRXEnable(false);
+// 	#endif
 }
 
 /************************************************************************/
@@ -128,11 +127,15 @@ static void handle_uplinks(void) {
 	// continue to try and process commands until we're close enough to the
 	// time we need to exit RX mode that we need to get prepared
 	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
-	TickType_t processing_deadline = xTaskGetTickCount() + RX_READY_PERIOD_MS;
+	TickType_t processing_deadline = xTaskGetTickCount() + (RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
 
 	rx_cmd_type_t rx_command;
 
-	while (xTaskGetTickCount() < processing_deadline) {
+	// NOTE: if we get suspended for a while and we're delayed more than the processing deadline,
+	// AND THEN to the point where the tick count overflows, this loop will infinite (long) loop, so add an additional
+	// condition that the timestamp is reasonably close to the processing deadline
+	while (processing_deadline - (RX_READY_PERIOD_MS / portTICK_PERIOD_MS) <= xTaskGetTickCount() 
+			&& xTaskGetTickCount() < processing_deadline) {
 		// try to receive command from queue, waiting the maximum time we can before the processing deadline
 		if (xQueueReceive(rx_command_queue, &rx_command, processing_deadline - xTaskGetTickCount())) {
 			bool is_killed = is_radio_killed();
@@ -441,8 +444,7 @@ void transmit_task(void *pvParameters)
 		}
 		
 		/* shut down and block for any leftover time in next loop */
-		setRadioState(false, true);
-		// TODO: actually confirm??
+		setRadioState(false, false);
 		
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);

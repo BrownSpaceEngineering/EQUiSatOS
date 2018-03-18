@@ -19,7 +19,7 @@
 #define TOTAL_PACKET_TRANS_TIME_MS	(TOTAL_TRANSMIT_TIME_MS(MSG_SIZE) + TIME_BTWN_MSGS_MS)
 #define EXPECTED_TRANSMISSION_TIME	(3*TOTAL_PACKET_TRANS_TIME_MS)
 #define RX_READY_PERIOD_MS			1000
-#define PRE_REPLY_DELAY_MS	700
+#define PRE_REPLY_DELAY_MS			700
 #define FLASH_CMD_PREFLASH_DELAY_MS 1500
 #define REBOOT_CMD_DELAY_MS			2000
 
@@ -39,7 +39,7 @@
 #define STATE_CHANGE_MONITOR_DELAY_TICKS	15
 
 // queue on which to receive rx_cmd_type_t's from UART interrupt to be processed
-#define RX_CMD_QUEUE_LEN			15 // if anyone tries to add more, they'll get an error
+#define RX_CMD_QUEUE_LEN			3
 // queue handle
 QueueHandle_t rx_command_queue;
 

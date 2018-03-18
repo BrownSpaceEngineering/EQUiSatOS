@@ -21,12 +21,16 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
+
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 #define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
 
 /*** TESTING ***/
+// used for final release settings (disabled debug helpers)
+#define RELEASE
+
 // define this flag to disable normal frequencies and read data faster,
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:

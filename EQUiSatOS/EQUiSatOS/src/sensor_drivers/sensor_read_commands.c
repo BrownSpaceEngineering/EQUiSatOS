@@ -144,7 +144,9 @@ void _set_5v_enable_unsafe(bool on) {
 	} else {
 		// don't delay on OFF time because it's so long... just let 
 		// tasks know they have to wait
-		rail_5v_target_off_time = xTaskGetTickCount() + EN_5V_POWER_OFF_DELAY_MS;
+		// NOTE: if tick count is going to overflow, it will overflow here such AND
+		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
+		rail_5v_target_off_time = xTaskGetTickCount() + (EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
 	}
 }
 
@@ -159,6 +161,8 @@ bool enable_ir_pow_if_necessary(void) {
 		// only enable (and do full delay) if IR power is not on
 		trace_print("set ir power on");
 		set_output(true, P_IR_PWR_CMD);
+		// NOTE: if tick count is going to overflow, it will overflow here such AND
+		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
 		ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 
