@@ -6,6 +6,7 @@
  */ 
 
 #include "sensor_def.h"
+#include "../errors.h"
 
 // IF SIG ISN'T IN THE CASES WE'RE CHECKING, THIS WILL RETURN ~0
 uint16_t get_low_bound_from_signal(sig_id_t sig) {
@@ -249,7 +250,7 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_M;
 		default:
-			log_error(ELOC_SCALING_M, ECODE_UNEXPECTED_CASE)
+			log_error(ELOC_SCALING_M, ECODE_UNEXPECTED_CASE, false);
 			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 	}
 }
@@ -316,7 +317,7 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_B;
 		default:
-			log_error(ELOC_SCALING_B, ECODE_UNEXPECTED_CASE)
+			log_error(ELOC_SCALING_B, ECODE_UNEXPECTED_CASE, false);
 			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 	}
 }

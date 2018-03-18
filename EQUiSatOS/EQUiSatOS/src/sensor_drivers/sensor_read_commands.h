@@ -66,6 +66,7 @@ SemaphoreHandle_t irpow_semaphore;
 /************************************************************************/
 uint8_t truncate_16t(uint16_t src, sig_id_t sig);
 void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool priority);
+uint16_t untruncate(uint8_t val, sig_id_t sig);
 void init_sensor_read_commands(void);
 
 /* primary */
@@ -109,5 +110,4 @@ void verify_regulators(void);
 void verify_regulators_unsafe(void); // used in transmit task
 void verify_flash_readings(bool flashing);
 uint8_t get_pdiode_two_bit_range(uint16_t raw);
-uint16_t untruncate(uint8_t val, sig_id_t sig);
 #endif
