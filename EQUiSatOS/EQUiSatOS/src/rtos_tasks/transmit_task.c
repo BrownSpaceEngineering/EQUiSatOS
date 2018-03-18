@@ -337,6 +337,9 @@ static void attempt_transmission(void) {
 	// wait here between calls to give buffer
 	if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS)) 
 	{
+		// turn on IR power to save radio on time during transmission
+		bool got_irpow_semaphore = enable_ir_pow_if_necessary();
+		
 		// note time before transmit so we can try and align transmissions
 		TickType_t prev_transmit_start_time = xTaskGetTickCount();
 		
@@ -370,6 +373,7 @@ static void attempt_transmission(void) {
 		// we don't need to write a new packet because we just transmitted the last one
 		// no delay after finish
 		
+		disable_ir_pow_if_necessary(got_irpow_semaphore);
 		xSemaphoreGive(critical_action_mutex);
 	} else {
 		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);

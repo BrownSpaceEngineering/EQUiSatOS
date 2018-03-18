@@ -66,6 +66,50 @@ bool would_flash_now(void) {
 	return (get_sat_state() == IDLE_FLASH) && waiting_between_flashes;
 }
 
+//check LED_SNS to make sure each LED turned on, log error otherwise
+void validate_LEDSNS_readings(flash_data_t* cur_burst) {	
+	uint16_t max_LED_current[4] = {0, 0, 0, 0};
+	uint16_t max_LF_current[2] = {0, 0};
+	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {		
+		for (int j = 0; j < 4; j++) {
+			max_LED_current[j] = max(cur_burst->led_current_data[i][j], max_LED_current[j]);
+			max_LF_current[j] = max(cur_burst->lifepo_current_data[i][j], max_LF_current[j]);
+		}
+	}
+	for (int i = 0; i < 4; i++) {
+		uint8_t led_eloc;
+		uint8_t lf_eloc;
+		sig_id_t lf_sig;
+		switch(i) {
+			case 0:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
+				break;
+			case 1:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB1OSNS;
+				break;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
+			case 2:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2SNS;
+				lf_sig = S_LF_SNS_FLASH_BATCH;
+				break;
+			case 3:
+				led_eloc = ELOC_LED1SNS;
+				lf_eloc = ELOC_LFB2OSNS;
+				lf_sig = S_LF_OSNS_FLASH_BATCH;
+				break;
+			default:
+				return;
+		}
+		
+		log_if_out_of_bounds(untruncate(max_LED_current[i], S_LED_SNS_FLASH_BATCH), S_LED_SNS_FLASH_BATCH, led_eloc, true);
+		log_if_out_of_bounds(untruncate(max_LF_current[i], lf_sig), lf_sig, lf_eloc, true);
+	}
+}
+
 void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
@@ -107,6 +151,8 @@ void flash_activate_task(void *pvParameters)
 		// actually flash leds (make sure we're not transmitting or deploying antenna while this is going on)
 		if (xSemaphoreTake(critical_action_mutex, CRITICAL_MUTEX_WAIT_TIME_TICKS))
 		{
+			// turn on IR power before we start to use it during flash
+			bool got_semaphore = enable_ir_pow_if_necessary();
 			for (int i = 0; i < NUM_FLASHES; i++) {
 				// start taking data and set start timestamp
 				uint32_t cur_timestamp = get_current_timestamp();
@@ -119,9 +165,6 @@ void flash_activate_task(void *pvParameters)
 				bool actually_flashed = false;
 				if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 				{
-					// note: IR power will always be enabled if necessary but we can't
-					// give an un-taken mutex
-					bool got_semaphore = enable_ir_pow_if_necessary();
 					if (xSemaphoreTake(processor_adc_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 					{
 						_set_5v_enable_unsafe(true);
@@ -162,13 +205,11 @@ void flash_activate_task(void *pvParameters)
 					} else {
 						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
 					}
-					// just in case; we should never have this mutex (i.e. be running in LOW_POWER)
-					disable_ir_pow_if_necessary(got_semaphore); 
 					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
 					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
 				}
-			
+				
 				// in case any mutex didn't get locked
 				if (!actually_flashed) {
 					// note critical action mutex is given OUTSIDE this loop
@@ -181,6 +222,8 @@ void flash_activate_task(void *pvParameters)
 				}
 			
 				configASSERT (data_arrays_tail <= FLASH_DATA_ARR_LEN);
+					
+				validate_LEDSNS_readings(current_burst_struct)							;
 			
 				// store burst data in equistack
 				current_burst_struct = (flash_data_t*) equistack_Stage(&flash_readings_equistack);
@@ -190,6 +233,7 @@ void flash_activate_task(void *pvParameters)
 				// delay between successive flashes
 				vTaskDelay(TIME_BTWN_FLASHES / portTICK_PERIOD_MS); // delay on last iteration as well is OK
 			}
+			disable_ir_pow_if_necessary(got_semaphore);
 			xSemaphoreGive(critical_action_mutex);
 		} else {
 			log_error(ELOC_FLASH, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);

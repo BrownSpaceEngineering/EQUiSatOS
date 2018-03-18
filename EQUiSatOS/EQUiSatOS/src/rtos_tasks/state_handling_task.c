@@ -11,7 +11,9 @@
 #endif
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
 
+void emergency_resume_antenna_deploy(void);
 void decide_next_state(sat_state_t current_state);
+void check_for_error_issues(void);
 
 void state_handling_task(void *pvParameters)
 {
@@ -46,6 +48,13 @@ void state_handling_task(void *pvParameters)
 		report_task_running(STATE_HANDLING_TASK);
 
 		/* normal operation */
+		// handle antenna deploy task separately
+		emergency_resume_antenna_deploy();
+			
+		// check if there are any patterns of errors that warrent action
+		check_for_error_issues();
+		
+		// check for state change
 		decide_next_state(get_sat_state());
 	}
 
@@ -54,7 +63,7 @@ void state_handling_task(void *pvParameters)
 }
 
 /* function called periodically to check if we need to resume trying to deploy the antenna */
-static void emergency_resume_antenna_deploy(void) {
+void emergency_resume_antenna_deploy(void) {
 	// if the antenna still hasn't technically deployed, we should keep trying
 	if (!antenna_did_deploy()
 	&& get_sat_state() != INITIAL
@@ -70,11 +79,6 @@ static void emergency_resume_antenna_deploy(void) {
 // state changes. Delegates the actions required on a state
 // change to the logic in satellite_state_control.c
 void decide_next_state(sat_state_t current_state) {
-	// handle antenna deploy task separately
-	emergency_resume_antenna_deploy();
-	
-	// shutdown IR power if it's on when it shouldn't be
-	ensure_ir_power_disabled(false);
 	
 	///
 	// the state decision will be predicated on the current battery levels and
@@ -83,14 +87,14 @@ void decide_next_state(sat_state_t current_state) {
 
 	uint16_t li1_mv;
 	uint16_t li2_mv;
-	read_lion_volts_precise(&li1_mv, &li2_mv);
+	read_lion_volts_precise(&li1_mv, &li2_mv, true);
 
 	// individual batteries within the life po banks
 	uint16_t lf1_mv;
 	uint16_t lf2_mv;
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
-	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
+	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv, true);
 
 	// average voltage for the batteries within each LF bank
 	int lfb1_sum = lf1_mv + lf2_mv;
@@ -184,5 +188,45 @@ void decide_next_state(sat_state_t current_state) {
 			log_error(ELOC_STATE_HANDLING, ECODE_UNEXPECTED_CASE, false);
 			set_sat_state(IDLE_NO_FLASH); // default state
 			break;
+	}
+}
+
+
+/* responds to certain errors that may require action */
+void check_for_error_issues(void) {
+	uint num_i2c_errors = 0;
+	uint32_t cur_timestamp = get_current_timestamp();
+	uint32_t oldest_worrisome_timestamp = 0;
+	if (cur_timestamp > I2C_ERROR_CONSIDERATION_PERIOD_S) {
+		oldest_worrisome_timestamp = cur_timestamp - I2C_ERROR_CONSIDERATION_PERIOD_S;
+	}
+	
+	// take error equistack mutex to have a consistent state; if we can't get it it's not crucial though
+	bool got_mutex = xSemaphoreTake(error_equistack.mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	if (!got_mutex) {
+		log_error(ELOC_STATE_HANDLING, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
+	}
+	{
+		for (uint8_t i = 0; i < error_equistack.cur_size; i++) {
+			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(&error_equistack, i);
+			if (err != NULL) {
+				// observe properties of errors
+				if (eloc_category_i2c(err->eloc) && err->timestamp >= oldest_worrisome_timestamp) {
+					num_i2c_errors++;
+				}
+			}
+		}
+	}
+	if (got_mutex) xSemaphoreGive(error_equistack.mutex);
+	
+	/*
+		if i2c-related devices are all failing, there may be an issue with the i2c bus, so 
+		if we get enough of them, reset the satellite in the hopes of fixing it.
+	*/
+	if (num_i2c_errors > I2C_ERROR_MAX_NUM_IN_CONSID_PERIOD) {
+		log_error(ELOC_STATE_HANDLING, ECODE_I2C_BUS_ERROR, true);
+		configASSERT(false); // this is bad
+		write_state_to_storage_emergency(false);
+		system_reset();
 	}
 }

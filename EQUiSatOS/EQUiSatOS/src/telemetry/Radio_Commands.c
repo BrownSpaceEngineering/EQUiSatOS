@@ -289,7 +289,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 				trace_print("transmitting...");
 			#endif
 			#if PRINT_DEBUG == 1 || PRINT_DEBUG == 3
-				delay_ms(10); // TODO
+				//delay_ms(10); // TODO
 				setTXEnable(false);
 			#endif
 		}

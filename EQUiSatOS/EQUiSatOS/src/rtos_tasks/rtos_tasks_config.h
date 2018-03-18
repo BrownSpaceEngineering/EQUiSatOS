@@ -226,7 +226,7 @@ typedef enum
 
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
-	#define TRANSMIT_TASK_FREQ					(15*1000) // same
+	#define TRANSMIT_TASK_FREQ					(20*1000) // same
 		#define TRANSMIT_TASK_LESS_FREQ				(40*1000) // same
 	#define STATE_HANDLING_TASK_FREQ			(1*60*1000) // same
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ		1000

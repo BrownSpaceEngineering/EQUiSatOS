@@ -13,7 +13,7 @@
 #include <inttypes.h>
 
 enum status_code read_adc(struct adc_module adc_instance, uint16_t* buf);
-enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin);
+enum status_code configure_adc(struct adc_module *adc_instance, enum adc_positive_input pin, bool precise);
 uint16_t convert_adc_to_mV(uint16_t reading);
 enum status_code read_adc_mV(struct adc_module adc_instance, uint16_t* buf);
 
