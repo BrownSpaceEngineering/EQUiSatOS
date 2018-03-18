@@ -127,11 +127,15 @@ static void handle_uplinks(void) {
 	// continue to try and process commands until we're close enough to the
 	// time we need to exit RX mode that we need to get prepared
 	// (if nothing is on / is added to the queue, we'll simply sleep during that time)
-	TickType_t processing_deadline = xTaskGetTickCount() + RX_READY_PERIOD_MS;
+	TickType_t processing_deadline = xTaskGetTickCount() + (RX_READY_PERIOD_MS / portTICK_PERIOD_MS);
 
 	rx_cmd_type_t rx_command;
 
-	while (xTaskGetTickCount() < processing_deadline) {
+	// NOTE: if we get suspended for a while and we're delayed more than the processing deadline,
+	// AND THEN to the point where the tick count overflows, this loop will infinite (long) loop, so add an additional
+	// condition that the timestamp is reasonably close to the processing deadline
+	while (processing_deadline - (RX_READY_PERIOD_MS / portTICK_PERIOD_MS) <= xTaskGetTickCount() 
+			&& xTaskGetTickCount() < processing_deadline) {
 		// try to receive command from queue, waiting the maximum time we can before the processing deadline
 		if (xQueueReceive(rx_command_queue, &rx_command, processing_deadline - xTaskGetTickCount())) {
 			bool is_killed = is_radio_killed();

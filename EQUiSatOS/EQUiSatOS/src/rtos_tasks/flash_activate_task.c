@@ -70,8 +70,8 @@ void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
 	vTaskDelay(FLASH_ACTIVATE_TASK_FREQ_OFFSET);
-	TickType_t prev_wake_time = xTaskGetTickCount();	
-	TickType_t prev_data_read_time = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount(); // good on tick count overflow (only used with RTOS api calls)
+	TickType_t prev_data_read_time = xTaskGetTickCount(); // good on tick count overflow (only used with RTOS api calls)
 	
 	// data storage variables for flash data
 	uint8_t data_arrays_tail = 0;
@@ -82,7 +82,7 @@ void flash_activate_task(void *pvParameters)
 	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
 	
 	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
+	uint32_t time_of_last_log_s = 0; // try to log ASAP (on first task start)
 	
 	for ( ;; )
 	{	

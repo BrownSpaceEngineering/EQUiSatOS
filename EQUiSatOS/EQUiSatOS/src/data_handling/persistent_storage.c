@@ -13,11 +13,11 @@ struct spi_slave_inst mram1_slave;
 struct spi_slave_inst mram2_slave;
 
 /* log of last known tick count to detect overflows */
-TickType_t prev_write_ticks = 0;
+TickType_t prev_get_timestamp_ticks = 0;
 
 void write_state_to_storage_safety(bool safe);
 void cached_state_sync_redundancy(void);
-uint32_t get_current_timestamp_safety(bool safe);
+static uint32_t check_and_correct_tick_wraparound(void);
 bool compare_sat_event_history(satellite_history_batch* history1, satellite_history_batch* history2);
 bool compare_persistent_charging_data(persistent_charging_data_t* data1, persistent_charging_data_t* data2);
 
@@ -235,7 +235,7 @@ static bool storage_write_field_unsafe(uint8_t *data, int num_bytes, uint32_t ad
 			address + num_bytes), true); // priority
 }
 
-/* read state from storage into cache - should only really be called on boot, 
+/* read state from storage into cache - should really only be called on boot,
    otherwise the information in the time since the last write would be lost. */
 void read_state_from_storage(void) {
 	if (xSemaphoreTake(mram_spi_cache_mutex, MRAM_SPI_MUTEX_WAIT_TIME_TICKS))
@@ -264,7 +264,7 @@ void read_state_from_storage(void) {
 		// and secs_since_launch will just be periodically updated in case of reboot
 		// (note that xTaskGetTickCount/1000 is very likely 0 when we first read the state on boot)
 		cached_state._secs_since_launch_at_boot = cached_state.secs_since_launch
-					- (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000;
+					- check_and_correct_tick_wraparound();
 		
 		xSemaphoreGive(mram_spi_cache_mutex);
 	} else {
@@ -341,29 +341,12 @@ static bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 // Updates all cache fields that should be updated on each write
 // NOTE: must be called with the SPI mutex to protect the changes
 // in the cached state
-// Returns whether we should reboot (tick count overflowed)
-static bool update_cache_fields(void) {
+static void update_cache_fields(void) {
 	// make sure all the cached states are in sync
 	cached_state_correct_errors();
 	
-	// before writing timestamp, check if the tick count overflowed.
-	// If it did, reset the processor to reset the timestamp (it's
-	// the only way), AFTER finishing this write to MRAM
-	// (we wouldn't write the timestamp in this case (it'll be wrong)
-	bool should_reboot = false;
-	TickType_t cur_ticks = xTaskGetTickCount();
-	if (cur_ticks < prev_write_ticks) {
-		should_reboot = true;
-		configASSERT(false); // we generally don't run for 50 days...
-		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
-		
-	} else {
-		prev_write_ticks = cur_ticks;
-		
-		// write our current timestamp to MRAM to be ready for next reboot
-		// (it's not actually directly referenced/used anywhere, we use secs_since_launch_at_boot)
-		cached_state.secs_since_launch = get_current_timestamp();
-	}
+	// grab current timestamp (catching and correcting a tick count overflow if there was one)
+	cached_state.secs_since_launch = get_current_timestamp();
 	
 	// grab current sat state
 	cached_state.sat_state = get_sat_state();
@@ -373,8 +356,6 @@ static bool update_cache_fields(void) {
 	
 	// we've made all our changes and can propagate them
 	cached_state_sync_redundancy();
-
-	return should_reboot;
 }
 
 // helper to perform actual field writes of cache (used in two places)
@@ -401,7 +382,7 @@ void write_state_to_storage_safety(bool safe) {
 	{
 		// always do this (every PERSISTENT_DATA_BACKUP_TASK_FREQ ms),
 		// plus we need to do it before every cached_state update
-		bool should_reboot = update_cache_fields();
+		update_cache_fields();
 
 		// (variables for read results)
 		uint32_t temp_secs_since_launch;
@@ -441,11 +422,6 @@ void write_state_to_storage_safety(bool safe) {
 			configASSERT(false);
 		}
 		
-		// if the tick count overflowed, reboot to reset it (error logged above)
-		if (should_reboot) {
-			system_reset();
-		}
-		
 		if (safe) xSemaphoreGive(mram_spi_cache_mutex); // we got the mutex if safe is true
 		
 	} else if (safe) {
@@ -471,15 +447,10 @@ void write_state_to_storage_emergency(bool from_isr) {
 	if (got_mutex)
 	{
 		// update fields in MRAM to prep for writing
-		bool should_reboot = update_cache_fields();
+		update_cache_fields();
 		
 		// actually perform writes (DON'T check that errors wrote)
 		write_cache_fields_to_storage(false);
-		
-		// if the tick count overflowed, reboot to reset it (error logged above)
-		if (should_reboot) {
-			system_reset();
-		}
 		
 		if (from_isr) {
 			xSemaphoreGiveFromISR(mram_spi_cache_mutex, NULL);
@@ -758,20 +729,50 @@ bool compare_persistent_charging_data(persistent_charging_data_t* data1, persist
 /* helper functions using cached state		                            */
 /************************************************************************/
 
+/* 
+	Checks whether the RTOS tick count overflows (it does after 50 days)
+	and if so, adds an offset to it so that the timestamp in seconds will
+	be stable.
+	Returns the tick value in seconds after correction 
+	(can be used in place of xTaskGetTickCount() / portTICK_PERIOD_MS / 1000)
+*/
+uint32_t check_and_correct_tick_wraparound(void) {
+	// before writing timestamp, check if the tick count overflowed.
+	// If it did, reset the processor to reset the timestamp (it's
+	// the only way), AFTER finishing this write to MRAM
+	// (we wouldn't write the timestamp in this case (it'll be wrong)
+	TickType_t cur_ticks = xTaskGetTickCount();
+	if (cur_ticks < prev_get_timestamp_ticks) { // strictly <
+		configASSERT(false); // we generally don't run for 50 days...
+
+		// increase the offset by the max value of the tick count (which just overflowed), 
+		// minus the time since it overflowed (converted to seconds)
+		// (this may not be the first time we overflowed)
+		cached_state_correct_errors();
+		cached_state._tick_count_overflow_offset_s += ((TICK_COUNT_MAX_VALUE - cur_ticks) / portTICK_PERIOD_MS) / 1000;
+		cached_state_sync_redundancy();
+		
+		log_error(ELOC_RTOS, ECODE_TIMESTAMP_WRAPAROUND, true);
+	}
+	prev_get_timestamp_ticks = cur_ticks;
+	return ((xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000) + cached_state._tick_count_overflow_offset_s;
+}
+
 /*
  * Current timestamp in seconds since boot, with an accuracy of +/- the
  * data write task frequency (a reboot could happen at any point in that period
  * due to a watchdog reset). Segment since reboot is accurate to ms.
+ * Also handles an RTOS tick count wraparound.
  */
 uint32_t get_current_timestamp(void) {
-	return (xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000 
-		+ cached_state._secs_since_launch_at_boot;
+	return check_and_correct_tick_wraparound() + cached_state._secs_since_launch_at_boot;
 }
 
 /* Current timestamp in ms since boot, with the above described (low) accuracy */
 uint64_t get_current_timestamp_ms(void) {
-	return xTaskGetTickCount() / portTICK_PERIOD_MS 
-		+ 1000 * cached_state._secs_since_launch_at_boot;
+	check_and_correct_tick_wraparound(); // update _tick_count_overflow_offset_s if necessary
+	return ((xTaskGetTickCount() / portTICK_PERIOD_MS) / 1000) + cached_state._tick_count_overflow_offset_s
+		+ (1000 * cached_state._secs_since_launch_at_boot);
 }
 
 /* returns truncated number or orbits since first boot */
