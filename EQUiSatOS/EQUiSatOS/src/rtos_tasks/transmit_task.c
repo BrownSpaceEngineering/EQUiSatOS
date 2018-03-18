@@ -398,14 +398,6 @@ void transmit_task(void *pvParameters)
 			x_3 represents the above plus the RX window time
 			TRANSMIT_TASK_FREQ represents the precise, RTOS-ensured frequency of the cycle */
 		/************************************************************************/
-		
-		/* block for any leftover time (done first by convention with RTOS and on startup) */
-		/* note this time changes with sat state */
-		if (low_power_active()) {
-			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_LESS_FREQ / portTICK_PERIOD_MS);
-		} else {
-			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
-		}
 	
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);		
@@ -437,6 +429,14 @@ void transmit_task(void *pvParameters)
 		
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);
+		
+		/* block for any leftover time */
+		/* note this time changes with sat state */
+		if (low_power_active()) {
+			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_LESS_FREQ / portTICK_PERIOD_MS);
+			} else {
+			vTaskDelayUntil(&prev_wake_time, TRANSMIT_TASK_FREQ / portTICK_PERIOD_MS);
+		}
 	}
 	// delete this task if it ever breaks out
 	vTaskDelete( NULL );

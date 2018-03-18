@@ -196,8 +196,8 @@ void decide_next_state(sat_state_t current_state) {
 void check_for_error_issues(void) {
 	uint num_i2c_errors = 0;
 	uint32_t cur_timestamp = get_current_timestamp();
-	uint32_t oldest_worrisome_timestamp = 0;
-	if (cur_timestamp > I2C_ERROR_CONSIDERATION_PERIOD_S) {
+	uint32_t oldest_worrisome_timestamp = cached_state._secs_since_launch_at_boot;
+	if (cur_timestamp > Max(I2C_ERROR_CONSIDERATION_PERIOD_S, cached_state._secs_since_launch_at_boot)) {
 		oldest_worrisome_timestamp = cur_timestamp - I2C_ERROR_CONSIDERATION_PERIOD_S;
 	}
 	
@@ -210,8 +210,11 @@ void check_for_error_issues(void) {
 		for (uint8_t i = 0; i < error_equistack.cur_size; i++) {
 			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(&error_equistack, i);
 			if (err != NULL) {
+				sat_ecode code = get_ecode(err);
 				// observe properties of errors
-				if (eloc_category_i2c(err->eloc) && err->timestamp >= oldest_worrisome_timestamp) {
+				if (eloc_category_i2c(err->eloc)
+					&& (code == ECODE_BAD_ADDRESS || code == ECODE_TIMEOUT || code == ECODE_OVERFLOW)
+					&& err->timestamp >= oldest_worrisome_timestamp) {
 					num_i2c_errors++;
 				}
 			}

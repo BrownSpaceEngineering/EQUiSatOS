@@ -9,9 +9,9 @@
 #include "Bootloader/Watchdog_Commands.h"
 
 /* CONFIG */
-//#define WRITE_PROG_MEM_TO_MRAM
+#define WRITE_PROG_MEM_TO_MRAM
 //#define DISABLE_REWRITE_FROM_MRAM
-#define RUN_TESTS
+//#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
 #include <assert.h>
@@ -32,7 +32,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					185792);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					185856);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				60);
 // address at which prog mem rewritten boolean is stored in mram + size
