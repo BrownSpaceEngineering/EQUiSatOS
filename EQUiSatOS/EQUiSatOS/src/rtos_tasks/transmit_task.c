@@ -54,7 +54,7 @@ static void read_radio_temp_mode(void) {
 		// log error
 		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);		
 	}
-	setRXEnable(false)
+	setRXEnable(false);
 }
 
 /************************************************************************/
