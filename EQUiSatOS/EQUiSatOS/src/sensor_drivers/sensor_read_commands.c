@@ -538,7 +538,7 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 				commands_read_adc_mV(val_1, P_AI_LFB1SNS, ELOC_LFB1SNS, S_LF_SNS_REG, true, false);
 				commands_read_adc_mV(val_2, P_AI_LFB1OSNS, ELOC_LFB1OSNS, S_LF_OSNS_REG, true, false);
 				commands_read_adc_mV(val_3, P_AI_LFB2SNS, ELOC_LFB2SNS, S_LF_SNS_REG, true, false);
-				commands_read_adc_mV(val_3, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true, false);
+				commands_read_adc_mV(val_4, P_AI_LFB2OSNS, ELOC_LFB2OSNS, S_LF_OSNS_REG, true, false);
 			#else
 				equisim_read_lifepo_current_precise(val_1, val_2, val_3, val_4);
 			#endif

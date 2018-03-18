@@ -21,7 +21,7 @@
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 #define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite; WARNING bootloader may still start watchdog even if this is disabled
@@ -44,8 +44,8 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		ANTENNA_DEPLOY
+#define OVERRIDE_INIT_TASK_STATES	ANTENNA_DEPLOY_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
@@ -62,7 +62,7 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-//#define WRITE_DEFAULT_MRAM_VALS
+#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
@@ -72,7 +72,7 @@
 
 /** Debug **/
 // whether to include Tracelyzer tracing library
-#define USE_TRACELYZER				1
+#define USE_TRACELYZER				0
 
 // whether to configASSERTs (and other asserts) should hang
 //#define USE_ASSERTIONS
