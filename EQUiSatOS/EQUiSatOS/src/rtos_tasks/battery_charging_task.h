@@ -21,7 +21,7 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
-#define BAT_CHARGING_PERIOD_MINS        5
+#define BAT_CHARGING_PERIOD_MINS        9
 #define FULL_BAT_CHARGING_PERIOD_MINS   45
 #define BAT_CHARGING_ITERS_UNTIL_FULL   (FULL_BAT_CHARGING_PERIOD_MINS / BAT_CHARGING_PERIOD_MINS)
 
