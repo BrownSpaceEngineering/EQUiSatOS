@@ -87,17 +87,17 @@ void validate_LEDSNS_readings(flash_data_t* cur_burst) {
 				lf_sig = S_LF_SNS_FLASH_BATCH;
 				break;
 			case 1:
-				led_eloc = ELOC_LED1SNS;
+				led_eloc = ELOC_LED2SNS;
 				lf_eloc = ELOC_LFB1OSNS;
 				break;
 				lf_sig = S_LF_OSNS_FLASH_BATCH;
 			case 2:
-				led_eloc = ELOC_LED1SNS;
+				led_eloc = ELOC_LED3SNS;
 				lf_eloc = ELOC_LFB2SNS;
 				lf_sig = S_LF_SNS_FLASH_BATCH;
 				break;
 			case 3:
-				led_eloc = ELOC_LED1SNS;
+				led_eloc = ELOC_LED4SNS;
 				lf_eloc = ELOC_LFB2OSNS;
 				lf_sig = S_LF_OSNS_FLASH_BATCH;
 				break;
