@@ -84,6 +84,17 @@ struct hw_states {
 	radio_state_t radio_state : 3;
 	bool antenna_deploying : 1;
 	/* note: flashing state is passed down */
+	
+	// time that radio will be done coming down from transmitting (other times are handled with delays)
+	TickType_t radio_trans_done_target_time;
+	
+	// time that IR power will be fully on; used so that no one uses IR power
+	// in an (upwards) transition state (nothing needs to know explicitly when it's off)
+	TickType_t ir_target_on_time;
+
+	// time that IR power will be fully off; used so that no one tries to confirm
+	// the value until it's good
+	TickType_t rail_5v_target_off_time;
 };
 #define HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS	(1000 / portTICK_PERIOD_MS)
 StaticSemaphore_t _hardware_state_mutex_d;

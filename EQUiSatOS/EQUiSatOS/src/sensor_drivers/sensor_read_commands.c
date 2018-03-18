@@ -47,22 +47,10 @@ static uint8_t PD_ELOCS[6] = {
 
 static struct adc_module adc_instance; // global is allowed because we always lock the processor ADC
 
-// time that IR power will be fully on; used so that no one uses IR power
-// in an (upwards) transition state (nothing needs to know explicitly when it's off)
-TickType_t ir_target_on_time;
-
-// time that IR power will be fully off; used so that no one tries to confirm
-// the value until it's good
-TickType_t rail_5v_target_off_time;
-
 void init_sensor_read_commands(void) {
 	i2c_irpow_mutex = xSemaphoreCreateMutexStatic(&_i2c_irpow_mutex_d);
 	processor_adc_mutex = xSemaphoreCreateMutexStatic(&_processor_adc_mutex_d);
 	irpow_semaphore = xSemaphoreCreateCountingStatic(IR_POW_SEMAPHORE_MAX_COUNT, IR_POW_SEMAPHORE_MAX_COUNT, &_irpow_semaphore_d);
-	// time doesn't matter because in order to turn IR power on,
-	// someone will have to set it's initial value
-	ir_target_on_time = 0;
-	rail_5v_target_off_time = 0;
 }
 
 /************************************************************************/
@@ -146,7 +134,7 @@ void _set_5v_enable_unsafe(bool on) {
 		// tasks know they have to wait
 		// NOTE: if tick count is going to overflow, it will overflow here such AND
 		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
-		rail_5v_target_off_time = xTaskGetTickCount() + (EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
+		get_hw_states()->rail_5v_target_off_time = xTaskGetTickCount() + (EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
 	}
 }
 
@@ -167,7 +155,7 @@ bool enable_ir_pow_if_necessary(void) {
 		set_output(true, P_IR_PWR_CMD);
 		// NOTE: if tick count is going to overflow, it will overflow here such AND
 		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
-		ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
+		get_hw_states()->ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 
 	} else {
@@ -175,7 +163,7 @@ bool enable_ir_pow_if_necessary(void) {
 		// in case it was enabled less than IR_WAKE_DELAY_MS ago
 		// note wake_time is technically updated, so use a local
 		// to avoid concurrency issues
-		TickType_t wake_time = ir_target_on_time;
+		TickType_t wake_time = get_hw_states()->ir_target_on_time;
 		vTaskDelayUntil(&wake_time, 1); // can't do delay offset of 0
 	}
 	return got_semaphore;
@@ -247,8 +235,16 @@ void verify_regulators_unsafe(void) {
 		// if it's transitioning to OFF, check that it's done and set it's
 		// state to off if it is (we're the one who should do this)
 		if (get_hw_states()->rail_5v_enabled == HW_TRANSITIONING 
-			&& xTaskGetTickCount() >= rail_5v_target_off_time) {
+			&& xTaskGetTickCount() >= get_hw_states()->rail_5v_target_off_time) {
 			get_hw_states()->rail_5v_enabled = HW_OFF;
+		}
+		
+		// check radio power off regulator state and update hardware states if necessary
+		// if it's transitioning to IDLE, check that it's done and set it's
+		// state to off if it is (we're the one who should do this)
+		if (get_hw_states()->radio_state == RADIO_IDLE_TRANS_TRANSITION
+			&& xTaskGetTickCount() >= get_hw_states()->radio_trans_done_target_time) {
+			get_hw_states()->radio_state = RADIO_IDLE;
 		}
 		
 		states = get_hw_states(); // take at time of state read
@@ -313,7 +309,10 @@ void verify_regulators(void) {
 		// safely turn on IR power
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		// safely delay until 5V regulator is in a good state
-		TickType_t wake_time = rail_5v_target_off_time;
+		TickType_t wake_time = get_hw_states()->rail_5v_target_off_time;
+		vTaskDelayUntil(&wake_time, 1); // can't do delay offset of 0
+		// safely delay until radio is in a good state after transmit
+		wake_time = get_hw_states()->radio_trans_done_target_time;
 		vTaskDelayUntil(&wake_time, 1); // can't do delay offset of 0
 		
 		verify_regulators_unsafe();
