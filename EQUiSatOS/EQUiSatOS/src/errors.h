@@ -233,7 +233,8 @@ typedef enum error_codes {
 	ECODE_IRPOW_SEM_TOO_MANY_USERS =	83,
 	ECODE_IRPOW_SEM_TOO_FEW_USERS =		84,
 	ECODE_I2C_BUS_ERROR =				85,
-	ECODE_BAT_LF_CELLS_UNBALANCED =     86
+	ECODE_BAT_LF_CELLS_UNBALANCED =     86,
+	ECODE_VALID_STATE_CHANGE =			87,
 } sat_ecode;
 
 /************************************************************************/
