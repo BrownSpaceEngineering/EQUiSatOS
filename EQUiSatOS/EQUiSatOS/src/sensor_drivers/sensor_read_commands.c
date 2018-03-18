@@ -514,7 +514,7 @@ void _read_lifepo_temps_batch_unsafe(lifepo_bank_temps_batch batch) {
 		status_code_genare_t sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs8);
 		log_if_error(TEMP_ELOCS[i], sc, true);
 		commands_read_adc_mV_truncate(&rs8, P_AI_TEMP_OUT, TEMP_ELOCS[i], S_L_TEMP, true);
-		batch[i] = rs8;val
+		batch[i] = rs8;
 	}
 }
 
