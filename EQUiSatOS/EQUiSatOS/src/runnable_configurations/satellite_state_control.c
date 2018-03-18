@@ -25,8 +25,9 @@ struct hw_states hardware_states = {false, RADIO_OFF, false, 0, 0, 0};
 SemaphoreHandle_t* all_mutexes_ordered[NUM_MUTEXES] = {
 	// ORDER IS CRUCIAL: see https://docs.google.com/document/d/1F6cmlkyZeJqcSpiwlJpkhQtoeE0EPKovmBSyXnr2SoY/edit#heading=h.12glh8n1durz
 	&critical_action_mutex,
+	// NOTE: is handled differently; taken before i2c_irpow mutex (because most users of i2c do), and waited on until it == IR_POW_SEMAPHORE_MAX_COUNT
+	&irpow_semaphore, 
 	&i2c_irpow_mutex,
-	&irpow_semaphore, // NOTE: is handled differently; must be taken after i2c_mutex (no one's using it) and waited on until it == IR_POW_SEMAPHORE_MAX_COUNT
 	&processor_adc_mutex,
 	&hardware_state_mutex,
 	&watchdog_mutex,
