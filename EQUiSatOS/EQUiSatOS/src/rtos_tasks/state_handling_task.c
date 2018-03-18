@@ -143,7 +143,7 @@ void decide_next_state(sat_state_t current_state) {
 
 			// otherwise if the antenna deploy task says we should move on
 			// from deployment, do so
-			} else if (should_exit_antenna_deploy() || get_num_tries_antenna_deploy() >= 10) {
+			} else if (should_exit_antenna_deploy() || get_num_tries_antenna_deploy() >= NUM_TRIES_PER_PIN) {
 				set_sat_state(HELLO_WORLD);
 			}
 			break;

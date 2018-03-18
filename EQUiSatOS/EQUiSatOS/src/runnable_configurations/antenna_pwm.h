@@ -13,10 +13,10 @@
 
 #define PWM_LENGTH_MS			3000
 #define PWM_LION_MIN_V			4100
-#define PWM_LIFEPO_MIN_V		6600
-#define PWM_MAX_CUR				2000
-#define PWM_MIN_CUR				1000
-#define PWM_VERY_MIN_CUR		1500
+#define PWM_LIFEPO_MIN_V		6300
+#define PWM_MAX_CUR				5
+#define PWM_MIN_CUR				335
+#define PWM_VERY_MIN_CUR		535
 
 bool antenna_did_deploy(void);
 void pwm_test(void);

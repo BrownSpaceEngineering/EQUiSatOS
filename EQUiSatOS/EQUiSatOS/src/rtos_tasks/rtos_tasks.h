@@ -20,6 +20,9 @@
 #include "data_handling/State_Structs.h"
 #include "watchdog_task.h"
 
+#define NUM_TRIES_PER_PIN			7
+#define ANTENNA_DEPLOY_MAX_TRIES	(NUM_TRIES_PER_PIN*3+2) // this is because we want to try every pin fully, then try pin 1 again a couple of times
+
 /************************************************************************/
 /* TASK HEADERS                                                         */
 /************************************************************************/

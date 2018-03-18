@@ -10,13 +10,10 @@
 #include "../processor_drivers/PWM_Commands.h"
 #include "../runnable_configurations/antenna_pwm.h"
 
-#define NUM_TRIES_PER_PIN			((PWM_PERIOD-2)/2)
-#define ANTENNA_DEPLOY_MAX_TRIES	(NUM_TRIES_PER_PIN*3+1) // 22 tries for period of 16, 28 tries for period of 20
-// this is because we want to try every pin fully, then try pin 1 again a couple of times
 static uint8_t num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
-	return (antenna_did_deploy() && num_tries > NUM_TRIES_PER_PIN) // must try whole range of pin 1
+	return (antenna_did_deploy() && num_tries >= NUM_TRIES_PER_PIN) // must try whole range of pin 1
 		|| num_tries > ANTENNA_DEPLOY_MAX_TRIES;
 }
 
