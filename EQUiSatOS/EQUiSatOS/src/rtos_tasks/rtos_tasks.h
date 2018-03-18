@@ -25,8 +25,6 @@
 /************************************************************************/
 // lowest-priority task... may be used for switching to lower power / other modes
 // FOR US, it will eventually do nothing, but currently is used for testing (TODO)
-extern void vApplicationDaemonTaskStartupHook(void);
-extern void vApplicationIdleHook(void);
 void vApplicationStackOverflowHook(TaskHandle_t xTask,
                                     signed char *pcTaskName);
 
@@ -119,10 +117,10 @@ SemaphoreHandle_t _low_power_equistack_mutex;
 TaskHandle_t* task_handles[NUM_TASKS];
 
 /* Task handles for starting and stopping */
-TaskHandle_t watchdog_task_handle; // TODO: Should we have this?
-TaskHandle_t state_handling_task_handle; // TODO: Should we have this?
+TaskHandle_t watchdog_task_handle;
+TaskHandle_t state_handling_task_handle;
 TaskHandle_t antenna_deploy_task_handle;
-TaskHandle_t battery_charging_task_handle; // TODO: Should we have this?
+TaskHandle_t battery_charging_task_handle;
 TaskHandle_t flash_activate_task_handle;
 TaskHandle_t transmit_task_handle;
 TaskHandle_t idle_data_task_handle;
@@ -142,8 +140,8 @@ uint32_t get_time_of_next_flash(void);	// implemented in flash_activate_task
 bool flash_now(void);					// implemented in flash_activate_task
 bool would_flash_now(void);				// implemented in flash_activate_task
 equistack* get_msg_type_equistack(msg_data_type_t msg_type);
-void increment_data_type(uint16_t data_type, uint8_t *data_array_tails, uint8_t *loops_since_last_log);
 bool should_exit_antenna_deploy(void);
+uint8_t get_num_tries_antenna_deploy(void);
 
 /************************************************************************/
 /*  Required functions for FreeRTOS 9 static allocation                 */

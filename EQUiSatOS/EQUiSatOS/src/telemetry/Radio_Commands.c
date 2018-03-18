@@ -7,6 +7,13 @@ char kill_week_buf[] = {'K', '2'};
 char kill_forever_buf[] = {'K', '3'};
 char flash_buf[] = {'F', 'L'};
 char reboot_buf[] = {'R', 'E'};
+char revive_buf[] = {'R', 'V'};
+	
+char echo_response_buf[] =	{'E', 'C', 'H', 'O', 'C', 'H', 'O', 'C', 'O'};
+char flash_response_buf[] =	{'F', 'L', 'A', 'S', 'H', 'I', 'N', 'G', 0}; // last byte set to whether will flash
+char reboot_response_buf[] = {'R', 'E', 'B', 'O', 'O', 'T', 'I', 'N', 'G'}; // last byte set to whether will flash
+char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N', 0, 0, 0, 0}; // last 4 bytes for revive timestamp
+char revive_response_buf[] = {'R', 'E', 'V', 'I', 'V', 'I', 'N', 'G', '!'}; // last 4 bytes for revive timestamp
 
 char dealer_response[4] = {1, 196, 0, 59};
 char txFreq_response[4] = {1, 183, 0, 72};
@@ -91,6 +98,10 @@ rx_cmd_type_t check_rx_received(void) {
 			} else if (check_if_rx_matches(kill_forever_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
 				//KILL FOREVER :'(
 				command = CMD_KILL_FOREVER;
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
+			} else if (check_if_rx_matches(revive_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//REVIVE! :)
+				command = CMD_REVIVE;
 				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
 			}
 			// trigger a context switch if the call from this interrupt

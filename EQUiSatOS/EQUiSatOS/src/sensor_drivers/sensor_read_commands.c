@@ -101,7 +101,7 @@ void log_if_out_of_bounds(uint16_t reading, sig_id_t sig, uint8_t eloc, bool pri
 			err.ecode = 0;
 			err.timestamp = 0;
 			err.eloc = eloc;
-			print("READING OUT OF BOUNDS - HIGH - eloc: %s, reading: %d, high bound: %d\n", get_eloc_str(&err), reading, low);
+			print("READING OUT OF BOUNDS - HIGH - eloc: %s, reading: %d, high bound: %d\n", get_eloc_str(&err), reading, high);
 		#endif
 	}
 }
@@ -144,7 +144,9 @@ void _set_5v_enable_unsafe(bool on) {
 	} else {
 		// don't delay on OFF time because it's so long... just let 
 		// tasks know they have to wait
-		rail_5v_target_off_time = xTaskGetTickCount() + EN_5V_POWER_OFF_DELAY_MS;
+		// NOTE: if tick count is going to overflow, it will overflow here such AND
+		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
+		rail_5v_target_off_time = xTaskGetTickCount() + (EN_5V_POWER_OFF_DELAY_MS / portTICK_PERIOD_MS);
 	}
 }
 
@@ -159,6 +161,8 @@ bool enable_ir_pow_if_necessary(void) {
 		// only enable (and do full delay) if IR power is not on
 		trace_print("set ir power on");
 		set_output(true, P_IR_PWR_CMD);
+		// NOTE: if tick count is going to overflow, it will overflow here such AND
+		// will overflow as tasks are waiting, so it will work fine (worst case someone will read a bad reading)
 		ir_target_on_time = xTaskGetTickCount() + (IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 		vTaskDelay(IR_WAKE_DELAY_MS / portTICK_PERIOD_MS);
 
@@ -816,12 +820,11 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 }
 
 bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
-	status_code_genare_t sc = STATUS_OK; // initialize!
 	if (xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS))
 	{
 		bool got_semaphore = enable_ir_pow_if_necessary();
 		#ifndef EQUISIM_SIMULATE_BATTERIES
-			sc = TCA9535_init(batch);
+			status_code_genare_t sc = TCA9535_init(batch);
 			log_if_error(ELOC_TCA, sc, true);
 			// zero out the places we're going to overwrite
 			// see order in Message Format spreadsheet

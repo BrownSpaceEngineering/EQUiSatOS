@@ -22,7 +22,7 @@ int channel;
 #define CONF_PWM_MODULE      TCC0
 
 //period configuration
-#define PWM_PERIOD			0x10
+#define PWM_PERIOD			0x14
 #define PWM_ON_PERIOD		0x8
 
 

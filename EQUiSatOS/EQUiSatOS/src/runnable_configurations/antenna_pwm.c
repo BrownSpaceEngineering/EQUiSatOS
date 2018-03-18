@@ -8,7 +8,7 @@
 #include "antenna_pwm.h"
 
 static int curren_pwm_pin = 1;
-static int current_on_cycle = PWM_PERIOD / 2;
+static int current_on_cycle = (PWM_PERIOD / 2) + 1;
 
 // not for flight
 static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
@@ -61,11 +61,11 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		// TODO: check mutex value?
 		//read_lion_current_precise(&li1, &li2);
 		read_ad7991_batbrd_precise(ad7991_bat_results);
+		li1 = ad7991_bat_results[1];
+		li2 = ad7991_bat_results[0];
 	} else {
 		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
 	}
-	li1 = ad7991_bat_results[1];
-	li2 = ad7991_bat_results[0];
 	
 	got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
 	disable_pwm();
@@ -106,19 +106,25 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	}
-	if (can_cont) {
-		// increment for next call
+	
+	if (can_cont) { // increment for next call
 		current_on_cycle++;
-		// it shouldn't be on too much, so if it's at 14 switch to the next pin
-		if (current_on_cycle >= (PWM_PERIOD - 2)) {
-			current_on_cycle = PWM_PERIOD / 2;
-			curren_pwm_pin++;
-			// now if the pin is past 3, set it back to 1
-			if (curren_pwm_pin > 3) {
-				curren_pwm_pin = 1;
-			}
+	}
+	// it shouldn't be on too much, so if it's at 14 switch to the next pin
+	if (current_on_cycle >= (PWM_PERIOD - 2) || !can_cont) {
+		uint8_t ecode;
+		switch (curren_pwm_pin) {
+			case 1:
+				ecode = ECODE_P1_NOT_DEPLOYED;
+				break;
+			case 2:
+				ecode = ECODE_P2_NOT_DEPLOYED;
+				break;
+			case 3:
+				ecode = ECODE_P3_NOT_DEPLOYED;
+				break;
 		}
-	} else {
+		log_error(ELOC_ANTENNA_DEPLOY, ecode, true);
 		current_on_cycle = PWM_PERIOD / 2;
 		curren_pwm_pin++;
 		// now if the pin is past 3, set it back to 1

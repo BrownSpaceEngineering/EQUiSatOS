@@ -694,7 +694,7 @@ static void CHG_test(void) {
 	set_chg_states(false, false, false, false);
 }
 
-void led_sns_test(void) {
+void lf_sns_test(void) {
 	set_chg_states(true, true, true, true);
 	print("LFB1OSNS, LFB1SNS, LFB2OSNS, LFB2SNS, LF2REF, LF1REF, LF4REF, LF3REF, L1_REF, L2_REF, L2_SNS, L1_SNS\n\r");
 	while (true) {
@@ -722,16 +722,16 @@ void led_sns_test(void) {
 		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);				
 		switch (i) {
 			case 0:			
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i];//*71.43;
 			break;
 			case 1:			
-			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-980) * 50;
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]);//-980) * 50;
 			break;
 			case 2:			
-			bat_voltage_readings[i] = bat_ref_voltage_readings[i]*71.43;
+			bat_voltage_readings[i] = bat_ref_voltage_readings[i];//*71.43;
 			break;
 			case 3:			
-			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]-979) * 50;
+			bat_voltage_readings[i] = (bat_ref_voltage_readings[i]);//-979) * 50;
 			break;
 			case 4:			
 			bat_voltage_readings[i] = bat_ref_voltage_readings[i] * 1.95;
@@ -753,10 +753,7 @@ void led_sns_test(void) {
 			break;
 		}
 		print("%d,",(int)(bat_voltage_readings[i]));
-	}
-	
-	
-	
+	}	
 	
 	
 	//char test_str[20];
@@ -774,7 +771,7 @@ void led_sns_test(void) {
 			
 
 	for (int i = 0; i < 2; i++){
-		print("%d,",AD7991_results[i]);
+		print("%d,",results[i]);
 	}
 	print("\n\r");
 	delay_ms(10000);

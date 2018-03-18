@@ -43,7 +43,7 @@ uint32_t get_time_of_next_flash(void) {
 	if (eTaskGetState(task_handles[FLASH_ACTIVATE_TASK]) != eSuspended) {
 		// previous wake time is the last time (using get_current_timestamp()) that vTaskDelayUntil resumed in this task,
 		// so that plus the frequency gives us an approximate time of next flash
-		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;	// TODO: what if RTOS goes to something higher priority?
+		return prev_wake_time_s + FLASH_ACTIVATE_TASK_FREQ / 1000;
 	}
 	return (uint32_t) -1;
 }
@@ -63,15 +63,15 @@ bool flash_now(void) {
 // flash (caution: this is only valid at the moment of calling,
 // it could change right after)
 bool would_flash_now(void) {
-	return waiting_between_flashes;
+	return (get_sat_state() == IDLE_FLASH) && waiting_between_flashes;
 }
 
 void flash_activate_task(void *pvParameters)
 {
 	// delay to offset task relative to others, then start
 	vTaskDelay(FLASH_ACTIVATE_TASK_FREQ_OFFSET);
-	TickType_t prev_wake_time = xTaskGetTickCount();	
-	TickType_t prev_data_read_time = xTaskGetTickCount();
+	TickType_t prev_wake_time = xTaskGetTickCount(); // good on tick count overflow (only used with RTOS api calls)
+	TickType_t prev_data_read_time = xTaskGetTickCount(); // good on tick count overflow (only used with RTOS api calls)
 	
 	// data storage variables for flash data
 	uint8_t data_arrays_tail = 0;
@@ -82,7 +82,7 @@ void flash_activate_task(void *pvParameters)
 	init_task_state(FLASH_ACTIVATE_TASK); // suspend or run on boot
 	
 	// variable for keeping track of data logging to distribute over orbit
-	uint32_t time_of_last_log_s = get_current_timestamp(); // try to log ASAP (on first task start)
+	uint32_t time_of_last_log_s = 0; // try to log ASAP (on first task start)
 	
 	for ( ;; )
 	{	

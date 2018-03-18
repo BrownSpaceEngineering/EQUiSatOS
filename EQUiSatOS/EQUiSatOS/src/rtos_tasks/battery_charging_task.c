@@ -359,7 +359,7 @@ void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_ba
 	{
 		print("\t\tbat %d not discharging -- checking again\n", bat_discharging);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
 		{
@@ -393,7 +393,7 @@ void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig
 	{
 		print("\t\tbat %d still discharging -- checking again\n", bat_not_discharging);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
 		{
@@ -457,7 +457,7 @@ void check_fault_with_retry(int8_t bat, bat_charge_dig_sigs_batch batch)
 	{
 		print("\t\tfault pin active for bat %d -- will retry\n", bat);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		// if the mutex times out we'll just return
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
@@ -663,12 +663,12 @@ bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
 
 	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
 	bool got_panel_ref = panel_ref_val != -1;
-	
+
 	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
 		   max_cell_mv > LF_FULL_MAX_MV ||
-		   (charging_data.bat_charging == lf && got_panel_ref && got_chgn && 
-		    !chg_pin_active(lf) && panel_ref_val > PANEL_REF_SUN_MV &&
-			charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
+		   (charging_data.bat_charging == lf && got_panel_ref && got_chgn &&
+		    !chg_pin_active(lf) && (panel_ref_val > PANEL_REF_SUN_MV) &&
+		  	charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
 }
 
 bool get_lfs_both_full(
@@ -826,15 +826,15 @@ void battery_logic()
 	if (is_lion(charging_data.bat_charging) && li_success)
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
-		
+
 		uint16_t sns_value = get_sns_val_with_retry(charging_data.bat_charging);
 		bool got_sns_data = sns_value != -1;
 
 		print("\tsns value: %d\n", sns_value);
 
-		curr_charging_filled_up = 
-			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV && 
-			 got_sns_data && sns_value < SNS_THRESHOLD) || 
+		curr_charging_filled_up =
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV &&
+			 got_sns_data && sns_value < SNS_THRESHOLD) ||
 			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);

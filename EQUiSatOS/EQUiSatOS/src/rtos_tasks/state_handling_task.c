@@ -23,13 +23,7 @@ void state_handling_task(void *pvParameters)
 
 	for ( ;; )
 	{
-		vTaskDelayUntil(&prev_wake_time, STATE_HANDLING_TASK_FREQ / portTICK_PERIOD_MS);
-
-		// report to watchdog
-		report_task_running(STATE_HANDLING_TASK);
-
 		#if OVERRIDE_STATE_HOLD_INIT != 1
-
 			#ifdef EQUISIM_WATCHDOG_RESET_TEST
 				test_watchdog_reset_bat_charging();
 				test_watchdog_reset_attitude_data();
@@ -44,10 +38,15 @@ void state_handling_task(void *pvParameters)
 				test_normal_satellite_state_sequence();
 				test_error_case_satellite_state_sequence();
 			#endif
-
-			/* normal operation */
-			decide_next_state(get_sat_state());
 		#endif
+		
+		vTaskDelayUntil(&prev_wake_time, STATE_HANDLING_TASK_FREQ / portTICK_PERIOD_MS);
+		
+		// report to watchdog
+		report_task_running(STATE_HANDLING_TASK);
+
+		/* normal operation */
+		decide_next_state(get_sat_state());
 	}
 
 	// delete this task if it ever breaks out
@@ -94,8 +93,8 @@ void decide_next_state(sat_state_t current_state) {
 	read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv);
 
 	// average voltage for the batteries within each LF bank
-	int lfb1_avg_mv = (lf1_mv + lf2_mv) / 2;
-	int lfb2_avg_mv = (lf3_mv + lf4_mv) / 2;
+	int lfb1_sum = lf1_mv + lf2_mv;
+	int lfb2_sum = lf3_mv + lf4_mv;
 
 	///
 	// we always will need a check whether we want to go into a low
@@ -106,15 +105,12 @@ void decide_next_state(sat_state_t current_state) {
 	// now it's time to check for all of the standard state changes
 	///
 
-	bool both_li_above_down = li1_mv > LI_DOWN_MV && li2_mv > LI_DOWN_MV;
-	bool both_li_above_high = li1_mv > LI_FULL_MV && li2_mv > LI_FULL_MV; // TODO: FULL_MV or FULL_SANITY_MV
-
-	bool one_lf_above_flash = lfb1_avg_mv > LF_FLASH_AVG_MV || lfb2_avg_mv > LF_FLASH_AVG_MV;
+	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv)) && lfb2_sum >= LF_FLASH_MIN_MV) 
+									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv)) && lfb1_sum >= LF_FLASH_MIN_MV);
+	bool one_lf_below_flash = (lfb1_sum < LF_FLASH_MIN_MV) || (lfb2_sum < LF_FLASH_MIN_MV);
 
 	bool one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
-	bool one_li_below_down = li1_mv <= LI_DOWN_MV || li2_mv <= LI_DOWN_MV;
 	bool low_power_entry_criteria = charging_data.curr_meta_charge_state == TWO_LI_DOWN
-									|| charging_data.curr_meta_charge_state == TWO_LF_DOWN
 									|| (charging_data.curr_meta_charge_state == ALL_GOOD &&
 										one_li_below_low_power)
 									|| (charging_data.curr_meta_charge_state == ONE_LI_DOWN &&
@@ -140,7 +136,7 @@ void decide_next_state(sat_state_t current_state) {
 
 			// otherwise if the antenna deploy task says we should move on
 			// from deployment, do so
-			} else if (should_exit_antenna_deploy()) {
+			} else if (should_exit_antenna_deploy() || get_num_tries_antenna_deploy() >= 10) {
 				set_sat_state(HELLO_WORLD);
 			}
 			break;
@@ -151,14 +147,15 @@ void decide_next_state(sat_state_t current_state) {
 				set_sat_state(LOW_POWER);
 			else if (get_current_timestamp() > MIN_TIME_IN_BOOT_S)
 				set_sat_state(IDLE_NO_FLASH);
+			else if (should_exit_antenna_deploy())
+				task_suspend(ANTENNA_DEPLOY_TASK);
 			break;
 
-		// TODO: new criteria here
 		case IDLE_NO_FLASH:
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
 				set_sat_state(LOW_POWER);
-			else if (one_lf_above_flash)
+			else if (one_lf_full_one_above_flash)
 				set_sat_state(IDLE_FLASH);
 			break;
 
@@ -166,7 +163,7 @@ void decide_next_state(sat_state_t current_state) {
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
 				set_sat_state(LOW_POWER);
-			else if (!one_lf_above_flash)
+			else if (one_lf_below_flash)
 				set_sat_state(IDLE_NO_FLASH);
 			break;
 

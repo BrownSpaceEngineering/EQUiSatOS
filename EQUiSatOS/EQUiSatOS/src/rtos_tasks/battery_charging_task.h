@@ -26,18 +26,18 @@
 #define LI_FULL_MV                      4175
 #define LI_FULL_LOWER_MV                4150
 #define LI_FULL_SANITY_MV               4100
-#define LI_DOWN_MV                 		4050
-#define LI_LOW_POWER_MV            		3900
-#define LI_CRITICAL_MV             		2750
-#define LI_MIGHT_NOT_BE_FULL_MV       4000
+#define LI_DOWN_MV                 		  4050
+#define LI_LOW_POWER_MV            		  3900
+#define LI_CRITICAL_MV             		  2750
+#define LI_MIGHT_NOT_BE_FULL_MV         4000
 
-#define LF_FULL_SUM_MV             		7100 // what here?
+#define LF_FULL_SUM_MV             		  7000 // what here?
 #define LF_FULL_MAX_MV                  3800
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
-#define LF_FLASH_AVG_MV            		3250
+#define LF_FLASH_MIN_MV            	  	6200
 
-#define SNS_THRESHOLD                   1000
+#define SNS_THRESHOLD                   1025
 
 #define RETRIES_AFTER_MUTEX_TIMEOUT     3
 
@@ -46,7 +46,7 @@
 #define DELAY_BEFORE_RETRY_MS           400
 
 #define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
-#define SAT_NO_POWER_TURN_OFF_T_MS		1000
+#define SAT_NO_POWER_TURN_OFF_T_MS			1000
 
 #define TRY_PIN_DELAY_TIME_MS           100
 #define MAX_TIMES_TRY_PIN               3
