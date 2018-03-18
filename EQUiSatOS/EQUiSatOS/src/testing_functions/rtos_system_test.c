@@ -45,10 +45,11 @@ void print_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 	}
 }
 
-static int16_t ad590_to_temp(uint16_t mV)  {
-	float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
-	float tempInC = (current)*1000000-273;// T = 454*V in C
-	return (int16_t) tempInC;
+static int16_t ad590_to_temp(uint16_t temp_mV)  {
+	//float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
+	//float tempInC = (current)*1000000-273;// T = 454*V in C
+	float tempInC = ((float) temp_mV) *0.1286 - 107.405;
+	return (int16_t) temp_mV;
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 	print("ir objs\n");
@@ -62,7 +63,7 @@ void print_lion_volts_batch(lion_volts_batch batch) {
 }
 static void print_lion_current_batch(lion_current_batch batch) {
 	print("L1_SNS: %d %d mV\t%d mA\n", batch[0], untruncate(batch[0], S_L_SNS), ((int16_t)untruncate(batch[0], S_L_SNS)-985)*2);
-	print("L2_SNS: %d %d mV\t%d mA\n", batch[1], untruncate(batch[1], S_L_SNS), ((int16_t)untruncate(batch[1], S_L_SNS)-1022)*2);
+	print("L2_SNS: %d %d mV\t%d mA\n", batch[1], untruncate(batch[1], S_L_SNS), ((int16_t)untruncate(batch[1], S_L_SNS)-985)*2);
 }
 void print_lion_temps_batch(lion_temps_batch batch) {
 	print("L1_TEMP: %d %d C\n", batch[0], ad590_to_temp(untruncate(batch[0], S_L_TEMP)));

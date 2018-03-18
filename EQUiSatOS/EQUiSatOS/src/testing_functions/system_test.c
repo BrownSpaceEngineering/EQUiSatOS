@@ -225,8 +225,9 @@ static void AD590_test(void){
 		read_adc_mV(temp_instance,&temp_mV);
 		
 		// temperature conversion from voltage -> current -> degrees celsius		
-		float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
-		float tempInC = (current)*1000000-273;// T = 454*V in C
+		//float current = ((float)temp_mV)/1000/2197. -0.000153704; //converts from V to A
+		//float tempInC = (current)*1000000-273;// T = 454*V in C
+		float tempInC = ((float) temp_mV) *0.1286 - 107.405;
 		
 		get_status(sc,error_str);	
 		switch (i) {
@@ -409,7 +410,7 @@ static void AD7991_BAT_test(void){
 	
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
 
-	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[0] = ((int)results[0]-985)*2;	//L2_SNS mA
 	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
 	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
 	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
@@ -764,7 +765,7 @@ void lf_sns_test(void) {
 	
 	enum status_code AD7991_code = AD7991_read_all_mV(results, AD7991_BATBRD);
 
-	AD7991_results[0] = ((int)results[0]-1022)*2;	//L2_SNS mA
+	AD7991_results[0] = ((int)results[0]-985)*2;	//L2_SNS mA
 	AD7991_results[1] = ((int)results[1]-985)*2;	//L1_SNS mA
 	AD7991_results[2] = ((int)results[2]-50)*2717/1000;	//L_REF mV
 	AD7991_results[3] = ((int)results[3]-130)*5580/1000;	//PANELREF mV
