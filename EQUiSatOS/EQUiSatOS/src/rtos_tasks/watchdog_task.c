@@ -28,7 +28,7 @@ static TickType_t prev_time;
 void init_watchdog_clock(void) {
 	rtos_ready = false;
 	got_early_warning_callback_in_boot = false;
-	configure_watchdog();
+	configure_watchdog(watchdog_early_warning_callback);
 }
 
 // initializes our watchdog-monitoring task

@@ -177,7 +177,7 @@ typedef enum
 	#define ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT	(max(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT, max(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT, ANTENNA_DEPLOY_TASK_LESS_FREQ)))
 	
 #ifndef TESTING_SPEEDUP
-#define BATTERY_CHARGING_TASK_FREQ				(20*60*1000)	// 20 minutes; how often run battery charging logic
+#define BATTERY_CHARGING_TASK_FREQ				(9*60*1000)	// 9 minutes; how often run battery charging logic
 #endif
 
 #ifndef TESTING_SPEEDUP

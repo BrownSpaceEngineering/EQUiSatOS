@@ -246,7 +246,6 @@ void decommission(int8_t bat)
 	}
 }
 
-// TODO: finalize this function
 uint32_t time_for_recommission(int8_t bat)
 {
 	return Min(charging_data.decommissioned_count[bat] * INITIAL_RECOMMISSION_TIME_S, MAX_RECOMMISSION_TIME_S);
@@ -256,8 +255,8 @@ bool check_for_recommission(int8_t bat)
 {
 	uint32_t time_since_decommission = get_current_timestamp_wrapped() - charging_data.decommissioned_timestamp[bat];
 	print("\tdecomissioned at %d, now %d\n", charging_data.decommissioned_timestamp[bat], get_current_timestamp_wrapped());
-	print("\t%d total decomissions for this bat\n", charging_data.decommissioned_count[bat]);
-	print("\tthis battery should be decomissioned for %d\n", time_for_recommission(bat));
+	print("\t%d total decommissions for this bat\n", charging_data.decommissioned_count[bat]);
+	print("\tthis battery should be decommissioned for %d\n", time_for_recommission(bat));
 	if (time_since_decommission > time_for_recommission(bat))
 	{
 		charging_data.decommissioned[bat] = 0;
@@ -354,13 +353,13 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 
 void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch)
 {
-	print("\tchecking bat %d is discharging\n", bat_discharging);
+	print("\tchecking bat %d is discharging\n");
 	bool bat_discharging_st_pin_active = st_pin_active(bat_discharging, batch);
 	if (!bat_discharging_st_pin_active)
 	{
 		print("\t\tbat %d not discharging -- checking again\n", bat_discharging);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
 		{
@@ -388,13 +387,13 @@ void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_ba
 
 void check_not_discharging_with_retry(int8_t bat_not_discharging, bat_charge_dig_sigs_batch batch)
 {
-	print("\tchecking bat %d is not discharging\n", bat_not_discharging);
+	print("\tchecking bat %d is not discharging\n");
 	bool bat_not_discharging_st_pin_active = st_pin_active(bat_not_discharging, batch);
 	if (bat_not_discharging_st_pin_active)
 	{
 		print("\t\tbat %d still discharging -- checking again\n", bat_not_discharging);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
 		{
@@ -458,7 +457,7 @@ void check_fault_with_retry(int8_t bat, bat_charge_dig_sigs_batch batch)
 	{
 		print("\t\tfault pin active for bat %d -- will retry\n", bat);
 		vTaskDelay(DELAY_BEFORE_RETRY_MS / portTICK_PERIOD_MS);
-		
+
 		// if the mutex times out we'll just return
 		bat_charge_dig_sigs_batch new_batch;
 		if (!read_bat_charge_dig_sigs_batch_with_retry(&new_batch))
@@ -589,13 +588,16 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging)
 void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 {
 	int8_t lf_charging = -1;
+	
+	bat_charge_dig_sigs_batch batch;
+	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 
 	// NOTE: it shouldn't be the case that both are full -- we'd be charging LI's
-	if (get_lf_full(LFB1, lfb1_max_cell_mv))
+	if (get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch))
 	{
 		lf_charging = LFB2;
 	}
-	else if (get_lf_full(LFB2, lfb2_max_cell_mv))
+	else if (get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch))
 	{
 		lf_charging = LFB1;
 	}
@@ -627,6 +629,61 @@ void discharge_higher_li(void)
 		charging_data.lion_discharging = LI1;
 }
 
+bool update_should_deploy_antenna(bool has_li_data)
+{
+	print("checking antenna deploy\n");
+	
+	bool li_success = false;
+	uint16_t li1_mv = 0;
+	uint16_t li2_mv = 0;
+	if (!has_li_data)
+	{
+		for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
+			li_success = read_lion_volts_precise((uint16_t *) &li1_mv, (uint16_t *) &li2_mv);
+	}
+	else
+	{
+		li1_mv = charging_data.bat_voltages[LI1];
+		li2_mv = charging_data.bat_voltages[LI2];
+		li_success = true;
+	}
+	
+	uint8_t num_li_down = charging_data.decommissioned[LI1] + charging_data.decommissioned[LI2];
+	int8_t good_li = -1;
+	if (num_li_down == 1)
+		good_li = charging_data.decommissioned[LI1] ? LI2 : LI1;
+	
+	// if we don't have any good data about li's, we'll take the chance and move
+	// to antenna deploy
+	if (!li_success)
+	{
+		charging_data.should_move_to_antenna_deploy = 1;
+	}
+	else
+	{
+		if (num_li_down == 0)
+		{
+			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else if (num_li_down == 1)
+		{
+			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
+				charging_data.should_move_to_antenna_deploy = 1;
+			else
+				charging_data.should_move_to_antenna_deploy = 0;
+		}
+		else
+		{
+			charging_data.should_move_to_antenna_deploy = 1;
+		}
+	}
+
+	print("\tdecided: %d\n", charging_data.should_move_to_antenna_deploy);
+}
+
 void battery_charging_task(void *pvParameters)
 {
 	print("\n\nstarting battery charging (:\n");
@@ -641,15 +698,28 @@ void battery_charging_task(void *pvParameters)
 	// initialize xNextWakeTime onces
 	init_task_state(BATTERY_CHARGING_TASK); // suspend or run on boot (ALWAYS RUN!)
 
+	uint8_t iter_count = 0;
 	while (true)
 	{
 		// report to watchdog
 		report_task_running(BATTERY_CHARGING_TASK);
-
-		// the core battery logic -- a separate function to make it easier to
-		// unit test
-		battery_logic();
-
+		
+		print("entering battery task!\n");
+		if (iter_count % BAT_CHARGING_ITERS_UNTIL_FULL == 0 || get_sat_state_wrapped() == LOW_POWER)
+		{
+			// the core battery logic -- a separate function to make it easier to
+			// unit test
+			// there's an update to should_deploy_antenna within battery logic
+			battery_logic();
+			iter_count = 0;
+		}
+		else
+		{
+			print("not running the full logic yet: iter at %d\n", iter_count);
+			update_should_deploy_antenna(false);
+		}
+		
+		iter_count++;
 		vTaskDelayUntil(&prev_wake_time, BATTERY_CHARGING_TASK_FREQ / portTICK_PERIOD_MS);
 	}
 
@@ -657,13 +727,16 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-bool get_lf_full(int8_t lf, uint16_t max_cell_mv)
-{
+bool get_lf_full(int8_t lf, uint16_t max_cell_mv, bat_charge_dig_sigs_batch batch, bool got_batch)
+{	
 	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
-	
-	return (charging_data.bat_voltages[lf] >= LF_FULL_SUM_MAX_MV) ||
-			(charging_data.bat_voltages[lf]	> LF_FULL_SUM_MV && panel_ref_val > PANEL_REF_SUN_MV) // TODO: finish this &&  chg_pin_active(lf, )
-		  || max_cell_mv >= LF_FULL_MAX_MV;
+	bool got_panel_ref = panel_ref_val != -1;
+
+	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
+		   max_cell_mv > LF_FULL_MAX_MV ||
+		   (charging_data.bat_charging == lf && got_panel_ref && got_batch &&
+		    !chg_pin_active(lf, batch) && (panel_ref_val > PANEL_REF_SUN_MV) &&
+		  	charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
 }
 
 bool get_lfs_both_full(
@@ -672,19 +745,22 @@ bool get_lfs_both_full(
 	uint16_t lfb1_max_cell_mv,
 	uint16_t lfb2_max_cell_mv)
 {
+	bat_charge_dig_sigs_batch batch;
+	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
+	
 	if (num_lf_down == 0)
-		return get_lf_full(LFB1, lfb1_max_cell_mv) ||
-			   get_lf_full(LFB2, lfb2_max_cell_mv);
+		return get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch) &&
+			   get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch);
 
 	if (num_lf_down == 1)
-		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv);
+		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv, batch, got_batch);
 
 	return true;
 }
 
 void battery_logic()
 {
-	print("\n\nentering battery logic\n");
+	print("\n\nentering full battery logic\n");
 
 	///
 	// phase prologue: updating relevant data in the charging data struct
@@ -743,8 +819,6 @@ void battery_logic()
 	/////
 
 	#ifndef BAT_TESTING
-	#ifndef WITHOUT_DECOMMISION
-
 	// it's alright to recommission, even with bad voltage values
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
@@ -796,7 +870,20 @@ void battery_logic()
 			}
 		}
 	}
-	#endif
+	
+	// not a decommissioning case, but will log errors if very unbalanced
+	if (lf_success)
+	{
+		if (lfb1_max_cell_mv > LF_FULL_MAX_MV)
+		{
+			log_error(get_error_loc(LFB1), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+		}
+		
+		if (lfb2_max_cell_mv > LF_FULL_MAX_MV)
+		{
+			log_error(get_error_loc(LFB2), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+		}
+	}
 	#endif
 
 	// drawing metadata about the state of the batteries
@@ -821,15 +908,15 @@ void battery_logic()
 	if (is_lion(charging_data.bat_charging) && li_success)
 	{
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
-		
+
 		uint16_t sns_value = get_sns_val_with_retry(charging_data.bat_charging);
 		bool got_sns_data = sns_value != -1;
 
 		print("\tsns value: %d\n", sns_value);
 
-		curr_charging_filled_up = 
-			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV && 
-			 got_sns_data && sns_value < SNS_THRESHOLD) || 
+		curr_charging_filled_up =
+			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_LOWER_MV &&
+			 got_sns_data && sns_value < SNS_THRESHOLD) ||
 			(charging_data.bat_voltages[charging_data.bat_charging] > LI_FULL_MV);
 
 		print("\tdecided: %d\n", curr_charging_filled_up);
@@ -850,36 +937,13 @@ void battery_logic()
 		get_lfs_both_full(num_lf_down, good_lf, lfb1_max_cell_mv, lfb2_max_cell_mv);
 
 	// updating externally facing variables
-	// if we don't have any good data about li's, we'll take the chance and move
-	// to antenna deploy
-	if (!li_success)
-	{
-		charging_data.should_move_to_antenna_deploy = 1;
-	}
-	else
-	{
-		if (num_li_down == 0)
-		{
-			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
-				charging_data.should_move_to_antenna_deploy = 1;
-			else
-				charging_data.should_move_to_antenna_deploy = 0;
-		}
-		else if (num_li_down == 1)
-		{
-			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
-				charging_data.should_move_to_antenna_deploy = 1;
-			else
-				charging_data.should_move_to_antenna_deploy = 0;
-		}
-		else
-		{
-			charging_data.should_move_to_antenna_deploy = 1;
-		}
-	}
-
-	print("decided for move to antenna deploy: %d\n", charging_data.should_move_to_antenna_deploy);
-
+	
+	// updating antenna deploy
+	// if there are good values in charging_data, we'll just use those
+	// if not we'll try to grab new ones -- but this won't affect the current flow
+	update_should_deploy_antenna(li_success);
+	
+	// updating sat state
 	for (int8_t bat = 0; bat < 4; bat++)
 	{
 		// only valid if we have values
