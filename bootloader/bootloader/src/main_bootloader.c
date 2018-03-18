@@ -10,8 +10,8 @@
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-#define DISABLE_REWRITE_FROM_MRAM
-#define RUN_TESTS
+//#define DISABLE_REWRITE_FROM_MRAM
+//#define RUN_TESTS
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
 #include <assert.h>
@@ -143,10 +143,11 @@ static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 				size_t mram2_same_seq_len = num_similar((uint8_t*) flash_addr, buffer_mram2, buf_size);
 				
 				pet_watchdog(); // pet before flash write
+				// if mram1 has less similarity than mram2, write mram2 buffer + vise versa
 				if (mram1_same_seq_len <= mram2_same_seq_len) {
-					flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
-				} else {
 					flash_mem_write_bytes(buffer_mram2, buf_size, flash_addr);
+				} else {
+					flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
 				}
 				corrections_made++;
 			}
