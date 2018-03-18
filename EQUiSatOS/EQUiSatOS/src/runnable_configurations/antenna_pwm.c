@@ -88,21 +88,21 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 			li_cur = li1 + li2;
 		}
 
-		if (li_cur > PWM_MAX_CUR) {
+		if (li_cur < PWM_MAX_CUR) {
 			can_cont = false;
-		} else if (deployed && li_cur < PWM_VERY_MIN_CUR) {
+		} else if (deployed && li_cur > PWM_VERY_MIN_CUR) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
-		} else if (deployed && li_cur < PWM_MIN_CUR) {
+		} else if (deployed && li_cur > PWM_MIN_CUR) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	} else {
 		uint16_t bank1 = lf1 + lf2;
 		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", bank1);
-		if (bank1 > PWM_MAX_CUR) {
+		if (bank1 < PWM_MAX_CUR) {
 			can_cont = false;
-		} else if (deployed && bank1 < PWM_VERY_MIN_CUR) {
+		} else if (deployed && bank1 > PWM_VERY_MIN_CUR) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
-		} else if (deployed && bank1 < PWM_MIN_CUR) {
+		} else if (deployed && bank1 > PWM_MIN_CUR) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	}
