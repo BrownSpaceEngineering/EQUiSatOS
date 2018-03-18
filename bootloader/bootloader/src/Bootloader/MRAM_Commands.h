@@ -24,11 +24,17 @@
 #define P_MRAM1_CS			PIN_PA17
 #define P_MRAM2_CS			PIN_PB16
 
-#define NUM_CONTROL_BYTES		0x04
-#define READ_COMMAND			0x03
-#define READ_STATUS_REG_COMMAND 0x05
-#define WRITE_COMMAND			0x02
-#define ENABLE_COMMAND			0x06
+#define NUM_CONTROL_BYTES			0x04
+#define READ_COMMAND				0x03
+#define READ_STATUS_REG_COMMAND		0x05
+#define WRITE_COMMAND				0x02
+#define WRITE_STATUS_REG_COMMAND	0x01
+#define ENABLE_COMMAND				0x06
+
+#define STATUS_REG_PROTECT_ALL		(0b11 << 2)
+#define STATUS_REG_PROTECT_TOP_HALF	(0b10 << 2)
+#define STATUS_REG_PROTECT_TOP_QUAD (0b01 << 2)
+#define STATUS_REG_PROTECT_NONE		(0b00 << 2)
 
 /************************************************************************/
 /* Initialize the master, the baudrate should be inside the proper range*/
@@ -60,9 +66,15 @@ status_code_genare_t mram_write_bytes(struct spi_module *spi_master_instance, st
 
 /************************************************************************/
 /* Given master and slave, the content of the MRAM's status register	*/
-/* will be written				                                        */
+/* will be read				                                        */
 /************************************************************************/
 status_code_genare_t mram_read_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t *reg_out);
+
+/************************************************************************/
+/* Given master and slave, the content of the MRAM's status register	*/
+/* will be written				                                        */
+/************************************************************************/
+status_code_genare_t mram_write_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t register_vals);
 
 /************************************************************************/
 /* Rad-safe field helpers                                               */

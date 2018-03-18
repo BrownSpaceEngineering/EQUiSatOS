@@ -11,9 +11,9 @@
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
 #define DISABLE_REWRITE_FROM_MRAM
-//#define RUN_TESTS
+#define RUN_TESTS
 
-#ifdef WRITE_PROG_MEM_TO_MRAM
+#if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
 #include <assert.h>
 #endif
 
@@ -206,10 +206,10 @@ int main(void)
 	mram_initialize_slave(&slave2, P_MRAM2_CS);
 
 	#ifdef RUN_TESTS
-		//mram_test(&spi_master_instance, &slave1);
-		//mram_test(&spi_master_instance, &slave2);
+		mram_test(&spi_master_instance, &slave1);
+		mram_test(&spi_master_instance, &slave2);
 		//flash_mem_test();
-		corrupt_prog_mem();
+		//corrupt_prog_mem();
 	#endif
 
 	#ifdef WRITE_PROG_MEM_TO_MRAM
@@ -239,12 +239,30 @@ int main(void)
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
 
+void set_mram_protection(struct spi_module* spi_master_instance,
+	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2, 
+	uint8_t status_reg) {
+	uint8_t status_reg1;
+	uint8_t status_reg2;
+	mram_read_status_register(spi_master_instance, mram_slave1, &status_reg1);
+	mram_write_status_register(spi_master_instance, mram_slave1, status_reg);
+	mram_read_status_register(spi_master_instance, mram_slave1, &status_reg2);
+	assert(status_reg2 == 0x0a);
+	mram_read_status_register(spi_master_instance, mram_slave2, &status_reg1);
+	mram_write_status_register(spi_master_instance, mram_slave2, status_reg);
+	mram_read_status_register(spi_master_instance, mram_slave2, &status_reg2);
+	assert(status_reg2 == 0x0a);
+}
+
 // writes the currently-loaded program memory (in that flash) into the MRAM using a buffered copy
 void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	size_t num_copied = 0;
 	uint32_t flash_addr = (uint32_t) RAD_SAFE_FIELD_GET(app_start_address);
 	uint32_t mram_addr = RAD_SAFE_FIELD_GET(mram_app_address);
+	
+	// disable write protection
+	set_mram_protection(spi_master_instance, mram_slave1, mram_slave2, STATUS_REG_PROTECT_NONE);
 
 	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
 		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
@@ -269,6 +287,9 @@ void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 		mram_addr += buf_size;
 		flash_addr += buf_size;
 	}
+	
+	// set write protection on the top half of the MRAM from writes
+	set_mram_protection(spi_master_instance, mram_slave1, mram_slave2, STATUS_REG_PROTECT_TOP_HALF);
 }
 
 #endif
@@ -278,17 +299,55 @@ void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 #ifdef RUN_TESTS
 
 void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* slave) {
-	#define MRAM_TEST_ADDRESS 0x057
-	#define MRAM_NUM_BYTES	1024
+	#define MRAM_TEST_ADDRESS 0x50000
+	#define MRAM_NUM_BYTES	20
 	uint8_t example_array[8] = {0x01, 0x02, 0x03, 0x04, 0xa5, 0xfc, 0xff, 0x42};
 	uint8_t example_output_array_before[MRAM_NUM_BYTES];// = {0, 0, 0, 0, 0, 0, 0, 0};
 	uint8_t example_output_array_after[MRAM_NUM_BYTES];// = {0, 0, 0, 0, 0, 0, 0, 0};
 
-	uint8_t status_reg = 0x0;
-	mram_read_status_register(spi_master_instance, slave, &status_reg);
-	mram_read_bytes(spi_master_instance, slave, example_output_array_before, MRAM_NUM_BYTES, MRAM_TEST_ADDRESS);
-	mram_write_bytes(spi_master_instance, slave, example_array, 8, MRAM_TEST_ADDRESS);
-	mram_read_bytes(spi_master_instance, slave, example_output_array_after, MRAM_NUM_BYTES, MRAM_TEST_ADDRESS);
+	uint8_t status_reg1 = 0xff;
+	uint8_t status_reg2 = 0xff;
+// 	mram_read_status_register(spi_master_instance, slave, &status_reg1);
+// 	mram_read_bytes(spi_master_instance, slave, example_output_array_before, MRAM_NUM_BYTES, MRAM_TEST_ADDRESS);
+// 	mram_write_bytes(spi_master_instance, slave, example_array, 8, MRAM_TEST_ADDRESS);
+// 	mram_read_bytes(spi_master_instance, slave, example_output_array_after, MRAM_NUM_BYTES, MRAM_TEST_ADDRESS);
+
+ 
+	/* protection test */
+	uint32_t write_lock_test_addr = 0x51000;
+	uint8_t example_write_test_array1[8] = {0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12};
+	uint8_t example_write_test_array2[8] = {0x10, 0x54, 0x97, 0x99, 0x23, 0x45, 0x56, 0x67};
+	uint8_t example_write_test_array3[8] = {0x25, 0x26, 0x27, 0x28, 0x29, 0x30, 0x31, 0x32};
+	
+	// test we can write it now
+	mram_read_bytes(spi_master_instance, slave, example_output_array_before, 8, write_lock_test_addr);
+	mram_write_bytes(spi_master_instance, slave, example_write_test_array1, 8, write_lock_test_addr);
+	mram_read_bytes(spi_master_instance, slave, example_output_array_after, 8, write_lock_test_addr);
+	assert(memcmp(example_output_array_after, example_write_test_array1, 8) == 0);
+		
+	// lock upper half
+	mram_read_status_register(spi_master_instance, slave, &status_reg1);
+	mram_write_status_register(spi_master_instance, slave, STATUS_REG_PROTECT_TOP_HALF);
+	mram_read_status_register(spi_master_instance, slave, &status_reg2);
+	assert(status_reg2 == 0x0a);
+	
+	// try and write
+	mram_read_bytes(spi_master_instance, slave, example_output_array_before, 8, write_lock_test_addr);
+	mram_write_bytes(spi_master_instance, slave, example_write_test_array2, 8, write_lock_test_addr);
+	mram_read_bytes(spi_master_instance, slave, example_output_array_after, 8, write_lock_test_addr);
+	assert(memcmp(example_output_array_before, example_output_array_after, 8) == 0);
+	
+	// stop protecting
+// 	mram_read_status_register(spi_master_instance, slave, &status_reg1);
+// 	mram_write_status_register(spi_master_instance, slave, STATUS_REG_PROTECT_NONE);
+// 	mram_read_status_register(spi_master_instance, slave, &status_reg2);
+// 	assert(status_reg2 == 0x02);
+// 
+// 	// try and write now
+// 	mram_read_bytes(spi_master_instance, slave, example_output_array_before, 8, write_lock_test_addr);
+// 	mram_write_bytes(spi_master_instance, slave, example_write_test_array3, 8, write_lock_test_addr);
+// 	mram_read_bytes(spi_master_instance, slave, example_output_array_after, 8, write_lock_test_addr);
+// 	assert(memcmp(example_output_array_after, example_write_test_array3, 8) == 0);
 
 	return;
 }

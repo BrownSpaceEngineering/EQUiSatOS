@@ -16,6 +16,7 @@ RAD_SAFE_FIELD_INIT(uint8_t, num_control_bytes,			NUM_CONTROL_BYTES);
 RAD_SAFE_FIELD_INIT(uint8_t, read_command,				READ_COMMAND);
 RAD_SAFE_FIELD_INIT(uint8_t, read_status_reg_command,	READ_STATUS_REG_COMMAND);
 RAD_SAFE_FIELD_INIT(uint8_t, write_command,				WRITE_COMMAND);
+RAD_SAFE_FIELD_INIT(uint8_t, write_status_reg_command,	WRITE_STATUS_REG_COMMAND);
 RAD_SAFE_FIELD_INIT(uint8_t, enable_command,			ENABLE_COMMAND);
 
 static void copy_control_data(uint8_t *buffer, uint32_t address, uint8_t command) {
@@ -120,7 +121,14 @@ status_code_genare_t mram_read_status_register(struct spi_module *spi_master_ins
 	uint8_t read_control = RAD_SAFE_FIELD_GET(read_status_reg_command);
 	status_code_genare_t s = spi_select_slave(spi_master_instance, slave, true);
 	if (!status_ok(s)) return s;
+	
+	// read from status register once before (in case someone has sent a read commands before;
+	// in such a case we must read the status register once before getting valid data)
+	s = spi_transceive_buffer_wait(spi_master_instance, &read_control, control_rx_temp, 1);
+	s = spi_transceive_buffer_wait(spi_master_instance, &data_tx_temp, reg_out, 1);
+	// (put in register just in case it works and the next one doesn't)
 
+	// now, do actual read
 	// write 1 byte command to read register 
 	// (storing trash in rx buffer in a dummy temp variable while doing so)
 	s = spi_transceive_buffer_wait(spi_master_instance, &read_control, control_rx_temp, 1);
@@ -133,4 +141,29 @@ status_code_genare_t mram_read_status_register(struct spi_module *spi_master_ins
 	
 	s = spi_select_slave(spi_master_instance, slave, false);
 	return s;
+}
+
+status_code_genare_t mram_write_status_register(struct spi_module *spi_master_instance, struct spi_slave_inst *slave, uint8_t register_vals) {
+	uint8_t rx_temp;
+	
+	// make sure write access is enabled
+	status_code_genare_t s = enable_write(spi_master_instance, slave);
+	if (!status_ok(s)) return s;
+	
+	s = spi_select_slave(spi_master_instance, slave, true);
+	if (!status_ok(s)) return s;
+	
+	// write our 1-byte status write command to the MRAM with the address
+	// (storing trash in rx buffer in a dummy temp variable while doing so)
+	uint8_t write_control = RAD_SAFE_FIELD_GET(write_status_reg_command);
+	s = spi_transceive_buffer_wait(spi_master_instance, &write_control, &rx_temp, 1);
+	if (!status_ok(s)) return s;
+	
+	// write the specified status register byte into the MRAM
+	// (storing trash in rx buffer in a dummy temp variable while doing so)
+	s = spi_transceive_buffer_wait(spi_master_instance, &register_vals, &rx_temp, 1);
+	if (!status_ok(s)) return s;
+	
+	s = spi_select_slave(spi_master_instance, slave, false);
+ 	return s;
 }
