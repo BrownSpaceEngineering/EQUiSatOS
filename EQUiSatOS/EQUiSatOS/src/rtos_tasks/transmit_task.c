@@ -390,6 +390,9 @@ void transmit_task(void *pvParameters)
 	msg_type_priority_list[FLASH_DATA] =		IDLE_DATA;		// highest priority (wrap around)
 
 	init_task_state(TRANSMIT_TASK); // suspend or run on boot
+	
+	//used to only read one out of every 3 iterations
+	uint8_t temp_read_count = 1;
 
 	for( ;; )
 	{	
@@ -429,8 +432,13 @@ void transmit_task(void *pvParameters)
 		// report to watchdog (again)
 		report_task_running(TRANSMIT_TASK);
 		
-		/* enter command mode and commence radio temp reading stage */
-		read_radio_temp_mode();				
+		if (temp_read_count == 3) {
+			temp_read_count = 1;
+			/* enter command mode and commence radio temp reading stage */
+			read_radio_temp_mode();	
+		} else {
+			temp_read_count++;
+		}
 		
 		/* shut down and block for any leftover time in next loop */
 		setRadioState(false, true);
