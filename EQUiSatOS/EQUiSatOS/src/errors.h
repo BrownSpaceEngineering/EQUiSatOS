@@ -132,7 +132,9 @@ typedef enum error_locations {
 	ELOC_IMU_INIT =						90,
 	ELOC_IMU_GYRO_INIT =				91,
 	ELOC_IMU_ACCEL_INIT =				92,
-	ELOC_IMU_MAG_INIT =					93,	
+	ELOC_IMU_MAG_INIT =					93,
+	ELOC_SCALING_M =					94,
+	ELOC_SCALING_B =					95,
 } sat_eloc;
 
 /******************** PROBLEM CODES ********************/

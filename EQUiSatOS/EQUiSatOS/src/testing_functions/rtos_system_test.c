@@ -44,7 +44,7 @@ static int16_t ad590_to_temp(uint16_t temp_mV)  {
 	//float current = ((float)mV)/1000/2197. -0.000153704; //converts from V to A
 	//float tempInC = (current)*1000000-273;// T = 454*V in C
 	float tempInC = ((float) temp_mV) *0.1286 - 107.405;
-	return (int16_t) temp_mV;
+	return (int16_t) tempInC;
 }
 void print_ir_object_temps_batch(ir_object_temps_batch batch) {
 	print("ir objs\n");

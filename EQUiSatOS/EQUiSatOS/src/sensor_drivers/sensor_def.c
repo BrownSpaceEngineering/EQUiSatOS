@@ -202,6 +202,8 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			return A_LED_SNS_M;
 		case S_LED_SNS_FLASH:
 			return A_LED_SNS_M;
+		case S_LED_SNS_FLASH_BATCH:
+			return A_LED_SNS_M;
 		case S_L_TEMP:
 			return A_TEMP_M;
 		case S_LF_TEMP:
@@ -210,6 +212,8 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			return A_LF_SNS_M;
 		case S_LF_SNS_FLASH:
 			return A_LF_SNS_M;
+		case S_LF_SNS_FLASH_BATCH:
+		return A_LF_SNS_M;
 		case S_L_SNS:
 			return A_L_SNS_M;
 		case S_L_SNS_IDLE_RAD_OFF:
@@ -224,6 +228,8 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 			return A_LF_VOLT_M;
 		case S_LF_OSNS_FLASH:
 			return A_LF_OSNS_M;
+		case S_LF_OSNS_FLASH_BATCH:
+		return A_LF_OSNS_M;
 		case S_LF_OSNS_REG:
 			return A_LF_OSNS_M;
 		case S_L_VOLT:
@@ -243,6 +249,7 @@ uint16_t get_line_m_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_M;
 		default:
+			log_error(ELOC_SCALING_M, ECODE_UNEXPECTED_CASE)
 			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 	}
 }
@@ -262,6 +269,8 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			return A_LED_SNS_B;
 		case S_LED_SNS_FLASH:
 			return A_LED_SNS_B;
+		case S_LED_SNS_FLASH_BATCH:
+			return A_LED_SNS_B;			
 		case S_L_TEMP:
 			return A_TEMP_B;
 		case S_LF_TEMP:
@@ -269,6 +278,8 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_LF_SNS_REG:
 			return A_LF_SNS_B;
 		case S_LF_SNS_FLASH:
+			return A_LF_SNS_B;
+		case S_LF_SNS_FLASH_BATCH:
 			return A_LF_SNS_B;
 		case S_L_SNS:
 			return A_L_SNS_B;
@@ -284,6 +295,8 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 			return A_LF_VOLT_B;
 		case S_LF_OSNS_FLASH:
 			return A_LF_OSNS_B;
+		case S_LF_OSNS_FLASH_BATCH:
+		return A_LF_OSNS_B;
 		case S_LF_OSNS_REG:
 			return A_LF_OSNS_B;
 		case S_L_VOLT:
@@ -303,6 +316,7 @@ int16_t get_line_b_from_signal(sig_id_t sig) {
 		case S_IMU_TEMP:
 			return A_IMU_TEMP_B;
 		default:
+			log_error(ELOC_SCALING_B, ECODE_UNEXPECTED_CASE)
 			return 0; // so if the scaling value isn't found, the reading will ALWAYS BE 0
 	}
 }
