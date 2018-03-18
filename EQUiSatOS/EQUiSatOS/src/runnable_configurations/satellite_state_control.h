@@ -45,9 +45,9 @@ uint8_t got_early_warning_callback_in_boot;
 // **see .c file for ir power states**
 
 // duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
-#define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(200 / portTICK_PERIOD_MS)
+#define TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS		(4000 / portTICK_PERIOD_MS)
 #define TASK_STATE_CHANGE_MUTEX_TAKE_RETRIES		5
-#define SEMAPHORE_EMPTY_POLL_TIME_TICKS				(TASK_STATE_CHANGE_MUTEX_WAIT_TIME_TICKS / 20) // poll a lot
+#define SEMAPHORE_EMPTY_POLL_TIME_TICKS				10 // poll a lot
 
 /************************************************************************/
 /* global hardware states												

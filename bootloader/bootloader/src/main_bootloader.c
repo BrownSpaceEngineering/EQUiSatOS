@@ -6,10 +6,11 @@
 
 #include "Bootloader/MRAM_Commands.h"
 #include "Bootloader/flash_memory.h"
+#include "Bootloader/Watchdog_Commands.h"
 
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
-//#define DISABLE_REWRITE_FROM_MRAM
+#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 #ifdef WRITE_PROG_MEM_TO_MRAM
@@ -31,7 +32,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					174892);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					191892);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				60);
 // address at which prog mem rewritten boolean is stored in mram + size
@@ -59,8 +60,6 @@ void mram_test(struct spi_module* spi_master_instance, struct spi_slave_inst* sl
 void flash_mem_test(void);
 void corrupt_prog_mem(void);
 #endif
-
-static void start_application(void);
 
 /**
  * \brief Check the application startup condition
@@ -121,9 +120,13 @@ static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
 		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
 
+		pet_watchdog(); // pet watchdog before long read
+
 		// read the same data from both MRAMs (to compare them)
 		mram_read_bytes(spi_master_instance, mram_slave1, buffer_mram1, buf_size, mram_addr);
 		mram_read_bytes(spi_master_instance, mram_slave2, buffer_mram2, buf_size, mram_addr);
+		
+		pet_watchdog(); // pet after long read
 
 		// check that the buffers copied from the MRAM match
 		if (memcmp(buffer_mram1, buffer_mram2, buf_size) != 0) {
@@ -139,6 +142,7 @@ static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 				size_t mram1_same_seq_len = num_similar((uint8_t*) flash_addr, buffer_mram1, buf_size);
 				size_t mram2_same_seq_len = num_similar((uint8_t*) flash_addr, buffer_mram2, buf_size);
 				
+				pet_watchdog(); // pet before flash write
 				if (mram1_same_seq_len <= mram2_same_seq_len) {
 					flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
 				} else {
@@ -154,6 +158,8 @@ static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 			// compare this current batch to the actual data stored in the program memory,
 			// to determine whether it must be rewritten
 			if (memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) != 0) {
+				pet_watchdog(); // pet before flash write
+				
 				// if comparison failed, copy the buffer from mram to the flash memory
 				flash_mem_write_bytes(buffer_mram1, buf_size, flash_addr);
 				corrections_made++;
@@ -173,6 +179,7 @@ static int check_and_fix_prog_mem(struct spi_module* spi_master_instance,
 static void set_prog_memory_rewritten(uint8_t was_rewritten, struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write duplicate fields to both mrams (no spacing)
+	pet_watchdog();
 	uint8_t field_size = RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_size); // == 1
 	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr));
 	mram_write_bytes(spi_master_instance, mram_slave1, &was_rewritten, field_size, RAD_SAFE_FIELD_GET(mram_prog_mem_rewritten_addr) + field_size);
@@ -192,6 +199,7 @@ int main(void)
 	struct spi_slave_inst slave2;
 
 	system_init();
+	configure_watchdog(NULL);
 	flash_mem_init();
 	mram_initialize_master(&spi_master_instance, MRAM_SPI_BAUD);
 	mram_initialize_slave(&slave1, P_MRAM1_CS);
@@ -220,6 +228,8 @@ int main(void)
 
 	// reset SPI module to avoid conflicts when OS uses it
 	mram_reset(&spi_master_instance);
+	
+	pet_watchdog(); // pet before initial app jump
 
 	// jump to start of program in memory
 	start_application();
@@ -239,15 +249,21 @@ void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 	while (num_copied < RAD_SAFE_FIELD_GET(prog_mem_size)) {
 		size_t buf_size = min(RAD_SAFE_FIELD_GET(prog_mem_size) - num_copied, RAD_SAFE_FIELD_GET(mram_copy_buffer_size));
 		
+		pet_watchdog(); // pet before long write
+		
 		// write this buffer section directly from the flash (program memory) address space into both MRAMs
 		mram_write_bytes(spi_master_instance, mram_slave1, (uint8_t*) flash_addr, buf_size, mram_addr);
 		mram_write_bytes(spi_master_instance, mram_slave2, (uint8_t*) flash_addr, buf_size, mram_addr);
 		
+		pet_watchdog(); // pet after long write
+		
 		// checks to confirm it matches program memory
 		mram_read_bytes(spi_master_instance, mram_slave1, buffer_mram1, buf_size, mram_addr);
 		assert(memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) == 0);
-		mram_write_bytes(spi_master_instance, mram_slave2, buffer_mram1, buf_size, mram_addr);
+		mram_read_bytes(spi_master_instance, mram_slave2, buffer_mram1, buf_size, mram_addr);
 		assert(memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) == 0);
+		
+		pet_watchdog(); // pet after long read
 		
 		num_copied += buf_size;
 		mram_addr += buf_size;
@@ -295,7 +311,7 @@ void set_random_bytes(uint8_t* start, size_t num) {
 }
 
 void corrupt_prog_mem(void) {
-	#define NUM_RAND_SEQS			3
+	#define NUM_RAND_SEQS			8
 	#define RAND_SEQ_LEN			1
 	#define INSERT_POINT_STEP_AVG	(RAD_SAFE_FIELD_GET(prog_mem_size) / NUM_RAND_SEQS)
 

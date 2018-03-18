@@ -3,7 +3,7 @@
  *
  * Created: 11/17/2017 8:02:34 PM
  *  Author: Tyler
- */ 
+ */
 
 
 #ifndef CONFIG_H_
@@ -16,20 +16,19 @@
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
 #define FLIGHT
 
-/** 
- * flags to control dangerous / inconvenient functions of the satellite 
+/**
+ * flags to control dangerous / inconvenient functions of the satellite
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
 //#define FLASH_ACTIVE // enable flashing
-
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
-#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite
+#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite; WARNING bootloader may still start watchdog even if this is disabled
 
 /*** TESTING ***/
 // used for final release settings (disabled debug helpers)
-#define RELEASE
+//#define RELEASE
 
 // define this flag to disable normal frequencies and read data faster,
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
@@ -45,8 +44,8 @@
 //#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
+#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
@@ -92,7 +91,7 @@
 // whether to use a mutex to avoid collisions with radio
 // define for radio testing but turn off for timing/task testing
 // (it slows down and alters the OS timings)
-//#define SAFE_PRINT	
+//#define SAFE_PRINT
 
 // define to print errors as the come in
 #define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
@@ -104,7 +103,7 @@
 #ifdef FLIGHT
 	//Sets processor pinouts
 	#define	CTRL_BRD_V3
-	
+
 	//Flight IR sensors
 	#define	IR_POS_Y	MLX90614_FLASHPANEL_V6_2_2	//+Y
 	#define	IR_NEG_X	MLX90614_SIDEPANEL_V5_5B	//-X
@@ -112,22 +111,22 @@
 	#define	IR_POS_X		MLX90614_RBFPANEL_V1_1		//+X
 	#define IR_NEG_Z	MLX90614_ACCESSPANEL_V4_7	//-Z
 	#define IR_POS_Z		MLX90614_TOPPANEL_V5_1		//+Z
-	
+
 #endif
 #ifdef FLATSAT
 	//Sets processor pinouts
 	#define	CTRL_BRD_V3
 
 	/*Flatsat IR sensors*/
-	#define	IR_POS_Y	MLX90614_FLASHPANEL_V6_2_1	
+	#define	IR_POS_Y	MLX90614_FLASHPANEL_V6_2_1
 	#define	IR_NEG_X	MLX90614_SIDEPANEL_V5_3
 	#define	IR_NEG_Y	MLX90614_SIDEPANEL_V5_2
 	#define	IR_POS_X		MLX90614_RBFPANEL_V1_4
 	#define IR_NEG_Z	MLX90614_ACCESSPANEL_V4_6
 	#define IR_POS_Z		MLX90614_TOPPANEL_V5_2
-	
-#endif	
-#ifdef XPLAINED	
+
+#endif
+#ifdef XPLAINED
 	//Sets processor pinouts
 	#define	CTRL_BRD_V3
 
@@ -138,7 +137,7 @@
 	#define	IR_POS_X		MLX90614_RBFPANEL_V1_4
 	#define IR_NEG_Z	MLX90614_ACCESSPANEL_V4_6
 	#define IR_POS_Z		MLX90614_TOPPANEL_V4_1
-	
+
 	#define ADC_RD_VAL_XPLAINED		0x0300
 #endif
 
@@ -170,7 +169,10 @@
 #define MLX90614_SIDEPANEL_V5_3		0x6D
 #define MLX90614_TOPPANEL_V5_2		0x5D
 
-//NEW SIDE PANEL: 0x5D	
+// config for watchdog drivers
+#define WATCHDOG_USE_EARLY_WARNING
+
+//NEW SIDE PANEL: 0x5D
 //NEW TOP PANEL:  0x5A
 
 #endif /* CONFIG_H_ */
