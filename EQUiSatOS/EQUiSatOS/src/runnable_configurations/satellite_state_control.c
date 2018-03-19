@@ -302,14 +302,8 @@ void configure_state_from_reboot(void) {
 	}
 	#endif
 
-	// set state of antenna deploy task based on sat state and antenna deploy criteria
-	// (current_task_states value for ANTENNA_DEPLOY_TASK doesn't matter so use it to set its state on boot)
-	if (current_sat_state == INITIAL ||
-		(cache_get_sat_event_history().antenna_deployed && should_exit_antenna_deploy())) {
-		current_task_states.states[ANTENNA_DEPLOY_TASK] = false;
-	} else {
-		current_task_states.states[ANTENNA_DEPLOY_TASK] = true;
-	}
+	// always start antenna deploy task
+	current_task_states.states[ANTENNA_DEPLOY_TASK] = true;
 	
 	// add any errors we can from MRAM cache
 	// (NOTE; no one should've logged any yet, or else they may be overwritten!)

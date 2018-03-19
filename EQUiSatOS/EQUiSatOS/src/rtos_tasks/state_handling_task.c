@@ -48,9 +48,6 @@ void state_handling_task(void *pvParameters)
 		report_task_running(STATE_HANDLING_TASK);
 
 		/* normal operation */
-		// handle antenna deploy task separately
-		emergency_resume_antenna_deploy();
-			
 		// check if there are any patterns of errors that warrent action
 		check_for_error_issues();
 		
@@ -60,19 +57,6 @@ void state_handling_task(void *pvParameters)
 
 	// delete this task if it ever breaks out
 	vTaskDelete(NULL);
-}
-
-/* function called periodically to check if we need to resume trying to deploy the antenna */
-void emergency_resume_antenna_deploy(void) {
-	// if the antenna still hasn't technically deployed, we should keep trying
-	if (!antenna_did_deploy()
-	&& get_sat_state() != INITIAL
-	&& get_sat_state() != ANTENNA_DEPLOY
-	&& get_sat_state() != LOW_POWER) {
-		// if the antenna has not been deployed, start the task again to deploy it
-		// (ignoring any sat states where it MUST be running or suspended)
-		task_resume_safe(ANTENNA_DEPLOY_TASK);
-	}
 }
 
 // Decides next state based on the criteria that dictate
