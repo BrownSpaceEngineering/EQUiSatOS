@@ -13,8 +13,13 @@
 static uint8_t num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
-	return (antenna_did_deploy() && num_tries > 0) // must try whole range of pin 1
+	bool should_exit = (antenna_did_deploy() && num_tries > 0) // must try whole range of pin 1
 		|| num_tries >= 3;
+		if (should_exit) {
+			//update the event history before ending antenna deploy task
+			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+		}		
+		return should_exit;
 }
 
 uint8_t get_num_tries_antenna_deploy(void) {
@@ -48,9 +53,8 @@ void antenna_deploy_task(void *pvParameters) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_DET_ALREADY_HIGH, false);
 		} else if (num_tries > 0 && did_deploy) {
 			// then the antenna should actually be deployed
-			// (update the event history and then delay until the state handling task suspends us)
-			print("Deployed!\n");
-			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
+			// (delay until the state handling task suspends us)
+			print("Deployed!\n");			
 			vTaskDelayUntil(&prev_wake_time, ANTENNA_DEPLOY_TASK_LESS_FREQ / portTICK_PERIOD_MS);
 			// report to watchdog (again)
 			report_task_running(ANTENNA_DEPLOY_TASK);
