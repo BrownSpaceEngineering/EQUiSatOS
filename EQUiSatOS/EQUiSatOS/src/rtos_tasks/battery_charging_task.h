@@ -175,7 +175,7 @@ void check_after_charging(int8_t bat_charging, int8_t old_bat_charging);
 bool check_chg_should_decommission(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
 void check_chg_with_retry(int8_t bat, bool should_be_charging, bat_charge_dig_sigs_batch batch);
 void check_fault_with_retry(int8_t bat, bat_charge_dig_sigs_batch batch);
-bool get_lf_full(int8_t lf, uint16_t max_cell_mv, bat_charge_dig_sigs_batch batch, bool got_batch);
+bool get_lf_full(uint16_t sum_cell_mv, uint16_t max_cell_mv, int8_t lf, bat_charge_dig_sigs_batch batch, bool got_batch);
 bool get_lfs_both_full(uint8_t num_lf_down, int8_t good_lf, uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv);
 void check_after_discharging(int8_t bat_discharging, int8_t bat_not_discharging);
 void check_discharging_with_retry(int8_t bat_discharging, bat_charge_dig_sigs_batch batch);

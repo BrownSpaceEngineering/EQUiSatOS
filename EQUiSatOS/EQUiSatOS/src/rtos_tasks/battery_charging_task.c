@@ -574,11 +574,11 @@ void charge_lower_lf_bank(uint16_t lfb1_max_cell_mv, uint16_t lfb2_max_cell_mv)
 	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 
 	// NOTE: it shouldn't be the case that both are full -- we'd be charging LI's
-	if (get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch))
+	if (get_lf_full(charging_data.bat_voltages[LFB1], lfb1_max_cell_mv, LFB1, batch, got_batch))
 	{
 		lf_charging = LFB2;
 	}
-	else if (get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch))
+	else if (get_lf_full(charging_data.bat_voltages[LFB2], lfb2_max_cell_mv, LFB2, batch, got_batch))
 	{
 		lf_charging = LFB1;
 	}
@@ -719,16 +719,21 @@ void battery_charging_task(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
-bool get_lf_full(int8_t lf, uint16_t max_cell_mv, bat_charge_dig_sigs_batch batch, bool got_batch)
+bool get_lf_full(
+	uint16_t sum_cell_mv, 
+	uint16_t max_cell_mv, 
+	int8_t lf, 
+	bat_charge_dig_sigs_batch batch, 
+	bool got_batch)
 {	
 	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
 	bool got_panel_ref = panel_ref_val != ((uint16_t) -1);
 
-	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
+	return sum_cell_mv > LF_FULL_SUM_MV ||
 		   max_cell_mv > LF_FULL_MAX_MV ||
 		   (charging_data.bat_charging == lf && got_panel_ref && got_batch &&
 		    !chg_pin_active(lf, batch) && (panel_ref_val > PANEL_REF_SUN_MV) &&
-		  	charging_data.bat_voltages[lf] > LF_FULL_SANITY_MV);
+		  	sum_cell_mv > LF_FULL_SANITY_MV);
 }
 
 bool get_lfs_both_full(
@@ -741,11 +746,11 @@ bool get_lfs_both_full(
 	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 	
 	if (num_lf_down == 0)
-		return get_lf_full(LFB1, lfb1_max_cell_mv, batch, got_batch) &&
-			   get_lf_full(LFB2, lfb2_max_cell_mv, batch, got_batch);
+		return get_lf_full(charging_data.bat_voltages[LFB1], lfb1_max_cell_mv, LFB1, batch, got_batch) &&
+			   get_lf_full(charging_data.bat_voltages[LFB2], lfb2_max_cell_mv, LFB2, batch, got_batch);
 
 	if (num_lf_down == 1)
-		return get_lf_full(good_lf, good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv, batch, got_batch);
+		return get_lf_full(charging_data.bat_voltages[good_lf], good_lf == LFB1 ? lfb1_max_cell_mv : lfb2_max_cell_mv, good_lf, batch, got_batch);
 
 	return true;
 }

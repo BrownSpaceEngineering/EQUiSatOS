@@ -96,8 +96,8 @@ void decide_next_state(sat_state_t current_state) {
 	bat_charge_dig_sigs_batch batch;
 	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 
-	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv), batch, got_batch) && (lfb2_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB2])) 
-									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv), batch, got_batch) && (lfb1_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB1]));
+	bool one_lf_full_one_above_flash = (get_lf_full(lfb1_sum, max(lf1_mv, lf2_mv), LFB1, batch, got_batch) && (lfb2_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB2])) 
+									|| (get_lf_full(lfb2_sum, max(lf3_mv, lf4_mv), LFB2, batch, got_batch) && (lfb1_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB1]));
 	bool one_lf_below_flash = (lfb1_sum < LF_FLASH_MIN_MV) || (lfb2_sum < LF_FLASH_MIN_MV);
 
 	bool one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
@@ -108,8 +108,6 @@ void decide_next_state(sat_state_t current_state) {
 										(charging_data.decommissioned[LI1] ? true : (li1_mv > LI_LOW_POWER_MV))
 										&& (charging_data.decommissioned[LI2] ? true : (li2_mv > LI_LOW_POWER_MV)));
 	bool low_power_exit_criteria = !low_power_entry_criteria;
-
-	satellite_history_batch sat_history = cache_get_sat_event_history();
 
 	switch (current_state)
 	{
