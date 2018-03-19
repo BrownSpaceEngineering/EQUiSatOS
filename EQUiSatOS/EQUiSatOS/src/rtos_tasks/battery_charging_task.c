@@ -655,14 +655,14 @@ void update_should_deploy_antenna(bool has_li_data)
 	{
 		if (num_li_down == 0)
 		{
-			if (charging_data.bat_voltages[LI1] > LI_FULL_SANITY_MV && charging_data.bat_voltages[LI2] > LI_FULL_SANITY_MV)
+			if (charging_data.bat_voltages[LI1] > LI_FULL_ANTENNA_DEPLOY_MV && charging_data.bat_voltages[LI2] > LI_FULL_ANTENNA_DEPLOY_MV)
 				charging_data.should_move_to_antenna_deploy = 1;
 			else
 				charging_data.should_move_to_antenna_deploy = 0;
 		}
 		else if (num_li_down == 1)
 		{
-			if (charging_data.bat_voltages[good_li] > LI_FULL_SANITY_MV)
+			if (charging_data.bat_voltages[good_li] > LI_FULL_ANTENNA_DEPLOY_MV)
 				charging_data.should_move_to_antenna_deploy = 1;
 			else
 				charging_data.should_move_to_antenna_deploy = 0;
@@ -956,7 +956,7 @@ void battery_logic()
 		// only valid if we have values
 		if (!charging_data.already_set_sat_state[bat] && (is_lion(bat) ? li_success : lf_success))
 		{
-			uint16_t threshold = is_lion(bat) ? LI_FULL_SANITY_MV : LF_FULL_SANITY_MV;
+			uint16_t threshold = is_lion(bat) ? LI_FULL_LOWER_MV : LF_FULL_SANITY_MV;
 			if (charging_data.bat_voltages[bat] > threshold)
 			{
 				switch (bat)
@@ -1357,6 +1357,7 @@ void battery_logic()
 		for (int8_t bat = 0; bat < 4; bat++)
 			set_bat_to_charge(bat, bat == charging_data.bat_charging);
 
+		// NOTE: no wait here but reading takes a while and will retry in worst case
 		// NOTE: check after charging accounts for old_bat_charging as -1
 		// only makes sense to do this if we got good voltage values
 		if (li_success && lf_success)
@@ -1367,6 +1368,7 @@ void battery_logic()
 		set_bat_to_charge(old_bat_charging, 0);
 		set_bat_to_charge(charging_data.bat_charging, 1);
 
+		// NOTE: no wait here but reading takes a while and will retry in worst case
 		// only makes sense to do this if we got good voltage values
 		if (li_success && lf_success)
 			check_after_charging(charging_data.bat_charging, old_bat_charging);
@@ -1376,7 +1378,6 @@ void battery_logic()
 		print("no change to charging bats\n");
 	}
 
-	vTaskDelay(WAIT_TIME_BEFORE_PIN_CHECK_MS / portTICK_PERIOD_MS);
 	#endif
 
 	print("leaving battery charging\n");

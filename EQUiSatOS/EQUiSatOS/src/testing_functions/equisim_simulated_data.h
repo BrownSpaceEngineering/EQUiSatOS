@@ -30,7 +30,7 @@ extern int simulated_lfs_both_filled_up;
 #define LI_DISCHARGING_MV_PER_MS_HIGH			0.003
 #define LI_DISCHARGING_MV_PER_MS_LOW      0.006
 #define LI_HIGH_LOW_THRESHOLD             4000
-#define LI_VOLTS_CEILING				LI_MAX_MV + 20
+#define LI_VOLTS_CEILING				  4020
 
 #define LF_CHARGING_MV_PER_MS_HIGH				         0.004
 #define LF_CHARGING_MV_PER_MS_LOW                  0.008

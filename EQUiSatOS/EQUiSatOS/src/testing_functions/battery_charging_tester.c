@@ -9,7 +9,7 @@
 
 // Note: we need the test flag to be set as true
 
-#define LI_ABOVE_FULL              (LI_FULL_SANITY_MV + 50)
+#define LI_ABOVE_FULL              (LI_FULL_LOWER_MV + 50)
 #define LI_BETWEEN_DOWN_AND_FULL   (LI_DOWN_MV + 25)
 #define LI_BELOW_DOWN              (LI_DOWN_MV - 50)
 #define LF_ABOVE_FULL			   (LF_FULL_SUM_MV + 10)

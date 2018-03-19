@@ -14,9 +14,6 @@
 #include "rtos_tasks.h"
 #include "testing_functions/equisim_simulated_data.h"
 
-// TODO*: figure out these thresholds fully and deal with scaling
-// TODO*: remove deprecated thresholds
-
 // #define BAT_UNIT_TESTING
 
 // thresholds for making very critical charging decisions, including when to go
@@ -25,45 +22,36 @@
 #define BAT_CHARGING_PERIOD_MINS        9
 #define BAT_CHARGING_ITERS_UNTIL_FULL   (FULL_BAT_CHARGING_PERIOD_MINS / BAT_CHARGING_PERIOD_MINS)
 
-#define LI_MAX_MV                       4200
-#define LI_FULL_MV                      4175
+#define LI_FULL_MV                      4170
 #define LI_FULL_LOW_MV					4140
 #define LI_FULL_LOWER_MV				4100
-#define LI_FULL_SANITY_MV               4100
+#define LI_FULL_ANTENNA_DEPLOY_MV       4050
 #define LI_DOWN_MV                 		4000
 #define LI_LOW_POWER_MV            		3900
-#define LI_CRITICAL_MV             		3000
-#define LI_MIGHT_NOT_BE_FULL_MV         4000
+#define LI_CRITICAL_MV             		3500
+#define LI_MIGHT_NOT_BE_FULL_MV         4050
 
-#define LF_FULL_SUM_MV					6800
+#define LF_FULL_SUM_MV					6750
 #define LF_FULL_MAX_MV                  3900
-#define LF_FULL_SANITY_MV               6000
-#define LF_MIGHT_NOT_BE_FULL_MV         6000
+#define LF_FULL_SANITY_MV               6500
+#define LF_MIGHT_NOT_BE_FULL_MV         6400
 #define LF_FLASH_MIN_MV            	  	6200
 
 #define SNS_THRESHOLD_LOW               1025
 #define SNS_THRESHOLD_LOWER             1000
 
-#define RETRIES_AFTER_MUTEX_TIMEOUT     3
+// something of a misnomer -- the total number of tries
+#define RETRIES_AFTER_MUTEX_TIMEOUT     7
 
 // thresholds for error checking and the strikes system
 #define DELAY_BEFORE_RETRY_MS           400
-
-#define BAT_MUTEX_WAIT_TIME_TICKS       (3000 / portTICK_PERIOD_MS)
 #define SAT_NO_POWER_TURN_OFF_T_MS		1000
 
-#define TRY_PIN_DELAY_TIME_MS           100
-#define MAX_TIMES_TRY_PIN               3
-#define WAIT_TIME_BEFORE_PIN_CHECK_MS   10
+#define MAX_RECOMMISSION_TIME_S         (3*24*60*60)   // 3 days
+#define MAX_TIME_BELOW_V_THRESHOLD_S	(3*60*60)      // 3 hrs
+#define INITIAL_RECOMMISSION_TIME_S     (3*60*60)      // 3 hrs
 
-#define MAX_TIME_TO_WAIT_FOR_DEPLOY_S	10000 // what here?
-
-// TODO: figure out the whole function
-#define MAX_RECOMMISSION_TIME_S         10000 // what here?
-#define MAX_TIME_BELOW_V_THRESHOLD_S	10000
-#define INITIAL_RECOMMISSION_TIME_S     500
-
-#define PANEL_REF_SUN_MV                1474	// 7500 mv // is this working?
+#define PANEL_REF_SUN_MV                1474	// 7500 mv
 
 // NOTE: the order of elements of this enum is very important -- do not change!
 // defines each battery and/or bank

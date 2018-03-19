@@ -112,8 +112,8 @@ void decide_next_state(sat_state_t current_state) {
 	bat_charge_dig_sigs_batch batch;
 	bool got_batch = !read_bat_charge_dig_sigs_batch_with_retry(&batch);
 
-	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv), batch, got_batch) && lfb2_sum >= LF_FLASH_MIN_MV) 
-									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv), batch, got_batch) && lfb1_sum >= LF_FLASH_MIN_MV);
+	bool one_lf_full_one_above_flash = (get_lf_full(LFB1, max(lf1_mv, lf2_mv), batch, got_batch) && (lfb2_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB2])) 
+									|| (get_lf_full(LFB2, max(lf3_mv, lf4_mv), batch, got_batch) && (lfb1_sum >= LF_FLASH_MIN_MV || charging_data.decommissioned[LFB1]));
 	bool one_lf_below_flash = (lfb1_sum < LF_FLASH_MIN_MV) || (lfb2_sum < LF_FLASH_MIN_MV);
 
 	bool one_li_below_low_power = li1_mv <= LI_LOW_POWER_MV || li2_mv <= LI_LOW_POWER_MV;
