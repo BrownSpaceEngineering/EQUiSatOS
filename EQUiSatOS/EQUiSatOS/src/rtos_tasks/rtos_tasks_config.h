@@ -2,10 +2,10 @@
  * rtos_tasks_config.h
  *
  * All constants important for the various RTOS_TASKS
- * 
+ *
  * Created: 10/2/2016 3:38:22 PM
  *  Author: mckenna
- */ 
+ */
 
 #ifndef RTOS_TASKS_CONFIG_H
 #define RTOS_TASKS_CONFIG_H
@@ -69,7 +69,7 @@ enum {
 	#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
 	#endif
 #endif
-#define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
+#define TASK_WATCHDOG_PRIORITY						(STATE_HANDLING_PRIORITY)
 
 #ifdef RELEASE
 	#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1280/sizeof(portSTACK_TYPE))
@@ -101,11 +101,11 @@ enum {
 #else
 	#ifdef RISKY_STACK_SIZES
 	#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(600/sizeof(portSTACK_TYPE))
-	#else 
+	#else
 	#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE)) // note: rather close
 	#endif
 #endif
-	#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
+#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
 
 #ifdef RELEASE
 	#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1536/sizeof(portSTACK_TYPE))
@@ -136,7 +136,7 @@ enum {
 // we set these (mostly) to be the amount that needs to be transmitted for each data type,
 // plus one for the staged pointer
 #define IDLE_STACK_MAX					8 // == (IDLE_DATA_PACKETS + 1)
-#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1) 
+#define LOW_POWER_STACK_MAX				6 // == (LOW_POWER_DATA_PACKETS + 1)
 #define ATTITUDE_STACK_MAX				6 // == (ATTITUDE_DATA_PACKETS + 1)
 #define FLASH_STACK_MAX					4 // such that we transmit all we store every minute
 #define FLASH_CMP_STACK_MAX				7 // == (FLASH_CMP_DATA_PACKETS + 1)
@@ -203,7 +203,7 @@ typedef enum
 #define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600
 #define IDLE_DATA_TASK_FREQ_OFFSET				10000 // separate from attitude
 #define LOW_POWER_DATA_TASK_FREQ_OFFSET			800
-#define ATTITUDE_DATA_TASK_FREQ_OFFSET			900 
+#define ATTITUDE_DATA_TASK_FREQ_OFFSET			900
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ_OFFSET	500	// high-freq
 
 /* action frequency periods in MS (some that actually have data collection are below) */
@@ -212,7 +212,7 @@ typedef enum
 #endif
 
 #define WATCHDOG_TASK_FREQ						1500
-														
+
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #ifndef TESTING_SPEEDUP
 	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			(15*60*1000)	// 15 minutes; don't do it often if it seems to not be working
@@ -220,7 +220,7 @@ typedef enum
 	#define ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT		(30*60*1000) // 30 minutes
 	#define ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT		(60*60*1000) // 60 minutes
 	#define ANTENNA_DEPLOY_TASK_WATCHDOG_TIMEOUT	(max(ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT, max(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT, ANTENNA_DEPLOY_TASK_LESS_FREQ)))
-	
+
 #ifndef TESTING_SPEEDUP
 #define BATTERY_CHARGING_TASK_FREQ				(9*60*1000)	// 9 minutes; how often run battery charging logic
 #endif
@@ -238,7 +238,7 @@ typedef enum
 	#ifndef TESTING_SPEEDUP
 	#define IDLE_DATA_LOG_FREQ_S						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
 	#endif
-	
+
 #ifndef TESTING_SPEEDUP
 #define LOW_POWER_DATA_TASK_FREQ				(2*60*1000)
 #endif

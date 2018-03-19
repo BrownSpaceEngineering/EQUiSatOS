@@ -11,7 +11,7 @@
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
 //#define CONFIRM_PROG_MEM_WRITE
-//#define DISABLE_REWRITE_FROM_MRAM
+#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
