@@ -7,19 +7,6 @@
 
 #include "battery_charging_task.h"
 
-// To check (TODO):
-//   - make sure that everywhere an array is being indexed, the right thing is
-//     happening (i.e. we never try to use the index -1)
-//   - check for edge cases where something is dependent on the initial value of these state variables
-//     (especially the li_discharging and the bat_charging variables)
-//   - initialization of timestamps after reboot
-//   - make sure the flow isn't in any way dependent on the individual values of the variable for the
-//     discharging LI
-//   - check all pins
-//   - everything is okay coming back from a boot
-//   - flow through the discharging section on the first time through
-//   - all usages of -1 (important!)
-
 li_discharging_t get_li_discharging(void)
 {
 	bat_charge_dig_sigs_batch batch;
@@ -191,11 +178,11 @@ static uint16_t get_panel_ref_val_with_retry(void)
 {
 	uint16_t four_buf[4];
 	bool success = false;
-	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+	for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
 		success = read_ad7991_batbrd_precise(four_buf);
 
 	if (!success)
-		return -1;
+		return ((uint16_t) -1);
 
 	return ((uint16_t)four_buf[2]);
 }
@@ -204,11 +191,11 @@ static uint16_t get_sns_val_with_retry(int8_t bat)
 {
 	uint16_t four_buf[4];
 	bool success = false;
-	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+	for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
 		success = read_ad7991_batbrd_precise(four_buf);
 
 	if (!success)
-		return -1;
+		return ((uint16_t) -1);
 
 	return ((uint16_t)four_buf[bat == LI1 ? 1 : 0]);
 }
@@ -216,7 +203,7 @@ static uint16_t get_sns_val_with_retry(int8_t bat)
 bool read_bat_charge_dig_sigs_batch_with_retry(bat_charge_dig_sigs_batch *batch)
 {
 	bool success = false;
-	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
+	for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !success; i++)
 		success = read_bat_charge_dig_sigs_batch(batch);
 
 	return success;
@@ -258,7 +245,7 @@ bool check_for_recommission(int8_t bat)
 			// we also need to do various things to make sure that the battery won't be
 			// immediately decommissioned again
 			charging_data.decommissioned_timestamp[bat] = 0; // NOTE: this doesn't do much but keeps the struct consistent
-			charging_data.li_entered_low_voltage_timestamp[bat] = (uint32_t) -1;
+			charging_data.li_entered_low_voltage_timestamp[bat] = ((uint32_t) -1);
 		}
 
 		return true;
@@ -284,9 +271,9 @@ void init_charging_data()
 	// we want to initially be in FILL_LI_NEITHER_FULL_A
 	charging_data.curr_charge_state = FILL_LI_NEITHER_FULL_A;
 
-	// set all battery timestamps to -1
-	charging_data.li_entered_low_voltage_timestamp[0] = (uint32_t) -1;
-	charging_data.li_entered_low_voltage_timestamp[1] = (uint32_t) -1;
+	// set low voltage timestamps to -1
+	charging_data.li_entered_low_voltage_timestamp[0] = ((uint32_t) -1);
+	charging_data.li_entered_low_voltage_timestamp[1] = ((uint32_t) -1);
 
 	for (int8_t bat = 0; bat < 4; bat++)
 		charging_data.already_set_sat_state[bat] = 0;
@@ -488,8 +475,8 @@ bool check_chg_should_decommission(int8_t bat, bool should_be_charging, bat_char
 		print("\t\tpanel ref: %d\n", get_panel_ref_val_with_retry());
 
 		// we can't make any claims if we don't know anything about PANEL_REF
-		int panel_ref_val = get_panel_ref_val_with_retry();
-		if (panel_ref_val == -1)
+		uint16_t panel_ref_val = get_panel_ref_val_with_retry();
+		if (panel_ref_val == ((uint16_t) -1))
 			return false;
 
 		if (!charge_running && (panel_ref_val > PANEL_REF_SUN_MV) &&
@@ -643,7 +630,7 @@ void update_should_deploy_antenna(bool has_li_data)
 	uint16_t li2_mv = 0;
 	if (!has_li_data)
 	{
-		for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
+		for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
 			li_success = read_lion_volts_precise((uint16_t *) &li1_mv, (uint16_t *) &li2_mv, true);
 	}
 	else
@@ -735,7 +722,7 @@ void battery_charging_task(void *pvParameters)
 bool get_lf_full(int8_t lf, uint16_t max_cell_mv, bat_charge_dig_sigs_batch batch, bool got_batch)
 {	
 	uint16_t panel_ref_val = get_panel_ref_val_with_retry();
-	bool got_panel_ref = panel_ref_val != -1;
+	bool got_panel_ref = panel_ref_val != ((uint16_t) -1);
 
 	return charging_data.bat_voltages[lf] > LF_FULL_SUM_MV ||
 		   max_cell_mv > LF_FULL_MAX_MV ||
@@ -780,7 +767,7 @@ void battery_logic()
 
 	#ifndef BAT_UNIT_TESTING
 	bool li_success = false;
-	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
+	for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !li_success; i++)
 		li_success = read_lion_volts_precise(
 			(uint16_t *) &(charging_data.bat_voltages[LI1]),
 			(uint16_t *) &(charging_data.bat_voltages[LI2]), true);
@@ -798,7 +785,7 @@ void battery_logic()
 	uint16_t lf3_mv;
 	uint16_t lf4_mv;
 	bool lf_success = false;
-	for (int i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !lf_success; i++)
+	for (int8_t i = 0; i < RETRIES_AFTER_MUTEX_TIMEOUT && !lf_success; i++)
 		lf_success = read_lifepo_volts_precise(&lf1_mv, &lf2_mv, &lf3_mv, &lf4_mv, true);
 
 	if (!lf_success)
@@ -857,7 +844,7 @@ void battery_logic()
 				// too long
 				if (charging_data.bat_voltages[bat] <= LI_CRITICAL_MV)
 				{
-					if (charging_data.li_entered_low_voltage_timestamp[bat] == (uint32_t) -1)
+					if (charging_data.li_entered_low_voltage_timestamp[bat] == ((uint32_t) -1))
 					{
 						charging_data.li_entered_low_voltage_timestamp[bat] = get_current_timestamp_wrapped();
 					}
@@ -876,7 +863,7 @@ void battery_logic()
 				}
 				else
 				{
-					charging_data.li_entered_low_voltage_timestamp[bat] = (uint32_t) -1;
+					charging_data.li_entered_low_voltage_timestamp[bat] = ((uint32_t) -1);
 				}
 			}
 		}
@@ -927,7 +914,7 @@ void battery_logic()
 		print("currently charging li %d, will check to see if it's full\n", charging_data.bat_charging);
 
 		uint16_t sns_value = get_sns_val_with_retry(charging_data.bat_charging);
-		bool got_sns_data = sns_value != -1;
+		bool got_sns_data = sns_value != ((uint16_t) -1);
 
 		print("\tsns value: %d\n", sns_value);
 
@@ -1310,6 +1297,7 @@ void battery_logic()
 		set_li_to_discharge(LI1, 1);
 		set_li_to_discharge(LI2, 1);
 	}
+	// NOTE: lion_discharging cannot be -1 at this point
 	else if (charging_data.lion_discharging != old_li_discharging)
 	{
 		// we also need to make changes with respect to lion that isn't discharging
