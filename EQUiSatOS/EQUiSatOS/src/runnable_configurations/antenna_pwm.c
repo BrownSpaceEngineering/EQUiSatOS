@@ -82,7 +82,7 @@ bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		}
 	} else {
 		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", lf1);
-		if (lf1 > PWM_MAX_CUR_LF || (deployed && !was_deployed)) {
+		if (lf1 < PWM_MAX_CUR_LF || (deployed && !was_deployed)) {
 			can_cont = false;
 		} else if (deployed && lf1 < PWM_VERY_MIN_CUR_LF) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);

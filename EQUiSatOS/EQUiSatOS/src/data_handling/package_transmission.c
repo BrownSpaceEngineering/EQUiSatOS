@@ -79,12 +79,17 @@ void read_current_data(uint8_t* cur_data_buf, uint32_t timestamp) {
 // forward declarations
 void write_preamble(uint8_t* buffer, uint8_t* buf_index, uint32_t timestamp, uint8_t states, uint8_t data_len, uint8_t num_errors);
 void write_data_section(uint8_t* buffer, uint8_t* buf_index, msg_data_type_t msg_type, int num_data);
-void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp);
+void write_errors_unsafe(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp);
 void write_parity(uint8_t* buffer, uint8_t* buf_index);
 
 void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t current_timestamp, const uint8_t* cur_data_buf) {
 
-	uint8_t num_data, size_data, num_errors, padding_size;
+	uint8_t num_data, size_data, num_packet_errors, padding_size;
+
+	bool got_error_stack_mutex = xSemaphoreTake(error_equistack.mutex, EQUISTACK_MUTEX_WAIT_TIME_TICKS);
+	if (!got_error_stack_mutex) {
+		log_error(ELOC_RADIO, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
+	}
 
 	// determine constants based on message type
 	switch(msg_type)
@@ -92,35 +97,35 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 		case IDLE_DATA:
 			num_data =			IDLE_DATA_PACKETS;
 			size_data =			IDLE_DATA_PACKET_SIZE;
-			num_errors =		IDLE_DATA_NUM_ERRORS;
+			num_packet_errors = IDLE_DATA_NUM_ERRORS;
 			padding_size =		IDLE_DATA_PADDING_SIZE;
 			break;
 
 		case ATTITUDE_DATA:
 			num_data =			ATTITUDE_DATA_PACKETS;
 			size_data =			ATTITUDE_DATA_PACKET_SIZE;
-			num_errors =		ATTITUDE_DATA_NUM_ERRORS;
+			num_packet_errors = ATTITUDE_DATA_NUM_ERRORS;
 			padding_size =		ATTITUDE_DATA_PADDING_SIZE;
 			break;
 
 		case FLASH_DATA:
 			num_data =			FLASH_DATA_PACKETS;
 			size_data =			FLASH_DATA_PACKET_SIZE;
-			num_errors =		FLASH_DATA_NUM_ERRORS;
+			num_packet_errors = FLASH_DATA_NUM_ERRORS;
 			padding_size =		FLASH_DATA_PADDING_SIZE;
 			break;
 
 		case FLASH_CMP_DATA:
 			num_data =			FLASH_CMP_DATA_PACKETS;
 			size_data =			FLASH_CMP_DATA_PACKET_SIZE;
-			num_errors =		FLASH_CMP_DATA_NUM_ERRORS;
+			num_packet_errors = FLASH_CMP_DATA_NUM_ERRORS;
 			padding_size =		FLASH_CMP_DATA_PADDING_SIZE;
 			break;
 
 		case LOW_POWER_DATA:
 			num_data =			LOW_POWER_DATA_PACKETS;
 			size_data =			LOW_POWER_DATA_PACKET_SIZE;
-			num_errors =		LOW_POWER_DATA_NUM_ERRORS;
+			num_packet_errors = LOW_POWER_DATA_NUM_ERRORS;
 			padding_size =		LOW_POWER_DATA_PADDING_SIZE;
 			break;
 
@@ -140,15 +145,12 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	state_string |= (get_sat_state()	& 0b111)	<< 3;	// three LSB of satellite state
 	state_string |= (get_input(P_SPF_ST)& 0x1)		<< 6;	// SPF_ST (solar panel discharge bit)
 	state_string |= (cache_get_prog_mem_rewritten() & 0x1) << 7;	// whether program mem rewritten on last reboot
-
+	
 	// incremented index in buffer
 	uint8_t buf_index = 0;
 
-	// clear out the whole packet buffer before writing
-	write_value_and_shift(msg_buffer, &buf_index, 0, MSG_BUFFER_SIZE);
-	buf_index = 0; // make sure to reset
-
-	write_preamble(msg_buffer, &buf_index, current_timestamp, state_string, num_data * size_data, num_errors);
+	// number of errors here is totoal number of errors currently in stack
+	write_preamble(msg_buffer, &buf_index, current_timestamp, state_string, num_data * size_data, error_equistack.cur_size);
 	configASSERT(buf_index == START_CUR_DATA);
 
 	// copy current data buffer to this message buffer (it should've been written using a call to read_current_data)
@@ -160,9 +162,12 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	configASSERT(buf_index == START_DATA + size_data*num_data);
 	configASSERT (buf_index < START_PARITY);
 
-	write_errors(msg_buffer, &buf_index, num_errors, current_timestamp);
-	configASSERT(buf_index == START_DATA + size_data*num_data + num_errors*ERROR_PACKET_SIZE);
+	// we have the mutex, so write errors with it!
+	write_errors_unsafe(msg_buffer, &buf_index, num_packet_errors, current_timestamp);
+	configASSERT(buf_index == START_DATA + size_data*num_data + num_packet_errors*ERROR_PACKET_SIZE);
 	configASSERT (buf_index <= START_PARITY);
+	
+	if (got_error_stack_mutex) xSemaphoreGive(error_equistack.mutex);
 
 	write_value_and_shift(msg_buffer, &buf_index, 0, padding_size);
 	configASSERT(buf_index == START_PARITY);
@@ -217,7 +222,7 @@ static void write_error(uint8_t* buffer, uint8_t* buf_index, sat_error_t* err, u
 
 // make sure not to call this function (i.e. write_*_packet) more than once or it will
 // re-iterate over the errors!
-void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp) {
+void write_errors_unsafe(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t timestamp) {
 	// when writing errors, iterate through the error equistack across transmissions, 
 	// so each subsequent transmission is farther down the stack (until it wraps around)
 	// NOTE: Because of RTOS, the size of the stack may change at any point here, but by the nature
@@ -226,22 +231,19 @@ void write_errors(uint8_t* buffer, uint8_t* buf_index, int count, uint32_t times
 
 	for (int errors_written = 0; errors_written < count; errors_written++) {
 		configASSERT(error_index >= 0);
-
-		// if stack is empty, just write zeros
-		// ALSO write zeros if error_index >= length of the stack.
-		// (note we have caught completely empty stacks above)
-		// Should NOT happen in general, but will be resolved below
-		// (both priority_num and normal_num should only ever GROW, not SHRINK)
-		// (although one test does do that, so we write null data in case)
+		
+		// wrap around if necessary
 		if (error_index >= error_equistack.cur_size) {
-			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
-		} else {
-			sat_error_t* err = (sat_error_t*) equistack_Get(&error_equistack, error_index);
-			write_error(buffer, buf_index, err, timestamp);
+			error_index = 0;
 		}
-
-		// increment, wrapping around the CURRENT end of the stack if necessary
-		error_index = (error_index + 1) % (error_equistack.cur_size);
+		
+		if (errors_written < error_equistack.cur_size) {
+			sat_error_t* err = (sat_error_t*) equistack_Get_Unsafe(&error_equistack, error_index);
+			write_error(buffer, buf_index, err, timestamp);
+			error_index++;
+		} else {
+			write_value_and_shift(buffer, buf_index, 0, ERROR_PACKET_SIZE);
+		}
 	}
 }
 

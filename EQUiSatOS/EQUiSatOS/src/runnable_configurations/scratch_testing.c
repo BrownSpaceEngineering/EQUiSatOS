@@ -77,7 +77,7 @@ void runit(void){
 	pick_side(true);
 	
 	struct adc_module temp_instance;
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8, true);
 
 	/*int i = 0;
 	int cum = 0;
@@ -207,7 +207,7 @@ void rsTest(void) {
 
 void simpleADCTest(void) {
 	struct adc_module adc_instance;
-	configure_adc(&adc_instance, PIN_PB00); // must be an analog pin
+	configure_adc(&adc_instance, PIN_PB00, true); // must be an analog pin
 
 	uint16_t value;
 	enum status_code sc = read_adc(adc_instance, &value);
@@ -458,4 +458,66 @@ void rx_pointer_test(void) {
 	memcpy(radio_receive_buffer, cmd_test_buf, LEN_RECEIVEBUFFER);
 	test = check_rx_received();
 	assert(test == CMD_NONE);
+}
+
+void lf_full_discharge(void) {
+	enum adc_positive_input bat_adc_pins[10] = {
+		P_AI_LF1REF,
+		P_AI_LF3REF
+	};
+	struct adc_module bat_instance, temp_instance;
+	uint16_t lfb1;
+	uint16_t lfb2;
+	setup_pin(true, P_ANT_DRV2);
+	setup_pin(true, P_ANT_DRV3);
+	set_output(false, P_ANT_DRV1);
+	set_output(false, P_ANT_DRV2);
+	
+	float LEDTEMPS[4];
+	print("LFB1,LFB2,LED1TEMP,LED2TEMP,LED3TEMP,LED4TEMP\n");
+	
+	do {
+		for (int c = 0; c < 20; c++) {
+			pet_watchdog();
+			
+			if (lfb1 > 4800 && LEDTEMPS[0] < HIGH_TEMP_C && LEDTEMPS[1] < HIGH_TEMP_C) {
+				set_output(true, P_LF_B1_OUTEN);
+			}
+			if (lfb2 > 4800  && LEDTEMPS[2] < HIGH_TEMP_C && LEDTEMPS[3] < HIGH_TEMP_C) {
+				set_output(true, P_LF_B2_OUTEN);
+			}
+			set_output(false, P_LED_CMD);
+			pet_watchdog();
+			delay_ms(100);
+			pet_watchdog();
+			set_output(true, P_LED_CMD);
+			set_output(false, P_LF_B1_OUTEN);
+			set_output(false, P_LF_B2_OUTEN);
+			pet_watchdog();
+			delay_ms(200);
+		}
+		
+		for (int i = 0; i < 2; i++) {
+			configure_adc(&bat_instance,bat_adc_pins[i], true);
+			adc_enable(&bat_instance);
+			enum status_code sc = read_adc_mV(bat_instance, !i ? &lfb1 : &lfb2);
+		}
+		lfb1 = lfb1 * 387/100;
+		lfb2 = lfb2 * 387/100;
+		for (int i = 4; i < 8; i++){
+			configure_adc(&temp_instance,P_AI_TEMP_OUT, true);
+			uint8_t rs;
+			enum status_code sc = LTC1380_channel_select(TEMP_MULTIPLEXER_I2C, i, &rs);
+			delay_ms(1);
+			uint16_t temp_mV;
+			read_adc_mV(temp_instance,&temp_mV);
+			float tempInC = ((float) temp_mV) *0.1286 - 107.405;
+			LEDTEMPS[i-4] = tempInC;
+		}
+		print("%d,%d,%d,%d,%d,%d\n", lfb1, lfb2, (int)LEDTEMPS[0], (int)LEDTEMPS[1],(int)LEDTEMPS[2],(int)LEDTEMPS[3]);
+		for (int i = 0; i < 10; i++) {
+			delay_s(1);
+			pet_watchdog();
+		}
+	}	while (lfb1 > 4800 || lfb2 > 4800);
 }

@@ -200,7 +200,7 @@ void startup_task(void* pvParameters) {
 		"watchdog task",
 		TASK_WATCHDOG_STACK_SIZE,
 		NULL,
-		TASK_WATCHDOG_STACK_PRIORITY,
+		TASK_WATCHDOG_PRIORITY,
 		watchdog_task_stack,
 		&watchdog_task_buffer);
 
@@ -256,6 +256,10 @@ void startup_task(void* pvParameters) {
 	#endif
 
 	xTaskResumeAll();
+
+	setTXEnable(false);
+	usart_send_string((uint8_t*) "EQUiSatOS started");
+	setTXEnable(true);
 	
 	print("initialization complete.\n");
 	
