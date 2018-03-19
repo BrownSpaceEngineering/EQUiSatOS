@@ -32,56 +32,101 @@ enum {
 /************************************************************************/
 /* Task Properties - see below for frequencies							*/
 /************************************************************************/
-#define TASK_INIT_STACK_SIZE						(1536/sizeof(portSTACK_TYPE))
+#ifdef RELEASE
+	#define TASK_INIT_STACK_SIZE						(1792/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_INIT_STACK_SIZE						(1536/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_INIT_PRIORITY							(STATE_HANDLING_PRIORITY)
 
-#define TASK_BATTERY_CHARGING_STACK_SIZE			(1280/sizeof(portSTACK_TYPE)) // TODO: 768 when Rohan gets rid of his ints
+#ifdef RELEASE
+	#define TASK_BATTERY_CHARGING_STACK_SIZE			(1792/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_BATTERY_CHARGING_STACK_SIZE			(1280/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_BATTERY_CHARGING_PRIORITY				(ACTION_PRIORITY)
 
-#define TASK_STATE_HANDLING_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) // TODO: only 768 needed when not printing (we think)
+#ifdef RELEASE
+	#define TASK_STATE_HANDLING_STACK_SIZE				(1536/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_STATE_HANDLING_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_STATE_HANDLING_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) // TODO: 768, don't know why it need so much
+#ifdef RELEASE
+	#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_ANTENNA_DEPLOY_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_ANTENNA_DEPLOY_PRIORITY				(ACTION_PRIORITY)
 
-#ifdef RISKY_STACK_SIZES
-#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#ifdef RELEASE
+	#define TASK_WATCHDOG_STACK_SIZE					(1280/sizeof(portSTACK_TYPE))
 #else
-#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+	#ifdef RISKY_STACK_SIZES
+	#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+	#else
+	#define TASK_WATCHDOG_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+	#endif
 #endif
 #define TASK_WATCHDOG_STACK_PRIORITY				(STATE_HANDLING_PRIORITY)
 
-#ifdef RISKY_STACK_SIZES
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE)) 
+#ifdef RELEASE
+	#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1280/sizeof(portSTACK_TYPE))
 #else
-#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1280/sizeof(portSTACK_TYPE)) 
+	#ifdef RISKY_STACK_SIZES
+	#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+	#else
+	#define TASK_FLASH_ACTIVATE_STACK_SIZE				(1280/sizeof(portSTACK_TYPE))
+	#endif
 #endif
 #define TASK_FLASH_ACTIVATE_PRIORITY				(FLASH_PRIORITY)
 
-#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#ifdef RELEASE
+	#define TASK_TRANSMIT_STACK_SIZE					(1536/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_TRANSMIT_STACK_SIZE					(1024/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_TRANSMIT_PRIORITY						(ACTION_PRIORITY)
 
-#define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#ifdef RELEASE
+	#define TASK_IDLE_DATA_RD_STACK_SIZE				(1536/sizeof(portSTACK_TYPE))
+#else
+	#define TASK_IDLE_DATA_RD_STACK_SIZE				(1024/sizeof(portSTACK_TYPE))
+#endif
 #define TASK_IDLE_DATA_RD_PRIORITY					(DATA_READ_PRIORITY)
 
-#ifdef RISKY_STACK_SIZES
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(600/sizeof(portSTACK_TYPE))
-#else 
-#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
-#endif
-#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
-
-#ifdef RISKY_STACK_SIZES
-#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
+#ifdef RELEASE
+	#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(1280/sizeof(portSTACK_TYPE))
 #else
-#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1280/sizeof(portSTACK_TYPE))
+	#ifdef RISKY_STACK_SIZES
+	#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(600/sizeof(portSTACK_TYPE))
+	#else 
+	#define TASK_ATTITUDE_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE)) // note: rather close
+	#endif
+#endif
+	#define TASK_ATTITUDE_DATA_DATA_RD_PRIORITY			(DATA_READ_PRIORITY)
+
+#ifdef RELEASE
+	#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1536/sizeof(portSTACK_TYPE))
+#else
+	#ifdef RISKY_STACK_SIZES
+	#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(768/sizeof(portSTACK_TYPE))
+	#else
+	#define TASK_LOW_POWER_DATA_RD_STACK_SIZE			(1280/sizeof(portSTACK_TYPE))
+	#endif
 #endif
 #define TASK_LOW_POWER_DATA_RD_PRIORITY				(DATA_READ_PRIORITY)
 
-#ifdef RISKY_STACK_SIZES
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+
+#ifdef RELEASE
+	#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1536/sizeof(portSTACK_TYPE))
 #else
-#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1280/sizeof(portSTACK_TYPE))
+	#ifdef RISKY_STACK_SIZES
+	#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1024/sizeof(portSTACK_TYPE))
+	#else
+	#define TASK_PERSISTENT_DATA_BACKUP_STACK_SIZE		(1280/sizeof(portSTACK_TYPE))
+	#endif
 #endif
 #define TASK_PERSISTENT_DATA_BACKUP_PRIORITY		(ACTION_PRIORITY)
 
