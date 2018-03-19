@@ -95,6 +95,9 @@ void equisim_init(void) {
 /* Battery voltage/current output interfaces                            */
 /************************************************************************/
 void equisim_read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
+	normal_charge_discharge(equisim_get_current_timestamp_ms(), get_sat_state());
+	
+	*batch = 0;
 	*batch |= cur_actions.l1_run_chg;
 	*batch |= cur_actions.l2_run_chg	<< 1;
 	*batch |= cur_actions.lf_b1_runchg	<< 2;
@@ -153,7 +156,7 @@ uint16_t equisim_read_panelref(void) {
 
 void fault_to_default()
 {
-	// NOTE: actie low, so flipping here
+	// NOTE: active low, so flipping here
 	cur_state.l1_faultn_inv = 1;
 	cur_state.l2_faultn_inv = 1;
 	cur_state.lf_b1_faultn_inv = 1;
@@ -196,10 +199,10 @@ static uint16_t get_delta_charging(uint16_t voltage, uint64_t time_since_last_up
 	if (run_chg)
 	{
 		if (is_lion)
-			return time_since_last_update_ms * ((voltage > LI_HIGH_LOW_THRESHOLD)
+			return 40 * ((float) time_since_last_update_ms) * ((voltage > LI_HIGH_LOW_THRESHOLD)
 				? LI_CHARGING_MV_PER_MS_HIGH : LI_CHARGING_MV_PER_MS_LOW);
 		else
-			return time_since_last_update_ms * ((voltage > LF_HIGH_LOW_THRESHOLD)
+			return 40 * ((float) time_since_last_update_ms) * ((voltage > LF_HIGH_LOW_THRESHOLD)
 				? LF_CHARGING_MV_PER_MS_HIGH : LF_CHARGING_MV_PER_MS_LOW);
 	}
 
@@ -211,10 +214,10 @@ static uint16_t get_delta_discharging(uint16_t voltage, uint64_t time_since_last
 	if (is_discharging)
 	{
 		if (is_lion)
-			return time_since_last_update_ms * ((voltage > LI_HIGH_LOW_THRESHOLD)
+			return 40 * ((float) time_since_last_update_ms) * ((voltage > LI_HIGH_LOW_THRESHOLD)
 				? LI_DISCHARGING_MV_PER_MS_HIGH : LI_DISCHARGING_MV_PER_MS_LOW);
 		else
-			return time_since_last_update_ms * ((voltage > LF_HIGH_LOW_THRESHOLD)
+			return 40 * ((float) time_since_last_update_ms) * ((voltage > LF_HIGH_LOW_THRESHOLD)
 				? LF_DISCHARGING_MV_PER_MS_FLASHING_HIGH : LF_DISCHARGING_MV_PER_MS_FLASHING_LOW);
 	}
 

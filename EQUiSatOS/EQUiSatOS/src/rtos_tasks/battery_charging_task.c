@@ -21,13 +21,9 @@
 //   - check all pins
 //   - error priorities
 //   - everything is okay coming back from a boot
-//   - warnings
 //   - flow through the discharging section on the first time through
 //   - strike conditions
-
-// Stretch (TODO):
-//   - strike case for LF not charging
-//   - decrement decommission count if no decommission for a while
+//   - all usages of -1 (important!)
 
 li_discharging_t get_li_discharging(void)
 {
@@ -350,7 +346,7 @@ void set_li_to_discharge(int8_t bat, bool discharge)
 			set_output(!discharge, discharge_pin);
 		#endif
 	#else
-		equisim_set_action_by_pin(!discharge, discharge_pin);
+		equisim_set_action_by_pin(discharge, discharge_pin);
 	#endif
 
 	print("set li %d to discharge: %d\n", bat, discharge);
@@ -547,7 +543,7 @@ void check_chg_with_retry(int8_t bat, bool should_be_charging, bat_charge_dig_si
 
 		if (check_chg_should_decommission(bat, should_be_charging, new_batch))
 		{
-			print("\t\tbad result again for bat %d -- decomissioning\n", bat);
+			print("\t\tbad result again for bat %d -- decommissioning\n", bat);
 			log_error(get_error_loc(bat), ECODE_BAT_NOT_CHARGING, true);
 			decommission(bat);
 		}
