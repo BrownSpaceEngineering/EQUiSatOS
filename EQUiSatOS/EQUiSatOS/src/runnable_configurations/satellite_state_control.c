@@ -710,7 +710,7 @@ void task_resume_safe(task_type_t task_id) {
 		task_resume(task_id);
 		xSemaphoreGive(watchdog_mutex);
 	} else {
-		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, true);
+		log_error(ELOC_STATE_HANDLING, ECODE_WATCHDOG_MUTEX_TIMEOUT, false);
 	}
 }
 
@@ -726,7 +726,7 @@ struct hw_states* get_hw_states(void) {
 
 bool hardware_state_mutex_take(uint8_t eloc) {
 	if (!xSemaphoreTake(hardware_state_mutex, HARDWARE_STATE_MUTEX_WAIT_TIME_TICKS)) {
-		log_error(eloc, ECODE_HW_STATE_MUTEX_TIMEOUT, true);
+		log_error(eloc, ECODE_HW_STATE_MUTEX_TIMEOUT, false);
 		return false;	
 	};
 	return true;
