@@ -13,14 +13,16 @@
 
 #define PWM_LENGTH_MS			3000
 #define PWM_LION_MIN_V			4100
-#define PWM_LIFEPO_MIN_V		6300
-#define PWM_MAX_CUR				5
-#define PWM_MIN_CUR				335
-#define PWM_VERY_MIN_CUR		535
+#define PWM_LIFEPO_MIN_V		6000
+#define PWM_MAX_CUR_L			5		//1960 mA
+#define PWM_MIN_CUR_L			485		//1000 mA
+#define PWM_VERY_MIN_CUR_L		635		//700 mA
+#define PWM_MAX_CUR_LF			1020	//2000 mA
+#define PWM_MIN_CUR_LF			1000	//1000 mA
+#define PWM_VERY_MIN_CUR_LF		994		//700 mA
 
 bool antenna_did_deploy(void);
-void pwm_test(void);
-void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant);
+bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant);
 int get_current_pwm_pin(void);
 
 #endif /* ANTENNA_PWM_H_ */

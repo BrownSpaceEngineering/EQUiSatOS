@@ -10,16 +10,6 @@
 static int curren_pwm_pin = 1;
 static int current_on_cycle = (PWM_PERIOD / 2) + 1;
 
-// not for flight
-static void try_pwm_deploy_basic(int pin, int pin_mux, int ms, int p_ant) {
-	for (int i = 8; i < 16; i++) {
-		configure_pwm(pin, pin_mux, p_ant);
-		enable_pwm(i);
-		delay_ms(ms);
-		disable_pwm();
-	}
-}
-
 bool antenna_did_deploy(void) {
 	// if we fail to get the mutex, continue on and mess with anything reading sensors
 	// (we don't care about sensors much relative to antenna deployment)
@@ -38,13 +28,8 @@ bool antenna_did_deploy(void) {
 	return did_deploy;
 }
 
-void pwm_test(void) {
-	try_pwm_deploy(P_ANT_DRV1, P_ANT_DRV1_MUX, PWM_LENGTH_MS, 1);
-	try_pwm_deploy_basic(P_ANT_DRV2, P_ANT_DRV2_MUX, PWM_LENGTH_MS, 2);
-	try_pwm_deploy_basic(P_ANT_DRV3, P_ANT_DRV3_MUX, PWM_LENGTH_MS, 3);
-}
-
-void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
+bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
+	bool was_deployed = antenna_did_deploy();
 	configure_pwm(pin, pin_mux, p_ant);
 
 	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
@@ -56,7 +41,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 
 	// read current (both just in case) so we can shut it down if we need
 	uint16_t ad7991_bat_results[4];
-	uint16_t li1, li2, lf1, lf2, lf3, lf4;	
+	uint16_t li1, li2, lf1, lf2, lfo1, lfo2;	
 	if (p_ant == 1) {
 		// TODO: check mutex value?
 		//read_lion_current_precise(&li1, &li2);
@@ -64,7 +49,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		li1 = ad7991_bat_results[1];
 		li2 = ad7991_bat_results[0];
 	} else {
-		read_lifepo_current_precise(&lf1, &lf2, &lf3, &lf4);
+		read_lifepo_current_precise(&lf1, &lfo1, &lf2, &lfo2);
 	}
 	
 	got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
@@ -88,21 +73,20 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 			li_cur = li1 + li2;
 		}
 
-		if (li_cur < PWM_MAX_CUR) {
+		if (li_cur < PWM_MAX_CUR_L || (deployed && !was_deployed)) {
 			can_cont = false;
-		} else if (deployed && li_cur > PWM_VERY_MIN_CUR) {
+		} else if (deployed && li_cur > PWM_VERY_MIN_CUR_L) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
-		} else if (deployed && li_cur > PWM_MIN_CUR) {
+		} else if (deployed && li_cur > PWM_MIN_CUR_L) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	} else {
-		uint16_t bank1 = lf1 + lf2;
-		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", bank1);
-		if (bank1 < PWM_MAX_CUR) {
+		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", lf1);
+		if (lf1 > PWM_MAX_CUR_LF || (deployed && !was_deployed)) {
 			can_cont = false;
-		} else if (deployed && bank1 > PWM_VERY_MIN_CUR) {
+		} else if (deployed && lf1 < PWM_VERY_MIN_CUR_LF) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
-		} else if (deployed && bank1 > PWM_MIN_CUR) {
+		} else if (deployed && lf1 < PWM_MIN_CUR_LF) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_LOW_ON_DEPLOY, false);
 		}
 	}
@@ -112,6 +96,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 	}
 	// it shouldn't be on too much, so if it's at 14 switch to the next pin
 	if (current_on_cycle >= (PWM_PERIOD - 2) || !can_cont) {
+		can_cont = false;
 		uint8_t ecode;
 		switch (curren_pwm_pin) {
 			case 1:
@@ -132,6 +117,7 @@ void try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 			curren_pwm_pin = 1;
 		}
 	}
+	return !can_cont;
 }
 
 int get_current_pwm_pin(void) {

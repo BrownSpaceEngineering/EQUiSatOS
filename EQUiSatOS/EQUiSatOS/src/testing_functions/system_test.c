@@ -543,9 +543,7 @@ static void readBatBoard(void){
 	};
 	
 	for (int i=0; i<10; i++){		
-		configure_adc(&bat_instance,bat_adc_pins[i], true);
-		uint8_t rs;
-		LTC1380_channel_select(0x4a, i, &rs);
+		configure_adc(&bat_instance,bat_adc_pins[i], true);		
 		adc_enable(&bat_instance);
 		enum status_code sc = read_adc_mV(bat_instance, &bat_ref_voltage_readings[i]);
 		get_status(sc,error_str);		

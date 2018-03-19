@@ -41,10 +41,8 @@ bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum) {
 }
 
 void set_command_mode(bool delay) {
-	if (delay) delay_ms(SET_CMD_MODE_WAIT_BEFORE_MS);
-	setTXEnable(true);
-	usart_send_string((uint8_t*) "+++");
-	setTXEnable(false);
+	if (delay) delay_ms(SET_CMD_MODE_WAIT_BEFORE_MS);	
+	usart_send_string((uint8_t*) "+++");	
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_AFTER_MS);
 }
 
@@ -267,7 +265,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	bool got_ir_pow_semaphore = enable_ir_pow_if_necessary();
  	bool got_i2c_irpow_mutex = true;
 	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		got_i2c_irpow_mutex = false;
 	}
 	{

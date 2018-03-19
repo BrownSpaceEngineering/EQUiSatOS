@@ -52,7 +52,7 @@ void* equistack_Get(equistack* S, int16_t n)
 	bool got_mutex = true;
 	if (!xSemaphoreTake(S->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
-		log_error(ELOC_EQUISTACK_GET, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		log_error(ELOC_EQUISTACK_GET, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
 		got_mutex = false;
 	}
 
@@ -160,8 +160,7 @@ static void* equistack_Stage_helper(equistack* S, bool from_isr) {
 	{
 		// log error if mutex can't be obtained, and give pointer to previously staged
 		// struct (the one currently at the top index)
-		// TODO: check
-		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
 		staged_pointer = ((uint8_t*) S->data) + (S->data_size)*((S->top_index + 1) % S->max_size);
 	}
 	return staged_pointer;
@@ -226,8 +225,7 @@ static void* equistack_Push_helper(equistack* S, void* data, bool from_isr)
 	{
 		// log error if mutex can't be obtained, and give pointer to previously staged
 		// struct (the one currently at the top index)
-		// TODO: check
-		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		log_error(ELOC_EQUISTACK_PUT, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
 		staged_pointer = ((uint8_t*) S->data) + (S->data_size)*((S->top_index + 1) % S->max_size);
 	}
 	return staged_pointer;

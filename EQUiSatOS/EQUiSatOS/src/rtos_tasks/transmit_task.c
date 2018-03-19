@@ -33,28 +33,27 @@ static bool is_radio_killed(void) {
 
 static void read_radio_temp_mode(void) {
 	// power on radio initially
-	setRadioState(true, false);	
+	setRadioState(true, false);
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS / portTICK_PERIOD_MS);
+	setTXEnable(true);
+	setRXEnable(true);
 	set_command_mode(false); // don't delay, we'll take care of it
 	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 
 	clear_USART_rx_buffer();
 	XDL_prepare_get_temp();	
-	setRXEnable(true);
-	setTXEnable(true);
 	usart_send_string(radio_send_buffer);
-	setTXEnable(false);
+	
 	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
 	if (check_checksum(radio_receive_buffer+1, 3, radio_receive_buffer[4])) {
 		radio_temp_cached = (radio_receive_buffer[2] << 8) | radio_receive_buffer[3];
 		log_if_out_of_bounds(radio_temp_cached, S_RAD_TEMP, ELOC_RADIO_TEMP, true);
 	} else {
-		//TODO: Wait longer?
-		// log error
-		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);		
+		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);
 	}
 	setRXEnable(false);
+	setTXEnable(false);
 }
 
 /************************************************************************/
@@ -227,8 +226,8 @@ static msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_ms
 		}
 	} while (new_msg_type != starting_msg_type);
 	
-	// if we wrapped around, none were transmittable (we won't transmit)
-	return (msg_data_type_t) -1;
+	// if we wrapped around, none were transmittable, so just transmit the default
+	return starting_msg_type;
 }
 
 /** 
@@ -241,16 +240,9 @@ static msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_ms
  * but it's not necessary (because they only grow)
  */
 static msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_type) {
-	// special case for LOW_POWER mode;
-	// only transmit LOW_POWER packets unless the equistack is empty
-	// (it doesn't matter whether they're transmitted)
+	// special case for LOW_POWER mode; only transmit LOW_POWER packets
 	if (low_power_active()) {
-		equistack* low_power_equistack = get_msg_type_equistack(LOW_POWER_DATA);
-		// note: it would only be NULL if somehow a msg_data_type_t bit got corrupted
-		if (low_power_equistack != NULL && low_power_equistack->cur_size > 0) {
-			return LOW_POWER_DATA;
-		}
-		return -1;
+		return LOW_POWER_DATA;
 	}
 	
 	// if the equistack for the default message type is empty, check the next highest
@@ -275,20 +267,6 @@ static bool determine_data_to_transmit(void) {
 	slot_2_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_2);
 	slot_3_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_3);
 	slot_4_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_4);
-	
-	// if no possible msg types were available for any (this only can occur if
-	// all relevant equistacks are empty), don't transmit
-	// NOTE: it should be the case that they ALL match unless the situation 
-	// somehow manages to change in the course of the above lines
-	if (slot_1_msg_type == (msg_data_type_t) -1
-		|| slot_2_msg_type == (msg_data_type_t) -1
-		|| slot_3_msg_type == (msg_data_type_t) -1
-		|| slot_4_msg_type == (msg_data_type_t) -1) {
-		configASSERT(slot_1_msg_type == slot_2_msg_type 
-					&& slot_2_msg_type == slot_3_msg_type 
-					&& slot_3_msg_type == slot_4_msg_type); // all match
-		return false;
-	}
 	return true;
 }
 
@@ -361,7 +339,7 @@ static void attempt_transmission(void) {
 		disable_ir_pow_if_necessary(got_irpow_semaphore);
 		xSemaphoreGive(critical_action_mutex);
 	} else {
-		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 	}
 }
 

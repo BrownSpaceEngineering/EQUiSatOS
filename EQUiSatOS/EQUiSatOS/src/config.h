@@ -20,14 +20,14 @@
  * flags to control dangerous / inconvenient functions of the satellite
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-//#define FLASH_ACTIVE // enable flashing
+#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
-#define WATCHDOG_RESET_ACTIVE // enable watchdog actually rebooting satellite; WARNING bootloader may still start watchdog even if this is disabled
+#define WATCHDOG_RESET_ACTIVE //  enable watchdog actually rebooting satellite; WARNING bootloader may still start watchdog even if this is disabled
 
 /*** TESTING ***/
-// used for final release settings (disabled debug helpers)
+// used for final release settings (disables debug helpers, etc.)
 //#define RELEASE
 
 // define this flag to disable normal frequencies and read data faster,
@@ -41,23 +41,23 @@
 //#define RISKY_STACK_SIZES
 
 // use this flag to disable reed-solomon tables (frees up memory)
-//#define USE_REED_SOLOMON
+#define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+//#define OVERRIDE_INIT_SAT_STATE		IDLE_NO_FLASH
+//#define OVERRIDE_INIT_TASK_STATES	IDLE_NO_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define ONLY_RUN_TESTING_TASKS	// doesn't run normal EQUISAT tasks
-#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+//#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
 	// less data
 	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		(310*1000) // ms
+	#define SYSTEM_TEST_TASK_FREQ		(60*1000) // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -72,7 +72,7 @@
 
 /** Debug **/
 // whether to include Tracelyzer tracing library
-#define USE_TRACELYZER				1
+#define USE_TRACELYZER				0
 
 // whether to configASSERTs (and other asserts) should hang
 //#define USE_ASSERTIONS
@@ -85,16 +85,16 @@
 // 1 to print over USART
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
-#define PRINT_DEBUG					1
+//#define PRINT_DEBUG					1
 // whether to let normal transmissions print while print enabled
-#define DONT_PRINT_RAW_TRANSMISSIONS
+//#define DONT_PRINT_RAW_TRANSMISSIONS
 // whether to use a mutex to avoid collisions with radio
 // define for radio testing but turn off for timing/task testing
 // (it slows down and alters the OS timings)
 //#define SAFE_PRINT
 
 // define to print errors as the come in
-#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
+//#define PRINT_NEW_ERRORS // note: probably will result in many stack overflows
 
 /****************************************************************************************/
 /*  DO NOT EDIT BELOW THIS LINE UNLESS YOU ARE INTENTIONALLY MODIFYING CONFIGURATION    */

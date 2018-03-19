@@ -1300,7 +1300,7 @@ void battery_logic()
 		// if for some reason we can't get the bat charging mutex (it times out),
 		// ignore it and move on (the only things this mutex prevents is flashing while
 		// lifepos are charging, which is less worrisome than not running charging logic)
-		log_error(ELOC_BAT_CHARGING, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+		log_error(ELOC_BAT_CHARGING, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 		got_mutex = false;
 	}
 

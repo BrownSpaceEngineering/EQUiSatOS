@@ -293,7 +293,7 @@ static bool storage_write_check_errors_unsafe(equistack* stack, bool confirm) {
 	bool got_mutex = true;
 	if (!xSemaphoreTake(stack->mutex, (TickType_t) EQUISTACK_MUTEX_WAIT_TIME_TICKS)) {
 		// log error, but continue on because we're just reading
-		log_error(ELOC_MRAM_WRITE, ECODE_EQUISTACK_MUTEX_TIMEOUT, true);
+		log_error(ELOC_MRAM_WRITE, ECODE_EQUISTACK_MUTEX_TIMEOUT, false);
 		got_mutex = false;
 	}
 	{

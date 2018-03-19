@@ -401,7 +401,7 @@
   <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
-      <Value>NDEBUG</Value>
+      <Value>DEBUG</Value>
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0=true</Value>
@@ -451,7 +451,6 @@
       <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.EnableFastMath>True</armgcc.compiler.optimization.EnableFastMath>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
