@@ -227,8 +227,8 @@ static msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_ms
 		}
 	} while (new_msg_type != starting_msg_type);
 	
-	// if we wrapped around, none were transmittable (we won't transmit)
-	return (msg_data_type_t) -1;
+	// if we wrapped around, none were transmittable, so just transmit the default
+	return starting_msg_type;
 }
 
 /** 
@@ -241,16 +241,9 @@ static msg_data_type_t get_next_highest_pri_msg_type(msg_data_type_t starting_ms
  * but it's not necessary (because they only grow)
  */
 static msg_data_type_t determine_single_msg_to_transmit(msg_data_type_t default_msg_type) {
-	// special case for LOW_POWER mode;
-	// only transmit LOW_POWER packets unless the equistack is empty
-	// (it doesn't matter whether they're transmitted)
+	// special case for LOW_POWER mode; only transmit LOW_POWER packets
 	if (low_power_active()) {
-		equistack* low_power_equistack = get_msg_type_equistack(LOW_POWER_DATA);
-		// note: it would only be NULL if somehow a msg_data_type_t bit got corrupted
-		if (low_power_equistack != NULL && low_power_equistack->cur_size > 0) {
-			return LOW_POWER_DATA;
-		}
-		return -1;
+		return LOW_POWER_DATA;
 	}
 	
 	// if the equistack for the default message type is empty, check the next highest
@@ -275,20 +268,6 @@ static bool determine_data_to_transmit(void) {
 	slot_2_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_2);
 	slot_3_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_3);
 	slot_4_msg_type = determine_single_msg_to_transmit(DEFAULT_MSG_TYPE_SLOT_4);
-	
-	// if no possible msg types were available for any (this only can occur if
-	// all relevant equistacks are empty), don't transmit
-	// NOTE: it should be the case that they ALL match unless the situation 
-	// somehow manages to change in the course of the above lines
-	if (slot_1_msg_type == (msg_data_type_t) -1
-		|| slot_2_msg_type == (msg_data_type_t) -1
-		|| slot_3_msg_type == (msg_data_type_t) -1
-		|| slot_4_msg_type == (msg_data_type_t) -1) {
-		configASSERT(slot_1_msg_type == slot_2_msg_type 
-					&& slot_2_msg_type == slot_3_msg_type 
-					&& slot_3_msg_type == slot_4_msg_type); // all match
-		return false;
-	}
 	return true;
 }
 
