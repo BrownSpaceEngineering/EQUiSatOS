@@ -29,6 +29,7 @@ bool antenna_did_deploy(void) {
 }
 
 bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
+	bool was_deployed = antenna_did_deploy();
 	configure_pwm(pin, pin_mux, p_ant);
 
 	bool got_hw_state_mutex = hardware_state_mutex_take(ELOC_ANTENNA_DEPLOY);
@@ -72,7 +73,7 @@ bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 			li_cur = li1 + li2;
 		}
 
-		if (li_cur < PWM_MAX_CUR_L) {
+		if (li_cur < PWM_MAX_CUR_L || (deployed && !was_deployed)) {
 			can_cont = false;
 		} else if (deployed && li_cur > PWM_VERY_MIN_CUR_L) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
@@ -81,7 +82,7 @@ bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 		}
 	} else {
 		print("PWM was on LiFePO4\nCurrent on bank 1: %d\n", lf1);
-		if (lf1 > PWM_MAX_CUR_LF) {
+		if (lf1 > PWM_MAX_CUR_LF || (deployed && !was_deployed)) {
 			can_cont = false;
 		} else if (deployed && lf1 < PWM_VERY_MIN_CUR_LF) {
 			log_error(ELOC_ANTENNA_DEPLOY, ECODE_PWM_CUR_VERY_LOW_ON_DEPLOY, false);
