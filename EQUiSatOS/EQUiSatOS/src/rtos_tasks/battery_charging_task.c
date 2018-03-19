@@ -7,8 +7,6 @@
 
 #include "battery_charging_task.h"
 
-// TODO*: finalize strike conditions once and for all
-
 // To check (TODO):
 //   - make sure that everywhere an array is being indexed, the right thing is
 //     happening (i.e. we never try to use the index -1)
@@ -22,7 +20,6 @@
 //   - error priorities
 //   - everything is okay coming back from a boot
 //   - flow through the discharging section on the first time through
-//   - strike conditions
 //   - all usages of -1 (important!)
 
 li_discharging_t get_li_discharging(void)
@@ -321,7 +318,7 @@ void init_charging_data()
 	// we need to decommission here if the MRAM says that one of the LI's caused
 	// a reboot
 	persistent_charging_data_t persist_data = cache_get_persistent_charging_data();
-	if (persist_data.li_caused_reboot != 0xff)
+	if (persist_data.li_caused_reboot == LI1 || persist_data.li_caused_reboot == LI2)
 	{
 		print("mram has battery %d as having caused a reboot -- decommissioning\n", persist_data.li_caused_reboot);
 		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
