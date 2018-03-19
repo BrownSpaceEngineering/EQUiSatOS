@@ -72,7 +72,7 @@ void antenna_deploy_task(void *pvParameters) {
 					
 					xSemaphoreGive(critical_action_mutex);
 				} else {
-					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 				}
 				
 				// report to watchdog (again)
@@ -105,7 +105,7 @@ void antenna_deploy_task(void *pvParameters) {
 					report_task_running(ANTENNA_DEPLOY_TASK);
 					
 				} else {
-					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+					log_error(ELOC_ANTENNA_DEPLOY, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 				}
 			} else {
 				vTaskDelay(ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT / portTICK_PERIOD_MS);

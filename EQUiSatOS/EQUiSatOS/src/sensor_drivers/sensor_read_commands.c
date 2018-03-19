@@ -211,7 +211,7 @@ void ensure_ir_power_disabled(bool expected_on) {
 
 	} else {
 		// we can't turn it off if there are still tasks using it or the i2c mutex
-		log_error(ELOC_IR_POW, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POW, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		return;
 	}
 
@@ -319,7 +319,7 @@ void verify_regulators(void) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_AD7991_CBRD_3V3_REF, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_AD7991_CBRD_3V3_REF, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 	}
 }
 
@@ -346,7 +346,7 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IR_POS_Z, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Z, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(ir_object_temps_batch));
 	}
 }
@@ -368,7 +368,7 @@ void read_ir_ambient_temps_batch(ir_ambient_temps_batch batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IR_POS_Y, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IR_POS_Y, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(ir_ambient_temps_batch));
 	}
 }
@@ -398,7 +398,7 @@ bool read_lion_volts_precise(uint16_t* val_1, uint16_t* val_2, bool precise) {
 		xSemaphoreGive(processor_adc_mutex);
 		return true;
 	} else {
-		log_error(ELOC_L1_REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+		log_error(ELOC_L1_REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 		memset(val_1, 0, sizeof(uint16_t));
 		memset(val_2, 0, sizeof(uint16_t));
 		return false;
@@ -445,7 +445,7 @@ bool read_ad7991_batbrd_precise(uint16_t* results) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_AD7991_BBRD, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_AD7991_BBRD, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(results, 0, sizeof(uint16_t)*4);
 		return false;
 	}
@@ -487,7 +487,7 @@ void read_ad7991_ctrlbrd(ad7991_ctrlbrd_batch batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_AD7991_CBRD, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_AD7991_CBRD, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(ad7991_ctrlbrd_batch));
 	}
 }
@@ -545,7 +545,7 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_LFB1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 			memset(val_1, 0, sizeof(uint16_t));
 			memset(val_2, 0, sizeof(uint16_t));
 			memset(val_3, 0, sizeof(uint16_t));
@@ -554,7 +554,7 @@ void read_lifepo_current_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_LFB1SNS, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_LFB1SNS, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(val_1, 0, sizeof(uint16_t));
 		memset(val_2, 0, sizeof(uint16_t));
 		memset(val_3, 0, sizeof(uint16_t));
@@ -588,7 +588,7 @@ bool read_lifepo_volts_precise(uint16_t* val_1, uint16_t* val_2, uint16_t* val_3
 		xSemaphoreGive(processor_adc_mutex);
 		return true;
 	} else {
-		log_error(ELOC_LF1REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+		log_error(ELOC_LF1REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 		memset(val_1, 0, sizeof(uint16_t));
 		memset(val_2, 0, sizeof(uint16_t));
 		memset(val_3, 0, sizeof(uint16_t));
@@ -619,7 +619,7 @@ void read_lifepo_volts_batch(lifepo_volts_batch batch) {
 		_read_lifepo_volts_batch_unsafe(batch);
 		xSemaphoreGive(processor_adc_mutex);
 	} else {
-		log_error(ELOC_LF1REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+		log_error(ELOC_LF1REF, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(lifepo_volts_batch));
 	}
 }
@@ -655,13 +655,13 @@ void verify_flash_readings(bool flashing_now) {
 
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_LED1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_LED1SNS, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 			// no data passed back that needs to be cleared
 		}
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_LED1SNS, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_LED1SNS, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		// no data passed back that needs to be cleared
 	}
 }
@@ -710,13 +710,13 @@ void read_pdiode_batch(pdiode_batch* batch) {
 			}
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_PD_POS_Y, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_PD_POS_Y, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 			memset(batch, 0, sizeof(pdiode_batch));
 		}
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_PD_POS_Y, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_PD_POS_Y, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(pdiode_batch));
 	}
 }
@@ -741,13 +741,13 @@ void en_and_read_lion_temps_batch(lion_temps_batch batch) {
 			_set_5v_enable_unsafe(false);
 			xSemaphoreGive(processor_adc_mutex);
 		} else {
-			log_error(ELOC_TEMP_L_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+			log_error(ELOC_TEMP_L_1, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 			memset(batch, 0, sizeof(lion_temps_batch));
 		}
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_TEMP_L_1, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_TEMP_L_1, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(lion_temps_batch));
 	}
 }
@@ -762,7 +762,7 @@ void read_accel_batch(accelerometer_batch accel_batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IMU_ACC, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IMU_ACC, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(accel_batch, 0, sizeof(accelerometer_batch));
 		return;
 	}
@@ -795,7 +795,7 @@ void read_gyro_batch(gyro_batch gyr_batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IMU_GYRO, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IMU_GYRO, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(gyr_batch, 0, sizeof(gyro_batch));
 		return;
 	}
@@ -818,7 +818,7 @@ void read_magnetometer_batch(magnetometer_batch batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IMU_MAG, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IMU_MAG, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(magnetometer_batch));
 		return;
 	}
@@ -854,7 +854,7 @@ bool read_bat_charge_dig_sigs_batch(bat_charge_dig_sigs_batch* batch) {
 		xSemaphoreGive(i2c_irpow_mutex);
 		return true;
 	} else {
-		log_error(ELOC_TCA, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_TCA, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(bat_charge_dig_sigs_batch));
 		return false;
 	}
@@ -871,7 +871,7 @@ void read_imu_temp_batch(imu_temp_batch* batch) {
 		disable_ir_pow_if_necessary(got_semaphore);
 		xSemaphoreGive(i2c_irpow_mutex);
 	} else {
-		log_error(ELOC_IMU_TEMP, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_IMU_TEMP, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		memset(batch, 0, sizeof(magnetometer_batch));
 	}
 }

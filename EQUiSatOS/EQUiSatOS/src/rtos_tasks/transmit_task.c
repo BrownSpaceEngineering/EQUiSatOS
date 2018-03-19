@@ -339,7 +339,7 @@ static void attempt_transmission(void) {
 		disable_ir_pow_if_necessary(got_irpow_semaphore);
 		xSemaphoreGive(critical_action_mutex);
 	} else {
-		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 	}
 }
 

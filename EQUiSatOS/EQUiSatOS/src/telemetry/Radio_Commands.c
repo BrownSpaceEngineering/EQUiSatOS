@@ -265,7 +265,7 @@ void transmit_buf_wait(const uint8_t* buf, size_t size) {
 	bool got_ir_pow_semaphore = enable_ir_pow_if_necessary();
  	bool got_i2c_irpow_mutex = true;
 	if (!xSemaphoreTake(i2c_irpow_mutex, HARDWARE_MUTEX_WAIT_TIME_TICKS)) {
-		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+		log_error(ELOC_RADIO_TRANSMIT, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 		got_i2c_irpow_mutex = false;
 	}
 	{

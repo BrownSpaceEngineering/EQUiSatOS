@@ -203,11 +203,11 @@ void flash_activate_task(void *pvParameters)
 						_set_5v_enable_unsafe(false);
 						xSemaphoreGive(processor_adc_mutex);
 					} else {
-						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, true);
+						log_error(ELOC_FLASH, ECODE_PROC_ADC_MUTEX_TIMEOUT, false);
 					}
 					xSemaphoreGive(i2c_irpow_mutex);
 				} else {
-					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, true);
+					log_error(ELOC_FLASH, ECODE_I2C_IRPOW_MUTEX_TIMEOUT, false);
 				}
 				
 				// in case any mutex didn't get locked
@@ -236,7 +236,7 @@ void flash_activate_task(void *pvParameters)
 			disable_ir_pow_if_necessary(got_semaphore);
 			xSemaphoreGive(critical_action_mutex);
 		} else {
-			log_error(ELOC_FLASH, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, true);
+			log_error(ELOC_FLASH, ECODE_CRIT_ACTION_MUTEX_TIMEOUT, false);
 			// skip logging flash cmp on failure
 			continue;
 		}
