@@ -215,7 +215,7 @@ typedef enum
 
 #define ANTENNA_DEPLOY_TASK_FREQ				1000
 #ifndef TESTING_SPEEDUP
-	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			(15*60*1000)	// 15 minutes; don't do it often if it seems to not be working
+	#define ANTENNA_DEPLOY_TASK_LESS_FREQ			(60*60*1000)	// 60 minutes; don't do it often if it seems to not be working
 #endif
 	#define ANTENNA_DEPLOY_LI_NOT_CHARGED_WAIT		(30*60*1000) // 30 minutes
 	#define ANTENNA_DEPLOY_LF_NOT_CHARGED_WAIT		(60*60*1000) // 60 minutes
@@ -231,30 +231,30 @@ typedef enum
 #endif
 
 #ifndef TESTING_SPEEDUP
-#define IDLE_DATA_TASK_FREQ						(1*60*1000) // ms
+#define IDLE_DATA_TASK_FREQ						(3*60*1000) // ms
 #endif
-	#define IDLE_DATA_MAX_READ_TIME					2000 // has to turn on IR power
+	#define IDLE_DATA_MAX_READ_TIME					4000 // has to turn on IR power
 	#define IDLE_DATA_LOGS_PER_ORBIT				IDLE_DATA_PACKETS // == 7
 	#ifndef TESTING_SPEEDUP
-	#define IDLE_DATA_LOG_FREQ_S						(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
+	#define IDLE_DATA_LOG_FREQ_S					(ORBITAL_PERIOD_S / IDLE_DATA_LOGS_PER_ORBIT)
 	#endif
 
 #ifndef TESTING_SPEEDUP
 #define LOW_POWER_DATA_TASK_FREQ				(2*60*1000)
 #endif
-	#define LOW_POWER_DATA_MAX_READ_TIME			15000 // has to turn on IR power
+	#define LOW_POWER_DATA_MAX_READ_TIME			8000 // has to turn on IR power
 
 #ifndef TESTING_SPEEDUP
 #define PERSISTENT_DATA_BACKUP_TASK_FREQ		(1*60*1000)
 #endif
 
 #ifndef TESTING_SPEEDUP
-#define ATTITUDE_DATA_TASK_FREQ					(1*60*1000)
+#define ATTITUDE_DATA_TASK_FREQ					(4*60*1000)
 #endif
 	#define ATTITUDE_DATA_MAX_READ_TIME				4000
 	#define ATTITUDE_DATA_LOGS_PER_ORBIT			ATTITUDE_DATA_PACKETS // == 5
 	#ifndef TESTING_SPEEDUP
-	#define ATTITUDE_DATA_LOG_FREQ_S					(ORBITAL_PERIOD_S / ATTITUDE_DATA_LOGS_PER_ORBIT)
+	#define ATTITUDE_DATA_LOG_FREQ_S				(ORBITAL_PERIOD_S / ATTITUDE_DATA_LOGS_PER_ORBIT)
 	#endif
 	#define ATTITUDE_DATA_SECOND_SAMPLE_DELAY		500
 
@@ -266,7 +266,7 @@ typedef enum
 										// FLASH_DATA_READ_FREQ * FLASH_DATA_ARR_LEN = 100 ms + time before/after for pre- and post-read
 	#define FLASH_CMP_DATA_LOGS_PER_ORBIT			FLASH_CMP_DATA_PACKETS // == 6
 	#ifndef TESTING_SPEEDUP
-	#define FLASH_CMP_DATA_LOG_FREQ_S					(ORBITAL_PERIOD_S / FLASH_CMP_DATA_LOGS_PER_ORBIT)
+	#define FLASH_CMP_DATA_LOG_FREQ_S				(ORBITAL_PERIOD_S / FLASH_CMP_DATA_LOGS_PER_ORBIT)
 	#endif
 
 // higher-speed overrides

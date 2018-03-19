@@ -20,7 +20,7 @@
  * flags to control dangerous / inconvenient functions of the satellite
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-//#define FLASH_ACTIVE // enable flashing
+#define FLASH_ACTIVE // enable flashing
 //#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
 #define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions

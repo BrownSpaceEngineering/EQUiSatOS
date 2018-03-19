@@ -36,12 +36,12 @@ uint8_t got_early_warning_callback_in_boot;
 /* Defined task state sets - order must match enum in rtos_tasks_config.h: */
 /************************************************************************/
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
-#define INITIAL_TASK_STATES			((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
-#define ANTENNA_DEPLOY_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
-#define HELLO_WORLD_TASK_STATES		((task_states){{true,	true,	false,	true,	true,	false,	true,	false,	true,   true}})
+#define INITIAL_TASK_STATES			((task_states){{true,	true,	true,	true,	false,	false,	false,	false,	true,   true}})
+#define ANTENNA_DEPLOY_TASK_STATES	((task_states){{true,	true,	true,	true,	false,	false,	false,	false,	true,   true}})
+#define HELLO_WORLD_TASK_STATES		((task_states){{true,	true,	true,	true,	true,	false,	true,	false,	true,   true}})
 #define IDLE_NO_FLASH_TASK_STATES	HELLO_WORLD_TASK_STATES
-#define IDLE_FLASH_TASK_STATES 		((task_states){{true,	true,	false,	true,	true,	true,	true,	false,	true,   true}})
-#define LOW_POWER_TASK_STATES 		((task_states){{true,	true,	false,	true,	true,	false,	false,	true,	false, 	true}})
+#define IDLE_FLASH_TASK_STATES 		((task_states){{true,	true,	true,	true,	true,	true,	true,	false,	true,   true}})
+#define LOW_POWER_TASK_STATES 		((task_states){{true,	true,	true,	true,	true,	false,	false,	true,	false, 	true}})
 // **see .c file for ir power states**
 
 // duration to wait to get each of ALL the mutexes in sequence (LONG because we really need this)
