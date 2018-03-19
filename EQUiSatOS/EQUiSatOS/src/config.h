@@ -34,7 +34,7 @@
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
 // ENUMERATION of changes when ON:
 // - don't read data distributed around an orbit
-#define TESTING_SPEEDUP
+//#define TESTING_SPEEDUP
 //#define TESTING_SPEEDUP_LONG_OPS
 
 // reduces the stack size of some tasks to a workable but risky level
@@ -62,12 +62,12 @@
 //#define RUN_TASK_STACK_TESTS
 
 // whether to rewrite MRAM with "zero" values (done before launch)
-#define WRITE_DEFAULT_MRAM_VALS
+//#define WRITE_DEFAULT_MRAM_VALS
 
 /** System Tests/Simulations **/
 //#define EQUISIM_SIMULATE_BATTERIES // see config in equisim_simulated_data.h
-#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
-#define EQUISIM_IN_STATE_TIME_MS			(60*1000)
+//#define EQUISIM_SIMULATE_DIRECT_STATE_CHANGES // must disable OVERRIDE_STATE_HOLD_INIT!
+//#define EQUISIM_IN_STATE_TIME_MS			(60*1000)
 //#define EQUISIM_WATCHDOG_RESET_TEST
 
 /** Debug **/
@@ -75,7 +75,7 @@
 #define USE_TRACELYZER				0
 
 // whether to configASSERTs (and other asserts) should hang
-#define USE_ASSERTIONS
+//#define USE_ASSERTIONS
 
 // add strict asserts to notify of events that we want to be rare
 //#define USE_STRICT_ASSERTIONS
