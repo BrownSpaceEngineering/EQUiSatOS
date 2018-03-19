@@ -13,6 +13,7 @@
 //#define CONFIRM_PROG_MEM_WRITE
 //#define DISABLE_REWRITE_FROM_MRAM
 //#define RUN_TESTS
+#define PREV_SAT_STATE_VALUE			0 // IDLE_NO_FLASH
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
 #include <assert.h>
@@ -33,7 +34,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					82588);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					82036);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				262644);
 // address at which prog mem rewritten boolean is stored in mram + size
@@ -220,7 +221,7 @@ int main(void)
 	mram_initialize_slave(&slave2, P_MRAM2_CS);
 
 	#ifdef RUN_TESTS
-		write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
+		//write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
 		//mram_test(&spi_master_instance, &slave1);
 		//mram_test(&spi_master_instance, &slave2);
 		//flash_mem_test();
@@ -228,8 +229,8 @@ int main(void)
 	#endif
 
 	#ifdef WRITE_PROG_MEM_TO_MRAM
-		write_cur_prog_mem_to_mram(&spi_master_instance, &slave1, &slave2);
 		write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
+		write_cur_prog_mem_to_mram(&spi_master_instance, &slave1, &slave2);
 	#endif
 
 	#ifndef DISABLE_REWRITE_FROM_MRAM
@@ -260,7 +261,6 @@ int main(void)
 #define CUMULATIVE_FIELDS_SIZE			844
 #define PERSISTENT_BAT_DATA_ADDR		46
 #define PREV_SAT_STATE_ADDR				34
-#define PREV_SAT_STATE_VALUE			3 // IDLE_NO_FLASH
 #define SET_BINARY_INIT_SAT_STATE
 void write_default_mram_vals(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {

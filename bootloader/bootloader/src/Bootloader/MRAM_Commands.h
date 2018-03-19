@@ -98,8 +98,8 @@ status_code_genare_t mram_write_status_register(struct spi_module *spi_master_in
 														RAD_SAFE_FIELD_CORRECT(field_name); \
 														field_name[0]; \
 													})
-// #define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; assert(false); }; \
-// 													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; assert(false); }; \
-// 													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; assert(false); }
+/* #define RAD_SAFE_FIELD_CORRECT(field_name)			if (field_name[0] == field_name[1] && field_name[2] != field_name[0]) { field_name[2] = field_name[0]; assert(false); }; \
+ 													if (field_name[0] == field_name[2] && field_name[1] != field_name[0]) { field_name[1] = field_name[0]; assert(false); }; \
+ 													if (field_name[1] == field_name[2] && field_name[0] != field_name[1]) { field_name[0] = field_name[1]; assert(false); } */
 
 #endif /* MRAM_COMMANDS_H_ */
