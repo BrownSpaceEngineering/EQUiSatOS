@@ -77,7 +77,7 @@ void runit(void){
 	pick_side(true);
 	
 	struct adc_module temp_instance;
-	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8);
+	configure_adc(&temp_instance,ADC_POSITIVE_INPUT_PIN8, true);
 
 	/*int i = 0;
 	int cum = 0;
@@ -207,7 +207,7 @@ void rsTest(void) {
 
 void simpleADCTest(void) {
 	struct adc_module adc_instance;
-	configure_adc(&adc_instance, PIN_PB00); // must be an analog pin
+	configure_adc(&adc_instance, PIN_PB00, true); // must be an analog pin
 
 	uint16_t value;
 	enum status_code sc = read_adc(adc_instance, &value);

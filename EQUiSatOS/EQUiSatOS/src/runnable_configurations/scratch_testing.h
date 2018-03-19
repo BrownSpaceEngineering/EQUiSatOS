@@ -9,6 +9,8 @@
 #ifndef SCRATCH_TESTING_H_
 #define SCRATCH_TESTING_H_
 
+#define HIGH_TEMP_C		32
+
 void runit(void);
 void radioTest(void);
 void rsTest(void);
@@ -19,6 +21,6 @@ void flashTest(void);
 void mram_test(void);
 void pointer_typecast_test(void);
 void rx_pointer_test(void);
-void lf_full_discharge(void)
+void lf_full_discharge(void);
 
 #endif /* SCRATCH_TESTING_H_ */
