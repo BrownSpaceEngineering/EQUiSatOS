@@ -11,8 +11,8 @@
 /* CONFIG */
 //#define WRITE_PROG_MEM_TO_MRAM
 //#define CONFIRM_PROG_MEM_WRITE
-#define DISABLE_REWRITE_FROM_MRAM
-#define RUN_TESTS
+//#define DISABLE_REWRITE_FROM_MRAM
+//#define RUN_TESTS
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
 #include <assert.h>
@@ -33,7 +33,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					186276);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					82588);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				262644);
 // address at which prog mem rewritten boolean is stored in mram + size
@@ -266,6 +266,9 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write zeros for all fields
 	uint8_t zeros[CUMULATIVE_FIELDS_SIZE];
+	mram_read_bytes(spi_master_instance, mram_slave1, zeros, CUMULATIVE_FIELDS_SIZE, APPLICATION_MRAM_VALS_START);
+	mram_read_bytes(spi_master_instance, mram_slave2, zeros, CUMULATIVE_FIELDS_SIZE, APPLICATION_MRAM_VALS_START);
+	
 	// write other values first while unlocked to ensure lock doesn't affect this part
 	set_mram_protection(spi_master_instance, mram_slave1, mram_slave2, STATUS_REG_PROTECT_NONE);
 	memset(zeros, 1, CUMULATIVE_FIELDS_SIZE);

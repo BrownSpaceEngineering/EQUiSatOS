@@ -51,9 +51,11 @@ static void set_charging_states(bool lion1, bool lion2, bool lifepo_b1, bool lif
 int main(void)
 {
 	global_init();
-	system_test(false);
+	#ifdef RELEASE
+		//system_test(false);
+	#endif
 	//set_charging_states(false, true, false, false); // WARNING: try to only charge one at a time
-	run_tests();
+	//run_tests();
 
 	run_rtos();
 }

@@ -198,7 +198,7 @@ typedef enum
 #define WATCHDOG_TASK_FREQ_OFFSET				100 // high-freq; should be small
 #define STATE_HANDLING_TASK_FREQ_OFFSET			200
 #define ANTENNA_DEPLOY_TASK_FREQ_OFFSET			300 // high-freq
-#define BATTERY_CHARGING_TASK_FREQ_OFFSET		150 // should be small
+#define BATTERY_CHARGING_TASK_FREQ_OFFSET		30000 // should be small
 #define TRANSMIT_TASK_FREQ_OFFSET				1500
 #define FLASH_ACTIVATE_TASK_FREQ_OFFSET			600
 #define IDLE_DATA_TASK_FREQ_OFFSET				10000 // separate from attitude
