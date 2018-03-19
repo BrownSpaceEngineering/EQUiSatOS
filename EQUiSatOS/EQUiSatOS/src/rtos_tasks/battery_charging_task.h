@@ -21,8 +21,8 @@
 
 // thresholds for making very critical charging decisions, including when to go
 // into low power mode and when to declare end of life
-#define BAT_CHARGING_PERIOD_MINS        5 // TODO: change this back
-#define FULL_BAT_CHARGING_PERIOD_MINS   20
+#define FULL_BAT_CHARGING_PERIOD_MINS   45
+#define BAT_CHARGING_PERIOD_MINS        9
 #define BAT_CHARGING_ITERS_UNTIL_FULL   (FULL_BAT_CHARGING_PERIOD_MINS / BAT_CHARGING_PERIOD_MINS)
 
 #define LI_MAX_MV                       4200
@@ -32,11 +32,11 @@
 #define LI_FULL_SANITY_MV               4100
 #define LI_DOWN_MV                 		4000
 #define LI_LOW_POWER_MV            		3900
-#define LI_CRITICAL_MV             		2750
+#define LI_CRITICAL_MV             		3000
 #define LI_MIGHT_NOT_BE_FULL_MV         4000
 
-#define LF_FULL_SUM_MV					7000
-#define LF_FULL_MAX_MV                  4000
+#define LF_FULL_SUM_MV					6800
+#define LF_FULL_MAX_MV                  3900
 #define LF_FULL_SANITY_MV               6000
 #define LF_MIGHT_NOT_BE_FULL_MV         6000
 #define LF_FLASH_MIN_MV            	  	6200
@@ -58,6 +58,7 @@
 
 #define MAX_TIME_TO_WAIT_FOR_DEPLOY_S	10000 // what here?
 
+// TODO: figure out the whole function
 #define MAX_RECOMMISSION_TIME_S         10000 // what here?
 #define MAX_TIME_BELOW_V_THRESHOLD_S	10000
 #define INITIAL_RECOMMISSION_TIME_S     500

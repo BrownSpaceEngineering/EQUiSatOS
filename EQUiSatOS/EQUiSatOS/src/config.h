@@ -85,7 +85,7 @@
 // 1 to print over USART
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
-//#define PRINT_DEBUG					1
+#define PRINT_DEBUG					1
 // whether to let normal transmissions print while print enabled
 //#define DONT_PRINT_RAW_TRANSMISSIONS
 // whether to use a mutex to avoid collisions with radio
