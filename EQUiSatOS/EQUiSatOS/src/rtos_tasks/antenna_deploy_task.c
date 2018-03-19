@@ -13,13 +13,12 @@
 static uint8_t num_tries = 0;
 
 bool should_exit_antenna_deploy(void) {
-	bool should_exit = (antenna_did_deploy() && num_tries > 0) // must try whole range of pin 1
-		|| num_tries >= 3;
-		if (should_exit) {
+	bool probably_deployed = (antenna_did_deploy() && num_tries > 0); // must try whole range of pin 1		
+		if (probably_deployed) {
 			//update the event history before ending antenna deploy task
 			update_sat_event_history(1, 0, 0, 0, 0, 0, 0);
 		}		
-		return should_exit;
+		return probably_deployed || num_tries >= 4;
 }
 
 uint8_t get_num_tries_antenna_deploy(void) {
