@@ -33,28 +33,27 @@ static bool is_radio_killed(void) {
 
 static void read_radio_temp_mode(void) {
 	// power on radio initially
-	setRadioState(true, false);	
+	setRadioState(true, false);
 	// set command mode to allow sending commands
 	vTaskDelay(SET_CMD_MODE_WAIT_BEFORE_MS / portTICK_PERIOD_MS);
+	setTXEnable(true);
+	setRXEnable(true);
 	set_command_mode(false); // don't delay, we'll take care of it
 	vTaskDelay(SET_CMD_MODE_WAIT_AFTER_MS / portTICK_PERIOD_MS);
 
 	clear_USART_rx_buffer();
 	XDL_prepare_get_temp();	
-	setRXEnable(true);
-	setTXEnable(true);
 	usart_send_string(radio_send_buffer);
-	setTXEnable(false);
+	
 	vTaskDelay(TEMP_RESPONSE_TIME_MS / portTICK_PERIOD_MS);
 	if (check_checksum(radio_receive_buffer+1, 3, radio_receive_buffer[4])) {
 		radio_temp_cached = (radio_receive_buffer[2] << 8) | radio_receive_buffer[3];
 		log_if_out_of_bounds(radio_temp_cached, S_RAD_TEMP, ELOC_RADIO_TEMP, true);
 	} else {
-		//TODO: Wait longer?
-		// log error
-		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);		
+		log_error(ELOC_RADIO_TEMP, ECODE_TIMEOUT, false);
 	}
 	setRXEnable(false);
+	setTXEnable(false);
 }
 
 /************************************************************************/
