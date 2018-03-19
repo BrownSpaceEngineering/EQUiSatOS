@@ -13,11 +13,9 @@
 //   - check for edge cases where something is dependent on the initial value of these state variables
 //     (especially the li_discharging and the bat_charging variables)
 //   - initialization of timestamps after reboot
-//   - look out for battery_t variables being set to -1
 //   - make sure the flow isn't in any way dependent on the individual values of the variable for the
 //     discharging LI
 //   - check all pins
-//   - error priorities
 //   - everything is okay coming back from a boot
 //   - flow through the discharging section on the first time through
 //   - all usages of -1 (important!)
@@ -84,7 +82,7 @@ uint8_t get_error_loc(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING_SWITCH_1, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_1, ECODE_UNEXPECTED_CASE, false);
 			return ELOC_BAT_CHARGING;
 	}
 }
@@ -107,7 +105,7 @@ uint8_t get_run_chg_pin(int8_t bat)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING_SWITCH_2, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_2, ECODE_UNEXPECTED_CASE, false);
 			return P_L1_RUN_CHG;
 	}
 }
@@ -141,7 +139,7 @@ bool chg_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING_SWITCH_3, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_3, ECODE_UNEXPECTED_CASE, false);
 			chg_position = 12;
 			break;
 	}
@@ -173,7 +171,7 @@ bool fault_pin_active(int8_t bat, bat_charge_dig_sigs_batch batch)
 
 		default:
 			configASSERT(false);
-			log_error(ELOC_BAT_CHARGING_SWITCH_4, ECODE_UNEXPECTED_CASE, true);
+			log_error(ELOC_BAT_CHARGING_SWITCH_4, ECODE_UNEXPECTED_CASE, false);
 			fault_position = 13;
 			break;
 	}
@@ -321,7 +319,7 @@ void init_charging_data()
 	if (persist_data.li_caused_reboot == LI1 || persist_data.li_caused_reboot == LI2)
 	{
 		print("mram has battery %d as having caused a reboot -- decommissioning\n", persist_data.li_caused_reboot);
-		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING, true);
+		log_error(get_error_loc(persist_data.li_caused_reboot), ECODE_BAT_NOT_DISCHARGING_RESTART, true);
 		decommission(persist_data.li_caused_reboot);
 
 		// reset persistent data so we give another chance
@@ -512,7 +510,7 @@ bool check_chg_should_decommission(int8_t bat, bool should_be_charging, bat_char
 		if (charge_running)
 		{
 			print("\t\tstill charging for bat %d -- error\n", bat);
-			log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, false);
+			log_error(get_error_loc(bat), ECODE_BAT_NOT_NOT_CHARGING, true);
 		}
 		else
 		{
@@ -842,7 +840,7 @@ void battery_logic()
 
 			print("\tdecided: %d\n", recommissioned);
 			if (recommissioned)
-				log_error(get_error_loc(bat), ECODE_RECOMMISSION, 0);
+				log_error(get_error_loc(bat), ECODE_RECOMMISSION, true);
 		}
 	}
 
@@ -871,7 +869,7 @@ void battery_logic()
 						// care of other things like this
 						print("decommissioning battery: %d because of long time at low voltage\n", bat);
 						print("\tentered low voltage at %d, now %d\n", charging_data.li_entered_low_voltage_timestamp[bat], get_current_timestamp_wrapped());
-						log_error(get_error_loc(bat), ECODE_BAT_LOW_VOLTAGE_FOR_WHILE, 1);
+						log_error(get_error_loc(bat), ECODE_BAT_LOW_VOLTAGE_FOR_WHILE, true);
 						decommission(bat);
 						continue;
 					}
@@ -889,12 +887,12 @@ void battery_logic()
 	{
 		if (lfb1_max_cell_mv > LF_FULL_MAX_MV)
 		{
-			log_error(get_error_loc(LFB1), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+			log_error(get_error_loc(LFB1), ECODE_BAT_LF_CELLS_UNBALANCED, true);
 		}
 		
 		if (lfb2_max_cell_mv > LF_FULL_MAX_MV)
 		{
-			log_error(get_error_loc(LFB2), ECODE_BAT_LF_CELLS_UNBALANCED, false);
+			log_error(get_error_loc(LFB2), ECODE_BAT_LF_CELLS_UNBALANCED, true);
 		}
 	}
 	#endif
@@ -994,7 +992,7 @@ void battery_logic()
 
 					default:
 						configASSERT(false);
-						log_error(ELOC_BAT_CHARGING_SWITCH_5, ECODE_UNEXPECTED_CASE, 1);
+						log_error(ELOC_BAT_CHARGING_SWITCH_5, ECODE_UNEXPECTED_CASE, false);
 						break;
 				}
 			}
@@ -1131,7 +1129,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING_SWITCH_6, ECODE_UNEXPECTED_CASE, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_6, ECODE_UNEXPECTED_CASE, false);
 				break;
 		}
 	}
@@ -1152,7 +1150,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING_SWITCH_7, ECODE_UNEXPECTED_CASE, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_7, ECODE_UNEXPECTED_CASE, false);
 				break;
 		}
 	}
@@ -1217,7 +1215,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING_SWITCH_8, ECODE_UNEXPECTED_CASE, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_8, ECODE_UNEXPECTED_CASE, false);
 				break;
 		}
 	}
@@ -1249,7 +1247,7 @@ void battery_logic()
 			default:
 				// trying to get past -Wswitch
 				configASSERT(false);
-				log_error(ELOC_BAT_CHARGING_SWITCH_9, ECODE_UNEXPECTED_CASE, 1);
+				log_error(ELOC_BAT_CHARGING_SWITCH_9, ECODE_UNEXPECTED_CASE, false);
 				break;
 		}
 	}
