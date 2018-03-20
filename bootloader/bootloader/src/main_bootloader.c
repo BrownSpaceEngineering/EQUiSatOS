@@ -9,11 +9,11 @@
 #include "Bootloader/Watchdog_Commands.h"
 
 /* CONFIG */
-#define WRITE_PROG_MEM_TO_MRAM
-#define CONFIRM_PROG_MEM_WRITE
+//#define WRITE_PROG_MEM_TO_MRAM
+//#define CONFIRM_PROG_MEM_WRITE
 #define DISABLE_REWRITE_FROM_MRAM
 #define RUN_TESTS
-#define PREV_SAT_STATE_VALUE			3 // IDLE_NO_FLASH
+#define PREV_SAT_STATE_VALUE			0 // IDLE_NO_FLASH
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
 #include <assert.h>
@@ -221,7 +221,7 @@ int main(void)
 	mram_initialize_slave(&slave2, P_MRAM2_CS);
 
 	#ifdef RUN_TESTS
-		//write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
+		write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
 		//mram_test(&spi_master_instance, &slave1);
 		//mram_test(&spi_master_instance, &slave2);
 		//flash_mem_test();
