@@ -295,6 +295,9 @@ static void attempt_transmission(void) {
 
 	// write first packet to be ready to transmit (before taking mutex)
 	write_packet(msg_buffer, slot_1_msg_type, start_transmission_timestamp, cur_data_buf);
+	#ifdef PRINT_HEX_TRANSMISSIONS
+		print_sample_transmission(msg_buffer, slot_1_msg_type, start_transmission_timestamp, cur_data_buf);
+	#endif
 	
 	// actually send buffer over USART to radio for transmission
 	// wait here between calls to give buffer
@@ -312,6 +315,9 @@ static void attempt_transmission(void) {
 		// re-package the buffer with the message type of the second slot,
 		// and then delay any remaining time using RTOS to be timing-consistent
 		write_packet(msg_buffer, slot_2_msg_type, start_transmission_timestamp, cur_data_buf);
+		#ifdef PRINT_HEX_TRANSMISSIONS
+			print_sample_transmission(msg_buffer, slot_2_msg_type, start_transmission_timestamp, cur_data_buf);
+		#endif
 		// delay until a specified time after the expected transmission time plus some bufer
 		vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 		
@@ -323,11 +329,17 @@ static void attempt_transmission(void) {
 			configASSERT(slot_3_msg_type != LOW_POWER_DATA && slot_4_msg_type != LOW_POWER_DATA);
 			
 			write_packet(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
+			#ifdef PRINT_HEX_TRANSMISSIONS
+				print_sample_transmission(msg_buffer, slot_3_msg_type, start_transmission_timestamp, cur_data_buf);
+			#endif
 			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 			
 			// slot 3 transmit
 			transmit_buf_wait(msg_buffer, MSG_SIZE);
 			write_packet(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
+			#ifdef PRINT_HEX_TRANSMISSIONS
+				print_sample_transmission(msg_buffer, slot_4_msg_type, start_transmission_timestamp, cur_data_buf);
+			#endif	
 			vTaskDelayUntil(&prev_transmit_start_time, TOTAL_PACKET_TRANS_TIME_MS / portTICK_PERIOD_MS);
 			
 			// slot 4 transmit

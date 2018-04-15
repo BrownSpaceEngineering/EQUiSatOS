@@ -120,27 +120,32 @@ static void print_transmission_info(msg_data_type_t type, uint32_t current_times
 }
 
 // print high level information on the given message
-static void print_sample_transmission(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
+void print_sample_transmission(uint8_t* msg_buf, msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
 	print("=========Sample Transmission=========\n");
 	print("type: %s\n", get_msg_type_str(type));
 	print("\n----Data Summary----\n");
 	print_transmission_info(type, current_timestamp, cur_data_buf);
-	write_packet(msg_buffer, type, current_timestamp, cur_data_buf);
 	print("\n----Raw Hex Data----\n\n");
-	print_buf_hex(msg_buffer, MSG_SIZE);
+	print_buf_hex(msg_buf, MSG_SIZE);
 	print("\n\n=======End Sample Transmission=======\n");
 }
+
+static void generate_print_sample_transmission(msg_data_type_t type, uint32_t current_timestamp, uint8_t* cur_data_buf) {
+	write_packet(msg_buffer, type, current_timestamp, cur_data_buf);
+	print_sample_transmission(msg_buffer, type, current_timestamp, cur_data_buf);
+}
+
 
 void print_sample_transmissions(void) {
 	suppress_other_prints(true);
 	uint32_t current_timestamp = get_current_timestamp();
 	uint8_t cur_data_buf[MSG_CUR_DATA_LEN];
 	read_current_data(cur_data_buf, current_timestamp);
-	print_sample_transmission(IDLE_DATA, current_timestamp, cur_data_buf);
-	print_sample_transmission(ATTITUDE_DATA, current_timestamp, cur_data_buf);
-	print_sample_transmission(FLASH_DATA, current_timestamp, cur_data_buf);
-	print_sample_transmission(FLASH_CMP_DATA, current_timestamp, cur_data_buf);
-	print_sample_transmission(LOW_POWER_DATA, current_timestamp, cur_data_buf);
+	generate_print_sample_transmission(IDLE_DATA, current_timestamp, cur_data_buf);
+	generate_print_sample_transmission(ATTITUDE_DATA, current_timestamp, cur_data_buf);
+	generate_print_sample_transmission(FLASH_DATA, current_timestamp, cur_data_buf);
+	generate_print_sample_transmission(FLASH_CMP_DATA, current_timestamp, cur_data_buf);
+	generate_print_sample_transmission(LOW_POWER_DATA, current_timestamp, cur_data_buf);
 	suppress_other_prints(false);
 }
 
