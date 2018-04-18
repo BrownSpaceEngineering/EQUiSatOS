@@ -269,6 +269,19 @@ typedef enum
 	#define FLASH_CMP_DATA_LOG_FREQ_S				(ORBITAL_PERIOD_S / FLASH_CMP_DATA_LOGS_PER_ORBIT)
 	#endif
 
+#ifdef RELEASE
+	#define MIN_TIME_IN_INITIAL_S		(30*60)
+	#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
+#else
+	#ifndef TESTING_SPEEDUP
+		#define MIN_TIME_IN_INITIAL_S		(30*60)
+		#define MIN_TIME_IN_BOOT_S			(30*60)
+	#else
+		#define MIN_TIME_IN_INITIAL_S		(15*60)
+		#define MIN_TIME_IN_BOOT_S			(ORBITAL_PERIOD_S / 2)
+	#endif
+#endif
+
 // higher-speed overrides
 #ifdef TESTING_SPEEDUP
 	#define TRANSMIT_TASK_FREQ					(20*1000) // same

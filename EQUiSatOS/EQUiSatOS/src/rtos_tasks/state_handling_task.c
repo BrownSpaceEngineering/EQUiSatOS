@@ -3,13 +3,6 @@
 #include "../runnable_configurations/antenna_pwm.h"
 #include "../telemetry/Radio_Commands.h"
 
-#ifndef TESTING_SPEEDUP
-	#define MIN_TIME_IN_INITIAL_S		(30*60)
-	#define MIN_TIME_IN_BOOT_S			(26*ORBITAL_PERIOD_S)
-#else
-	#define MIN_TIME_IN_INITIAL_S		(15*60)
-	#define MIN_TIME_IN_BOOT_S			(ORBITAL_PERIOD_S / 2)
-#endif
 #define TIME_TO_WAIT_FOR_CRIT_MS	2000
 
 void emergency_resume_antenna_deploy(void);
