@@ -319,7 +319,7 @@
       <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.EnableFastMath>True</armgcc.compiler.optimization.EnableFastMath>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
   <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
   <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
@@ -400,7 +400,7 @@
   <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
-      <Value>NDEBUG</Value>
+      <Value>DEBUG</Value>
       <Value>BOARD=SAMD21_XPLAINED_PRO</Value>
       <Value>__SAMD21J18A__</Value>
       <Value>ARM_MATH_CM0=true</Value>
@@ -450,7 +450,7 @@
       <Value>../src/ASF/sam0/drivers/wdt</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
   <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
   <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
