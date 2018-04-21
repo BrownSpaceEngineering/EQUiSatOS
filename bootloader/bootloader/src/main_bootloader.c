@@ -9,14 +9,15 @@
 
 /* CONFIG */
 #define ENABLE_REWRITE_FROM_MRAM
+#define BOOT_TO_PROG
 //#define WRITE_PROG_MEM_TO_MRAM
 //#define CONFIRM_PROG_MEM_MRAM_WRITE
-//#define RUN_TESTS
 //#define RUN_ASSERTS
-#define WAIT_ON_BOOT
-#define WAIT_ON_BOOT_TIME_MS			10000 
-#define SET_BINARY_INIT_SAT_STATE		// must have it running in some form
-#define PREV_SAT_STATE_VALUE			3 // INITIAL = 0; IDLE_NO_FLASH = 3
+//#define WAIT_ON_BOOT
+//#define WAIT_ON_BOOT_TIME_MS			10000 
+//#define SET_INIT_SAT_STATE		// must have it running in some form
+//#define PREV_SAT_STATE_VALUE			0 // INITIAL = 0; IDLE_NO_FLASH = 3
+//#define RUN_TESTS
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS) || defined(RUN_ASSERTS) || defined(CONFIRM_PROG_MEM_WRITE)
 #define configASSERT( x ) \
@@ -65,8 +66,10 @@ void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2);
 #endif
 
-
+#ifdef SET_INIT_SAT_STATE
 void write_default_mram_vals(struct spi_module* spi_master_instance, struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2);
+#endif
+
 void set_mram_protection(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2, 
 	uint8_t status_reg);
@@ -254,8 +257,11 @@ int main(void)
 		//corrupt_prog_mem();
 	#endif
 
-	#ifdef WRITE_PROG_MEM_TO_MRAM
+	#ifdef SET_INIT_SAT_STATE
 		write_default_mram_vals(&spi_master_instance, &slave1, &slave2);
+	#endif
+
+	#ifdef WRITE_PROG_MEM_TO_MRAM
 		write_cur_prog_mem_to_mram(&spi_master_instance, &slave1, &slave2);
 	#endif
 
@@ -280,7 +286,7 @@ int main(void)
 	return 0;
 }
 
-#if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS)
+#if defined(SET_INIT_SAT_STATE) || defined(RUN_TESTS)
 
 // writes default application MRAM values
 #define APPLICATION_MRAM_VALS_START		20
@@ -312,7 +318,7 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 	mram_write_bytes(spi_master_instance, mram_slave2, &persistent_charging_data, 1, PERSISTENT_BAT_DATA_ADDR);
 	mram_write_bytes(spi_master_instance, mram_slave2, &persistent_charging_data, 1, PERSISTENT_BAT_DATA_ADDR + 1);
 	
-	#ifdef SET_BINARY_INIT_SAT_STATE
+	#ifdef SET_INIT_SAT_STATE
 		uint8_t prev_sat_state = PREV_SAT_STATE_VALUE;
 		mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR);
 		mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR + 1);
@@ -327,7 +333,7 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 		memset(expected_data, 0, CUMULATIVE_FIELDS_SIZE);
 		expected_data[PERSISTENT_BAT_DATA_ADDR - APPLICATION_MRAM_VALS_START] = 0xff;
 		expected_data[1 + PERSISTENT_BAT_DATA_ADDR - APPLICATION_MRAM_VALS_START] = 0xff;
-		#ifdef SET_BINARY_INIT_SAT_STATE
+		#ifdef SET_INIT_SAT_STATE
 			expected_data[PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
 			expected_data[1 + PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
 		#endif
