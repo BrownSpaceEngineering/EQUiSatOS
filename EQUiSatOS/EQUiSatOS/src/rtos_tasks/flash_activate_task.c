@@ -69,7 +69,7 @@ bool would_flash_now(void) {
 //check LED_SNS to make sure each LED turned on, log error otherwise
 void validate_LEDSNS_readings(flash_data_t* cur_burst) {	
 	uint16_t max_LED_current[4] = {0, 0, 0, 0};
-	uint16_t max_LF_current[2] = {0, 0};
+	uint16_t max_LF_current[4] = {0, 0, 0, 0};
 	for (int i = 0; i < FLASH_DATA_ARR_LEN; i++) {		
 		for (int j = 0; j < 4; j++) {
 			max_LED_current[j] = max(cur_burst->led_current_data[i][j], max_LED_current[j]);
