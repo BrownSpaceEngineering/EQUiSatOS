@@ -15,8 +15,8 @@
 //#define RUN_ASSERTS
 //#define WAIT_ON_BOOT
 //#define WAIT_ON_BOOT_TIME_MS			10000 
-//#define SET_INIT_SAT_STATE		// must have it running in some form
-//#define PREV_SAT_STATE_VALUE			0 // INITIAL = 0; IDLE_NO_FLASH = 3
+//#define SET_INIT_SAT_STATE
+//#define PREV_SAT_STATE_VALUE			0		// INITIAL = 0; IDLE_NO_FLASH = 3
 //#define RUN_TESTS
 
 #if defined(WRITE_PROG_MEM_TO_MRAM) || defined(RUN_TESTS) || defined(RUN_ASSERTS) || defined(CONFIRM_PROG_MEM_WRITE)
@@ -43,7 +43,7 @@ RAD_SAFE_FIELD_INIT(unsigned long, scb_vtor_tbloff_msk, SCB_VTOR_TBLOFF_Msk);
 /* program memory copying parameters                                    */
 /************************************************************************/
 // size of binary in bytes
-RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					82036);
+RAD_SAFE_FIELD_INIT(size_t, prog_mem_size,					112356);
 // address at which binary is stored in mram
 RAD_SAFE_FIELD_INIT(uint32_t, mram_app_address,				262644);
 // address at which prog mem rewritten boolean is stored in mram + size
@@ -280,8 +280,15 @@ int main(void)
 	
 	pet_watchdog(); // pet before initial app jump
 
-	// jump to start of program in memory
-	start_application();
+	#ifdef BOOT_TO_PROG
+		// jump to start of program in memory
+		start_application();
+	#else
+		// ensure no watchdog reboot
+		while (true) {
+			pet_watchdog();
+		}
+	#endif
 
 	return 0;
 }
@@ -318,13 +325,11 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 	mram_write_bytes(spi_master_instance, mram_slave2, &persistent_charging_data, 1, PERSISTENT_BAT_DATA_ADDR);
 	mram_write_bytes(spi_master_instance, mram_slave2, &persistent_charging_data, 1, PERSISTENT_BAT_DATA_ADDR + 1);
 	
-	#ifdef SET_INIT_SAT_STATE
-		uint8_t prev_sat_state = PREV_SAT_STATE_VALUE;
-		mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR);
-		mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR + 1);
-		mram_write_bytes(spi_master_instance, mram_slave2, &prev_sat_state, 1, PREV_SAT_STATE_ADDR);
-		mram_write_bytes(spi_master_instance, mram_slave2, &prev_sat_state, 1, PREV_SAT_STATE_ADDR + 1);
-	#endif
+	uint8_t prev_sat_state = PREV_SAT_STATE_VALUE;
+	mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR);
+	mram_write_bytes(spi_master_instance, mram_slave1, &prev_sat_state, 1, PREV_SAT_STATE_ADDR + 1);
+	mram_write_bytes(spi_master_instance, mram_slave2, &prev_sat_state, 1, PREV_SAT_STATE_ADDR);
+	mram_write_bytes(spi_master_instance, mram_slave2, &prev_sat_state, 1, PREV_SAT_STATE_ADDR + 1);
 	
 	#ifdef RUN_ASSERTS
 		uint8_t written_data[CUMULATIVE_FIELDS_SIZE];
@@ -333,10 +338,8 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 		memset(expected_data, 0, CUMULATIVE_FIELDS_SIZE);
 		expected_data[PERSISTENT_BAT_DATA_ADDR - APPLICATION_MRAM_VALS_START] = 0xff;
 		expected_data[1 + PERSISTENT_BAT_DATA_ADDR - APPLICATION_MRAM_VALS_START] = 0xff;
-		#ifdef SET_INIT_SAT_STATE
-			expected_data[PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
-			expected_data[1 + PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
-		#endif
+		expected_data[PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
+		expected_data[1 + PREV_SAT_STATE_ADDR - APPLICATION_MRAM_VALS_START] = PREV_SAT_STATE_VALUE;
 	
 		mram_read_bytes(spi_master_instance, mram_slave1, written_data, CUMULATIVE_FIELDS_SIZE, APPLICATION_MRAM_VALS_START);
 		configASSERT(memcmp(written_data, expected_data, CUMULATIVE_FIELDS_SIZE) == 0);
