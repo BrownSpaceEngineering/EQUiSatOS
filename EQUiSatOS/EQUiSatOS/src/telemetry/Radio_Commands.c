@@ -15,7 +15,7 @@ bool flash_killed = false;
 	
 char echo_response_buf[] =	{'E', 'C', 'H', 'O', 'C', 'H', 'O', 'C', 'O'};
 char flash_response_buf[] =	{'F', 'L', 'A', 'S', 'H', 'I', 'N', 'G', 0}; // last byte set to whether will flash
-char reboot_response_buf[] = {'R', 'E', 'sB', 'O', 'O', 'T', 'I', 'N', 'G'}; // last byte set to whether will flash
+char reboot_response_buf[] = {'R', 'E', 'B', 'O', 'O', 'T', 'I', 'N', 'G'}; // last byte set to whether will flash
 char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N', 0, 0, 0, 0}; // last 4 bytes for revive timestamp
 char revive_response_buf[] = {'R', 'E', 'V', 'I', 'V', 'I', 'N', 'G', '!'};
 char flash_kill_response_buf[] = {'F', 'L', 'A', 'S', 'H', 'K', 'I', 'L', 'L'};

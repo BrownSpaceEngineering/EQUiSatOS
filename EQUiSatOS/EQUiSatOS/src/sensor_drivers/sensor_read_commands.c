@@ -336,7 +336,6 @@ void read_ir_object_temps_batch(ir_object_temps_batch batch) {
 		i2c_send_stop();
 		for (int i = 0; i < 6; i ++) {
 			uint16_t obj;
-			bool irpow = get_output(P_IR_PWR_CMD); // TODO
 			status_code_genare_t sc = MLX90614_read_all_obj(IR_ADDS[i], &obj);
 			log_if_error(IR_ELOCS[i], sc, false);
 			log_if_out_of_bounds(obj, S_IR_OBJ, IR_ELOCS[i], false);
