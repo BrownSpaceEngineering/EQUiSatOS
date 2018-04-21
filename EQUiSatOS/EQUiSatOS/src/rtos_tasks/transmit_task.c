@@ -178,7 +178,21 @@ static void handle_uplinks(void) {
 						vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
 						transmit_buf_wait((uint8_t*) revive_response_buf, CMD_RESPONSE_SIZE);
 					}
-					break;		
+					break;
+				case CMD_FLASH_KILL:
+					flash_kill();
+					for (int i = 0; i < 3; i++) {
+						vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+						transmit_buf_wait((uint8_t*) flash_kill_response_buf, CMD_RESPONSE_SIZE);
+					}
+					break;
+				case CMD_FLASH_REVIVE:
+					flash_revive();
+					for (int i = 0; i < 3; i++) {
+						vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
+						transmit_buf_wait((uint8_t*) flash_revive_response_buf, CMD_RESPONSE_SIZE);
+					}
+				break;
 				case CMD_NONE:
 					// nothing received, wait for more
 					break;

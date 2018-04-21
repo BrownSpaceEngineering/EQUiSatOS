@@ -8,18 +8,24 @@ char kill_forever_buf[] = {'K', '3'};
 char flash_buf[] = {'F', 'L'};
 char reboot_buf[] = {'R', 'E'};
 char revive_buf[] = {'R', 'V'};
+char flash_kill_buf[] = {'F', 'K'};
+char flash_revive_buf[] = {'F', 'R'};
+	
+bool flash_killed = false;
 	
 char echo_response_buf[] =	{'E', 'C', 'H', 'O', 'C', 'H', 'O', 'C', 'O'};
 char flash_response_buf[] =	{'F', 'L', 'A', 'S', 'H', 'I', 'N', 'G', 0}; // last byte set to whether will flash
-char reboot_response_buf[] = {'R', 'E', 'B', 'O', 'O', 'T', 'I', 'N', 'G'}; // last byte set to whether will flash
+char reboot_response_buf[] = {'R', 'E', 'sB', 'O', 'O', 'T', 'I', 'N', 'G'}; // last byte set to whether will flash
 char kill_response_buf[] =	{'K', 'I', 'L', 'L', 'N', 0, 0, 0, 0}; // last 4 bytes for revive timestamp
-char revive_response_buf[] = {'R', 'E', 'V', 'I', 'V', 'I', 'N', 'G', '!'}; // last 4 bytes for revive timestamp
+char revive_response_buf[] = {'R', 'E', 'V', 'I', 'V', 'I', 'N', 'G', '!'};
+char flash_kill_response_buf[] = {'F', 'L', 'A', 'S', 'H', 'K', 'I', 'L', 'L'};
+char flash_revive_response_buf[] = {'F', 'L', 'A', 'S', 'H', 'R', 'E', 'V', '!'};
 
-char dealer_response[4] = {1, 196, 0, 59};
-char txFreq_response[4] = {1, 183, 0, 72};
-char rxFreq_response[4] = {1, 185, 0, 70};
-char channel_response[4] = {0x01, 0x83, 0x00, 0x7c};
-char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
+//char dealer_response[4] = {1, 196, 0, 59};
+//char txFreq_response[4] = {1, 183, 0, 72};
+//char rxFreq_response[4] = {1, 185, 0, 70};
+//char channel_response[4] = {0x01, 0x83, 0x00, 0x7c};
+//char warmReset_response[4] = {0x01, 0x9d, 0x00, 0x62};
 
 int working = 1;
 
@@ -44,6 +50,14 @@ void set_command_mode(bool delay) {
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_BEFORE_MS);	
 	usart_send_string((uint8_t*) "+++");	
 	if (delay) delay_ms(SET_CMD_MODE_WAIT_AFTER_MS);
+}
+
+void flash_kill(void) {
+	flash_killed = true;
+}
+
+void flash_revive(void) {
+	flash_killed = false;
 }
 
 bool check_if_rx_matches(char* buf, uint8_t len, uint8_t rx_buf_index) {
@@ -103,6 +117,14 @@ rx_cmd_type_t check_rx_received(void) {
 				//REVIVE! :)
 				command = CMD_REVIVE;
 				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);				
+			} else if (check_if_rx_matches(flash_kill_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//FLASH KILL
+				command = CMD_FLASH_KILL;
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);
+			} else if (check_if_rx_matches(flash_revive_buf, LEN_UPLINK_BUF, rxbuf_cmd_start_index)) {
+				//FLASH REVIVE
+				command = CMD_FLASH_REVIVE;
+				xQueueSendFromISR(rx_command_queue, &command, &xHigherPriorityTaskWoken);
 			}
 			// trigger a context switch if the call from this interrupt
 			// resulting in a lower-priority task being interrupted
@@ -112,105 +134,6 @@ rx_cmd_type_t check_rx_received(void) {
 	}
 	return command;
 }
-
-/*bool send_command(int numBytesReceiving) {
-	clear_USART_rx_buffer();
-	waitingForData = true;
-	receiveDataReady = false;
-	expectedReceiveDataLen = numBytesReceiving;
-	usart_send_string(sendbuffer);
-	int i = 0;
-	while (!receiveDataReady && i < 20) {
-		delay_ms(20);
-		i++;
-	}
-	return receiveDataReady;
-}
-
-void set_dealer_mode(void) {
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x44;
-	sendbuffer[2] = 0x01;
-	sendbuffer[3] = ~0x45;
-	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-void set_tx_freq(void) {
-	//index 3-6 is 4 byte frequency in Hz
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x37;
-	sendbuffer[2] = 0x01; //channel 1
-	sendbuffer[3] = 0x1A;
-	sendbuffer[4] = 0x0C;
-	sendbuffer[5] = 0x17;
-	sendbuffer[6] = 0x40;
-	sendbuffer[7] = ~0xB5;
-	sendbuffer[8] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-void set_rx_freq(void) {
-	//index 3-6 is 4 byte frequency in Hz
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x39;
-	sendbuffer[2] = 0x01; //channel 1
-	sendbuffer[3] = 0x1A;
-	sendbuffer[4] = 0x0C;
-	sendbuffer[5] = 0x17;
-	sendbuffer[6] = 0x40;
-	sendbuffer[7] = ~0xB7;
-	sendbuffer[8] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-void set_channel(void) {
-	//index 2 is byte to set channel
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x03;
-	sendbuffer[2] = 0x01;
-	sendbuffer[3] = 0xFB;
-	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-void cold_reset(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x1d;
-	sendbuffer[2] = 0x00; //cold
-	sendbuffer[3] = ~0x1d;
-	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
-	delay_ms(200);
-}
-
-void set_modulation_format(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x2B;
-	sendbuffer[2] = 0x01;
-	sendbuffer[3] = ~0x2C;
-	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-void set_link_speed(void){
-	sendbuffer[0] = 0x01;
-	sendbuffer[1] = 0x05;
-	sendbuffer[2] = 0x03;
-	sendbuffer[3] = ~0x08;
-	sendbuffer[4] = '\0';
-	usart_send_string(sendbuffer);
-}
-
-
-int response_check(char arr[]){
-	if(working==0) return 0; //not gonna work anymore pal
-
-	for(int i=0;i<sizeof(arr)/sizeof(arr[0]);i++){
-		if(receivebuffer[i]!=arr[i]) return 0;
-	}
-	return 1;
-}*/
 
 /*Returns 16 bit temp reading in 1/10 degree Celsius)*/
 void XDL_prepare_get_temp(void) {
@@ -355,3 +278,89 @@ void setRadioState(bool enable, bool confirm) {
 		verify_regulators(); // will log error if regulator not valid
 	}
 }
+
+//RADIO CONFIG COMMANDS
+/*void set_dealer_mode(void) {
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x44;
+	sendbuffer[2] = 0x01;
+	sendbuffer[3] = ~0x45;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+void set_tx_freq(void) {
+	//index 3-6 is 4 byte frequency in Hz
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x37;
+	sendbuffer[2] = 0x01; //channel 1
+	sendbuffer[3] = 0x1A;
+	sendbuffer[4] = 0x0C;
+	sendbuffer[5] = 0x17;
+	sendbuffer[6] = 0x40;
+	sendbuffer[7] = ~0xB5;
+	sendbuffer[8] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+void set_rx_freq(void) {
+	//index 3-6 is 4 byte frequency in Hz
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x39;
+	sendbuffer[2] = 0x01; //channel 1
+	sendbuffer[3] = 0x1A;
+	sendbuffer[4] = 0x0C;
+	sendbuffer[5] = 0x17;
+	sendbuffer[6] = 0x40;
+	sendbuffer[7] = ~0xB7;
+	sendbuffer[8] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+void set_channel(void) {
+	//index 2 is byte to set channel
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x03;
+	sendbuffer[2] = 0x01;
+	sendbuffer[3] = 0xFB;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+void cold_reset(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x1d;
+	sendbuffer[2] = 0x00; //cold
+	sendbuffer[3] = ~0x1d;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+	delay_ms(200);
+}
+
+void set_modulation_format(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x2B;
+	sendbuffer[2] = 0x01;
+	sendbuffer[3] = ~0x2C;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+void set_link_speed(void){
+	sendbuffer[0] = 0x01;
+	sendbuffer[1] = 0x05;
+	sendbuffer[2] = 0x03;
+	sendbuffer[3] = ~0x08;
+	sendbuffer[4] = '\0';
+	usart_send_string(sendbuffer);
+}
+
+
+int response_check(char arr[]){
+	if(working==0) return 0; //not gonna work anymore pal
+
+	for(int i=0;i<sizeof(arr)/sizeof(arr[0]);i++){
+		if(receivebuffer[i]!=arr[i]) return 0;
+	}
+	return 1;
+}*/

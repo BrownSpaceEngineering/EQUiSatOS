@@ -39,6 +39,12 @@ extern char flash_response_buf[CMD_RESPONSE_SIZE];
 extern char reboot_response_buf[CMD_RESPONSE_SIZE];
 extern char kill_response_buf[CMD_RESPONSE_SIZE];
 extern char revive_response_buf[CMD_RESPONSE_SIZE];
+extern char flash_kill_response_buf[CMD_RESPONSE_SIZE];
+extern char flash_revive_response_buf[CMD_RESPONSE_SIZE];
+
+bool flash_killed;
+void flash_kill(void);
+void flash_revive(void);
 	
 bool check_checksum(uint8_t* data, uint8_t dataLen, uint8_t actualChecksum);
 
@@ -64,6 +70,8 @@ typedef enum {
 	CMD_KILL_WEEK,
 	CMD_KILL_FOREVER,
 	CMD_REVIVE,
+	CMD_FLASH_KILL,
+	CMD_FLASH_REVIVE,
 	
 } rx_cmd_type_t;
 

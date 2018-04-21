@@ -1354,12 +1354,12 @@
     <Compile Include="src\sensor_drivers\TCA9535_GPIO.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\testing_functions\test_data.c">
+    <None Include="src\testing_functions\test_data.c">
       <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\testing_functions\test_data.h">
+    </None>
+    <None Include="src\testing_functions\test_data.h">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\testing_functions\test_stacks.c">
       <SubType>compile</SubType>
     </Compile>
@@ -2023,12 +2023,12 @@
     <Compile Include="src\runnable_configurations\satellite_state_control.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\runnable_configurations\scratch_testing.c">
+    <None Include="src\runnable_configurations\scratch_testing.c">
       <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\runnable_configurations\scratch_testing.h">
+    </None>
+    <None Include="src\runnable_configurations\scratch_testing.h">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\sensor_drivers\HMC5883L_Magnetometer_Commands.c">
       <SubType>compile</SubType>
     </Compile>

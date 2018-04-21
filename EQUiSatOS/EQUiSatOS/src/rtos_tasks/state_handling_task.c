@@ -1,6 +1,7 @@
 #include "rtos_tasks.h"
 #include "battery_charging_task.h"
 #include "../runnable_configurations/antenna_pwm.h"
+#include "../telemetry/Radio_Commands.h"
 
 #ifndef TESTING_SPEEDUP
 	#define MIN_TIME_IN_INITIAL_S		(30*60)
@@ -144,7 +145,7 @@ void decide_next_state(sat_state_t current_state) {
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
 				set_sat_state(LOW_POWER);
-			else if (one_lf_full_one_above_flash)
+			else if (one_lf_full_one_above_flash && !flash_killed)
 				set_sat_state(IDLE_FLASH);
 			break;
 
