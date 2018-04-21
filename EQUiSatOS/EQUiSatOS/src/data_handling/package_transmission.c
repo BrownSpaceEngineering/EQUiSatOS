@@ -143,7 +143,7 @@ void write_packet(uint8_t* msg_buffer, msg_data_type_t msg_type, uint32_t curren
 	uint8_t state_string = 0;
 	state_string |=  msg_type			& 0b111;			// 3 LSB of msg_type (5 types)
 	state_string |= (get_sat_state()	& 0b111)	<< 3;	// three LSB of satellite state
-	state_string |= (get_input(P_SPF_ST)& 0x1)		<< 6;	// SPF_ST (solar panel discharge bit)
+	state_string |= (flash_killed & 0x1)			<< 6;	// whether flash is currently killed
 	state_string |= (cache_get_prog_mem_rewritten() & 0x1) << 7;	// whether program mem rewritten on last reboot
 	
 	// incremented index in buffer

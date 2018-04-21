@@ -140,11 +140,6 @@ void flash_activate_task(void *pvParameters)
 		// report to watchdog
 		report_task_running(FLASH_ACTIVATE_TASK);
 		
-		// SKIP flashing if kill command is set
-		if (flash_killed) {
-			continue;
-		}
-		
 		// read a single magnetometer batch before flash
 		read_magnetometer_batch(current_cmp_struct->mag_before_data);
 

@@ -146,7 +146,7 @@ void decide_next_state(sat_state_t current_state) {
 			// it's higher priority to go to low power
 			if (low_power_entry_criteria)
 				set_sat_state(LOW_POWER);
-			else if (one_lf_below_flash)
+			else if (one_lf_below_flash || flash_killed)
 				set_sat_state(IDLE_NO_FLASH);
 			break;
 
