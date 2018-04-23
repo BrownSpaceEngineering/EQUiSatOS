@@ -21,6 +21,8 @@
 #define PWM_MIN_CUR_LF			960		//-1000 mA
 #define PWM_VERY_MIN_CUR_LF		966		//-700 mA
 
+#define PWM_START_PERIOD		1
+
 bool antenna_did_deploy(void);
 bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant);
 int get_current_pwm_pin(void);

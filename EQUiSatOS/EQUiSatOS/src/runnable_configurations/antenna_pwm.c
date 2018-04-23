@@ -8,7 +8,7 @@
 #include "antenna_pwm.h"
 
 static int curren_pwm_pin = 1;
-static int current_on_cycle = (PWM_PERIOD / 2) + 1;
+static int current_on_cycle = PWM_START_PERIOD;
 
 bool antenna_did_deploy(void) {
 	// if we fail to get the mutex, continue on and mess with anything reading sensors
@@ -110,7 +110,7 @@ bool try_pwm_deploy(long pin, long pin_mux, int ms, uint8_t p_ant) {
 				break;
 		}
 		log_error(ELOC_ANTENNA_DEPLOY, ecode, true);
-		current_on_cycle = PWM_PERIOD / 2;
+		current_on_cycle = PWM_START_PERIOD;
 		curren_pwm_pin++;
 		// now if the pin is past 3, set it back to 1
 		if (curren_pwm_pin > 3) {
