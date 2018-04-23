@@ -304,6 +304,7 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 	struct spi_slave_inst* mram_slave1, struct spi_slave_inst* mram_slave2) {
 	// write zeros for all fields
 	uint8_t zeros[CUMULATIVE_FIELDS_SIZE];
+	// these lines just included so the stored state can be viewed in a debugger
 	mram_read_bytes(spi_master_instance, mram_slave1, zeros, CUMULATIVE_FIELDS_SIZE, APPLICATION_MRAM_VALS_START);
 	mram_read_bytes(spi_master_instance, mram_slave2, zeros, CUMULATIVE_FIELDS_SIZE, APPLICATION_MRAM_VALS_START);
 	
@@ -333,7 +334,7 @@ void write_default_mram_vals(struct spi_module* spi_master_instance,
 	
 	#ifdef RUN_ASSERTS
 		uint8_t written_data[CUMULATIVE_FIELDS_SIZE];
-		memset(written_data, 12, CUMULATIVE_FIELDS_SIZE);
+		memset(written_data, 12, CUMULATIVE_FIELDS_SIZE); // set random value to distinguish
 		uint8_t expected_data[CUMULATIVE_FIELDS_SIZE];
 		memset(expected_data, 0, CUMULATIVE_FIELDS_SIZE);
 		expected_data[PERSISTENT_BAT_DATA_ADDR - APPLICATION_MRAM_VALS_START] = 0xff;
@@ -353,13 +354,13 @@ void set_mram_protection(struct spi_module* spi_master_instance,
 	uint8_t status_reg) {
 	uint8_t status_reg1;
 	uint8_t status_reg2;
-	mram_read_status_register(spi_master_instance, mram_slave1, &status_reg1);
+	mram_read_status_register(spi_master_instance, mram_slave1, &status_reg1); // just to debug value
 	mram_write_status_register(spi_master_instance, mram_slave1, status_reg);
 	#ifdef RUN_ASSERTS
 		mram_read_status_register(spi_master_instance, mram_slave1, &status_reg2);
 		configASSERT(status_reg2 == (status_reg | 0b10)); // WEN bit will be set
 	#endif
-	mram_read_status_register(spi_master_instance, mram_slave2, &status_reg1);
+	mram_read_status_register(spi_master_instance, mram_slave2, &status_reg1); // just to debug value
 	mram_write_status_register(spi_master_instance, mram_slave2, status_reg);
 	#ifdef RUN_ASSERTS
 		mram_read_status_register(spi_master_instance, mram_slave2, &status_reg2);
@@ -396,7 +397,7 @@ void write_cur_prog_mem_to_mram(struct spi_module* spi_master_instance,
 		#if defined(RUN_ASSERTS) && defined(CONFIRM_PROG_MEM_MRAM_WRITE)
 			mram_read_bytes(spi_master_instance, mram_slave1, buffer_mram1, buf_size, mram_addr);
 			configASSERT(memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) == 0);
-			mram_read_bytes(spi_master_instance, mram_slave2, buffer_mram1, buf_size, mram_addr);
+			mram_read_bytes(spi_master_instance, mram_slave2, buffer_mram1, buf_size, mram_addr); // use same buffer...
 			configASSERT(memcmp((uint8_t*) flash_addr, buffer_mram1, buf_size) == 0);
 			pet_watchdog(); // pet after long read
 		#endif
