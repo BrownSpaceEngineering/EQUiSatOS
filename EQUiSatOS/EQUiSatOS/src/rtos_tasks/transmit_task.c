@@ -192,7 +192,7 @@ static void handle_uplinks(void) {
 						vTaskDelay(PRE_REPLY_DELAY_MS  / portTICK_PERIOD_MS);
 						transmit_buf_wait((uint8_t*) flash_revive_response_buf, CMD_RESPONSE_SIZE);
 					}
-				break;
+					break;
 				case CMD_NONE:
 					// nothing received, wait for more
 					break;
@@ -293,10 +293,6 @@ static void attempt_transmission(void) {
 		// don't transmit right now
 		return;
 	}
-	
-	// double-make sure radio is set to transmit (don't check regulators every time, however)
-	// (it should be on whenever this task is running anyways)
-	setRadioState(true, false);
 	
 	// print a debug message
 	debug_print_msg_types();
@@ -405,6 +401,9 @@ void transmit_task(void *pvParameters)
 	
 		// report to watchdog
 		report_task_running(TRANSMIT_TASK);		
+		
+		// make sure radio is powered on either for transmission or handling uplinks
+		setRadioState(true, false);
 		
 		/* if the radio isn't killed, enter transmission stage */
 		if (!is_radio_killed()) {
