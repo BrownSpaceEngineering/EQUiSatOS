@@ -12,7 +12,7 @@
 #include <global.h>
 
 #define PWM_LENGTH_MS			3000
-#define PWM_LION_MIN_V			4100
+#define PWM_LION_MIN_V			4000
 #define PWM_LIFEPO_MIN_V		6000
 #define PWM_MAX_CUR_L			5		//-1960 mA
 #define PWM_MIN_CUR_L			485		//-1000 mA
