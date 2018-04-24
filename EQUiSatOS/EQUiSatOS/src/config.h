@@ -14,21 +14,21 @@
 /*************************************************************************/
 
 //Choose 1 Config: Either FLIGHT, FLATSAT or XPLAINED
-#define FLATSAT
+#define FLIGHT
 
 /**
  * flags to control dangerous / inconvenient functions of the satellite
  * MAKE SURE to RE-BUILD solution to be double-sure they were disabled
  */
-//#define FLASH_ACTIVE // enable flashing
-//#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
-//#define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
+#define FLASH_ACTIVE // enable flashing
+#define ANTENNA_DEPLOY_ACTIVE // enable antenna deployment
+#define TRANSMIT_ACTIVE // enable radio transmission (note PRINT_DEBUG must be 0)
 #define BAT_CHARGING_ACTIVE // enable battery charging logic ACTUALLY changing battery actions
 #define WATCHDOG_RESET_ACTIVE //  enable watchdog actually rebooting satellite; WARNING bootloader may still start watchdog even if this is disabled
 
 /*** TESTING ***/
 // used for final release settings (disables debug helpers, etc.)
-//#define RELEASE
+#define RELEASE
 
 // define this flag to disable normal frequencies and read data faster,
 // ***AT THE EXPENSE OF COMPLETELY NORMAL FUNCTIONALITY***
@@ -44,20 +44,20 @@
 #define USE_REED_SOLOMON
 
 // if defined, explicitly sets the initial SAT state (must set both)
-#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
-#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
+//#define OVERRIDE_INIT_SAT_STATE		IDLE_FLASH
+//#define OVERRIDE_INIT_TASK_STATES	IDLE_FLASH_TASK_STATES
 //													WDOG,  STATE,	(ant),	BAT,	TRANS,	FLASH,	IDLE,  	LOWP,	ATTI,	PERSIST
 //#define OVERRIDE_INIT_TASK_STATES	((task_states){{true,	true,	false,	true,	false,	false,	false,	false,	true,   true}})
 #define OVERRIDE_STATE_HOLD_INIT	0 // whether to hold initial state (stop auto state changes)
 
 // whether to start up misc. testing tasks (doing both at same time will likely run out of mem)
 //#define ONLY_RUN_TESTING_TASKS	// doesn't run normal EQUISAT tasks
-#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
+//#define RUN_RTOS_SYSTEM_TEST	// ~800 bytes of memory
 	// less data
-	#define RTOS_SYSTEM_TEST_SUMMARY
+	//#define RTOS_SYSTEM_TEST_SUMMARY
 	// whether to print all data every test or only one element per stack (with exception of error stack)
 	//#define RTOS_SYSTEM_TEST_ONLY_RECENT
-	#define SYSTEM_TEST_TASK_FREQ		(60*1000) // ms
+//	#define SYSTEM_TEST_TASK_FREQ		(60*1000) // ms
 //#define RUN_TESTING_TASK		// ~1024 bytes of memory
 //#define RUN_TASK_STACK_TESTS
 
@@ -85,11 +85,11 @@
 // 1 to print over USART
 // 2 to print over Tracelyzer trace_print
 // 3 to print over both
-#define PRINT_DEBUG					1
+#define PRINT_DEBUG					0
 // whether to let normal transmissions print while print enabled
-#define DONT_PRINT_RAW_TRANSMISSIONS
+//#define DONT_PRINT_RAW_TRANSMISSIONS
 // whether to print hex version of transmissions + data summaries with each transmit
-#define PRINT_HEX_TRANSMISSIONS
+//#define PRINT_HEX_TRANSMISSIONS
 // whether to use a mutex to avoid collisions with radio
 // define for radio testing but turn off for timing/task testing
 // (it slows down and alters the OS timings)
