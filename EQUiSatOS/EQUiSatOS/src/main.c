@@ -52,7 +52,7 @@ int main(void)
 {
 	global_init();
 	#ifndef RELEASE
-		//system_test(false);
+		system_test(false);
 		set_charging_states(false, true, false, false); // WARNING: try to only charge one at a time
 		run_tests();
 	#endif
